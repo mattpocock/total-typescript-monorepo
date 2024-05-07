@@ -1,0 +1,12 @@
+{
+  "name": "internal-cli",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@total-typescript/shared": "workspace:*"
+  }
+}

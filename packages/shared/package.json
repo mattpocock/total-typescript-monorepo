@@ -1,0 +1,12 @@
+{
+  "name": "@total-typescript/shared",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  }
+}

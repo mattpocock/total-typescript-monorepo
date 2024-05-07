@@ -1,0 +1,20 @@
+{
+  "name": "total-typescript-monorepo",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "engines": {
+    "node": ">=20",
+    "turbo": ">=1.13"
+  },
+  "private": true,
+  "scripts": {},
+  "keywords": [],
+  "author": "Matt Pocock",
+  "license": "ISC",
+  "dependencies": {
+    "prettier": "^3.2.5",
+    "turbo": "^1.13.3",
+    "typescript": "^5.4.5"
+  }
+}
