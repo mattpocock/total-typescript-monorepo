@@ -15,6 +15,7 @@
   "dependencies": {
     "prettier": "^3.2.5",
     "turbo": "^1.13.3",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "@types/node": "^20.12.10"
   }
 }

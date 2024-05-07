@@ -1,0 +1,15 @@
+{
+  "name": "scriptkit-sync",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm run \"/dev:/\"",
+    "dev:tsc": "tsc --watch --preserveWatchOutput",
+    "dev:node": "node --watch dist/main.js",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@total-typescript/internal-cli": "workspace:*",
+    "@total-typescript/shared": "workspace:*"
+  }
+}

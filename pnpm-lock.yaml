@@ -7,7 +7,10 @@ settings:
 importers:
 
   .:
-    devDependencies:
+    dependencies:
+      '@types/node':
+        specifier: ^20.12.10
+        version: 20.12.10
       prettier:
         specifier: ^3.2.5
         version: 3.2.5
@@ -23,10 +26,35 @@ importers:
       '@total-typescript/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      commander:
+        specifier: ^12.0.0
+        version: 12.0.0
+
+  apps/scriptkit-sync:
+    dependencies:
+      '@total-typescript/internal-cli':
+        specifier: workspace:*
+        version: link:../internal-cli
+      '@total-typescript/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+
+  packages/ffmpeg:
+    dependencies:
+      '@total-typescript/shared':
+        specifier: workspace:*
+        version: link:../shared
 
   packages/shared: {}
 
 packages:
+
+  '@types/node@20.12.10':
+    resolution: {integrity: sha512-Eem5pH9pmWBHoGAT8Dr5fdc5rYA+4NAovdM4EktRPVAAiJhmWWfQrA0cFhAbOsQdSfIHjAud6YdkbL69+zSKjw==}
+
+  commander@12.0.0:
+    resolution: {integrity: sha512-MwVNWlYjDTtOjX5PiD7o5pK0UrFU/OYgcJfjjK4RaHZETNtjJqrZa9Y9ds88+A+f+d5lv+561eZ+yCKoS3gbAA==}
+    engines: {node: '>=18'}
 
   prettier@3.2.5:
     resolution: {integrity: sha512-3/GWa9aOC0YeD7LUfvOG2NiDyhOWRvt1k+rcKhOuYnMY24iiCphgneUfJDyFXd6rZCAnuLBv6UeAULtrhT/F4A==}
@@ -72,7 +100,16 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
+  undici-types@5.26.5:
+    resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
+
 snapshots:
+
+  '@types/node@20.12.10':
+    dependencies:
+      undici-types: 5.26.5
+
+  commander@12.0.0: {}
 
   prettier@3.2.5: {}
 
@@ -104,3 +141,5 @@ snapshots:
       turbo-windows-arm64: 1.13.3
 
   typescript@5.4.5: {}
+
+  undici-types@5.26.5: {}
