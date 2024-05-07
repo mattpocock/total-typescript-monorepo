@@ -55,7 +55,7 @@ for (const command of commands) {
       "",
       `// ${SYNC_INDICATOR}`,
       "",
-      `inspect('Hello')`, // TODO
+      `await $\`tt ${command.cliCommand}\``,
     ].join("\n"),
   );
 }

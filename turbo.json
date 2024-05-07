@@ -2,7 +2,6 @@
   "$schema": "https://turbo.build/schema.json",
   "pipeline": {
     "local-link": {
-      "dependsOn": ["build"],
       "cache": false
     },
     "dev": {

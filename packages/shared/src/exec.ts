@@ -7,8 +7,5 @@ export const exec = async (
   command: string,
   opts?: ExecSyncOptionsWithBufferEncoding,
 ) => {
-  return execSync(command, {
-    stdio: "inherit",
-    ...opts,
-  });
+  return execSync(command, opts).toString();
 };
