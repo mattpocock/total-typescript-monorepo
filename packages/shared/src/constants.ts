@@ -14,6 +14,13 @@ export const EXTERNAL_DRIVE_TRIMMED_FOOTAGE_ROOT = path.join(
   "total-typescript",
 );
 
+export const SCRIPTKIT_VSCODE_LOCATION = path.join(
+  os.homedir(),
+  ".kit",
+  "db",
+  "vscode.json",
+) as AbsolutePath;
+
 export const SCRIPTKIT_LOCATION = path.join(os.homedir(), ".kenv");
 
 export const SCRIPTKIT_SCRIPTS_LOCATION = path.join(

@@ -35,7 +35,7 @@ for (const absoluteScript of absoluteScripts) {
 
 for (const command of commands) {
   if (
-    absoluteScripts.some((script) => {
+    scriptsNotControlledBySync.some((script) => {
       return path.parse(script).name === command.fileName;
     })
   ) {
@@ -55,7 +55,9 @@ for (const command of commands) {
       "",
       `// ${SYNC_INDICATOR}`,
       "",
-      `await $\`tt ${command.cliCommand}\``,
+      `import "@johnlindquist/kit";`,
+      "",
+      `await $\`tt ${command.cliCommand}\`;`,
     ].join("\n"),
   );
 }
