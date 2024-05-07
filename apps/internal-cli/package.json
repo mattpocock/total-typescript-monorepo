@@ -17,7 +17,8 @@
     "@total-typescript/shared": "workspace:*",
     "@total-typescript/ffmpeg": "workspace:*",
     "commander": "^12.0.0",
-    "fs-extra": "^11.2.0"
+    "fs-extra": "^11.2.0",
+    "zod": "^3.23.6"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4"

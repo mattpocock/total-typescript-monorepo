@@ -1,4 +1,5 @@
 import { encodeAllVideos } from "./encodeAllVideos.js";
+import { selectLatestOBSVideo } from "./selectLatestOBSVideo.js";
 
 export type Command = {
   scriptkitName: string;
@@ -16,5 +17,12 @@ export const commands: Command[] = [
       "Encode all unencoded videos in the external drive and save in place.",
     cliCommand: "encode-all-videos",
     run: encodeAllVideos,
+  },
+  {
+    scriptkitName: "Select Latest OBS Video",
+    fileName: "select-latest-obs-video",
+    description: "Select the latest OBS video from the external drive.",
+    cliCommand: "select-latest-obs-video",
+    run: selectLatestOBSVideo,
   },
 ];

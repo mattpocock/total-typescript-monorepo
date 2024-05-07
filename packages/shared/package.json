@@ -8,5 +8,8 @@
   },
   "exports": {
     ".": "./dist/index.js"
+  },
+  "dependencies": {
+    "execa": "^8.0.1"
   }
 }

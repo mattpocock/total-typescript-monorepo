@@ -9,7 +9,7 @@ import { ensureDir, move } from "fs-extra";
 
 export const encodeAllVideos = async () => {
   for (const folder of POSSIBLE_UNENCODED_FOLDER_LOCATIONS) {
-    const stdout = await exec(`find ${folder} -type f -name "*.mp4"`);
+    const { stdout } = await exec`find ${folder} -type f -name "*.mp4"`;
 
     const inputVideos = stdout
       .trim()

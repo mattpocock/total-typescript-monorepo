@@ -1,11 +1,3 @@
-import {
-  execSync,
-  type ExecSyncOptionsWithBufferEncoding,
-} from "child_process";
+import { $ } from "execa";
 
-export const exec = async (
-  command: string,
-  opts?: ExecSyncOptionsWithBufferEncoding,
-) => {
-  return execSync(command, opts).toString();
-};
+export const exec = $;
