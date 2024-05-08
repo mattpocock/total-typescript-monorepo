@@ -28,6 +28,9 @@ export const SCRIPTKIT_SCRIPTS_LOCATION = path.join(
   "scripts",
 );
 
+/**
+ * Places where unencoded footage might be located.
+ */
 export const POSSIBLE_UNENCODED_FOLDER_LOCATIONS = [
   EXTERNAL_DRIVE_TRIMMED_FOOTAGE_ROOT,
   path.join(EXTERNAL_DRIVE_RAW_FOOTAGE_ROOT, "matt"),

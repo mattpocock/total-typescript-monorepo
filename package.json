@@ -13,6 +13,7 @@
   "author": "Matt Pocock",
   "license": "ISC",
   "dependencies": {
+    "vitest": "^1.6.0",
     "prettier": "^3.2.5",
     "turbo": "^1.13.3",
     "typescript": "^5.4.5",
