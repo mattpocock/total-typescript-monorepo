@@ -5,7 +5,7 @@ import {
   type AbsolutePath,
 } from "@total-typescript/shared";
 import { encodeVideo } from "@total-typescript/ffmpeg";
-import { ensureDir, move } from "fs-extra";
+import { ensureDir, move } from "fs-extra/esm";
 
 export const encodeAllVideos = async () => {
   for (const folder of POSSIBLE_UNENCODED_FOLDER_LOCATIONS) {

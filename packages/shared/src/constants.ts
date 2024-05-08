@@ -9,11 +9,6 @@ export const EXTERNAL_DRIVE_RAW_FOOTAGE_ROOT = path.join(
   "Movies",
 );
 
-export const EXTERNAL_DRIVE_TRIMMED_FOOTAGE_ROOT = path.join(
-  EXTERNAL_DRIVE_RAW_FOOTAGE_ROOT,
-  "total-typescript",
-);
-
 export const SCRIPTKIT_VSCODE_LOCATION = path.join(
   os.homedir(),
   ".kit",
@@ -32,7 +27,9 @@ export const SCRIPTKIT_SCRIPTS_LOCATION = path.join(
  * Places where unencoded footage might be located.
  */
 export const POSSIBLE_UNENCODED_FOLDER_LOCATIONS = [
-  EXTERNAL_DRIVE_TRIMMED_FOOTAGE_ROOT,
+  path.join(EXTERNAL_DRIVE_RAW_FOOTAGE_ROOT, "total-typescript"),
   path.join(EXTERNAL_DRIVE_RAW_FOOTAGE_ROOT, "matt"),
   path.join(EXTERNAL_DRIVE_RAW_FOOTAGE_ROOT, "one-shots"),
 ] as AbsolutePath[];
+
+export const REPOS_FOLDER = path.join(os.homedir(), "repos");

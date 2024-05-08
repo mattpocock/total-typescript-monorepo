@@ -17,6 +17,5 @@
       "dependsOn": ["^build"],
       "outputs": ["dist", "tsconfig.tsbuildinfo"]
     }
-  },
-  "experimentalUI": true
+  }
 }

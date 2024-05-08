@@ -1,5 +1,6 @@
 import { encodeAllVideos } from "./encodeAllVideos.js";
 import { selectLatestOBSVideo } from "./selectLatestOBSVideo.js";
+import { trimLatestOBSVideo } from "./trimLatestOBSVideo.js";
 
 export type Command = {
   scriptkitName: string;
@@ -24,5 +25,12 @@ export const commands: Command[] = [
     description: "Select the latest OBS video from the external drive.",
     cliCommand: "select-latest-obs-video",
     run: selectLatestOBSVideo,
+  },
+  {
+    scriptkitName: "Trim Latest OBS Video",
+    fileName: "trim-latest-obs-video",
+    description: "Trim the latest OBS video from the external drive.",
+    cliCommand: "trim-latest-obs-video",
+    run: trimLatestOBSVideo,
   },
 ];

@@ -8,3 +8,8 @@ export const revealInFileExplorer = async (file: AbsolutePath) => {
     await exec`open -R ${file}`;
   }
 };
+
+export const exitProcessWithError = (message: string) => {
+  console.error(message);
+  process.exit(1);
+};
