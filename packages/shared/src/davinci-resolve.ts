@@ -1,6 +1,6 @@
 import { resolve } from "path";
 import { DAVINCI_RESOLVE_SCRIPTS_LOCATION } from "./constants.js";
-import { exec } from "./exec.js";
+import { execSync } from "child_process";
 
 type Scripts = {
   "clip-and-append.lua": {
@@ -20,9 +20,15 @@ export const runDavinciResolveScript = async <TScript extends keyof Scripts>(
 ) => {
   const scriptPath = resolve(DAVINCI_RESOLVE_SCRIPTS_LOCATION, script);
 
-  const result = await exec({
-    env,
-  })`fuscript -q ${scriptPath}`;
+  const envString = Object.entries(env)
+    .map(([key, value]) => {
+      return `${key}="${value}"`;
+    })
+    .join(" ");
 
-  return result.stdout;
+  const result = await execSync(
+    `${envString} fuscript -q ${scriptPath}`,
+  ).toString();
+
+  return result;
 };

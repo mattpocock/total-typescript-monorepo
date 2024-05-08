@@ -1,10 +1,19 @@
 import { execSync } from "child_process";
-import { pathExists } from "fs-extra/esm";
 import {
   EXTERNAL_DRIVE_ROOT,
   EXTERNAL_DRIVE_ROOT_WITHOUT_ESCAPES,
 } from "./constants.js";
 import type { AbsolutePath } from "./types.js";
+import { stat } from "fs/promises";
+
+export const pathExists = async (path: string): Promise<boolean> => {
+  try {
+    await stat(path);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
 
 export const revealInFileExplorer = async (file: AbsolutePath) => {
   if (process.platform === "win32") {
@@ -27,7 +36,7 @@ export class ExternalDriveNotFoundError {
 
 export const getExternalDrive = async () => {
   if (!(await pathExists(EXTERNAL_DRIVE_ROOT_WITHOUT_ESCAPES))) {
-    return new ExternalDriveNotFoundError(EXTERNAL_DRIVE_ROOT_WITHOUT_ESCAPES);
+    return new ExternalDriveNotFoundError(EXTERNAL_DRIVE_ROOT);
   }
 
   return EXTERNAL_DRIVE_ROOT;

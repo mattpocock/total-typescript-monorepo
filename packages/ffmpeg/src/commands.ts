@@ -1,4 +1,4 @@
-import { exec, type AbsolutePath } from "@total-typescript/shared";
+import { type AbsolutePath } from "@total-typescript/shared";
 import { execSync } from "child_process";
 
 export const encodeVideo = async (
