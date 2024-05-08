@@ -27,5 +27,5 @@ export const parseExercisePath = <T extends AnyPath>(fullPathname: T) => {
 };
 
 export const ensureDir = async (dir: string) => {
-  execSync(`mkdir -p ${dir}`);
+  execSync(`mkdir -p "${dir}"`);
 };

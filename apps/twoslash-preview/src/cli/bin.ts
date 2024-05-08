@@ -66,15 +66,9 @@ server.on("connection", (client) => {
   });
 });
 
-const REPOS_TO_WATCH = [
-  "written-content",
-  // "total-typescript-book"
-];
+const contentPath = path.resolve(process.cwd(), `../written-content/**/*.md`);
 
-const contentPath = path.resolve(
-  homedir(),
-  `repos/ts/written-content/**/*.{md,ts,tsx}`,
-);
+console.log(contentPath);
 
 chokidar.watch([contentPath]).on("change", async (filePath) => {
   console.log("File changed:", filePath);
