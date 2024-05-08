@@ -6,7 +6,7 @@
   },
   "type": "module",
   "scripts": {
-    "local-link": "(yarn unlink --global | true) && yarn link --global",
+    "setup": "(yarn unlink --global | true) && yarn link --global",
     "dev": "tsc --watch",
     "build": "tsc"
   },

@@ -4,8 +4,10 @@ import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
 import {
   EXTERNAL_DRIVE_RAW_FOOTAGE_ROOT,
   ExerciseNotFoundError,
+  ExternalDriveNotFoundError,
   REPOS_FOLDER,
   exitProcessWithError,
+  getExternalDrive,
   parseExercisePath,
   type AbsolutePath,
   type RelativePath,
@@ -22,6 +24,12 @@ import {
 import { ensureDir } from "fs-extra/esm";
 
 export const trimLatestOBSVideo = async () => {
+  const externalDrive = await getExternalDrive();
+
+  if (externalDrive instanceof ExternalDriveNotFoundError) {
+    exitProcessWithError(`External drive not found: ${externalDrive.path}`);
+  }
+
   const latestOBSVideo = await getLatestOBSVideo();
 
   const activeEditorFilePath = await getActiveEditorFilePath();

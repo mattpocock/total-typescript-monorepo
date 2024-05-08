@@ -1,6 +1,6 @@
 {
   "name": "@total-typescript/shared",
-  "private": true,
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "tsc --watch",
@@ -11,6 +11,10 @@
     ".": "./dist/index.js"
   },
   "dependencies": {
-    "execa": "^8.0.1"
+    "execa": "^8.0.1",
+    "fs-extra": "^11.2.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4"
   }
 }

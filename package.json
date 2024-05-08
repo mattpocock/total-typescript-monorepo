@@ -8,15 +8,19 @@
     "turbo": ">=1.13"
   },
   "private": true,
-  "scripts": {},
+  "scripts": {
+    "ci": "turbo build",
+    "release": "pnpm run ci && changeset publish"
+  },
   "keywords": [],
   "author": "Matt Pocock",
   "license": "ISC",
   "dependencies": {
-    "vitest": "^1.6.0",
+    "@changesets/cli": "^2.26.1",
+    "@types/node": "^20.12.10",
     "prettier": "^3.2.5",
     "turbo": "^1.13.3",
     "typescript": "^5.4.5",
-    "@types/node": "^20.12.10"
+    "vitest": "^1.6.0"
   }
 }

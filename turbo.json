@@ -1,11 +1,12 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "experimentalUI": true,
   "pipeline": {
-    "local-link": {
+    "setup": {
+      "dependsOn": ["build"],
       "cache": false
     },
     "dev": {
-      "dependsOn": ["local-link"],
       "cache": false,
       "persistent": true
     },
