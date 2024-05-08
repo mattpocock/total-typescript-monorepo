@@ -8,7 +8,6 @@ export const runPackageJsonExercise = async (exerciseFile: string) => {
   });
 
   // Run the dev script of the package.json
-
   execSync("pnpm run dev", {
     cwd: exerciseFile,
     stdio: "inherit",

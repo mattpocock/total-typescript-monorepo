@@ -39,3 +39,12 @@ export const POSSIBLE_UNENCODED_FOLDER_LOCATIONS = [
 ] as AbsolutePath[];
 
 export const REPOS_FOLDER = path.join(os.homedir(), "repos") as AbsolutePath;
+
+export const DAVINCI_RESOLVE_SCRIPTS_LOCATION = path.join(
+  REPOS_FOLDER,
+  "ts",
+  "total-typescript-monorepo",
+  "packages",
+  "resolve-scripts",
+  "scripts",
+);

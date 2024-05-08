@@ -1,0 +1,9 @@
+{
+  "runtime.version": "Lua 5.1",
+  "diagnostics.globals": [
+    "Resolve"
+  ],
+  "workspace.library": [
+    "/Applications/DaVinci Resolve/DaVinci Resolve.app/Contents/Libraries/Fusion/fusionscript.so"
+  ]
+}
