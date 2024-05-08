@@ -1,0 +1,14 @@
+- [ ] Figure out title for video
+- [ ] Write problem/solution code sample
+- [ ] Post to Total TypeScript
+- [ ] Record video (less than 2:20)
+- [ ] Create transcript from video
+- [ ] Add transcript & Video to code sample article
+- [ ] Edit transcript
+- [ ] Create SEO summary from AI
+- [ ] Post to Total TypeScript
+- [ ] Add to skillrecordings repo
+- [ ] Post video to LinkedIn
+- [ ] Post video to Twitter
+- [ ] Create thumbnail
+- [ ] Post video to YouTube

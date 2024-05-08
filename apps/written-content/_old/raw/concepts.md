@@ -1,0 +1,56 @@
+Here's a list of concepts that you should really know in order to understand basic TypeScript:
+
+- Interface inheritance
+- Generics
+- Union Types
+- Intersection Types
+- Type Guards
+- Type Aliases
+- Literal Types
+- Index Signatures
+- Optional and Rest Parameters
+- Nullish Coalescing Operator
+- Optional Chaining
+- Private and Protected Access Modifiers
+- Abstract Classes
+- Class and Interface Declarations
+- Type Assertion
+- Type narrowing
+- Type inference
+- Function Overloading
+- Inheritance in classes
+- Access modifiers in interfaces
+- Readonly Properties
+- Mapped Types
+- Conditional Types
+- Type unions and intersections with `never`
+- Type erasure and `keyof` operator
+- Decorators
+- Type predicates
+- Discriminated Unions
+- Declaration merging of interfaces and namespaces
+- Type-safe enums
+- Higher-order functions
+- Type parameter defaults
+- Type widening
+- Type guards with `in` operator
+- Recursive types
+- Type-safe event emitters
+- Type-safe object keys
+- Type-safe destructuring
+- Type-safe string manipulation with Template Literal Types
+- Enums with string values
+- Exhaustiveness checking with Switch Statements
+- Read-only tuples
+- Utility Types
+- Optional Properties in Interfaces and Types
+- Non-null assertions
+- Type predicates with `typeof`
+- Custom Type Guards with User-Defined Type Guards
+- Modules and Namespaces
+- Async / Await support in TypeScript
+- Type-safe React Props and State with TypeScript
+- Partial Types
+- Composition with Interfaces and Types
+- Mixins with Class Interfaces
+- Built-in Classes: `Map`, `Set`, `Promise`, etc.

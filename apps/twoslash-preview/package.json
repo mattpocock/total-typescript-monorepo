@@ -1,0 +1,50 @@
+{
+  "name": "twoslash-preview",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "ws:run": "tsx watch src/cli/bin.ts",
+    "fe:dev": "next dev",
+    "dev": "concurrently \"npm:fe:dev\" \"npm:ws:run\"",
+    "start": "concurrently \"npm:fe:start\" \"npm:ws:run\"",
+    "build": "next build",
+    "fe:start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@tailwindcss/typography": "^0.5.9",
+    "@total-typescript/ts-reset": "^0.4.2",
+    "@types/react": "18.2.11",
+    "@types/react-dom": "18.2.4",
+    "@types/ws": "^8.5.4",
+    "autoprefixer": "10.4.14",
+    "bufferutil": "^4.0.7",
+    "chokidar": "^3.5.3",
+    "clsx": "^2.1.0",
+    "concurrently": "^8.0.1",
+    "eslint": "8.41.0",
+    "eslint-config-next": "13.4.3",
+    "hast-util-to-html": "^9.0.0",
+    "lz-string": "^1.5.0",
+    "next": "14.0.4",
+    "postcss": "8.4.23",
+    "puppeteer": "^20.8.2",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "remark": "^14.0.3",
+    "remark-html": "^16.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-shiki-twoslash": "^3.1.3",
+    "tailwindcss": "3.3.2",
+    "utf-8-validate": "^6.0.3",
+    "uuid": "^9.0.1",
+    "ws": "^8.13.0",
+    "zod": "^3.21.4"
+  },
+  "devDependencies": {
+    "@types/node": "20.2.3",
+    "tsx": "^3.12.7",
+    "typescript": "^5.3",
+    "vite": "^5.0.10"
+  }
+}

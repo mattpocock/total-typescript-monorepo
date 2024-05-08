@@ -16,7 +16,11 @@
     },
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist", "tsconfig.tsbuildinfo"]
+      "outputs": ["dist", "tsconfig.tsbuildinfo", ".next"]
+    },
+    "start": {
+      "dependsOn": ["build"],
+      "cache": false
     }
   }
 }

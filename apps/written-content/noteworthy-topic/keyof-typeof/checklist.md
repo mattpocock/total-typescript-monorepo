@@ -1,0 +1,25 @@
+- [ ] Write code sample
+- [ ] Make square code image in Figma
+- [ ] Post to Twitter
+- [ ] Post to LinkedIn
+- [ ] Post to Instagram
+- [ ] Post to YouTube
+- [ ] Write followup code samples
+- [ ] Write quick explanation
+- [ ] Record screencast
+- [ ] Post to Dropbox & Sanity
+- [ ] Wait for CastingWords transcript
+- [ ] Add code samples to transcript
+- [ ] Post article to Sanity and GitHub
+- [ ] Wait for image to be posted to TT
+- [ ] Post article to LinkedIn/maybe Twitter
+- [ ] Check reaction for 24 hours
+- [ ] Schedule as a stream to‰pic
+- [ ] Gather questions/comments from Twitter/LinkedIn/YouTube/Instagram
+- [ ] Brainstorm other topics
+- [ ] Create YT Thumbnail/Title
+- [ ] Film Horizontal Video
+- [ ] Post to Total TypeScript
+- [ ] Schedule on YouTube
+- [ ] Post to Twitter with thumbnail
+- [ ] Post to LinkedIn with thumbnail

@@ -1,0 +1,4 @@
+- [ ] Collect Figma images for that week
+- [ ] Sort images by popularity
+- [ ] Post thread to Twitter
+- [ ] Make ins

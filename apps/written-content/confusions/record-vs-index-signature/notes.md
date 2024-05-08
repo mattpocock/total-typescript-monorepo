@@ -1,0 +1,5 @@
+https://twitter.com/oriSomething/status/1679155308516773888
+
+WTF:
+
+https://www.typescriptlang.org/play?#code/GYVwdgxgLglg9mABMMBGAPAaUQUwB5Q5gAmAzogNY4CecwiA3ogNpXUBcipUATjGAHMAup259BiAL4A+ABQVOmAJSMAUIkQ8cUEDyQUA3KsmrVoSLATIwAJiy4CRMpRp1EAJRwQ4PYujH8AgA0XLyB0nIKiMpqGlo6epRGJmZosqhKRgD0WQB6APypqLIARKglmao5BaYoNumV1YV1peWNeYVAA

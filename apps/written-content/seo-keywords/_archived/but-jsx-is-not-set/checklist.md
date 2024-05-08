@@ -1,0 +1,9 @@
+- [x] Write code sample
+- [x] Write quick explanation
+- [ ] Record screencast
+- [x] Post to Dropbox & Sanity
+- [ ] Wait for CastingWords transcript
+- [ ] Add code samples to transcript
+- [x] Post article to Sanity and GitHub
+- [ ] Wait for image to be posted to TT
+- [ ] Post article to LinkedIn/maybe Twitter

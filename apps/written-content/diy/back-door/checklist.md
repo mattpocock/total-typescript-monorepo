@@ -1,0 +1,6 @@
+- [x] Break down tasks into smallest tasks possible
+- [x] Add any unanswered questions to the questions list
+- [x] Google each question and add to tasks
+- [x] If googling doesn't answer the question, ask a trusted friend
+- [x] If the trusted friend doesn't know, add to handyman.md
+- [ ] Do tasks, one by one

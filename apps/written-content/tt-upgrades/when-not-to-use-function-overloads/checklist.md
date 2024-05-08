@@ -1,0 +1,5 @@
+- [ ] Investigate issue
+- [ ] Make PR to TT with change
+- [ ] Record new videos
+- [ ] Upload new videos to Dropbox
+- [ ] Inform Taylor of new videos

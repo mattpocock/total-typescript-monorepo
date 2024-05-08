@@ -1,0 +1,9 @@
+- [ ] Create code samples
+- [ ] Explain why it errors or not
+- [ ] Two figma images in vertical format with title, description, tooltips and CTA to comment below
+- [ ] Post to Twitter, LinkedIn, YouTube Community, Threads, Instagram.
+- [ ] Check for reaction
+- [ ] Record vertical short
+- [ ] Post to YouTube and TikTok
+- [ ] Schedule for stream topic
+- [ ] Add to YouTube omnibus

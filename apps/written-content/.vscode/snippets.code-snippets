@@ -1,0 +1,38 @@
+{
+  "thread": {
+    "prefix": "thread",
+    "body": ["🧵"]
+  },
+  "fire": {
+    "prefix": "fire",
+    "body": ["🔥"]
+  },
+  "ts": {
+    "prefix": "ts",
+    "body": ["```ts twoslash", "$1", "```"]
+  },
+  "tsx": {
+    "prefix": "tsx",
+    "body": ["```tsx twoslash", "$1", "```"]
+  },
+  "json": {
+    "prefix": "json",
+    "body": ["```json", "$1", "```"]
+  },
+  "fm": {
+    "prefix": "fm",
+    "body": ["---", "summary: \"$1\"", "---"]
+  },
+  "component": {
+    "prefix": "comp",
+    "body": [
+      "export interface $1Props {",
+      "  $2",
+      "}",
+      "",
+      "export const $1 = (props: $1Props) => {",
+      "  return $3",
+      "}"
+    ]
+  }
+}

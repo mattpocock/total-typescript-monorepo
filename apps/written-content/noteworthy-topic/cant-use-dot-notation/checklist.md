@@ -1,0 +1,25 @@
+- [ ] Write code sample
+- [ ] Make square code image in Figma
+- [ ] Post to Twitter
+- [ ] Post to LinkedIn
+- [ ] Post to Instagram
+- [ ] Post to YouTube
+- [ ] Post to Bluesky
+- [ ] Check reaction for 24 hours
+- [ ] Write Twitter thread (don't post yet)
+- [x] Write Article from Twitter Thread
+- [x] Post article to Sanity and GitHub
+- [ ] Post Twitter thread with article
+- [ ] Schedule as a stream topic
+- [ ] Gather questions/comments from Twitter/LinkedIn/YouTube/Instagram
+- [ ] Brainstorm other topics for noteworthy-topics
+- [ ] Check reaction for 24 hours
+- [ ] Turn thread into LinkedIn post
+- [ ] Edit thread based on feedback, and with an eye for recording as a video
+- [ ] Create YT Title
+- [ ] Create YT Thumbnail
+- [ ] Film Horizontal Video
+- [ ] Schedule on YouTube
+- [ ] Post to Twitter with thumbnail
+- [ ] Post to LinkedIn with thumbnail
+- [ ] Post to Discord

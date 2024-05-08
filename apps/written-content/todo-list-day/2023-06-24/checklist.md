@@ -1,0 +1,5 @@
+- [ ] Decide on tasks to do with Louise
+- [ ] Write down vague tasks
+- [ ] Break down tasks into smallest tasks
+- [ ] Divide tasks by location
+- [ ] Do tasks

@@ -1,0 +1,26 @@
+- [x] Add "building the thing" to stream topics
+- [x] Build POC privately on GitHub (or on stream)
+- [x] Soft launch on Discord
+- [x] Get POC ready for launch
+- [ ] Ask Vojta for logo
+- [x] Write readme
+- [ ] Write article on TT
+- [ ] Post article to Sanity and GitHub
+- [ ] Make square preview image in Figma
+- [ ] Wait for article to be posted to TT
+- [x] Announce on Discord
+- [ ] Post article to Twitter
+- [ ] Post article to LinkedIn
+- [ ] Post article to Instagram
+- [x] Check reaction for 24 hours
+- [x] Schedule "preview the thing" as a stream topic
+- [x] Gather questions/comments from Twitter/LinkedIn/YouTube/Instagram
+- [x] Update readme with questions/comments
+- [x] Update article with questions/comments
+- [ ] Brainstorm other topics
+- [x] Create YT Thumbnail/Title
+- [x] Film Horizontal Video
+- [ ] Post to Total TypeScript
+- [ ] Schedule on YouTube
+- [x] Post to Twitter with thumbnail
+- [ ] Post to LinkedIn with thumbnail

@@ -1,0 +1,14 @@
+- [x] Write down critical learning outcomes
+- [x] Write down exact steps to get to learning outcomes
+- [x] Add code samples to each step
+- [x] Check for noteworthy topics
+- [x] Find supporting resources
+- [x] Add missing supporting resources to noteworthy-topics or seo-keywords
+- [x] Format code samples in repo
+- [x] Film un-encoded videos
+- [x] Encode videos
+- [x] Upload videos to dropbox (to correct sub-folder)
+- [x] Tell Taylor they're in the dropbox
+- [ ] Add them to the master list
+- [ ] Wait for Taylor to complete his drafts
+- [ ] Check Taylor's drafts

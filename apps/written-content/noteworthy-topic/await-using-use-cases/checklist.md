@@ -1,0 +1,6 @@
+- [x] Write code sample
+- [x] Make square code image in Figma
+- [x] Post to Twitter
+- [x] Post to LinkedIn
+- [x] Post to Instagram
+- [x] Post to YouTube

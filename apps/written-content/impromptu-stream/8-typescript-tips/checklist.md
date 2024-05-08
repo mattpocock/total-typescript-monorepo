@@ -1,0 +1,10 @@
+- [x] Get list of topics from stream-topics.md
+- [x] Write list of topics in topics.md
+- [x] Think of title/thumbnail for stream
+- [x] Put together thumbnail in Figma
+- [x] Make new repo for stream
+- [x] Schedule stream on YouTube
+- [x] Post to Twitter
+- [x] Post to LinkedIn
+- [x] Post to Discord
+- [x] Edit intro out of YouTube video
