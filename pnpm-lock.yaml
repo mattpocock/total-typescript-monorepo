@@ -249,9 +249,6 @@ importers:
 
   packages/shared:
     dependencies:
-      execa:
-        specifier: ^8.0.1
-        version: 8.0.1
       fs-extra:
         specifier: ^11.2.0
         version: 11.2.0

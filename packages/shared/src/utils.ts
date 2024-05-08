@@ -1,16 +1,16 @@
+import { execSync } from "child_process";
 import { pathExists } from "fs-extra/esm";
-import { exec } from "./exec.js";
-import type { AbsolutePath } from "./types.js";
 import {
   EXTERNAL_DRIVE_ROOT,
   EXTERNAL_DRIVE_ROOT_WITHOUT_ESCAPES,
 } from "./constants.js";
+import type { AbsolutePath } from "./types.js";
 
 export const revealInFileExplorer = async (file: AbsolutePath) => {
   if (process.platform === "win32") {
-    await exec`explorer /select,${file}`;
+    await execSync(`explorer /select,${file}`);
   } else if (process.platform === "darwin") {
-    await exec`open -R ${file}`;
+    await execSync(`open -R "${file}"`);
   }
 };
 
