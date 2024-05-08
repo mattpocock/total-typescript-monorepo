@@ -1,10 +1,11 @@
 import { exec, type AbsolutePath } from "@total-typescript/shared";
+import { execSync } from "child_process";
 
 export const encodeVideo = async (
   inputVideo: AbsolutePath,
   outputVideoPath: AbsolutePath,
 ) => {
-  await exec`ffmpeg -y -hide_banner -i "${inputVideo}" -c:v libx264 -profile high -b:v 7000k -pix_fmt yuv420p -maxrate 16000k "${outputVideoPath}"`;
+  await exec`ffmpeg -y -hide_banner -i ${inputVideo} -c:v libx264 -profile high -b:v 7000k -pix_fmt yuv420p -maxrate 16000k ${outputVideoPath}`;
 };
 
 export class CouldNotFindStartTimeError {
@@ -23,10 +24,11 @@ export const findStartAndEndSilenceInVideo = async (
     padding: number;
   },
 ) => {
-  const output =
-    await exec`ffmpeg -hide_banner -vn -i ${inputVideo} -af "silencedetect=n=${opts.threshold}dB:d=${opts.silenceDuration}" -f null - 2>&1 | grep "silence_end" | awk '{print $5 " " $8}'`;
+  const output = execSync(
+    `ffmpeg -hide_banner -vn -i "${inputVideo}" -af "silencedetect=n=${opts.threshold}dB:d=${opts.silenceDuration}" -f null - 2>&1 | grep "silence_end" | awk '{print $5 " " $8}'`,
+  ).toString();
 
-  let silence = (output.stdout as string)
+  let silence = output
     .trim()
     .split("\n")
     .map((line) => line.split(" "))
@@ -89,9 +91,11 @@ export const trimVideo = async (
   startTime: number,
   endTime: number,
 ) => {
-  await exec`ffmpeg -y -hide_banner -ss ${formatFloatForFFmpeg(
-    startTime,
-  )} -to ${formatFloatForFFmpeg(
-    endTime,
-  )} -i ${inputVideo} -c copy ${outputVideo}`;
+  execSync(
+    `ffmpeg -y -hide_banner -ss ${formatFloatForFFmpeg(
+      startTime,
+    )} -to ${formatFloatForFFmpeg(
+      endTime,
+    )} -i "${inputVideo}" -c copy "${outputVideo.replaceAll("\\", "")}"`,
+  );
 };

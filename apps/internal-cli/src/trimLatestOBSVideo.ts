@@ -3,9 +3,11 @@ import { getActiveEditorFilePath } from "./getActiveEditorFilePath.js";
 import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
 import {
   EXTERNAL_DRIVE_RAW_FOOTAGE_ROOT,
+  EXTERNAL_DRIVE_ROOT,
   ExerciseNotFoundError,
   ExternalDriveNotFoundError,
   REPOS_FOLDER,
+  ensureDir,
   exitProcessWithError,
   getExternalDrive,
   parseExercisePath,
@@ -21,7 +23,6 @@ import {
   findStartAndEndSilenceInVideo,
   trimVideo,
 } from "@total-typescript/ffmpeg";
-import { ensureDir } from "fs-extra/esm";
 
 export const trimLatestOBSVideo = async () => {
   const externalDrive = await getExternalDrive();
@@ -55,12 +56,8 @@ export const trimLatestOBSVideo = async () => {
   const result = parseExercisePath(absolutePathToTrimmedFootage);
 
   if (result instanceof ExerciseNotFoundError) {
-    exitProcessWithError("Exercise not found");
+    exitProcessWithError("Path appears not to be an exercise: " + result.path);
   }
-
-  const outputFolder = path.dirname(result.resolvedPath) as AbsolutePath;
-  const outputFilename = (result.resolvedPath.replace(/\.(ts|tsx)/g, "") +
-    ".un-encoded.mp4") as AbsolutePath;
 
   console.log("Finding silence...");
 
@@ -78,9 +75,14 @@ export const trimLatestOBSVideo = async () => {
     exitProcessWithError("Could not find end time");
   }
 
+  const outputFolder = path.dirname(result.resolvedPath) as AbsolutePath;
+
   await ensureDir(outputFolder);
 
   console.log("Trimming video...");
+
+  const outputFilename = (result.resolvedPath.replace(/\.(ts|tsx)/g, "") +
+    ".un-encoded.mp4") as AbsolutePath;
 
   await trimVideo(
     latestOBSVideo,

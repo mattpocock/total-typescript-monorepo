@@ -1,7 +1,10 @@
+import { execSync } from "child_process";
 import type { AnyPath } from "./types.js";
 
 export class ExerciseNotFoundError {
   readonly _tag = "ExerciseNotFoundError";
+
+  constructor(public path: string) {}
 }
 
 const regex = /^\d{1,}/;
@@ -14,11 +17,15 @@ export const parseExercisePath = <T extends AnyPath>(fullPathname: T) => {
   });
 
   if (exerciseLabelIndex === -1) {
-    return new ExerciseNotFoundError();
+    return new ExerciseNotFoundError(fullPathname);
   }
 
   return {
     resolvedPath: splitPathname.slice(0, exerciseLabelIndex + 1).join("/") as T,
     num: splitPathname[exerciseLabelIndex]?.match(regex)?.[0] as string,
   };
+};
+
+export const ensureDir = async (dir: string) => {
+  execSync(`mkdir -p ${dir}`);
 };

@@ -1,11 +1,12 @@
 import path from "path";
 import {
   POSSIBLE_UNENCODED_FOLDER_LOCATIONS,
+  ensureDir,
   exec,
   type AbsolutePath,
 } from "@total-typescript/shared";
+import { rename } from "fs/promises";
 import { encodeVideo } from "@total-typescript/ffmpeg";
-import { ensureDir, move } from "fs-extra/esm";
 
 export const encodeAllVideos = async () => {
   for (const folder of POSSIBLE_UNENCODED_FOLDER_LOCATIONS) {
@@ -49,7 +50,7 @@ export const encodeAllVideos = async () => {
         path.resolve(path.parse(outputVideoPath).dir, "un-encoded"),
       );
 
-      await move(
+      await rename(
         videoPath,
         path.resolve(
           path.parse(outputVideoPath).dir,
