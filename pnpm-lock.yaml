@@ -16,7 +16,7 @@ importers:
         version: 2.27.1
       '@types/node':
         specifier: ^20.12.10
-        version: 20.12.10
+        version: 20.12.11
       prettier:
         specifier: ^3.2.5
         version: 3.2.5
@@ -28,7 +28,7 @@ importers:
         version: 5.4.5
       vitest:
         specifier: ^1.6.0
-        version: 1.6.0(@types/node@20.12.10)
+        version: 1.6.0(@types/node@20.12.11)
 
   apps/exercise-cli:
     dependencies:
@@ -68,7 +68,7 @@ importers:
         version: 5.2.1
       '@types/node':
         specifier: ^20.1.2
-        version: 20.12.10
+        version: 20.12.11
       '@types/prompts':
         specifier: ^2.4.8
         version: 2.4.9
@@ -192,7 +192,7 @@ importers:
     devDependencies:
       '@types/node':
         specifier: 20.2.3
-        version: 20.2.3
+        version: 20.12.11
       tsx:
         specifier: ^3.12.7
         version: 3.14.0
@@ -201,7 +201,7 @@ importers:
         version: 5.4.5
       vite:
         specifier: ^5.0.10
-        version: 5.2.11(@types/node@20.2.3)
+        version: 5.2.11(@types/node@20.12.11)
 
   apps/written-content:
     devDependencies:
@@ -210,7 +210,7 @@ importers:
         version: 0.0.1
       '@types/node':
         specifier: ^20.10.6
-        version: 20.12.10
+        version: 20.12.11
       '@types/react':
         specifier: ^18.2.11
         version: 18.2.11
@@ -234,7 +234,7 @@ importers:
         version: 5.4.5
       vite:
         specifier: ^5.0.10
-        version: 5.2.11(@types/node@20.12.10)
+        version: 5.2.11(@types/node@20.12.11)
 
   packages/ffmpeg:
     dependencies:
@@ -1003,8 +1003,8 @@ packages:
   '@types/node@20.12.10':
     resolution: {integrity: sha512-Eem5pH9pmWBHoGAT8Dr5fdc5rYA+4NAovdM4EktRPVAAiJhmWWfQrA0cFhAbOsQdSfIHjAud6YdkbL69+zSKjw==}
 
-  '@types/node@20.2.3':
-    resolution: {integrity: sha512-pg9d0yC4rVNWQzX8U7xb4olIOFuuVL9za3bzMT2pu2SU0SNEi66i2qrvhE2qt0HvkhuCaWJu7pLNOt/Pj8BIrw==}
+  '@types/node@20.12.11':
+    resolution: {integrity: sha512-vDg9PZ/zi+Nqp6boSOT7plNuthRugEKixDv5sFTIpkE89MmNtEArAShI4mxuX2+UrLEe9pxC1vm2cjm9YlWbJw==}
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -1421,7 +1421,7 @@ packages:
     engines: {node: '>= 6'}
 
   concat-map@0.0.1:
-    resolution: {integrity: sha1-2Klr13/Wjfd5OnMDajug1UBdR3s=}
+    resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
 
   concurrently@8.2.2:
     resolution: {integrity: sha512-1dP4gpXFhei8IOtlXRE/T/4H88ElHgTiUzh71YUmtjTEHMSRS2Z/fgOxHSxxusGHogsRfxNq1vyAwxSC+EVyDg==}
@@ -4438,14 +4438,17 @@ snapshots:
   '@types/node@20.12.10':
     dependencies:
       undici-types: 5.26.5
+    optional: true
 
-  '@types/node@20.2.3': {}
+  '@types/node@20.12.11':
+    dependencies:
+      undici-types: 5.26.5
 
   '@types/normalize-package-data@2.4.4': {}
 
   '@types/prompts@2.4.9':
     dependencies:
-      '@types/node': 20.12.10
+      '@types/node': 20.12.11
       kleur: 3.0.3
 
   '@types/prop-types@15.7.12': {}
@@ -4470,11 +4473,11 @@ snapshots:
 
   '@types/ws@8.5.10':
     dependencies:
-      '@types/node': 20.12.10
+      '@types/node': 20.12.11
 
   '@types/yauzl@2.10.3':
     dependencies:
-      '@types/node': 20.12.10
+      '@types/node': 20.12.11
     optional: true
 
   '@typescript-eslint/parser@5.62.0(eslint@8.41.0)(typescript@5.4.5)':
@@ -7737,6 +7740,23 @@ snapshots:
       - supports-color
       - terser
 
+  vite-node@1.6.0(@types/node@20.12.11):
+    dependencies:
+      cac: 6.7.14
+      debug: 4.3.4
+      pathe: 1.1.2
+      picocolors: 1.0.0
+      vite: 5.2.11(@types/node@20.12.11)
+    transitivePeerDependencies:
+      - '@types/node'
+      - less
+      - lightningcss
+      - sass
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+
   vite@5.2.11(@types/node@20.12.10):
     dependencies:
       esbuild: 0.20.2
@@ -7746,13 +7766,13 @@ snapshots:
       '@types/node': 20.12.10
       fsevents: 2.3.3
 
-  vite@5.2.11(@types/node@20.2.3):
+  vite@5.2.11(@types/node@20.12.11):
     dependencies:
       esbuild: 0.20.2
       postcss: 8.4.38
       rollup: 4.17.2
     optionalDependencies:
-      '@types/node': 20.2.3
+      '@types/node': 20.12.11
       fsevents: 2.3.3
 
   vitest@1.6.0(@types/node@20.12.10):
@@ -7779,6 +7799,39 @@ snapshots:
       why-is-node-running: 2.2.2
     optionalDependencies:
       '@types/node': 20.12.10
+    transitivePeerDependencies:
+      - less
+      - lightningcss
+      - sass
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+
+  vitest@1.6.0(@types/node@20.12.11):
+    dependencies:
+      '@vitest/expect': 1.6.0
+      '@vitest/runner': 1.6.0
+      '@vitest/snapshot': 1.6.0
+      '@vitest/spy': 1.6.0
+      '@vitest/utils': 1.6.0
+      acorn-walk: 8.3.2
+      chai: 4.4.1
+      debug: 4.3.4
+      execa: 8.0.1
+      local-pkg: 0.5.0
+      magic-string: 0.30.10
+      pathe: 1.1.2
+      picocolors: 1.0.0
+      std-env: 3.7.0
+      strip-literal: 2.1.0
+      tinybench: 2.8.0
+      tinypool: 0.8.4
+      vite: 5.2.11(@types/node@20.12.11)
+      vite-node: 1.6.0(@types/node@20.12.11)
+      why-is-node-running: 2.2.2
+    optionalDependencies:
+      '@types/node': 20.12.11
     transitivePeerDependencies:
       - less
       - lightningcss
