@@ -121,8 +121,8 @@ importers:
         specifier: ^8.5.4
         version: 8.5.10
       autoprefixer:
-        specifier: 10.4.14
-        version: 10.4.14(postcss@8.4.23)
+        specifier: 10.4.19
+        version: 10.4.19(postcss@8.4.23)
       bufferutil:
         specifier: ^4.0.7
         version: 4.0.8
@@ -1220,8 +1220,8 @@ packages:
     resolution: {integrity: sha512-x1FCFnFifvYDDzTaLII71vG5uvDwgtmDTEVWAxrgeiR8VjMONcCXJx7E+USjDtHlwFmt9MysbqgF9b9Vjr6w+w==}
     engines: {node: '>=4'}
 
-  autoprefixer@10.4.14:
-    resolution: {integrity: sha512-FQzyfOsTlwVzjHxKEqRIAdJx9niO6VCBCoEwax/VLSoQF29ggECcPuBqUMZ+u8jCZOPSy8b8/8KnuFbp0SaFZQ==}
+  autoprefixer@10.4.19:
+    resolution: {integrity: sha512-BaENR2+zBZ8xXhM4pUaKUxlVdxZ0EZhjvbopwnXmxRUfqDmwSpC2lAi/QXvx7NRdPCo1WKEcEF6mV64si1z4Ew==}
     engines: {node: ^10 || ^12 || >=14}
     hasBin: true
     peerDependencies:
@@ -1421,7 +1421,7 @@ packages:
     engines: {node: '>= 6'}
 
   concat-map@0.0.1:
-    resolution: {integrity: sha1-2Klr13/Wjfd5OnMDajug1UBdR3s=}
+    resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
 
   concurrently@8.2.2:
     resolution: {integrity: sha512-1dP4gpXFhei8IOtlXRE/T/4H88ElHgTiUzh71YUmtjTEHMSRS2Z/fgOxHSxxusGHogsRfxNq1vyAwxSC+EVyDg==}
@@ -4710,7 +4710,7 @@ snapshots:
     dependencies:
       tslib: 2.6.2
 
-  autoprefixer@10.4.14(postcss@8.4.23):
+  autoprefixer@10.4.19(postcss@8.4.23):
     dependencies:
       browserslist: 4.23.0
       caniuse-lite: 1.0.30001616
