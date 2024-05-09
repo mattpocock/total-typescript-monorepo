@@ -39,5 +39,5 @@ export const openPairedVideoDir = async () => {
 
   const { resolvedPath } = exercisePath;
 
-  execSync(`open -R "${path.dirname(resolvedPath)}"`);
+  execSync(`open "${path.dirname(resolvedPath)}"`);
 };

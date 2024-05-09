@@ -87,6 +87,9 @@ importers:
       commander:
         specifier: ^12.0.0
         version: 12.0.0
+      prompts:
+        specifier: ^2.4.2
+        version: 2.4.2
       zod:
         specifier: ^3.23.6
         version: 3.23.6

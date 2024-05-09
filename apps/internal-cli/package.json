@@ -17,6 +17,7 @@
     "@total-typescript/shared": "workspace:*",
     "@total-typescript/ffmpeg": "workspace:*",
     "commander": "^12.0.0",
-    "zod": "^3.23.6"
+    "zod": "^3.23.6",
+    "prompts": "^2.4.2"
   }
 }

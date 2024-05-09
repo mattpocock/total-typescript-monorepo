@@ -4,11 +4,8 @@ import type { AbsolutePath } from "./types.js";
 
 export const EXTERNAL_DRIVE_ROOT = path.join(
   "/Volumes",
-  "T7\\ Shield",
+  "t7-shield",
 ) as AbsolutePath;
-
-export const EXTERNAL_DRIVE_ROOT_WITHOUT_ESCAPES =
-  EXTERNAL_DRIVE_ROOT.replaceAll("\\", "") as AbsolutePath;
 
 export const EXTERNAL_DRIVE_RAW_FOOTAGE_ROOT = path.join(
   EXTERNAL_DRIVE_ROOT,
@@ -50,3 +47,9 @@ export const DAVINCI_RESOLVE_SCRIPTS_LOCATION = path.resolve(
   "resolve-scripts",
   "scripts",
 );
+
+export const SKILL_RECORDINGS_REPO_LOCATION = path.join(
+  REPOS_FOLDER,
+  "ts",
+  "products",
+) as AbsolutePath;

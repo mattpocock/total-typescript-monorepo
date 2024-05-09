@@ -47,6 +47,16 @@ for (const command of commands) {
     `${command.fileName}.ts`,
   );
 
+  const args: string[] = command.args || [];
+
+  const argsParsed = args.map((arg) => {
+    const lowercaseArg = arg.toLowerCase().replaceAll(" ", "");
+    return {
+      name: lowercaseArg,
+      label: arg,
+    };
+  });
+
   await writeFile(
     scriptLocation,
     [
@@ -56,8 +66,17 @@ for (const command of commands) {
       `// ${SYNC_INDICATOR}`,
       "",
       `import "@johnlindquist/kit";`,
+      argsParsed
+        .map((parsedArg) => {
+          return `const ${parsedArg.name} = await arg("${parsedArg.label}");`;
+        })
+        .join("\n"),
       "",
-      `await $\`tt ${command.cliCommand}\`;`,
+      `await $\`tt ${command.cliCommand} ${argsParsed
+        .map((parsedArg) => {
+          return `"\${${parsedArg.name}}"`;
+        })
+        .join(" ")}\`;`,
     ].join("\n"),
   );
 }

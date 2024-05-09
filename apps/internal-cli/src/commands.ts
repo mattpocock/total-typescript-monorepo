@@ -1,17 +1,26 @@
+import { execSync } from "child_process";
 import { encodeAllVideos } from "./encodeAllVideos.js";
 import { openPairedVideoDir } from "./openPairedVideoDir.js";
 import { selectLatestOBSVideo } from "./selectLatestOBSVideo.js";
 import { trimLatestOBSVideo } from "./trimLatestOBSVideo.js";
+import { SKILL_RECORDINGS_REPO_LOCATION } from "@total-typescript/shared";
 
-export type Command = {
+export type Command<TArgs extends readonly string[]> = {
   scriptkitName: string;
   fileName: string;
   description: string;
   cliCommand: string;
-  run: (...args: any[]) => Promise<void>;
+  args?: [...TArgs];
+  run: (...args: TArgs) => Promise<void>;
 };
 
-export const commands: Command[] = [
+const createCommands = <TArgs extends string[][]>(args: {
+  [K in keyof TArgs]: Command<TArgs[K]>;
+}) => {
+  return args;
+};
+
+export const commands = createCommands([
   {
     scriptkitName: "Encode All Videos",
     fileName: "encode-all-videos",
@@ -41,4 +50,18 @@ export const commands: Command[] = [
     cliCommand: "open-paired-video-dir",
     run: openPairedVideoDir,
   },
-];
+  {
+    scriptkitName: "Post Article to Skill Recordings",
+    fileName: "post-article-to-skill-recordings",
+    description: "Post an issue to the Skill Recordings repo.",
+    cliCommand: "post-article-to-skill-recordings",
+    args: ["Sanity Link", "Title"],
+    run: async (sanityLink, title) => {
+      execSync(
+        `(cd "${SKILL_RECORDINGS_REPO_LOCATION}" && gh issue create --title ${
+          "Article: " + title
+        } --body ${sanityLink})`,
+      );
+    },
+  },
+]);
