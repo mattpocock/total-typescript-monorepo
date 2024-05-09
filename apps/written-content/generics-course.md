@@ -206,7 +206,42 @@ Want to get the next lesson now? Click the link below.
 
 # ARTICLE: Turning types into type functions 🤯
 
-Generic Maybe<T>
+- Why you'd create a generic type
+
+```ts twoslash
+type User = {
+  id: string;
+  firstName: string | null | undefined;
+  lastName: string | null | undefined;
+  phone: string | null | undefined;
+};
+```
+
+```ts twoslash
+type Maybe = null | undefined;
+
+type User = {
+  id: string;
+  firstName: string | Maybe;
+  lastName: string | Maybe;
+  phone: string | Maybe;
+};
+```
+
+```ts twoslash
+type Maybe<T> = T | null | undefined;
+
+type User = {
+  id: string;
+  firstName: Maybe<string>;
+  lastName: Maybe<string>;
+  phone: Maybe<string>;
+};
+```
+
+```ts twoslash
+
+```
 
 # ARTICLE: Going deep on generic types: constraints and defaults
 

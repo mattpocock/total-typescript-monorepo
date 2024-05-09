@@ -1,4 +1,5 @@
 import { encodeAllVideos } from "./encodeAllVideos.js";
+import { openPairedVideoDir } from "./openPairedVideoDir.js";
 import { selectLatestOBSVideo } from "./selectLatestOBSVideo.js";
 import { trimLatestOBSVideo } from "./trimLatestOBSVideo.js";
 
@@ -32,5 +33,12 @@ export const commands: Command[] = [
     description: "Trim the latest OBS video from the external drive.",
     cliCommand: "trim-latest-obs-video",
     run: trimLatestOBSVideo,
+  },
+  {
+    scriptkitName: "Open Paired Video Dir",
+    fileName: "open-paired-video-dir",
+    description: "Open the paired video directory.",
+    cliCommand: "open-paired-video-dir",
+    run: openPairedVideoDir,
   },
 ];
