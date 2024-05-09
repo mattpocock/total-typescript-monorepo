@@ -89,7 +89,7 @@ importers:
         version: 2.4.2
       zod:
         specifier: ^3.23.6
-        version: 3.23.6
+        version: 3.23.8
 
   apps/scriptkit-sync:
     dependencies:
@@ -185,7 +185,7 @@ importers:
         version: 8.17.0(bufferutil@4.0.8)(utf-8-validate@6.0.3)
       zod:
         specifier: ^3.21.4
-        version: 3.23.6
+        version: 3.23.8
     devDependencies:
       '@types/node':
         specifier: 20.2.3
@@ -3803,8 +3803,8 @@ packages:
   zod@3.22.4:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
 
-  zod@3.23.6:
-    resolution: {integrity: sha512-RTHJlZhsRbuA8Hmp/iNL7jnfc4nZishjsanDAfEY1QpDQZCahUp3xDzl+zfweE9BklxMUcgBgS1b7Lvie/ZVwA==}
+  zod@3.23.8:
+    resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
@@ -7945,6 +7945,6 @@ snapshots:
 
   zod@3.22.4: {}
 
-  zod@3.23.6: {}
+  zod@3.23.8: {}
 
   zwitch@2.0.4: {}
