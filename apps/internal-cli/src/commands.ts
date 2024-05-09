@@ -58,9 +58,9 @@ export const commands = createCommands([
     args: ["Sanity Link", "Title"],
     run: async (sanityLink, title) => {
       execSync(
-        `(cd "${SKILL_RECORDINGS_REPO_LOCATION}" && gh issue create --title ${
+        `(cd "${SKILL_RECORDINGS_REPO_LOCATION}" && gh issue create --title "${
           "Article: " + title
-        } --body ${sanityLink})`,
+        }" --body "${sanityLink}")`,
       );
     },
   },
