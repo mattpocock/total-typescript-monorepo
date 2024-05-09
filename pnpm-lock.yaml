@@ -188,8 +188,8 @@ importers:
         version: 3.23.8
     devDependencies:
       '@types/node':
-        specifier: 20.2.3
-        version: 20.2.3
+        specifier: 20.12.11
+        version: 20.12.11
       tsx:
         specifier: ^3.12.7
         version: 3.14.0
@@ -198,7 +198,7 @@ importers:
         version: 5.4.5
       vite:
         specifier: ^5.0.10
-        version: 5.2.11(@types/node@20.2.3)
+        version: 5.2.11(@types/node@20.12.11)
 
   apps/written-content:
     devDependencies:
@@ -994,9 +994,6 @@ packages:
 
   '@types/node@20.12.11':
     resolution: {integrity: sha512-vDg9PZ/zi+Nqp6boSOT7plNuthRugEKixDv5sFTIpkE89MmNtEArAShI4mxuX2+UrLEe9pxC1vm2cjm9YlWbJw==}
-
-  '@types/node@20.2.3':
-    resolution: {integrity: sha512-pg9d0yC4rVNWQzX8U7xb4olIOFuuVL9za3bzMT2pu2SU0SNEi66i2qrvhE2qt0HvkhuCaWJu7pLNOt/Pj8BIrw==}
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -4420,8 +4417,6 @@ snapshots:
     dependencies:
       undici-types: 5.26.5
 
-  '@types/node@20.2.3': {}
-
   '@types/normalize-package-data@2.4.4': {}
 
   '@types/prompts@2.4.9':
@@ -7739,15 +7734,6 @@ snapshots:
       rollup: 4.17.2
     optionalDependencies:
       '@types/node': 20.12.11
-      fsevents: 2.3.3
-
-  vite@5.2.11(@types/node@20.2.3):
-    dependencies:
-      esbuild: 0.20.2
-      postcss: 8.4.38
-      rollup: 4.17.2
-    optionalDependencies:
-      '@types/node': 20.2.3
       fsevents: 2.3.3
 
   vitest@1.6.0(@types/node@20.12.11):
