@@ -3,7 +3,7 @@ import { SCREENSHOT_TARGET_ID } from "./constants";
 
 export const takeCodeImage = async (url: string) => {
   const browser = await puppeteer.launch({
-    headless: "new",
+    headless: "shell",
   });
 
   const page = await browser.newPage();
