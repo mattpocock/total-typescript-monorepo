@@ -22,7 +22,7 @@
     "chokidar": "^3.5.3",
     "clsx": "^2.1.0",
     "concurrently": "^8.0.1",
-    "eslint": "8.41.0",
+    "eslint": "8.57.0",
     "eslint-config-next": "13.4.3",
     "hast-util-to-html": "^9.0.0",
     "lz-string": "^1.5.0",
