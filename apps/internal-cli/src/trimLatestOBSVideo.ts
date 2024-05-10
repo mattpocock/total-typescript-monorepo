@@ -1,11 +1,11 @@
 import {
   CouldNotFindEndTimeError,
   CouldNotFindStartTimeError,
-  OBS_OUTPUT_FPS,
   PADDING,
   SILENCE_DURATION,
   THRESHOLD,
   findSilenceInVideo,
+  getFPS,
   trimVideo,
 } from "@total-typescript/ffmpeg";
 import {
@@ -53,6 +53,10 @@ export const trimLatestOBSVideo = async () => {
     exitProcessWithError("Active editor file path is not in the repos folder");
   }
 
+  console.log("Getting FPS...");
+
+  const fps = await getFPS(latestOBSVideo);
+
   const result = parseExercisePath(absolutePathToTrimmedFootage);
 
   if (result instanceof ExerciseNotFoundError) {
@@ -65,7 +69,7 @@ export const trimLatestOBSVideo = async () => {
     silenceDuration: SILENCE_DURATION,
     padding: PADDING,
     threshold: THRESHOLD,
-    fps: OBS_OUTPUT_FPS,
+    fps,
   });
 
   if (silenceResult instanceof CouldNotFindStartTimeError) {

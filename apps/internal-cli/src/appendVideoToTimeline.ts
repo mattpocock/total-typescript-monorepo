@@ -1,32 +1,26 @@
 import {
-  exitProcessWithError,
-  runDavinciResolveScript,
-} from "@total-typescript/shared";
-import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
-import {
-  ALLOWED_RAW_FPS_VALUES,
   CouldNotFindEndTimeError,
   CouldNotFindStartTimeError,
   PADDING,
   SILENCE_DURATION,
   THRESHOLD,
   findSilenceInVideo,
+  getFPS,
 } from "@total-typescript/ffmpeg";
+import {
+  exitProcessWithError,
+  runDavinciResolveScript,
+} from "@total-typescript/shared";
+import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
 
-export const appendVideoToTimeline = async (fps: string) => {
-  if (!ALLOWED_RAW_FPS_VALUES.includes(fps)) {
-    exitProcessWithError(
-      `FPS must be one of ${ALLOWED_RAW_FPS_VALUES.join(", ")}`,
-    );
-  }
-
-  const fpsAsNumber = parseInt(fps, 10);
-
+export const appendVideoToTimeline = async () => {
   const inputVideo = await getLatestOBSVideo();
+
+  const fps = await getFPS(inputVideo);
 
   const silenceResult = await findSilenceInVideo(inputVideo, {
     threshold: THRESHOLD,
-    fps: fpsAsNumber,
+    fps,
     padding: PADDING,
     silenceDuration: SILENCE_DURATION,
   });
