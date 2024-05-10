@@ -1,6 +1,7 @@
 import { resolve } from "path";
 import { DAVINCI_RESOLVE_SCRIPTS_LOCATION } from "./constants.js";
 import { execSync } from "child_process";
+import { exitProcessWithError } from "./utils.js";
 
 type Scripts = {
   "clip-and-append.lua": {
@@ -18,6 +19,7 @@ export const runDavinciResolveScript = async <TScript extends keyof Scripts>(
   script: TScript,
   env: Scripts[TScript],
 ) => {
+  checkFuscriptIsInstalled();
   const scriptPath = resolve(DAVINCI_RESOLVE_SCRIPTS_LOCATION, script);
 
   const envString = Object.entries(env)
@@ -27,8 +29,16 @@ export const runDavinciResolveScript = async <TScript extends keyof Scripts>(
     .join(" ");
 
   const result = await execSync(
-    `${envString} fuscript -q ${scriptPath}`,
+    `${envString} fuscript -q "${scriptPath}"`,
   ).toString();
 
   return result;
+};
+
+const checkFuscriptIsInstalled = () => {
+  try {
+    execSync("fuscript --version");
+  } catch (error) {
+    exitProcessWithError("fuscript is not installed");
+  }
 };

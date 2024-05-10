@@ -17,10 +17,11 @@ import {
 import {
   CouldNotFindEndTimeError,
   CouldNotFindStartTimeError,
+  OBS_OUTPUT_FPS,
   PADDING,
   SILENCE_DURATION,
   THRESHOLD,
-  findStartAndEndSilenceInVideo,
+  findSilenceInVideo,
   trimVideo,
 } from "@total-typescript/ffmpeg";
 
@@ -61,10 +62,11 @@ export const trimLatestOBSVideo = async () => {
 
   console.log("Finding silence...");
 
-  const silenceResult = await findStartAndEndSilenceInVideo(latestOBSVideo, {
+  const silenceResult = await findSilenceInVideo(latestOBSVideo, {
     silenceDuration: SILENCE_DURATION,
     padding: PADDING,
     threshold: THRESHOLD,
+    fps: OBS_OUTPUT_FPS,
   });
 
   if (silenceResult instanceof CouldNotFindStartTimeError) {

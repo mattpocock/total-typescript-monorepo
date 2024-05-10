@@ -4,6 +4,7 @@ import { openPairedVideoDir } from "./openPairedVideoDir.js";
 import { selectLatestOBSVideo } from "./selectLatestOBSVideo.js";
 import { trimLatestOBSVideo } from "./trimLatestOBSVideo.js";
 import { SKILL_RECORDINGS_REPO_LOCATION } from "@total-typescript/shared";
+import { appendVideoToTimeline } from "./appendVideoToTimeline.js";
 
 export type Command<TArgs extends readonly string[]> = {
   scriptkitName: string;
@@ -63,5 +64,13 @@ export const commands = createCommands([
         }" --body "${sanityLink}")`,
       );
     },
+  },
+  {
+    scriptkitName: "Append Video to Davinci Resolve Timeline",
+    fileName: "append-video-to-timeline",
+    description: "Append the latest OBS video to the Davinci Resolve timeline.",
+    cliCommand: "append-video-to-timeline",
+    args: ["FPS"],
+    run: appendVideoToTimeline,
   },
 ]);

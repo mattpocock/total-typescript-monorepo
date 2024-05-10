@@ -1,5 +1,6 @@
 import { type AbsolutePath } from "@total-typescript/shared";
 import { execSync } from "child_process";
+import { getClipsOfSpeakingFromFFmpeg } from "./getSpeakingClips.js";
 
 export const encodeVideo = async (
   inputVideo: AbsolutePath,
@@ -18,9 +19,10 @@ export class CouldNotFindEndTimeError {
   readonly _tag = "CouldNotFindEndTimeError";
 }
 
-export const findStartAndEndSilenceInVideo = async (
+export const findSilenceInVideo = async (
   inputVideo: AbsolutePath,
   opts: {
+    fps: number;
     threshold: number | string;
     silenceDuration: number | string;
     padding: number;
@@ -78,6 +80,7 @@ export const findStartAndEndSilenceInVideo = async (
   const endTime = lastSilence.silenceEnd - lastSilence.duration + opts.padding;
 
   return {
+    allSpeakingClips: getClipsOfSpeakingFromFFmpeg(output, opts.fps),
     startTime,
     endTime,
   };

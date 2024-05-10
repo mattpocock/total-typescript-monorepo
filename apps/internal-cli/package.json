@@ -13,6 +13,9 @@
   "exports": {
     ".": "./dist/index.js"
   },
+  "devDependencies": {
+    "@total-typescript/ts-reset": "^0.5.1"
+  },
   "dependencies": {
     "@total-typescript/shared": "workspace:*",
     "@total-typescript/ffmpeg": "workspace:*",
