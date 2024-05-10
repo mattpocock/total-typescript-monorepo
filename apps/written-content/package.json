@@ -9,7 +9,7 @@
     "new": "node ./new-noteworthy-topic.js"
   },
   "devDependencies": {
-    "prettier": "^2.8.7",
+    "prettier": "^3.0.0",
     "typescript": "^5.3.2",
     "twoslash-preview": "workspace:*",
     "@total-typescript/helpers": "^0.0.1",
