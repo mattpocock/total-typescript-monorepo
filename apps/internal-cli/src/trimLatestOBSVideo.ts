@@ -1,19 +1,3 @@
-import path from "path";
-import { getActiveEditorFilePath } from "./getActiveEditorFilePath.js";
-import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
-import {
-  EXTERNAL_DRIVE_RAW_FOOTAGE_ROOT,
-  EXTERNAL_DRIVE_ROOT,
-  ExerciseNotFoundError,
-  ExternalDriveNotFoundError,
-  REPOS_FOLDER,
-  ensureDir,
-  exitProcessWithError,
-  getExternalDrive,
-  parseExercisePath,
-  type AbsolutePath,
-  type RelativePath,
-} from "@total-typescript/shared";
 import {
   CouldNotFindEndTimeError,
   CouldNotFindStartTimeError,
@@ -24,6 +8,21 @@ import {
   findSilenceInVideo,
   trimVideo,
 } from "@total-typescript/ffmpeg";
+import {
+  EXTERNAL_DRIVE_MOVIES_ROOT,
+  ExerciseNotFoundError,
+  ExternalDriveNotFoundError,
+  REPOS_FOLDER,
+  ensureDir,
+  exitProcessWithError,
+  getExternalDrive,
+  parseExercisePath,
+  type AbsolutePath,
+  type RelativePath,
+} from "@total-typescript/shared";
+import path from "path";
+import { getActiveEditorFilePath } from "./getActiveEditorFilePath.js";
+import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
 
 export const trimLatestOBSVideo = async () => {
   const externalDrive = await getExternalDrive();
@@ -46,7 +45,7 @@ export const trimLatestOBSVideo = async () => {
   ) as RelativePath;
 
   const absolutePathToTrimmedFootage = path.resolve(
-    EXTERNAL_DRIVE_RAW_FOOTAGE_ROOT,
+    EXTERNAL_DRIVE_MOVIES_ROOT,
     relativePathToReposFolder,
   ) as AbsolutePath;
 

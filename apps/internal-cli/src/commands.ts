@@ -5,6 +5,7 @@ import { selectLatestOBSVideo } from "./selectLatestOBSVideo.js";
 import { trimLatestOBSVideo } from "./trimLatestOBSVideo.js";
 import { SKILL_RECORDINGS_REPO_LOCATION } from "@total-typescript/shared";
 import { appendVideoToTimeline } from "./appendVideoToTimeline.js";
+import { clearUnusedFootageFromDisk } from "./clearUnusedFootageFromDisk.js";
 
 export type Command<TArgs extends readonly string[]> = {
   scriptkitName: string;
@@ -72,5 +73,13 @@ export const commands = createCommands([
     cliCommand: "append-video-to-timeline",
     args: ["FPS"],
     run: appendVideoToTimeline,
+  },
+  {
+    scriptkitName: "Clear Unused Footage From Disk",
+    fileName: "clear-unused-footage-from-disk",
+    description:
+      "Clear footage not used in DaVinci Resolve from the external drive.",
+    cliCommand: "clear-unused-footage-from-disk",
+    run: clearUnusedFootageFromDisk,
   },
 ]);

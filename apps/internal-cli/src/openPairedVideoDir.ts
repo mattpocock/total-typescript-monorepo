@@ -1,5 +1,5 @@
 import {
-  EXTERNAL_DRIVE_RAW_FOOTAGE_ROOT,
+  EXTERNAL_DRIVE_MOVIES_ROOT,
   ExerciseNotFoundError,
   ExternalDriveNotFoundError,
   REPOS_FOLDER,
@@ -27,7 +27,7 @@ export const openPairedVideoDir = async () => {
 
   const relativePath = path.relative(REPOS_FOLDER, activeEditorFilePath);
   const targetPath = path.resolve(
-    EXTERNAL_DRIVE_RAW_FOOTAGE_ROOT,
+    EXTERNAL_DRIVE_MOVIES_ROOT,
     relativePath,
   ) as AbsolutePath;
 
