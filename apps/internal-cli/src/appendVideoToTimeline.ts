@@ -2,7 +2,6 @@ import {
   exitProcessWithError,
   runDavinciResolveScript,
 } from "@total-typescript/shared";
-import { selectLatestOBSVideo } from "./selectLatestOBSVideo.js";
 import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
 import {
   ALLOWED_RAW_FPS_VALUES,
