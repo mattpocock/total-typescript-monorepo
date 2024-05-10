@@ -206,7 +206,13 @@ Want to get the next lesson now? Click the link below.
 
 # ARTICLE: Turning types into type functions 🤯
 
-- Why you'd create a generic type
+In our first lesson, we talked about the main thing people feel confused about when it comes to generics: the term 'generic' itself.
+
+We're going to start our journey by looking at generic types. I think they're the easiest to pick up and start using.
+
+You'll learn how generic types can reduce repetition in your types, just like functions reduce repetition in your runtime code. And if you've never used them before, you'll soon wonder how you ever lived without them.
+
+## The Problem Generic Types Solve
 
 ```ts twoslash
 type User = {
@@ -228,9 +234,11 @@ type User = {
 };
 ```
 
-```ts twoslash
-type Maybe<T> = T | null | undefined;
+But this feels a bit strange. `firstName` isn't 'string or maybe', it's 'maybe a string'. 'Maybe' isn't separate from `string`, it's a descriptor of `string`.
 
+The right API would feel something like this:
+
+```ts twoslash
 type User = {
   id: string;
   firstName: Maybe<string>;
@@ -239,9 +247,87 @@ type User = {
 };
 ```
 
-```ts twoslash
+Now, we're applying `Maybe` to `string`. It's as if `Maybe` is a function, and we're passing an argument to it.
 
+But how do we make this API work?
+
+## Our First Generic Type
+
+We can turn `Maybe` into a generic type by adding a type parameter:
+
+```ts twoslash
+type Maybe<T> = null | undefined;
+//         ^ Type Parameter
 ```
+
+We place it just after the type's name, inside angle brackets. We can call it whatever we want, but `T` is a common choice.
+
+We've turned our `Maybe` type from a _variable_ into a _function_. We can think of everything after the `=` as what our function returns.
+
+Currently, we're not using `T` in the returned type. Whatever we pass in to `Maybe`, we'll always get back `null | undefined`.
+
+Let's game this out for a second. If we pass in `string` to `Maybe`, we should get back `string | null | undefined`.
+
+```ts twoslash
+type MaybeString = Maybe<string>; // string | null | undefined
+```
+
+So whatever we pass in needs to be used in a union with `null | undefined`. We can do this by adding `T` to the returned type:
+
+```ts twoslash
+type Maybe<T> = T | null | undefined;
+```
+
+Now, whatever we put into `Maybe`, we get back that type or `null` or `undefined`:
+
+```ts twoslash
+type MaybeString = Maybe<string>; // string | null | undefined
+type MaybeNumber = Maybe<number>; // number | null | undefined
+type MaybeBoolean = Maybe<boolean>; // boolean | null | undefined
+```
+
+This is great, because we've saved ourselves a lot of keystrokes - and we've also got a single source of truth for our `Maybe` type.
+
+## Anatomy Of A Generic Type
+
+Let's break down the anatomy of a generic type, and how it differs from a normal type.
+
+```ts twoslash
+// Generic Type
+type Maybe<T> = T | null | undefined;
+
+// Type
+type Maybe = null | undefined;
+```
+
+Syntactically, they really are extremely similar. The only difference is the type parameter `T` in the generic type.
+
+But as a mental model, they're quite different. The difference is like the difference between a function and a variable:
+
+```ts twoslash
+// Function
+const add = (a, b) => {
+  return a + b;
+};
+
+// Variable
+const add = 5;
+```
+
+The variable is static - it's always 5. The function is dynamic - it can return different values based on its arguments.
+
+And in order to produce the returned value, you have to _call_ the function with an argument.
+
+In the same way, to produce a type from a generic type, you have to _call_ it with a type argument.
+
+Instead of `add(5, 10)`, you have `Maybe<string>`.
+
+- Compare to a normal type
+- Define terms for type parameters, returned type
+
+## One More Example
+
+- DataShape example from the book
 
 # ARTICLE: Going deep on generic types: constraints and defaults
 
