@@ -156,7 +156,7 @@ importers:
         version: 8.4.38
       puppeteer:
         specifier: ^22.8.0
-        version: 22.8.0(bufferutil@4.0.8)(typescript@5.4.5)(utf-8-validate@6.0.3)
+        version: 22.8.0(bufferutil@4.0.8)(typescript@5.4.5)(utf-8-validate@6.0.4)
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -180,13 +180,13 @@ importers:
         version: 3.4.3
       utf-8-validate:
         specifier: ^6.0.3
-        version: 6.0.3
+        version: 6.0.4
       uuid:
         specifier: ^9.0.1
         version: 9.0.1
       ws:
         specifier: ^8.13.0
-        version: 8.17.0(bufferutil@4.0.8)(utf-8-validate@6.0.3)
+        version: 8.17.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       zod:
         specifier: ^3.21.4
         version: 3.23.8
@@ -3447,8 +3447,8 @@ packages:
   urlpattern-polyfill@10.0.0:
     resolution: {integrity: sha512-H/A06tKD7sS1O1X2SshBVeA5FLycRpjqiBeqGKmBwBDBy28EnRjORxTNe269KSSr5un5qyWi1iL61wLxpd+ZOg==}
 
-  utf-8-validate@6.0.3:
-    resolution: {integrity: sha512-uIuGf9TWQ/y+0Lp+KGZCMuJWc3N9BHA+l/UmHd/oUHwJJDeysyTRxNQVkbzsIWfGFbRe3OcgML/i0mvVRPOyDA==}
+  utf-8-validate@6.0.4:
+    resolution: {integrity: sha512-xu9GQDeFp+eZ6LnCywXN/zBancWvOpUMzgjLPSjy4BRHSmTelvn2E0DG0o1sTiw5hkCKBHo8rwSKncfRfv2EEQ==}
     engines: {node: '>=6.14.2'}
 
   util-deprecate@1.0.2:
@@ -6653,24 +6653,24 @@ snapshots:
 
   punycode@2.3.1: {}
 
-  puppeteer-core@22.8.0(bufferutil@4.0.8)(utf-8-validate@6.0.3):
+  puppeteer-core@22.8.0(bufferutil@4.0.8)(utf-8-validate@6.0.4):
     dependencies:
       '@puppeteer/browsers': 2.2.3
       chromium-bidi: 0.5.19(devtools-protocol@0.0.1273771)
       debug: 4.3.4
       devtools-protocol: 0.0.1273771
-      ws: 8.17.0(bufferutil@4.0.8)(utf-8-validate@6.0.3)
+      ws: 8.17.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
     transitivePeerDependencies:
       - bufferutil
       - supports-color
       - utf-8-validate
 
-  puppeteer@22.8.0(bufferutil@4.0.8)(typescript@5.4.5)(utf-8-validate@6.0.3):
+  puppeteer@22.8.0(bufferutil@4.0.8)(typescript@5.4.5)(utf-8-validate@6.0.4):
     dependencies:
       '@puppeteer/browsers': 2.2.3
       cosmiconfig: 9.0.0(typescript@5.4.5)
       devtools-protocol: 0.0.1273771
-      puppeteer-core: 22.8.0(bufferutil@4.0.8)(utf-8-validate@6.0.3)
+      puppeteer-core: 22.8.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -7444,7 +7444,7 @@ snapshots:
 
   urlpattern-polyfill@10.0.0: {}
 
-  utf-8-validate@6.0.3:
+  utf-8-validate@6.0.4:
     dependencies:
       node-gyp-build: 4.8.1
 
@@ -7641,10 +7641,10 @@ snapshots:
 
   wrappy@1.0.2: {}
 
-  ws@8.17.0(bufferutil@4.0.8)(utf-8-validate@6.0.3):
+  ws@8.17.0(bufferutil@4.0.8)(utf-8-validate@6.0.4):
     optionalDependencies:
       bufferutil: 4.0.8
-      utf-8-validate: 6.0.3
+      utf-8-validate: 6.0.4
 
   y18n@4.0.3: {}
 
