@@ -32,55 +32,23 @@ export const findSilenceInVideo = async (
     `ffmpeg -hide_banner -vn -i "${inputVideo}" -af "silencedetect=n=${opts.threshold}dB:d=${opts.silenceDuration}" -f null - 2>&1 | grep "silence_end" | awk '{print $5 " " $8}'`,
   ).toString();
 
-  let silence = output
-    .trim()
-    .split("\n")
-    .map((line) => line.split(" "))
-    .map(([silenceEnd, duration]) => {
-      return {
-        silenceEnd: parseFloat(silenceEnd!),
-        duration: parseFloat(duration!),
-      };
-    });
+  const speakingClips = getClipsOfSpeakingFromFFmpeg(output, opts);
 
-  let foundFirstPeriodOfTalking = false;
-
-  while (!foundFirstPeriodOfTalking) {
-    // Unshift the first silence if the noise afterwards
-    // is less than 1 second long
-    const silenceElem = silence[0];
-    const nextSilenceElem = silence[1];
-
-    const nextSilenceStartTime =
-      nextSilenceElem!.silenceEnd - nextSilenceElem!.duration;
-
-    const lengthOfNoise = nextSilenceStartTime - silenceElem!.silenceEnd;
-
-    if (lengthOfNoise < 2) {
-      silence.shift();
-    } else {
-      foundFirstPeriodOfTalking = true;
-    }
+  if (!speakingClips[0]) {
+    throw new CouldNotFindStartTimeError();
   }
 
-  const firstSilence = silence[0];
+  const endClip = speakingClips[speakingClips.length - 1];
 
-  if (!firstSilence) {
-    return new CouldNotFindStartTimeError();
+  if (!endClip) {
+    throw new CouldNotFindEndTimeError();
   }
 
-  const lastSilence = silence[silence.length - 1];
-
-  if (!lastSilence) {
-    return new CouldNotFindEndTimeError();
-  }
-
-  const startTime = firstSilence.silenceEnd - opts.padding;
-
-  const endTime = lastSilence.silenceEnd - lastSilence.duration + opts.padding;
+  const startTime = speakingClips[0].startTime;
+  const endTime = endClip.endTime;
 
   return {
-    allSpeakingClips: getClipsOfSpeakingFromFFmpeg(output, opts.fps),
+    speakingClips,
     startTime,
     endTime,
   };
