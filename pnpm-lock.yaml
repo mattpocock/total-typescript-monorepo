@@ -16,7 +16,7 @@ importers:
         version: 2.27.1
       '@total-typescript/tsconfig':
         specifier: ^1.0.3
-        version: 1.0.3
+        version: 1.0.4
       '@types/node':
         specifier: ^20.12.10
         version: 20.12.11
@@ -840,8 +840,8 @@ packages:
   '@total-typescript/ts-reset@0.5.1':
     resolution: {integrity: sha512-AqlrT8YA1o7Ff5wPfMOL0pvL+1X+sw60NN6CcOCqs658emD6RfiXhF7Gu9QcfKBH7ELY2nInLhKSCWVoNL70MQ==}
 
-  '@total-typescript/tsconfig@1.0.3':
-    resolution: {integrity: sha512-AIb/Vyg2ti88L1eASMUcg7H3B6eJDT9SmUgR+qADli0aeEaU+qRIcv/Mtr07hJ03CPaRl6TmlMzCgO6sXjPTRQ==}
+  '@total-typescript/tsconfig@1.0.4':
+    resolution: {integrity: sha512-fO4ctMPGz1kOFOQ4RCPBRBfMy3gDn+pegUfrGyUFRMv/Rd0ZM3/SHH3hFCYG4u6bPLG8OlmOGcBLDexvyr3A5w==}
 
   '@types/debug@4.1.12':
     resolution: {integrity: sha512-vIChWdVG3LG1SMxEvI/AK+FWJthlrqlTu7fbrlywTkkaONwk/UAGaULXRlf8vkzFBLVm0zkMdCquhL5aOjhXPQ==}
@@ -4212,7 +4212,7 @@ snapshots:
 
   '@total-typescript/ts-reset@0.5.1': {}
 
-  '@total-typescript/tsconfig@1.0.3': {}
+  '@total-typescript/tsconfig@1.0.4': {}
 
   '@types/debug@4.1.12':
     dependencies:
