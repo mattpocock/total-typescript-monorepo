@@ -18,11 +18,11 @@
   "author": "Matt Pocock",
   "license": "ISC",
   "dependencies": {
-    "@total-typescript/tsconfig": "^1.0.3",
     "@changesets/cli": "^2.26.1",
+    "@total-typescript/tsconfig": "^1.0.3",
     "@types/node": "^20.12.10",
     "prettier": "^3.2.5",
-    "turbo": "^1.13.3",
+    "turbo": "1.13.4-canary.3",
     "typescript": "^5.4.5",
     "vitest": "^1.6.0"
   },
