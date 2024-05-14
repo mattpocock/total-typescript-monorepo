@@ -11,7 +11,8 @@
   "scripts": {
     "ci": "turbo build",
     "release": "pnpm run ci && changeset publish",
-    "write": "turbo start --filter=twoslash-preview"
+    "write": "turbo start --filter=twoslash-preview",
+    "new": "(cd apps/written-content && pnpm run new)"
   },
   "keywords": [],
   "author": "Matt Pocock",
