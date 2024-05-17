@@ -1,4 +1,4 @@
-import { execSync } from "child_process";
+import { exec, execSync, type ExecOptions } from "child_process";
 import { EXTERNAL_DRIVE_ROOT } from "./constants.js";
 import type { AbsolutePath } from "./types.js";
 import { stat } from "fs/promises";
@@ -12,11 +12,26 @@ export const pathExists = async (path: string): Promise<boolean> => {
   }
 };
 
+export const execAsync = async (command: string, opts?: ExecOptions) => {
+  return new Promise<{
+    stdout: string;
+    stderr: string;
+  }>((resolve, reject) => {
+    exec(command, opts, (err, stdout, stderr) => {
+      if (err) {
+        reject(err);
+      }
+
+      resolve({ stdout: stdout.toString(), stderr: stderr.toString() });
+    });
+  });
+};
+
 export const revealInFileExplorer = async (file: AbsolutePath) => {
   if (process.platform === "win32") {
-    await execSync(`explorer /select,${file}`);
+    await execAsync(`explorer /select,${file}`);
   } else if (process.platform === "darwin") {
-    await execSync(`open -R "${file}"`);
+    await execAsync(`open -R "${file}"`);
   }
 };
 

@@ -1,12 +1,11 @@
-import { type AbsolutePath } from "@total-typescript/shared";
-import { execSync } from "child_process";
+import { execAsync, type AbsolutePath } from "@total-typescript/shared";
 import { getClipsOfSpeakingFromFFmpeg } from "./getSpeakingClips.js";
 
 export const encodeVideo = async (
   inputVideo: AbsolutePath,
   outputVideoPath: AbsolutePath,
 ) => {
-  await execSync(
+  await execAsync(
     `ffmpeg -y -hide_banner -i "${inputVideo}" -c:v libx264 -profile high -b:v 7000k -pix_fmt yuv420p -maxrate 16000k "${outputVideoPath}"`,
   );
 };
@@ -28,11 +27,11 @@ export const findSilenceInVideo = async (
     padding: number;
   },
 ) => {
-  const output = execSync(
+  const output = await execAsync(
     `ffmpeg -hide_banner -vn -i "${inputVideo}" -af "silencedetect=n=${opts.threshold}dB:d=${opts.silenceDuration}" -f null - 2>&1 | grep "silence_end" | awk '{print $5 " " $8}'`,
-  ).toString();
+  );
 
-  const speakingClips = getClipsOfSpeakingFromFFmpeg(output, opts);
+  const speakingClips = getClipsOfSpeakingFromFFmpeg(output.stdout, opts);
 
   if (!speakingClips[0]) {
     throw new CouldNotFindStartTimeError();
@@ -64,7 +63,7 @@ export const trimVideo = async (
   startTime: number,
   endTime: number,
 ) => {
-  execSync(
+  await execAsync(
     `ffmpeg -y -hide_banner -ss ${formatFloatForFFmpeg(
       startTime,
     )} -to ${formatFloatForFFmpeg(

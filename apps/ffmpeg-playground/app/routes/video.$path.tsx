@@ -34,17 +34,15 @@ const getWaveFormDataWithMeta = async (path: AbsolutePath) => {
 
   const sampledData = await sampleData(waveformData, SAMPLE_SIZE);
 
-  const videoDuration = getVideoDuration(path);
-
   const lowestAmplitude = Math.min(...sampledData);
 
-  return { sampledData, videoDuration, lowestAmplitude };
+  return { sampledData, lowestAmplitude };
 };
 
 export const loader = async (args: LoaderFunctionArgs) => {
   const path = args.params.path as AbsolutePath;
 
-  const fps = getFPS(path);
+  const fps = await getFPS(path);
 
   const silencePromise = findSilenceInVideo(path, {
     fps,
@@ -53,11 +51,14 @@ export const loader = async (args: LoaderFunctionArgs) => {
     threshold: THRESHOLD,
   });
 
+  const videoDurationPromise = getVideoDuration(path);
+
   return defer(
     {
       path,
       waveformPromise: getWaveFormDataWithMeta(path),
       silencePromise,
+      videoDurationPromise,
       fps,
     },
     {
@@ -98,77 +99,83 @@ export default function Video() {
       >
         <track kind="captions" />
       </video>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Await resolve={data.waveformPromise}>
-          {(waveformData) => {
-            const heightOfWaveform = 0 - waveformData.lowestAmplitude;
-            const pixelSize = VIDEO_WIDTH / waveformData.videoDuration;
-
+      <Suspense fallback={<div>Calculating Waveform...</div>}>
+        <Await resolve={data.videoDurationPromise}>
+          {(videoDuration) => {
             return (
-              <div
-                style={{
-                  width: VIDEO_WIDTH,
-                  display: "flex",
-                  position: "relative",
-                }}
-              >
-                {waveformData.sampledData.map((num, index) => {
-                  const distanceFromTop = 0 - num;
+              <Await resolve={data.waveformPromise}>
+                {(waveformData) => {
+                  const heightOfWaveform = 0 - waveformData.lowestAmplitude;
+                  const pixelSize = VIDEO_WIDTH / videoDuration;
+
                   return (
                     <div
-                      key={index}
                       style={{
-                        marginTop: distanceFromTop,
-                        height: heightOfWaveform - distanceFromTop,
-                        width: VIDEO_WIDTH / SAMPLE_SIZE,
-                        backgroundColor: "black",
+                        width: VIDEO_WIDTH,
+                        display: "flex",
+                        position: "relative",
                       }}
-                    ></div>
-                  );
-                })}
-                <Await resolve={data.silencePromise}>
-                  {(silence) => {
-                    return (
-                      <>
-                        {silence.speakingClips.map((clip) => {
+                    >
+                      {waveformData.sampledData.map((num, index) => {
+                        const distanceFromTop = 0 - num;
+                        return (
+                          <div
+                            key={index}
+                            style={{
+                              marginTop: distanceFromTop,
+                              height: heightOfWaveform - distanceFromTop,
+                              width: VIDEO_WIDTH / SAMPLE_SIZE,
+                              backgroundColor: "black",
+                            }}
+                          ></div>
+                        );
+                      })}
+                      <Await resolve={data.silencePromise}>
+                        {(silence) => {
                           return (
-                            <button
-                              key={clip.startFrame}
-                              style={{
-                                backgroundColor: "rgba(255, 0, 0, 0.4)",
-                                position: "absolute",
-                                top: 0,
-                                border: "none",
-                                left: pixelSize * clip.startTime,
-                                width:
-                                  pixelSize * (clip.endTime - clip.startTime),
-                                height: heightOfWaveform,
-                              }}
-                              onClick={() => {
-                                if (videoRef.current) {
-                                  videoRef.current.currentTime = Math.floor(
-                                    clip.startTime,
-                                  );
-                                }
-                              }}
-                            ></button>
+                            <>
+                              {silence.speakingClips.map((clip) => {
+                                return (
+                                  <button
+                                    key={clip.startFrame}
+                                    style={{
+                                      backgroundColor: "rgba(255, 0, 0, 0.4)",
+                                      position: "absolute",
+                                      top: 0,
+                                      border: "none",
+                                      left: pixelSize * clip.startTime,
+                                      width:
+                                        pixelSize *
+                                        (clip.endTime - clip.startTime),
+                                      height: heightOfWaveform,
+                                    }}
+                                    onClick={() => {
+                                      if (videoRef.current) {
+                                        videoRef.current.currentTime =
+                                          Math.floor(clip.startTime);
+                                      }
+                                    }}
+                                  ></button>
+                                );
+                              })}
+                            </>
                           );
-                        })}
-                      </>
-                    );
-                  }}
-                </Await>
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: pixelSize * videoCurrentTime,
-                    width: 2,
-                    height: heightOfWaveform,
-                    backgroundColor: "red",
-                  }}
-                />
-              </div>
+                        }}
+                      </Await>
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: pixelSize * videoCurrentTime,
+                          width: 2,
+                          height: heightOfWaveform,
+                          backgroundColor: "red",
+                        }}
+                      />
+                    </div>
+                  );
+                }}
+              </Await>
             );
           }}
         </Await>

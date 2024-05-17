@@ -1,14 +1,13 @@
-import type { AbsolutePath } from "@total-typescript/shared";
-import { execSync } from "child_process";
+import { execAsync, type AbsolutePath } from "@total-typescript/shared";
 
 export const getWaveFormData = async (
   inputVideo: AbsolutePath,
 ): Promise<number[]> => {
-  const output = execSync(
+  const output = await execAsync(
     `ffprobe -v error -f lavfi -i "amovie=${inputVideo},astats=metadata=1:reset=1" -show_entries frame_tags=lavfi.astats.Overall.RMS_level -of csv=p=0`,
-  ).toString();
+  );
 
-  const amplitudes = output
+  const amplitudes = output.stdout
     .trim()
     .split("\n")
     .map((line, index, arr) => {

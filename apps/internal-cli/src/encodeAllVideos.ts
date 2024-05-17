@@ -2,17 +2,15 @@ import { encodeVideo } from "@total-typescript/ffmpeg";
 import {
   POSSIBLE_UNENCODED_FOLDER_LOCATIONS,
   ensureDir,
+  execAsync,
   type AbsolutePath,
 } from "@total-typescript/shared";
-import { execSync } from "child_process";
 import { rename } from "fs/promises";
 import path from "path";
 
 export const encodeAllVideos = async () => {
   for (const folder of POSSIBLE_UNENCODED_FOLDER_LOCATIONS) {
-    const stdout = await execSync(
-      `find ${folder} -type f -name "*.mp4"`,
-    ).toString();
+    const { stdout } = await execAsync(`find ${folder} -type f -name "*.mp4"`);
 
     const inputVideos = stdout
       .trim()
