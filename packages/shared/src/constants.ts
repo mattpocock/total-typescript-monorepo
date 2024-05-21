@@ -12,6 +12,11 @@ export const EXTERNAL_DRIVE_MOVIES_ROOT = path.join(
   "Movies",
 ) as AbsolutePath;
 
+export const DAVINCI_RESOLVE_EXPORTS_LOCATION = path.join(
+  EXTERNAL_DRIVE_ROOT,
+  "Exports",
+) as AbsolutePath;
+
 export const EXTERNAL_DRIVE_RAW_FOOTAGE_ROOT = path.join(
   EXTERNAL_DRIVE_MOVIES_ROOT,
   "obs-output",
