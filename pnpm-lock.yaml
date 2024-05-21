@@ -46,7 +46,7 @@ importers:
         version: 1.4.0
       commander:
         specifier: ^10.0.1
-        version: 12.1.0
+        version: 10.0.1
       fast-glob:
         specifier: ^3.2.12
         version: 3.3.2
@@ -158,7 +158,7 @@ importers:
         specifier: 8.4.38
         version: 8.4.38
       puppeteer:
-        specifier: ^22.8.0
+        specifier: ^22.9.0
         version: 22.9.0(bufferutil@4.0.8)(typescript@5.4.5)(utf-8-validate@6.0.4)
       react:
         specifier: 18.3.1
@@ -1292,6 +1292,10 @@ packages:
 
   comma-separated-tokens@2.0.3:
     resolution: {integrity: sha512-Fu4hJdvzeylCfQPp9SGWidpzrMs7tTrlu6Vb8XGaRGck8QSNZJJp538Wrb60Lax4fPwR64ViY468OIUTbRlGZg==}
+
+  commander@10.0.1:
+    resolution: {integrity: sha512-y4Mg2tXshplEbSGzx7amzPwKKOCGuoSRP/CjEdwwk0FOGlUbq6lKuoyDZTNZkmxHdJtp54hdfY/JUrdL7Xfdug==}
+    engines: {node: '>=14'}
 
   commander@12.1.0:
     resolution: {integrity: sha512-Vw8qHK3bZM9y/P10u3Vib8o/DdkvA2OtPtZvD871QKjy74Wj1WSKFILMPRPSdUSx5RFK1arlJzEtA4PkFgnbuA==}
@@ -4729,6 +4733,8 @@ snapshots:
   colors@1.4.0: {}
 
   comma-separated-tokens@2.0.3: {}
+
+  commander@10.0.1: {}
 
   commander@12.1.0: {}
 

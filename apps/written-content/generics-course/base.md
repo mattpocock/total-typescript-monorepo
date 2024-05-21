@@ -1,10 +1,3 @@
-# ARTICLE: Generic functions are everywhere
-
-Understand how to pass type arguments to generic functions
-document.getElementById
-Set(), Map()
-JSON.parse is not generic, fetch is not generic
-
 # ARTICLE: The “Hello World” of generic functions
 
 Creating functions that receive type arguments
