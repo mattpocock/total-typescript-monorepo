@@ -22,7 +22,7 @@
     "@total-typescript/tsconfig": "^1.0.3",
     "@types/node": "^20.12.10",
     "prettier": "^3.2.5",
-    "turbo": "1.13.4-canary.4",
+    "turbo": "1.13.4-canary.5",
     "typescript": "^5.4.5",
     "vitest": "^1.6.0"
   },
