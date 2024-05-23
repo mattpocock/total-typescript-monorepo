@@ -1,9 +1,3 @@
-# ARTICLE: The “Hello World” of generic functions
-
-Creating functions that receive type arguments
-createSet
-getElement
-
 # VIDEO: Generic Functions vs Generic Types
 
 Generic Functions can be constrained and defaulted
