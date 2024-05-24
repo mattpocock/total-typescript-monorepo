@@ -1,12 +1,3 @@
-# VIDEO: Generic Functions vs Generic Types
-
-Generic Functions can be constrained and defaulted
-createSet
-With generic types, you MUST pass all type arguments
-With generic functions, you can omit all the type arguments
-If you do, they default to their defaults, constraint, or unknown if unconstrained
-Why is this behavior allowed? We’ll look at that next time.
-
 # ARTICLE: The secret sauce of generics: inference
 
 If a type argument is not provided to a function, it’ll be inferred from the arguments
