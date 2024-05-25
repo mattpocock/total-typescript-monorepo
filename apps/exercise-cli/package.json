@@ -8,9 +8,7 @@
     "tt-cli": "./dist/bin.js"
   },
   "scripts": {
-    "dev": "pnpm run \"/dev:/\"",
-    "dev:esbuild": "pnpm run build --watch",
-    "dev:tsc": "tsc --watch --preserveWatchOutput",
+    "dev": "pnpm run build --watch",
     "build": "esbuild --bundle src/bin.ts --platform=node --outfile=dist/bin.js --packages=external --format=esm",
     "setup": "(yarn unlink --global | true) && yarn link --global"
   },

@@ -1,0 +1,23 @@
+{
+  "references": [
+    {
+      "path": "./packages/shared/tsconfig.json"
+    },
+    {
+      "path": "./packages/ffmpeg/tsconfig.json"
+    },
+    {
+      "path": "./apps/internal-cli/tsconfig.json"
+    },
+    {
+      "path": "./apps/scriptkit-sync/tsconfig.json"
+    },
+    {
+      "path": "./apps/twoslash-preview/tsconfig.json"
+    },
+    {
+      "path": "./apps/exercise-cli/tsconfig.json"
+    },
+  ],
+  "files": [],
+}

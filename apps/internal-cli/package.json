@@ -6,9 +6,7 @@
   },
   "type": "module",
   "scripts": {
-    "setup": "(yarn unlink --global | true) && yarn link --global",
-    "dev": "tsc --watch",
-    "build": "tsc"
+    "setup": "(yarn unlink --global | true) && yarn link --global"
   },
   "exports": {
     ".": "./dist/index.js"

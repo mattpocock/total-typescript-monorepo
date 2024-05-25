@@ -3,9 +3,7 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "tsc --watch",
-    "build": "tsc",
-    "test": "vitest"
+    "test": "vitest run"
   },
   "exports": {
     ".": "./dist/index.js"

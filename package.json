@@ -9,10 +9,12 @@
   },
   "private": true,
   "scripts": {
-    "ci": "turbo build",
+    "ci": "turbo build test",
     "release": "pnpm run ci && changeset publish",
     "write": "turbo start --filter=twoslash-preview",
-    "new": "(cd apps/written-content && pnpm run new)"
+    "new": "(cd apps/written-content && pnpm run new)",
+    "dev": "tsc -b --watch",
+    "build": "tsc -b"
   },
   "keywords": [],
   "author": "Matt Pocock",
