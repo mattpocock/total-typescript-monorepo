@@ -33,7 +33,7 @@ export const appendVideoToTimeline = async () => {
     exitProcessWithError("Could not find end time");
   }
 
-  const serialisedClipsOfSpeaking = silenceResult.speakingClips
+  const serialisedClipsOfSpeaking = silenceResult.allSpeakingClips
     .map((clip) => {
       return `${clip.startFrame}___${clip.endFrame}`;
     })
