@@ -68,10 +68,12 @@ server.on("connection", (client) => {
 
 const contentPath = path.resolve(process.cwd(), `../written-content/**/*.md`);
 
-console.log(contentPath);
-
 chokidar.watch([contentPath]).on("change", async (filePath) => {
-  console.log("File changed:", filePath);
+  console.clear();
+  console.log(
+    "File changed: " +
+      path.relative(path.join(process.cwd(), "../written-content"), filePath),
+  );
   try {
     let contents = await readFile(filePath, "utf-8");
 
@@ -85,7 +87,10 @@ chokidar.watch([contentPath]).on("change", async (filePath) => {
     const { html, snippets } = await applyShiki(contents);
 
     updateHtml(html, snippets);
-  } catch (e) {
-    console.log(e);
+  } catch (e: any) {
+    console.log(e.code);
+
+    console.log(e.title);
+    console.log(e.description);
   }
 });

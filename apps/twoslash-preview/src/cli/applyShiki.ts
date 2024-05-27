@@ -36,6 +36,7 @@ export const applyShiki = (() => {
           {
             theme: "dark-plus",
             langs: ["typescript", "tsx", "ts", "json"],
+            alwayRaiseForTwoslashExceptions: true,
           } satisfies Options,
         ],
       ],

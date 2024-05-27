@@ -9,6 +9,12 @@ const prop =
   <T extends Record<TKey, any>>(obj: T) =>
     obj[key];
 
+export const config = {
+  api: {
+    responseLimit: false,
+  },
+};
+
 const query = z.object({
   link: z
     .string()
