@@ -1,10 +1,3 @@
-# ARTICLE: The secret sauce of generics: inference
-
-If a type argument is not provided to a function, it’ll be inferred from the arguments
-uniqueArray
-retryPromise
-If you do pass a type argument, the type argument becomes the source of truth
-
 # ARTICLE: It’s not just functions and types that can be generic…
 
 Generic classes
