@@ -1,10 +1,13 @@
-import { applyShiki } from "./applyShiki.js";
-import { CodeSnippet, WSEvent } from "../types.js";
+import {
+  AbsolutePath,
+  getActiveEditorFilePath,
+} from "@total-typescript/shared";
 import chokidar from "chokidar";
 import { readFile } from "fs/promises";
-import { homedir } from "os";
 import path from "path";
 import { WebSocket, WebSocketServer } from "ws";
+import { CodeSnippet, WSEvent } from "../types.js";
+import { applyShiki } from "./applyShiki.js";
 
 const server = new WebSocketServer({ port: 3001 });
 
@@ -67,13 +70,11 @@ server.on("connection", (client) => {
 });
 
 const contentPath = path.resolve(process.cwd(), `../written-content/**/*.md`);
+const root = path.resolve(process.cwd(), "../written-content");
 
-chokidar.watch([contentPath]).on("change", async (filePath) => {
+const runShikiOnFilePath = async (filePath: AbsolutePath) => {
   console.clear();
-  console.log(
-    "File changed: " +
-      path.relative(path.join(process.cwd(), "../written-content"), filePath),
-  );
+  console.log("File changed: " + path.relative(root, filePath));
   try {
     let contents = await readFile(filePath, "utf-8");
 
@@ -87,10 +88,34 @@ chokidar.watch([contentPath]).on("change", async (filePath) => {
     const { html, snippets } = await applyShiki(contents);
 
     updateHtml(html, snippets);
+    console.log("No errors found!");
   } catch (e: any) {
     console.log(e.code);
 
     console.log(e.title);
     console.log(e.description);
+
+    console.log(e.recommendation);
   }
-});
+};
+
+const main = async () => {
+  const filePath = await getActiveEditorFilePath();
+
+  if (!filePath) {
+    return;
+  }
+
+  // If filePath is inside root, run it
+  if (filePath.startsWith(root)) {
+    await runShikiOnFilePath(filePath);
+  }
+
+  chokidar
+    .watch([contentPath], {
+      ignored: ["**/node_modules/**", "**/.next/**"],
+    })
+    .on("change", runShikiOnFilePath);
+};
+
+main();

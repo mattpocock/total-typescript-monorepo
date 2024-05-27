@@ -4,11 +4,11 @@ import {
   ExternalDriveNotFoundError,
   REPOS_FOLDER,
   exitProcessWithError,
+  getActiveEditorFilePath,
   getExternalDrive,
   parseExercisePath,
   type AbsolutePath,
 } from "@total-typescript/shared";
-import { getActiveEditorFilePath } from "./getActiveEditorFilePath.js";
 import { execSync } from "child_process";
 import path from "path";
 

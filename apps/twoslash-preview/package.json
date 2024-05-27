@@ -3,16 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "ws:run": "tsx watch src/cli/bin.ts",
-    "fe:dev": "next dev",
-    "dev": "concurrently \"npm:fe:dev\" \"npm:ws:run\"",
-    "start": "concurrently \"npm:fe:start\" \"npm:ws:run\"",
+    "cli-run": "tsx watch src/cli/bin.ts",
+    "dev": "next dev",
+    "start": "next start",
     "build": "next build",
-    "fe:start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.9",
+    "@total-typescript/shared": "workspace:*",
     "@total-typescript/ts-reset": "^0.5.0",
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
@@ -21,7 +20,6 @@
     "bufferutil": "^4.0.7",
     "chokidar": "^3.5.3",
     "clsx": "^2.1.0",
-    "concurrently": "^8.0.1",
     "eslint": "8.57.0",
     "eslint-config-next": "14.2.3",
     "hast-util-to-html": "^9.0.0",

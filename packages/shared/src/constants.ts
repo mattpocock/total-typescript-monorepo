@@ -51,7 +51,7 @@ export const POSSIBLE_UNENCODED_FOLDER_LOCATIONS = [
 export const REPOS_FOLDER = path.join(os.homedir(), "repos") as AbsolutePath;
 
 export const DAVINCI_RESOLVE_SCRIPTS_LOCATION = path.resolve(
-  import.meta.dirname,
+  import.meta.dirname ?? "", // Added as a hack for now
   "..",
   "..",
   "resolve-scripts",
