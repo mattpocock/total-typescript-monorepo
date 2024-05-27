@@ -18,6 +18,9 @@
     {
       "path": "./apps/exercise-cli/tsconfig.json"
     },
+    {
+      "path": "./apps/figma-highlight-plugin/tsconfig.json"
+    }
   ],
   "files": [],
 }
