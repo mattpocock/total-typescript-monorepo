@@ -185,9 +185,7 @@ type SuccessResponseCode = 200;
 
 type ErrorResponseCode = 400 | 500;
 
-type ResponseCode =
-  | SuccessResponseCode
-  | ErrorResponseCode;
+type ResponseCode = SuccessResponseCode | ErrorResponseCode;
 
 type ResponseShape = {
   [C in ResponseCode]: {
