@@ -3,6 +3,7 @@
   "extends": ["//"],
   "pipeline": {
     "cli-run": {
+      "dependsOn": ["//#build"],
       "cache": false,
       "persistent": true
     }
