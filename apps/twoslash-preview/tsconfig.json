@@ -32,6 +32,8 @@
     "**/*.mts",
     "**/*.tsx",
     ".next/types/**/*.ts",
+    "../twoslash-preview-server/src/applyShiki.ts",
+    "../twoslash-preview-server/src/bin.ts",
   ],
   "exclude": [
     "node_modules"

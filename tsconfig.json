@@ -18,6 +18,9 @@
     {
       "path": "./apps/exercise-cli/tsconfig.json"
     },
+    {
+      "path": "./apps/twoslash-preview-server/tsconfig.json"
+    }
   ],
   "files": [],
 }

@@ -31,7 +31,7 @@ const Icon = ({ color }: IconProps) => {
 Then, you might use the `Icon` component like this:
 
 ```tsx twoslash
-import { FC } from "react";
+import React, { FC } from "react";
 
 type Color = "primary" | "secondary" | string;
 
@@ -87,7 +87,7 @@ Now, when we use `Color`, TypeScript will remember that `"primary"` and `"second
 `string & {}` is actually exactly the same type as `string` - so there's no difference in what types can be passed to our `Icon` component:
 
 ```tsx twoslash
-import { FC } from "react";
+import React, { FC } from "react";
 
 type Color = "primary" | "secondary" | (string & {});
 

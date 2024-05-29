@@ -2,7 +2,7 @@ import lzString from "lz-string";
 import { NextApiHandler } from "next";
 import { z } from "zod";
 import { createUrl } from "../../app/createUrl";
-import { applyShiki } from "../../cli/applyShiki";
+import { applyShiki } from "../../../../twoslash-preview-server/src/applyShiki";
 
 const prop =
   <TKey extends PropertyKey>(key: TKey) =>
