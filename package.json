@@ -11,7 +11,7 @@
   "scripts": {
     "ci": "turbo build test",
     "release": "pnpm run ci && changeset publish",
-    "write": "turbo start cli-run --filter=twoslash-preview",
+    "write": "turbo dev cli-run --filter=twoslash-preview",
     "new": "(cd apps/written-content && pnpm run new)",
     "dev": "tsc -b --watch",
     "build": "tsc -b"
