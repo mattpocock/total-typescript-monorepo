@@ -23,7 +23,12 @@
       "persistent": true
     },
     "//#build": {
-      "outputs": ["packages/*/dist", "packages/*/*.tsbuildinfo"]
+      "outputs": [
+        "packages/*/dist",
+        "packages/*/*.tsbuildinfo",
+        "apps/*/dist",
+        "apps/*/*.tsbuildinfo"
+      ]
     },
     "//#dev": {
       "cache": false,
