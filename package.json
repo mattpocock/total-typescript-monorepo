@@ -2,6 +2,7 @@
   "name": "total-typescript-monorepo",
   "version": "1.0.0",
   "type": "module",
+  "packageManager": "pnpm@9.0.4",
   "description": "",
   "engines": {
     "node": ">=20",
@@ -25,7 +26,7 @@
     "@total-typescript/tsconfig": "^1.0.3",
     "@types/node": "^20.12.10",
     "prettier": "^3.2.5",
-    "turbo": "2.0.0-canary.1",
+    "turbo": "^1.13.3",
     "typescript": "^5.4.5",
     "vitest": "^1.6.0"
   }
