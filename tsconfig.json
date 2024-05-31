@@ -13,6 +13,9 @@
       "path": "./apps/scriptkit-sync/tsconfig.json"
     },
     {
+      "path": "./packages/twoslash-preview-shared/tsconfig.json",
+    },
+    {
       "path": "./apps/twoslash-preview/tsconfig.json"
     },
     {
@@ -21,9 +24,6 @@
     {
       "path": "./apps/twoslash-preview-server/tsconfig.json"
     },
-    {
-      "path": "./packages/twoslash-preview-shared/tsconfig.json"
-    }
   ],
   "files": [],
 }
