@@ -37,7 +37,6 @@ type SomeObject = {
 };
 
 // ---cut---
-
 type Example = {
   [K in keyof SomeObject]: {
     key: K;
@@ -59,7 +58,6 @@ type SomeObject = {
 };
 
 // ---cut---
-
 type Example = {
   [K in keyof SomeObject]: {
     index: number;
@@ -87,7 +85,6 @@ type SomeObject = {
 };
 
 // ---cut---
-
 export type Example = {
   [K in keyof SomeObject]: {
     index: number;
@@ -109,7 +106,6 @@ type SomeObject = {
 };
 
 // ---cut---
-
 export type Example = {
   [K in keyof SomeObject]: {
     index: number;
@@ -154,7 +150,6 @@ This lets us do really smart things within the scope where `F` is defined. What 
 type Fruit = "apple" | "banana" | "orange";
 
 // ---cut---
-
 export type FruitInfo = {
   [F in Fruit]: {
     thisFruit: F;

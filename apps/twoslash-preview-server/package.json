@@ -1,0 +1,28 @@
+{
+  "name": "@total-typescript/twoslash-preview-server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --enable-source-maps --watch dist/bin.js",
+    "start": "node --enable-source-maps dist/bin.js"
+  },
+  "dependencies": {
+    "@shikijs/rehype": "^1.6.1",
+    "@shikijs/twoslash": "^1.6.1",
+    "@total-typescript/shared": "workspace:*",
+    "@types/ws": "^8.5.4",
+    "chokidar": "^3.5.3",
+    "hast-util-to-html": "^9.0.1",
+    "lz-string": "^1.5.0",
+    "rehype-stringify": "^10.0.0",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.0",
+    "shiki": "^1.6.1",
+    "unified": "^11.0.4",
+    "ws": "^8.13.0",
+    "@total-typescript/twoslash-preview-shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3"
+  }
+}
