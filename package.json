@@ -11,10 +11,11 @@
   "scripts": {
     "ci": "turbo build test",
     "release": "pnpm run ci && changeset publish",
-    "write": "turbo dev cli-run --filter=twoslash-preview",
+    "write": "turbo start --filter=twoslash-preview --filter=twoslash-preview-server",
     "new": "(cd apps/written-content && pnpm run new)",
     "dev": "tsc -b --watch",
-    "build": "tsc -b"
+    "build": "tsc -b",
+    "twoslash-preview": "pnpm turbo run dev --filter twoslash-preview --filter=twoslash-preview-server --filter //"
   },
   "keywords": [],
   "author": "Matt Pocock",
@@ -27,10 +28,5 @@
     "turbo": "2.0.0-canary.1",
     "typescript": "^5.4.5",
     "vitest": "^1.6.0"
-  },
-  "pnpm": {
-    "overrides": {
-      "shiki": "^0.14.6"
-    }
   }
 }

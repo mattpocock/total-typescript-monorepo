@@ -1,0 +1,12 @@
+{
+  "name": "@total-typescript/twoslash-preview-shared",
+  "version": "0.0.1",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  }
+}

@@ -1,4 +1,7 @@
-import { CodeSnippet, WSEvent } from "../types";
+import {
+  CodeSnippet,
+  WSEvent,
+} from "@total-typescript/twoslash-preview-shared";
 import { useEffect, useState } from "react";
 
 export const useSubscribeToSocket = () => {
