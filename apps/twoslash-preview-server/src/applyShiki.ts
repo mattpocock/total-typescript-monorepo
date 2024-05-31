@@ -1,32 +1,25 @@
 import rehypeShiki from "@shikijs/rehype";
+import { rendererClassic, transformerTwoslash } from "@shikijs/twoslash";
+import { toHtml } from "hast-util-to-html";
+import lzString from "lz-string";
 import rehypeStringify from "rehype-stringify";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 import type { CodeSnippet, EncodedHTML } from "./types.js";
-import lzString from "lz-string";
-import { writeFileSync } from "fs";
-import { toHtml } from "hast-util-to-html";
-import { transformerTwoslash } from "@shikijs/twoslash";
 
 const visitNodes = (
   node: any,
-  type: string,
-  transformer: (node: {
-    type: "code";
-    lang: string;
-    meta: string;
-    value: string;
-  }) => void,
+  predicate: (node: any) => boolean,
+  transform: (node: any) => void,
 ) => {
-  console.log(node);
-  if (node.type === type) {
-    transformer(node);
+  if (predicate(node)) {
+    transform(node);
   }
 
   if (node.children) {
     for (const child of node.children) {
-      visitNodes(child, type, transformer);
+      visitNodes(child, predicate, transform);
     }
   }
 };
@@ -39,18 +32,19 @@ export const applyShiki = (() => {
       .use(rehypeShiki, {
         // or `theme` for a single theme
         theme: "dark-plus",
+        langs: ["typescript", "tsx", "ts", "json"],
         transformers: [
           transformerTwoslash({
-            langs: ["typescript", "tsx", "ts", "json"],
             throws: true,
             explicitTrigger: true,
+            renderer: rendererClassic(),
           }),
         ],
       })
       .use({
         plugins: [
-          () => (node) => {
-            (node.children || []).forEach((child: any) => {
+          () => (rootNode) => {
+            (rootNode.children || []).forEach((child: any) => {
               if (
                 child.tagName === "pre" &&
                 Array.isArray(child.properties.class)
