@@ -5,8 +5,7 @@
   "packageManager": "pnpm@9.1.4",
   "description": "",
   "engines": {
-    "node": ">=20",
-    "turbo": ">=1.13"
+    "node": ">=20"
   },
   "private": true,
   "scripts": {
