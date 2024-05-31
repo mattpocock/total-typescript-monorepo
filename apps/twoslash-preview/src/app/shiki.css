@@ -1,21 +1,22 @@
 /* ===== Basic ===== */
 :root {
-  --twoslash-border-color: #8888;
+  --twoslash-border-color: theme(colors.gray.700);
   --twoslash-underline-color: currentColor;
   --twoslash-highlighted-border: #c37d0d50;
   --twoslash-highlighted-bg: #c37d0d20;
-  --twoslash-popup-bg: #f8f8f8;
-  --twoslash-popup-color: inherit;
+  --twoslash-popup-bg: theme(colors.gray.900);
+  --twoslash-popup-color: theme(colors.gray.100);
   --twoslash-popup-shadow: rgba(0, 0, 0, 0.08) 0px 1px 4px;
-  --twoslash-docs-color: #888;
+  --twoslash-docs-color: theme(colors.gray.200);
   --twoslash-docs-font: sans-serif;
   --twoslash-code-font: inherit;
   --twoslash-code-font-size: 1em;
   --twoslash-matched-color: inherit;
-  --twoslash-unmatched-color: #888;
+  --twoslash-unmatched-color: theme(colors.gray.700);
   --twoslash-cursor-color: #8888;
-  --twoslash-error-color: #d45656;
-  --twoslash-error-bg: #d4565620;
+  --twoslash-error-color: theme(colors.red.100);
+  --twoslash-error-border-color: theme(colors.red.500);
+  --twoslash-error-bg: theme(colors.red.950);
   --twoslash-warn-color: #c37d0d;
   --twoslash-warn-bg: #c37d0d20;
   --twoslash-tag-color: #3772cf;
@@ -24,6 +25,18 @@
   --twoslash-tag-warn-bg: var(--twoslash-warn-bg);
   --twoslash-tag-annotate-color: #1ba673;
   --twoslash-tag-annotate-bg: #1ba67320;
+}
+
+pre.lsp {
+  @apply bg-gray-900 px-6;
+}
+
+.twoslash-popup-container {
+  @apply mt-2;
+}
+
+.twoslash-twoslash-query-presisted {
+  @apply relative;
 }
 
 /* Respect people's wishes to not have animations */
@@ -136,12 +149,13 @@
 .twoslash .twoslash-error-line {
   position: relative;
   background-color: var(--twoslash-error-bg);
-  border-left: 3px solid var(--twoslash-error-color);
+  border-left: 3px solid var(--twoslash-error-border-color);
   color: var(--twoslash-error-color);
   padding: 6px 12px;
   margin: 0.2em 0;
   min-width: 100%;
-  width: max-content;
+  @apply max-w-96;
+  white-space: pre-wrap;
 }
 
 .twoslash .twoslash-error-line.twoslash-error-level-warning {

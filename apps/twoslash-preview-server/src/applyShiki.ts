@@ -11,22 +11,16 @@ import { transformerTwoslash } from "@shikijs/twoslash";
 
 const visitNodes = (
   node: any,
-  type: string,
-  transformer: (node: {
-    type: "code";
-    lang: string;
-    meta: string;
-    value: string;
-  }) => void,
+  predicate: (node: any) => boolean,
+  transform: (node: any) => void,
 ) => {
-  console.log(node);
-  if (node.type === type) {
-    transformer(node);
+  if (predicate(node)) {
+    transform(node);
   }
 
   if (node.children) {
     for (const child of node.children) {
-      visitNodes(child, type, transformer);
+      visitNodes(child, predicate, transform);
     }
   }
 };
@@ -39,9 +33,9 @@ export const applyShiki = (() => {
       .use(rehypeShiki, {
         // or `theme` for a single theme
         theme: "dark-plus",
+        langs: ["typescript", "tsx", "ts", "json"],
         transformers: [
           transformerTwoslash({
-            langs: ["typescript", "tsx", "ts", "json"],
             throws: true,
             explicitTrigger: true,
           }),
@@ -49,8 +43,42 @@ export const applyShiki = (() => {
       })
       .use({
         plugins: [
-          () => (node) => {
-            (node.children || []).forEach((child: any) => {
+          () => (rootNode) => {
+            writeFileSync("node.json", JSON.stringify(rootNode, null, 2));
+
+            visitNodes(
+              rootNode,
+              (node) => {
+                return (
+                  node.type === "element" &&
+                  node.tagName === "span" &&
+                  node.properties?.class?.includes(
+                    "twoslash-query-presisted",
+                  ) &&
+                  node?.children?.[0]?.properties?.class ===
+                    "twoslash-popup-container"
+                );
+              },
+              (node) => {
+                console.log(node);
+                const containerNode = node.children[0];
+
+                (node.children as any[]).splice(0, 1);
+              },
+            );
+
+            visitNodes(
+              rootNode,
+              (node) =>
+                node.type === "element" &&
+                node.tagName === "pre" &&
+                node?.properties?.style,
+              (node) => {
+                delete node.properties.style;
+              },
+            );
+
+            (rootNode.children || []).forEach((child: any) => {
               if (
                 child.tagName === "pre" &&
                 Array.isArray(child.properties.class)

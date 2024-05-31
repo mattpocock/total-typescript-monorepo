@@ -18,7 +18,6 @@ Then, using that type in your `Icon` component:
 type Color = "primary" | "secondary" | string;
 
 // ---cut---
-
 type IconProps = {
   color: Color;
 };
@@ -42,7 +41,6 @@ type IconProps = {
 declare const Icon: FC<IconProps>;
 
 // ---cut---
-
 <Icon color="primary" />;
 ```
 
@@ -98,7 +96,6 @@ type IconProps = {
 declare const Icon: FC<IconProps>;
 
 // ---cut---
-
 <Icon color="primary" />;
 <Icon color="secondary" />;
 <Icon color="#fff" />;
