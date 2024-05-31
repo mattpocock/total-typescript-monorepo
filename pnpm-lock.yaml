@@ -115,6 +115,9 @@ importers:
       '@total-typescript/ts-reset':
         specifier: ^0.5.0
         version: 0.5.1
+      '@total-typescript/twoslash-preview-shared':
+        specifier: workspace:*
+        version: link:../../packages/twoslash-preview-shared
       '@types/react':
         specifier: 18.3.3
         version: 18.3.3
@@ -173,6 +176,9 @@ importers:
       '@total-typescript/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@total-typescript/twoslash-preview-shared':
+        specifier: workspace:*
+        version: link:../../packages/twoslash-preview-shared
       '@types/ws':
         specifier: ^8.5.4
         version: 8.5.10
@@ -242,6 +248,12 @@ importers:
         version: link:../shared
 
   packages/shared:
+    dependencies:
+      zod:
+        specifier: ^3.23.8
+        version: 3.23.8
+
+  packages/twoslash-preview-shared:
     dependencies:
       zod:
         specifier: ^3.23.8

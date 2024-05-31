@@ -20,6 +20,9 @@
     },
     {
       "path": "./apps/twoslash-preview-server/tsconfig.json"
+    },
+    {
+      "path": "./packages/twoslash-preview-shared/tsconfig.json"
     }
   ],
   "files": [],

@@ -7,7 +7,10 @@ import { readFile } from "fs/promises";
 import path from "path";
 import { type WebSocket, WebSocketServer } from "ws";
 import { applyShiki } from "./applyShiki.js";
-import type { CodeSnippet, WSEvent } from "./types.js";
+import type {
+  CodeSnippet,
+  WSEvent,
+} from "@total-typescript/twoslash-preview-shared";
 
 const DEMO_PATH = path.resolve(
   process.cwd(),

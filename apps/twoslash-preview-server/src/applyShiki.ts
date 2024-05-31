@@ -6,7 +6,10 @@ import rehypeStringify from "rehype-stringify";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
-import type { CodeSnippet, EncodedHTML } from "./types.js";
+import type {
+  CodeSnippet,
+  EncodedHTML,
+} from "@total-typescript/twoslash-preview-shared";
 
 const visitNodes = (
   node: any,
