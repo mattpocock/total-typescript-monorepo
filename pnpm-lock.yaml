@@ -24,8 +24,8 @@ importers:
         specifier: ^3.2.5
         version: 3.2.5
       turbo:
-        specifier: 1.13.4-canary.5
-        version: 1.13.4-canary.5
+        specifier: 2.0.0-canary.1
+        version: 2.0.0-canary.1
       typescript:
         specifier: ^5.4.5
         version: 5.4.5
@@ -3211,38 +3211,38 @@ packages:
     engines: {node: '>=8.0.0'}
     hasBin: true
 
-  turbo-darwin-64@1.13.4-canary.5:
-    resolution: {integrity: sha512-HdrDrM3Odgodm3HWsxy9YkjyKevb2ZXTrgvAz7NFNopH2q+bxkcq2CJ5a55pzU3Puj4OL3/b48gsZV+AjguHUg==}
+  turbo-darwin-64@2.0.0-canary.1:
+    resolution: {integrity: sha512-u6PvqskLYdGQSMkrERr4wAWnCdlUlMtlivQGwlp7f7qZiD1EE/pbYXTGhl825IJoWBs6BW5cFNjOjbIq6vq0ag==}
     cpu: [x64]
     os: [darwin]
 
-  turbo-darwin-arm64@1.13.4-canary.5:
-    resolution: {integrity: sha512-HjGYN1RtGqjKMWBMFSH9f/7GlLJoQharCwD8UvYJ0CNciGe3MT4HU/1LPE3rks4FGzvx4VZWxVyV6GQIguo/UQ==}
+  turbo-darwin-arm64@2.0.0-canary.1:
+    resolution: {integrity: sha512-aaVldKd8bUMIWxlBwBLF4WzQtmdn4lBTzvnjRZgaXx9AQTSZJ8jy3nGNPODcNof0H3Vir5KCuDpgz67f/kv8cQ==}
     cpu: [arm64]
     os: [darwin]
 
-  turbo-linux-64@1.13.4-canary.5:
-    resolution: {integrity: sha512-UoUjeik0up1Y5xNTTrqgy2lRseV0on8xGrVUAgKpcLajbR6MfxsLxhd/PE69lPLrNNlDwNilE2mC3//3ndj3lA==}
+  turbo-linux-64@2.0.0-canary.1:
+    resolution: {integrity: sha512-geI9nB0Rn4HNgz6b3w0x0rJQTWNwjt6whyfrQsAuc80r5FLONDDBvcMl4PMupQpEciZ7mqW65DsXA6cRsMsJjA==}
     cpu: [x64]
     os: [linux]
 
-  turbo-linux-arm64@1.13.4-canary.5:
-    resolution: {integrity: sha512-uUKYesLNUN1yPOx6MMrnU464RMLVFqKAJiqATCyWI07TrP+rOXybfGJIMxsDLRzIZGcMF0Ca5zBWf09+RDav5Q==}
+  turbo-linux-arm64@2.0.0-canary.1:
+    resolution: {integrity: sha512-QmqyV90NdQnjXh4uo/8ybG028Lpb5VIOuhqj/ZmI2nBydfmv+TaSu6KdHW96bqrGtcaxp4S1WOOBmHU8FyfOcg==}
     cpu: [arm64]
     os: [linux]
 
-  turbo-windows-64@1.13.4-canary.5:
-    resolution: {integrity: sha512-732U7rXP6QPJQ22ReiYDp8pTadNpns4pGWbVRgMDgTSiHzjq7DD55cnbphNx5IXOfEZX529D3Xo9C5AF56fSNA==}
+  turbo-windows-64@2.0.0-canary.1:
+    resolution: {integrity: sha512-CW0rjZgHEHOtE4YDNF6Tn3TmvQDVlM8peYI6lyjGYE7HFlBmsRelyNq50pc4nrzP/7lOgIrDLpNFuUsx73Os/w==}
     cpu: [x64]
     os: [win32]
 
-  turbo-windows-arm64@1.13.4-canary.5:
-    resolution: {integrity: sha512-gab6Jfam0YhNWOiLiIP4upuAR1ToY7sx/OJpruAjpeTsWlxwHBUt1Rp+XhONiho4DF+14HvErUtgg9B+XtAizw==}
+  turbo-windows-arm64@2.0.0-canary.1:
+    resolution: {integrity: sha512-uEYR987U+a5wkAUz6TCSf0rTX9hQ4c9vsAWUMG9D9YlJC/zUH6Wd6hL+79IAdZyp0/8P/SgMyrbjpUcVwi88mQ==}
     cpu: [arm64]
     os: [win32]
 
-  turbo@1.13.4-canary.5:
-    resolution: {integrity: sha512-CUGbOX83UkdU4bGojmSorQ2ENzD6bLsKWa5/kY5K2jxHDA0eyF0O9po9JyVVUOxXsBrwA5QIajmN7yNY2Zwdxg==}
+  turbo@2.0.0-canary.1:
+    resolution: {integrity: sha512-JB+yIWJkonwQce2rQWDDMJtLvehzu3mD5nYZyf1eWjdlCNdoEP6jsdIFb4eBkLIoEs6QyTX8vJHj9nXguc5ZjA==}
     hasBin: true
 
   type-check@0.4.0:
@@ -4959,7 +4959,7 @@ snapshots:
       '@typescript-eslint/parser': 5.62.0(eslint@8.57.0)(typescript@5.4.5)
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1(eslint@8.57.0))(eslint@8.57.0)
+      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@8.57.0)
       eslint-plugin-import: 2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
       eslint-plugin-jsx-a11y: 6.8.0(eslint@8.57.0)
       eslint-plugin-react: 7.34.1(eslint@8.57.0)
@@ -4978,12 +4978,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1(eslint@8.57.0))(eslint@8.57.0):
+  eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@8.57.0):
     dependencies:
       debug: 4.3.4
       enhanced-resolve: 5.16.1
       eslint: 8.57.0
-      eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0)
+      eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@8.57.0))(eslint@8.57.0)
       eslint-plugin-import: 2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
       fast-glob: 3.3.2
       get-tsconfig: 4.7.4
@@ -4995,14 +4995,14 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-module-utils@2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0):
+  eslint-module-utils@2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@8.57.0))(eslint@8.57.0):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
       '@typescript-eslint/parser': 5.62.0(eslint@8.57.0)(typescript@5.4.5)
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1(eslint@8.57.0))(eslint@8.57.0)
+      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@8.57.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -5016,7 +5016,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0)
+      eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@8.57.0))(eslint@8.57.0)
       hasown: 2.0.2
       is-core-module: 2.13.1
       is-glob: 4.0.3
@@ -6979,32 +6979,32 @@ snapshots:
       wcwidth: 1.0.1
       yargs: 17.7.2
 
-  turbo-darwin-64@1.13.4-canary.5:
+  turbo-darwin-64@2.0.0-canary.1:
     optional: true
 
-  turbo-darwin-arm64@1.13.4-canary.5:
+  turbo-darwin-arm64@2.0.0-canary.1:
     optional: true
 
-  turbo-linux-64@1.13.4-canary.5:
+  turbo-linux-64@2.0.0-canary.1:
     optional: true
 
-  turbo-linux-arm64@1.13.4-canary.5:
+  turbo-linux-arm64@2.0.0-canary.1:
     optional: true
 
-  turbo-windows-64@1.13.4-canary.5:
+  turbo-windows-64@2.0.0-canary.1:
     optional: true
 
-  turbo-windows-arm64@1.13.4-canary.5:
+  turbo-windows-arm64@2.0.0-canary.1:
     optional: true
 
-  turbo@1.13.4-canary.5:
+  turbo@2.0.0-canary.1:
     optionalDependencies:
-      turbo-darwin-64: 1.13.4-canary.5
-      turbo-darwin-arm64: 1.13.4-canary.5
-      turbo-linux-64: 1.13.4-canary.5
-      turbo-linux-arm64: 1.13.4-canary.5
-      turbo-windows-64: 1.13.4-canary.5
-      turbo-windows-arm64: 1.13.4-canary.5
+      turbo-darwin-64: 2.0.0-canary.1
+      turbo-darwin-arm64: 2.0.0-canary.1
+      turbo-linux-64: 2.0.0-canary.1
+      turbo-linux-arm64: 2.0.0-canary.1
+      turbo-windows-64: 2.0.0-canary.1
+      turbo-windows-arm64: 2.0.0-canary.1
 
   type-check@0.4.0:
     dependencies:
