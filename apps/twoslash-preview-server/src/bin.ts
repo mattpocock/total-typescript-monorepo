@@ -114,8 +114,10 @@ const main = async () => {
 
   if (!filePath) {
     await runShikiOnFilePath(DEMO_PATH);
-  } else if (filePath.startsWith(root)) {
+  } else if (filePath.startsWith(root) && filePath.endsWith(".md")) {
     await runShikiOnFilePath(filePath);
+  } else {
+    await runShikiOnFilePath(DEMO_PATH);
   }
 
   chokidar
