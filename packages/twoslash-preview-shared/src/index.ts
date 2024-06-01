@@ -9,3 +9,5 @@ export type EncodedHTML = string & { __brand: "EncodedHTML" };
 export type CodeSnippet = {
   rawHtml: EncodedHTML;
 };
+
+export * from "./applyShiki.js";

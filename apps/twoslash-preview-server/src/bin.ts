@@ -6,10 +6,10 @@ import chokidar from "chokidar";
 import { readFile } from "fs/promises";
 import path from "path";
 import { type WebSocket, WebSocketServer } from "ws";
-import { applyShiki } from "./applyShiki.js";
-import type {
-  CodeSnippet,
-  WSEvent,
+import {
+  type CodeSnippet,
+  type WSEvent,
+  applyShiki,
 } from "@total-typescript/twoslash-preview-shared";
 
 const DEMO_PATH = path.resolve(
