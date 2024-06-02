@@ -252,7 +252,7 @@ importers:
         version: 1.6.1
       '@shikijs/twoslash':
         specifier: ^1.6.1
-        version: 1.6.1(typescript@5.4.5)
+        version: 1.6.2(typescript@5.4.5)
       hast-util-to-html:
         specifier: ^9.0.1
         version: 9.0.1
@@ -861,14 +861,17 @@ packages:
   '@shikijs/core@1.6.1':
     resolution: {integrity: sha512-CqYyepN4SnBopaoXYwng4NO8riB5ask/LTCkhOFq+GNGtr2X+aKeD767eYdqYukeixEUvv4bXdyTYVaogj7KBw==}
 
+  '@shikijs/core@1.6.2':
+    resolution: {integrity: sha512-guW5JeDzZ7uwOjTfCOFZ2VtVXk5tmkMzBYbKGfXsmAH1qYOej49L5jQDcGmwd6/OgvpmWhzO2GNJkQIFnbwLPQ==}
+
   '@shikijs/rehype@1.6.1':
     resolution: {integrity: sha512-qBmZ93ASVX0tfuHvXB9EzgsAEcPmpk1R3I600JgaIBTljF+GsNxhJ+QL7dIVP8QvH6YslQ4jMx/2YC9DSDuCaw==}
 
   '@shikijs/transformers@1.6.1':
     resolution: {integrity: sha512-m/h2Dh99XWvTzHL8MUQmEnrB+/gxDljIfgDNR00Zg941KENqORx8Hi9sKpGYjCgXoEJKASZlEMQdPnkHj9/8aQ==}
 
-  '@shikijs/twoslash@1.6.1':
-    resolution: {integrity: sha512-VluGZXQ97sDFyxneOzsPkEHK06A6C1SRDh+kSM9AZAkzHorZaGxF4awgA3rh2K0oZnR94NZzfhq8GtERm38EEQ==}
+  '@shikijs/twoslash@1.6.2':
+    resolution: {integrity: sha512-s2dtnY0WY9RagnS3z2tkS4hNhz2mW2DXlfo3XmfT2yExkFQ4kg3W/gquB07hl4ebIuwI87u2sppVYBUZQQ53RA==}
 
   '@sinclair/typebox@0.27.8':
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
@@ -1415,6 +1418,15 @@ packages:
 
   debug@4.3.4:
     resolution: {integrity: sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==}
+    engines: {node: '>=6.0'}
+    peerDependencies:
+      supports-color: '*'
+    peerDependenciesMeta:
+      supports-color:
+        optional: true
+
+  debug@4.3.5:
+    resolution: {integrity: sha512-pt0bNEmneDIvdL1Xsd9oDQ/wrQRkXDT4AUWlNZNPKvW5x/jyO9VFXkJUP07vQ2upmw5PlaITaPKc31jK13V+jg==}
     engines: {node: '>=6.0'}
     peerDependencies:
       supports-color: '*'
@@ -4025,6 +4037,8 @@ snapshots:
 
   '@shikijs/core@1.6.1': {}
 
+  '@shikijs/core@1.6.2': {}
+
   '@shikijs/rehype@1.6.1':
     dependencies:
       '@shikijs/transformers': 1.6.1
@@ -4038,9 +4052,9 @@ snapshots:
     dependencies:
       shiki: 1.6.1
 
-  '@shikijs/twoslash@1.6.1(typescript@5.4.5)':
+  '@shikijs/twoslash@1.6.2(typescript@5.4.5)':
     dependencies:
-      '@shikijs/core': 1.6.1
+      '@shikijs/core': 1.6.2
       twoslash: 0.2.6(typescript@5.4.5)
     transitivePeerDependencies:
       - supports-color
@@ -4182,7 +4196,7 @@ snapshots:
 
   '@typescript/vfs@1.5.0':
     dependencies:
-      debug: 4.3.4
+      debug: 4.3.5
     transitivePeerDependencies:
       - supports-color
 
@@ -4649,6 +4663,10 @@ snapshots:
       ms: 2.1.2
 
   debug@4.3.4:
+    dependencies:
+      ms: 2.1.2
+
+  debug@4.3.5:
     dependencies:
       ms: 2.1.2
 
