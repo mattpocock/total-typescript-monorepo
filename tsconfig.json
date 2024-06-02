@@ -1,28 +1,31 @@
 {
   "references": [
     {
-      "path": "./packages/shared/tsconfig.json"
+      "path": "./packages/shared"
     },
     {
-      "path": "./packages/ffmpeg/tsconfig.json"
+      "path": "./packages/ffmpeg"
     },
     {
-      "path": "./apps/internal-cli/tsconfig.json"
+      "path": "./apps/internal-cli"
     },
     {
-      "path": "./apps/scriptkit-sync/tsconfig.json"
+      "path": "./apps/scriptkit-sync"
     },
     {
-      "path": "./packages/twoslash-preview-shared/tsconfig.json",
+      "path": "./packages/twoslash-preview-shared",
     },
     {
-      "path": "./apps/twoslash-preview/tsconfig.json"
+      "path": "./apps/twoslash-preview"
     },
     {
-      "path": "./apps/exercise-cli/tsconfig.json"
+      "path": "./apps/exercise-cli"
     },
     {
-      "path": "./apps/twoslash-preview-server/tsconfig.json"
+      "path": "./apps/twoslash-preview-server"
+    },
+    {
+      "path": "./apps/twoslash-to-email"
     },
   ],
   "files": [],

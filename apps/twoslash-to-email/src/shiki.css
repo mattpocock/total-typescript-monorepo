@@ -1,35 +1,14 @@
-/*  Start of Shiki Twoslash CSS:
-
-Code blocks structurally look like: 
-
-<pre class='shiki lsp twoslash [theme-name]'>
-  <div class='language-id'>[lang-id]</div>
-    <div class='code-container'>
-      <code>[the code as a series of spans]</code>
-      <a href='playground...'>Try</a> (optional)
-    </div>
-  </pre> 
-*/
-
 .shiki {
-  @apply !bg-gray-900 pl-12 pr-16 text-2xl;
-  line-height: 2.1rem;
+  @apply !bg-gray-900 px-6 py-6 text-base;
 }
 
 pre {
-  /* All code samples get a grey border, twoslash ones get a different color */
-  /* border-left: 1px solid #999;
-  border-bottom: 1px solid #999; */
-
-  /* Important to allow the code to move horizontally; */
   overflow-x: auto;
   position: relative;
 }
+
 pre.shiki {
   overflow-x: auto;
-}
-pre.shiki:hover .dim {
-  opacity: 1;
 }
 pre.shiki div.dim {
   opacity: 0.5;
@@ -47,67 +26,12 @@ pre.shiki div.line {
   min-height: 1rem;
 }
 
-/** Don't show the language identifiers */
 pre.shiki .language-id {
   display: none;
 }
 
-/* Visually differentiates twoslash code samples  */
-pre.twoslash {
-  border-color: #719af4;
-}
-
-/** When you mouse over the pre, show the underlines */
-pre.twoslash:hover data-lsp {
-  border-color: #747474;
-}
-
-/** The tooltip-like which provides the LSP response */
-pre.twoslash data-lsp:hover::before {
-  content: attr(lsp);
-  position: absolute;
-  transform: translate(0, 1rem);
-
-  @apply text-base bg-gray-600;
-  color: #fff;
-  text-align: left;
-  padding: 5px 8px;
-  border-radius: 2px;
-  line-height: 1.6rem;
-  font-family: 'JetBrains Mono', Menlo, Monaco, Consolas, Courier New, monospace;
-  white-space: pre-wrap;
-  z-index: 100;
-}
-
 pre .code-container {
   overflow: auto;
-}
-/* The try button */
-pre .code-container > a {
-  position: absolute;
-  right: 8px;
-  bottom: 8px;
-  border-radius: 4px;
-  border: 1px solid #719af4;
-  padding: 0 8px;
-  color: #719af4;
-  text-decoration: none;
-  opacity: 0;
-  transition-timing-function: ease;
-  transition: opacity 0.3s;
-}
-/* Respect no animations */
-@media (prefers-reduced-motion: reduce) {
-  pre .code-container > a {
-    transition: none;
-  }
-}
-pre .code-container > a:hover {
-  color: white;
-  background-color: #719af4;
-}
-pre .code-container:hover a {
-  opacity: 1;
 }
 
 pre code {
@@ -115,6 +39,7 @@ pre code {
   white-space: pre;
   -webkit-overflow-scrolling: touch;
 }
+
 pre code a {
   text-decoration: none;
 }
@@ -130,12 +55,6 @@ pre .query {
   display: inline-block;
 }
 
-/* In order to have the 'popped out' style design and to not break the layout
-  /* we need to place a fake and un-selectable copy of the error which _isn't_ broken out
-  /* behind the actual error message.
-
-  /* This sections keeps both of those two in in sync  */
-
 pre .error,
 pre .error-behind {
   margin-left: -14px;
@@ -146,7 +65,7 @@ pre .error-behind {
 	padding-right: 14px;
   white-space: pre-wrap;
   display: block;
-  @apply max-w-2xl text-lg;
+  @apply max-w-2xl text-sm;
 }
 pre .error {
   @apply bg-gray-800 text-red-50;
@@ -186,7 +105,7 @@ pre .popover {
   padding: 0 0.5rem 0.3rem;
   margin-top: 10px;
   border-radius: 3px;
-  @apply max-w-2xl text-lg;
+  @apply max-w-2xl text-sm;
 }
 /* Completion */
 pre .inline-completions ul.dropdown {
@@ -235,12 +154,6 @@ data-lsp {
   /* Fades in unobtrusively */
   transition-timing-function: ease;
   transition: border-color 0.3s;
-}
-/* Respect people's wishes to not have animations */
-@media (prefers-reduced-motion: reduce) {
-  data-lsp {
-    transition: none;
-  }
 }
 
 /** Annotations support, providing a tool for meta commentary */

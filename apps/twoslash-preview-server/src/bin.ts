@@ -10,12 +10,8 @@ import {
   type CodeSnippet,
   type WSEvent,
   applyShiki,
+  SHIKI_TEST_LOCATION,
 } from "@total-typescript/twoslash-preview-shared";
-
-const DEMO_PATH = path.resolve(
-  process.cwd(),
-  "../written-content/emails/loose-autocomplete/email.md",
-) as AbsolutePath;
 
 const server = new WebSocketServer({ port: 3001 });
 
@@ -113,15 +109,15 @@ const main = async () => {
   const filePath = await getActiveEditorFilePath();
 
   if (!filePath) {
-    await runShikiOnFilePath(DEMO_PATH);
+    await runShikiOnFilePath(SHIKI_TEST_LOCATION as AbsolutePath);
   } else if (filePath.startsWith(root) && filePath.endsWith(".md")) {
     await runShikiOnFilePath(filePath);
   } else {
-    await runShikiOnFilePath(DEMO_PATH);
+    await runShikiOnFilePath(SHIKI_TEST_LOCATION as AbsolutePath);
   }
 
   chokidar
-    .watch([contentPath], {
+    .watch([contentPath, SHIKI_TEST_LOCATION], {
       ignored: ["**/node_modules/**", "**/.next/**"],
     })
     .on("change", runShikiOnFilePath);

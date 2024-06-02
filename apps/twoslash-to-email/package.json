@@ -1,0 +1,25 @@
+{
+  "name": "@total-typescript/twoslash-to-email",
+  "private": true,
+  "bin": {
+    "twoslash-to-email": "./dist/bin.js"
+  },
+  "type": "module",
+  "scripts": {
+    "setup": "(npm unlink | true) && npm link",
+    "build": "tailwind -i src/shiki.css -o dist/output.css",
+    "dev": "pnpm run build --watch"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "devDependencies": {
+    "@total-typescript/ts-reset": "^0.5.1"
+  },
+  "dependencies": {
+    "tailwindcss": "^3.4.3",
+    "@total-typescript/shared": "workspace:*",
+    "@total-typescript/twoslash-preview-shared": "workspace:*",
+    "commander": "^12.0.0"
+  }
+}

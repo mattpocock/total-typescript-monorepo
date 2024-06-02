@@ -9,19 +9,17 @@ I call it the **IIMT** (rhymes with 'limped'): the **Immediately Indexed Mapped 
 Here's what it looks like:
 
 ```ts twoslash
+// @errors: 2537 2538 2552
 type SomeObject = {
   a: string;
   b: number;
 };
 
 type Example = {
-  [K in keyof SomeObject]: {
+  [K in keyof SomeObjec]: {
     key: K;
   };
-}[keyof SomeObject];
-
-type Result = Example;
-//   ^?
+};
 ```
 
 This can look really confusing at first glance - but it's really just a two-step process.
@@ -44,7 +42,6 @@ type Example = {
 };
 
 type Result = Example;
-//   ^?
 ```
 
 This mapped type iterates over the keys of `SomeObject` and creates a new object type for each key. So, we end up with `Example` being an object with two properties: `a` and `b`, each with a `key` property.

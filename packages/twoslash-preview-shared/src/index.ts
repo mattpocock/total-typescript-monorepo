@@ -1,3 +1,5 @@
+import path from "path";
+
 export type WSEvent = {
   type: "new-html";
   html: string;
@@ -11,3 +13,8 @@ export type CodeSnippet = {
 };
 
 export * from "./applyShiki.js";
+
+export const SHIKI_TEST_LOCATION = path.resolve(
+  import.meta.dirname,
+  "../shiki-test.md",
+);

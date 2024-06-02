@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "pnpm run build --watch",
     "build": "esbuild --bundle src/bin.ts --platform=node --outfile=dist/bin.js --packages=external --format=esm",
-    "setup": "(yarn unlink --global | true) && yarn link --global"
+    "setup": "(npm unlink | true) && npm link"
   },
   "keywords": [],
   "author": "Matt Pocock",
