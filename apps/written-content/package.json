@@ -6,7 +6,8 @@
   },
   "type": "module",
   "scripts": {
-    "new": "node ./new-noteworthy-topic.js"
+    "new": "node ./new-noteworthy-topic.js",
+    "scratch": "SCRATCH=true node ./new-noteworthy-topic.js"
   },
   "devDependencies": {
     "twoslash-preview": "workspace:*",
