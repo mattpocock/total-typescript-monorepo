@@ -22,6 +22,11 @@ export const EXTERNAL_DRIVE_RAW_FOOTAGE_ROOT = path.join(
   "obs-output",
 ) as AbsolutePath;
 
+export const DESKTOP_LOCATION = path.join(
+  os.homedir(),
+  "Desktop",
+) as AbsolutePath;
+
 export const SCRIPTKIT_VSCODE_LOCATION = path.join(
   os.homedir(),
   ".kit",
@@ -76,3 +81,7 @@ export const DAVINCI_RESOLVE_PROJECTS_LOCATION = path.join(
   "guest",
   "Projects",
 ) as AbsolutePath;
+
+type OBSOutputMode = "external-drive" | "desktop";
+
+export const OBS_OUTPUT_MODE: OBSOutputMode = "external-drive";

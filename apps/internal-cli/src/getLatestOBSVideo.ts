@@ -1,6 +1,8 @@
 import {
+  DESKTOP_LOCATION,
   EXTERNAL_DRIVE_RAW_FOOTAGE_ROOT,
   ExternalDriveNotFoundError,
+  OBS_OUTPUT_MODE,
   exitProcessWithError,
   getExternalDrive,
   type AbsolutePath,
@@ -19,6 +21,12 @@ export const getLatestMp4File = async (
 };
 
 export const getLatestOBSVideo = async () => {
+  if (OBS_OUTPUT_MODE === "desktop") {
+    const video = await getLatestMp4File(DESKTOP_LOCATION);
+
+    return video;
+  }
+
   const result = await getExternalDrive();
 
   if (result instanceof ExternalDriveNotFoundError) {

@@ -75,7 +75,6 @@ export const commands = createCommands([
     fileName: "append-video-to-timeline",
     description: "Append the latest OBS video to the Davinci Resolve timeline.",
     cliCommand: "append-video-to-timeline",
-    args: ["FPS"],
     run: appendVideoToTimeline,
   },
   {
