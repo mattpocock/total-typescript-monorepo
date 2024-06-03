@@ -4,6 +4,9 @@
       "path": "./packages/shared"
     },
     {
+      "path": "./packages/env"
+    },
+    {
       "path": "./packages/ffmpeg"
     },
     {

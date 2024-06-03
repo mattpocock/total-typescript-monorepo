@@ -1,15 +1,12 @@
 {
-  "name": "@total-typescript/shared",
+  "name": "@total-typescript/env",
   "version": "0.0.1",
   "type": "module",
-  "scripts": {
-    "test": "vitest run"
-  },
   "exports": {
     ".": "./dist/index.js"
   },
   "dependencies": {
     "zod": "^3.23.8",
-    "@total-typescript/env": "workspace:*"
+    "dotenv": "^16.4.5"
   }
 }

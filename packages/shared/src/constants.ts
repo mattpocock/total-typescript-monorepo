@@ -1,11 +1,9 @@
 import path from "path";
 import os from "os";
 import type { AbsolutePath } from "./types.js";
+import { env } from "@total-typescript/env";
 
-export const EXTERNAL_DRIVE_ROOT = path.join(
-  "/Volumes",
-  "t7-shield",
-) as AbsolutePath;
+export const EXTERNAL_DRIVE_ROOT = env.EXTERNAL_DRIVE_ROOT;
 
 export const EXTERNAL_DRIVE_MOVIES_ROOT = path.join(
   EXTERNAL_DRIVE_ROOT,
@@ -82,6 +80,4 @@ export const DAVINCI_RESOLVE_PROJECTS_LOCATION = path.join(
   "Projects",
 ) as AbsolutePath;
 
-type OBSOutputMode = "external-drive" | "desktop";
-
-export const OBS_OUTPUT_MODE: OBSOutputMode = "external-drive";
+export const OBS_OUTPUT_MODE = env.OBS_OUTPUT_MODE;

@@ -233,6 +233,15 @@ importers:
         specifier: ^5.0.10
         version: 5.2.12(@types/node@20.12.11)
 
+  packages/env:
+    dependencies:
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.4.5
+      zod:
+        specifier: ^3.23.8
+        version: 3.23.8
+
   packages/ffmpeg:
     dependencies:
       '@total-typescript/shared':
@@ -241,6 +250,9 @@ importers:
 
   packages/shared:
     dependencies:
+      '@total-typescript/env':
+        specifier: workspace:*
+        version: link:../env
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -1495,6 +1507,10 @@ packages:
   doctrine@2.1.0:
     resolution: {integrity: sha512-35mSku4ZXK0vfCuHEDAwt55dg2jNajHZ1odvF+8SSr82EsZY4QmXfuWso8oEd8zRhVObSN18aM0CjSdoBX7zIw==}
     engines: {node: '>=0.10.0'}
+
+  dotenv@16.4.5:
+    resolution: {integrity: sha512-ZmdL2rui+eB2YwhsWzjInR8LldtZHGDoQ1ugH85ppHKwpUHL7j7rN0Ti9NCnGiQbhaZ11FpR+7ao1dNsmduNUg==}
+    engines: {node: '>=12'}
 
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
@@ -4727,6 +4743,8 @@ snapshots:
   doctrine@2.1.0:
     dependencies:
       esutils: 2.0.3
+
+  dotenv@16.4.5: {}
 
   eastasianwidth@0.2.0: {}
 
