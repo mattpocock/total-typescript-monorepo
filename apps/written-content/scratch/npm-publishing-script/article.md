@@ -14,7 +14,7 @@ B-ROLL(https://blog.isquaredsoftware.com/2023/08/esm-modernization-lessons): The
 
 FACE: I made a video on this last year, but things have changed since.
 
-FACE: I'll tell you exactly what's changed at the end of the video. But, for now, I'll show you my new recommended setup for publishing to `npm`.
+FACE: So, I'll show you my new recommended setup for publishing to `npm`.
 
 ## Package Setup
 
