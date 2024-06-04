@@ -41,7 +41,7 @@ export const appendVideoToTimeline = async () => {
 
   writeFileSync(textFileOutput, silenceResult.rawStdout);
 
-  const serialisedClipsOfSpeaking = silenceResult.allSpeakingClips
+  const serialisedClipsOfSpeaking = silenceResult.speakingClips
     .map((clip) => {
       return `${clip.startFrame}___${clip.endFrame}`;
     })
