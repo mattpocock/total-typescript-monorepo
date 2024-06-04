@@ -2,12 +2,13 @@ import lzString from "lz-string";
 import { NextApiHandler } from "next";
 import { z } from "zod";
 import { createUrl } from "../../app/createUrl";
-import { applyShiki } from "../../cli/applyShiki";
+import { applyShiki } from "@total-typescript/twoslash-shared";
 
-const prop =
-  <TKey extends PropertyKey>(key: TKey) =>
-  <T extends Record<TKey, any>>(obj: T) =>
-    obj[key];
+export const config = {
+  api: {
+    responseLimit: false,
+  },
+};
 
 const query = z.object({
   link: z

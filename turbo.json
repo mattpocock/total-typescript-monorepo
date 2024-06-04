@@ -11,15 +11,26 @@
       "persistent": true
     },
     "test": {
-      "cache": false,
-      "persistent": true
+      "cache": true
     },
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "//#build"],
       "outputs": ["dist", "tsconfig.tsbuildinfo", ".next", "build"]
     },
     "start": {
       "dependsOn": ["build"],
+      "cache": false,
+      "persistent": true
+    },
+    "//#build": {
+      "outputs": [
+        "packages/*/dist",
+        "packages/*/*.tsbuildinfo",
+        "apps/*/dist",
+        "apps/*/*.tsbuildinfo"
+      ]
+    },
+    "//#dev": {
       "cache": false,
       "persistent": true
     }

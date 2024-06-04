@@ -1,0 +1,19 @@
+{
+  "name": "@total-typescript/twoslash-shared",
+  "version": "0.0.1",
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "dependencies": {
+    "lz-string": "^1.5.0",
+    "@shikijs/rehype": "^1.6.1",
+    "@shikijs/twoslash": "^1.6.1",
+    "hast-util-to-html": "^9.0.1",
+    "rehype-stringify": "^10.0.0",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.0",
+    "shiki": "^1.6.1",
+    "unified": "^11.0.4"
+  }
+}

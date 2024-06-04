@@ -1,0 +1,12 @@
+{
+  "name": "@total-typescript/env",
+  "version": "0.0.1",
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "dependencies": {
+    "zod": "^3.23.8",
+    "dotenv": "^16.4.5"
+  }
+}

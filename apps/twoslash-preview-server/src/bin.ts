@@ -1,10 +1,17 @@
-import { applyShiki } from "./applyShiki.js";
-import { CodeSnippet, WSEvent } from "../types.js";
+import {
+  type AbsolutePath,
+  getActiveEditorFilePath,
+} from "@total-typescript/shared";
 import chokidar from "chokidar";
 import { readFile } from "fs/promises";
-import { homedir } from "os";
 import path from "path";
-import { WebSocket, WebSocketServer } from "ws";
+import { type WebSocket, WebSocketServer } from "ws";
+import {
+  type CodeSnippet,
+  type WSEvent,
+  applyShiki,
+  SHIKI_TEST_LOCATION,
+} from "@total-typescript/twoslash-shared";
 
 const server = new WebSocketServer({ port: 3001 });
 
@@ -67,11 +74,12 @@ server.on("connection", (client) => {
 });
 
 const contentPath = path.resolve(process.cwd(), `../written-content/**/*.md`);
+const root = path.resolve(process.cwd(), "../written-content");
 
-console.log(contentPath);
+const runShikiOnFilePath = async (filePath: AbsolutePath) => {
+  console.clear();
+  console.log("File changed: " + path.relative(root, filePath));
 
-chokidar.watch([contentPath]).on("change", async (filePath) => {
-  console.log("File changed:", filePath);
   try {
     let contents = await readFile(filePath, "utf-8");
 
@@ -85,7 +93,34 @@ chokidar.watch([contentPath]).on("change", async (filePath) => {
     const { html, snippets } = await applyShiki(contents);
 
     updateHtml(html, snippets);
-  } catch (e) {
-    console.log(e);
+    console.log("No errors found!");
+  } catch (e: any) {
+    if (e.title && e.description && e.recommendation) {
+      console.log(e.title);
+      console.log(e.description);
+      console.log(e.recommendation);
+    } else {
+      console.error(e);
+    }
   }
-});
+};
+
+const main = async () => {
+  const filePath = await getActiveEditorFilePath();
+
+  if (!filePath) {
+    await runShikiOnFilePath(SHIKI_TEST_LOCATION as AbsolutePath);
+  } else if (filePath.startsWith(root) && filePath.endsWith(".md")) {
+    await runShikiOnFilePath(filePath);
+  } else {
+    await runShikiOnFilePath(SHIKI_TEST_LOCATION as AbsolutePath);
+  }
+
+  chokidar
+    .watch([contentPath, SHIKI_TEST_LOCATION], {
+      ignored: ["**/node_modules/**", "**/.next/**"],
+    })
+    .on("change", runShikiOnFilePath);
+};
+
+main().catch(console.error);

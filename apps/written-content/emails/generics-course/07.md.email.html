@@ -1,0 +1,354 @@
+<style>
+.shiki {
+  --tw-bg-opacity: 1 !important;
+  background-color: rgb(17 24 39 / var(--tw-bg-opacity)) !important;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+pre {
+  overflow-x: auto;
+  position: relative;
+}
+
+pre.shiki {
+  overflow-x: auto;
+}
+
+pre.shiki div.dim {
+  opacity: 0.5;
+}
+
+pre.shiki div.dim,
+pre.shiki div.highlight {
+  margin: 0;
+  padding: 0;
+}
+
+pre.shiki div.highlight {
+  opacity: 1;
+  background-color: #f1f8ff;
+}
+
+pre.shiki div.line {
+  min-height: 1rem;
+}
+
+pre.shiki .language-id {
+  display: none;
+}
+
+pre .code-container {
+  overflow: auto;
+}
+
+pre code {
+  font-family: 'JetBrains Mono', Menlo, Monaco, Consolas, Courier New, monospace;
+  white-space: pre;
+  -webkit-overflow-scrolling: touch;
+}
+
+pre code a {
+  text-decoration: none;
+}
+
+pre data-err {
+  /* Extracted from VS Code */
+  background: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%206%203'%20enable-background%3D'new%200%200%206%203'%20height%3D'3'%20width%3D'6'%3E%3Cg%20fill%3D'%23c94824'%3E%3Cpolygon%20points%3D'5.5%2C0%202.5%2C3%201.1%2C3%204.1%2C0'%2F%3E%3Cpolygon%20points%3D'4%2C0%206%2C2%206%2C0.6%205.4%2C0'%2F%3E%3Cpolygon%20points%3D'0%2C2%201%2C3%202.4%2C3%200%2C0.6'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E")
+    repeat-x bottom left;
+  padding-bottom: 3px;
+}
+
+pre .query {
+  margin-bottom: 10px;
+  color: #137998;
+  display: inline-block;
+}
+
+pre .error,
+pre .error-behind {
+  margin-left: -14px;
+  margin-top: 8px;
+  margin-bottom: 4px;
+  padding: 6px;
+  padding-left: 14px;
+  padding-right: 14px;
+  white-space: pre-wrap;
+  display: block;
+  max-width: 42rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+pre .error {
+  --tw-bg-opacity: 1;
+  background-color: rgb(31 41 55 / var(--tw-bg-opacity));
+  --tw-text-opacity: 1;
+  color: rgb(254 242 242 / var(--tw-text-opacity));
+  position: absolute;
+  border-left: 4px solid #bf1818;
+  /* Give the space to the error code */
+  display: flex;
+  align-items: center;
+}
+
+pre .error .code {
+  display: none;
+}
+
+pre .error-behind {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+  visibility: transparent;
+  color: transparent;
+}
+
+/* Queries */
+
+pre .arrow {
+  /* Transparent background */
+  --tw-bg-opacity: 1;
+  background-color: rgb(31 41 55 / var(--tw-bg-opacity));
+  position: relative;
+  top: -7px;
+  margin-left: 0.1rem;
+  /* Edges */
+  border-left: 1px solid rgb(51, 65, 85);
+  border-top: 1px solid rgb(51, 65, 85);
+  transform: translateY(25%) rotate(45deg);
+  /* Size */
+  height: 8px;
+  width: 8px;
+}
+
+pre .popover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(31 41 55 / var(--tw-bg-opacity));
+  --tw-text-opacity: 1;
+  color: rgb(243 244 246 / var(--tw-text-opacity));
+  margin-bottom: 10px;
+  display: inline-block;
+  padding: 0 0.5rem 0.3rem;
+  margin-top: 10px;
+  border-radius: 3px;
+  max-width: 42rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+/* Completion */
+
+pre .inline-completions ul.dropdown {
+  display: inline-block;
+  position: absolute;
+  width: 240px;
+  background-color: gainsboro;
+  color: grey;
+  padding-top: 4px;
+  font-family: var(--code-font);
+  font-size: 0.8rem;
+  margin: 0;
+  padding: 0;
+  border-left: 4px solid #4b9edd;
+}
+
+pre .inline-completions ul.dropdown::before {
+  background-color: #4b9edd;
+  width: 2px;
+  position: absolute;
+  top: -1.2rem;
+  left: -3px;
+  content: ' ';
+}
+
+pre .inline-completions ul.dropdown li {
+  overflow-x: hidden;
+  padding-left: 4px;
+  margin-bottom: 4px;
+}
+
+pre .inline-completions ul.dropdown li.deprecated {
+  text-decoration: line-through;
+}
+
+pre .inline-completions ul.dropdown li span.result-found {
+  color: #4b9edd;
+}
+
+pre .inline-completions ul.dropdown li span.result {
+  width: 100px;
+  color: black;
+  display: inline-block;
+}
+
+.dark-theme .markdown pre {
+  background-color: #d8d8d8;
+  border-color: #ddd;
+  filter: invert(98%) hue-rotate(180deg);
+}
+
+data-lsp {
+  /* Fades in unobtrusively */
+  transition-timing-function: ease;
+  transition: border-color 0.3s;
+}
+
+/** Annotations support, providing a tool for meta commentary */
+
+.tag-container {
+  position: relative;
+}
+
+.tag-container .twoslash-annotation {
+  position: absolute;
+  font-family: 'JetBrains Mono', Menlo, Monaco, Consolas, Courier New, monospace;
+  right: -10px;
+  /** Default annotation text to 200px */
+  width: 200px;
+  color: #187abf;
+  background-color: #fcf3d9 bb;
+}
+
+.tag-container .twoslash-annotation p {
+  text-align: left;
+  font-size: 0.8rem;
+  line-height: 0.9rem;
+}
+
+.tag-container .twoslash-annotation svg {
+  float: left;
+  margin-left: -44px;
+}
+
+.tag-container .twoslash-annotation.left {
+  right: auto;
+  left: -200px;
+}
+
+.tag-container .twoslash-annotation.left svg {
+  float: right;
+  margin-right: -5px;
+}
+
+/** Support for showing console log/warn/errors inline */
+
+pre .logger {
+  display: flex;
+  align-items: center;
+  color: black;
+  padding: 6px;
+  padding-left: 8px;
+  width: calc(100% - 19px);
+  white-space: pre-wrap;
+}
+
+pre .logger svg {
+  margin-right: 9px;
+}
+
+pre .logger.error-log {
+  --tw-bg-opacity: 1;
+  background-color: rgb(31 41 55 / var(--tw-bg-opacity));
+  border-left: 4px solid #bf1818;
+}
+
+pre .logger.warn-log {
+  background-color: #ffe;
+  border-left: 4px solid #eae662;
+}
+
+pre .logger.log-log {
+  background-color: #e9e9e9;
+  border-left: 4px solid #ababab;
+}
+
+pre .logger.log-log svg {
+  margin-left: 6px;
+  margin-right: 9px;
+}
+</style>
+<h1>ARTICLE: The secret sauce of generics: inference</h1>
+<p>In our last lesson, we covered the differences between generic functions and generic types. We also left a mystery unsolved - why can we call generic functions without passing type arguments?</p>
+<h2>Linking Runtime Arguments To Type Arguments</h2>
+<p>In our previous investigations of generic functions, I've been a bit devious. I've been showing you one very specific type of generic function - one that receives no runtime arguments.</p>
+<pre class="shiki dark-plus twoslash lsp not-prose" style="background-color:#1E1E1E;color:#D4D4D4" tabindex="0"><code><span class="line"><span style="color:#6A9955">// Receives 1 type argument, and no runtime arguments</span></span>
+<span class="line"><span style="color:#569CD6">function</span><span style="color:#DCDCAA"> </span><span style="color:#DCDCAA"><data-lsp lsp="function createSet<T>(): Set<T>">createSet</data-lsp></span><span style="color:#D4D4D4">&#x3C;</span><span style="color:#4EC9B0"><data-lsp lsp="(type parameter) T in createSet<T>(): Set<T>">T</data-lsp></span><span style="color:#D4D4D4">>(): </span><span style="color:#4EC9B0"><data-lsp lsp="interface Set<T>">Set</data-lsp></span><span style="color:#D4D4D4">&#x3C;</span><span style="color:#4EC9B0"><data-lsp lsp="(type parameter) T in createSet<T>(): Set<T>">T</data-lsp></span><span style="color:#D4D4D4">> {</span></span>
+<span class="line"><span style="color:#C586C0">  return</span><span style="color:#569CD6"> new</span><span style="color:#DCDCAA"> </span><span style="color:#DCDCAA"><data-lsp lsp="var Set: SetConstructor
+new <T>(iterable?: Iterable<T> | null | undefined) => Set<T> (+1 overload)">Set</data-lsp></span><span style="color:#D4D4D4">();</span></span>
+<span class="line"><span style="color:#D4D4D4">}</span></span>
+<span class="line"></span></code></pre>
+<p>What would happen if we wanted to let users pass a runtime argument to our generic function? We'd first need to declare a parameter of <code>initialValues</code>, then pass that to the <code>Set</code> constructor:</p>
+<pre class="shiki dark-plus twoslash lsp not-prose" style="background-color:#1E1E1E;color:#D4D4D4" tabindex="0"><code><span class="line"><span style="color:#569CD6">function</span><span style="color:#DCDCAA"> </span><span style="color:#DCDCAA"><data-lsp lsp="function createSet<T>(initialValues: any): Set<T>">createSet</data-lsp></span><span style="color:#D4D4D4">&#x3C;</span><span style="color:#4EC9B0"><data-lsp lsp="(type parameter) T in createSet<T>(initialValues: any): Set<T>">T</data-lsp></span><span style="color:#D4D4D4">>(</span><span style="color:#9CDCFE"><data-err>initialValues</data-err></span><span style="color:#D4D4D4">): </span><span style="color:#4EC9B0"><data-lsp lsp="interface Set<T>">Set</data-lsp></span><span style="color:#D4D4D4">&#x3C;</span><span style="color:#4EC9B0"><data-lsp lsp="(type parameter) T in createSet<T>(initialValues: any): Set<T>">T</data-lsp></span><span style="color:#D4D4D4">> {</span></span><div class="error"><span>Parameter 'initialValues' implicitly has an 'any' type.</span><span class="code">7006</span></div><span class="error-behind">Parameter 'initialValues' implicitly has an 'any' type.</span><span class="line"><span style="color:#C586C0">  return</span><span style="color:#569CD6"> new</span><span style="color:#DCDCAA"> </span><span style="color:#DCDCAA"><data-lsp lsp="var Set: SetConstructor
+new <T>(iterable?: Iterable<T> | null | undefined) => Set<T> (+1 overload)">Set</data-lsp></span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE"><data-lsp lsp="(parameter) initialValues: any">initialValues</data-lsp></span><span style="color:#D4D4D4">);</span></span>
+<span class="line"><span style="color:#D4D4D4">}</span></span>
+<span class="line"></span></code></pre>
+<p>But <code>initialValues</code> is currently untyped. How would we type it? We could use <code>any[]</code>:</p>
+<pre class="shiki dark-plus twoslash lsp not-prose" style="background-color:#1E1E1E;color:#D4D4D4" tabindex="0"><code><span class="line"><span style="color:#569CD6">function</span><span style="color:#DCDCAA"> </span><span style="color:#DCDCAA"><data-lsp lsp="function createSet<T>(initialValues: any[]): Set<T>">createSet</data-lsp></span><span style="color:#D4D4D4">&#x3C;</span><span style="color:#4EC9B0"><data-lsp lsp="(type parameter) T in createSet<T>(initialValues: any[]): Set<T>">T</data-lsp></span><span style="color:#D4D4D4">>(</span><span style="color:#9CDCFE"><data-lsp lsp="(parameter) initialValues: any[]">initialValues</data-lsp></span><span style="color:#D4D4D4">: </span><span style="color:#4EC9B0">any</span><span style="color:#D4D4D4">[]): </span><span style="color:#4EC9B0"><data-lsp lsp="interface Set<T>">Set</data-lsp></span><span style="color:#D4D4D4">&#x3C;</span><span style="color:#4EC9B0"><data-lsp lsp="(type parameter) T in createSet<T>(initialValues: any[]): Set<T>">T</data-lsp></span><span style="color:#D4D4D4">> {</span></span>
+<span class="line"><span style="color:#C586C0">  return</span><span style="color:#569CD6"> new</span><span style="color:#DCDCAA"> </span><span style="color:#DCDCAA"><data-lsp lsp="var Set: SetConstructor
+new <any>(iterable?: Iterable<any> | null | undefined) => Set<any> (+1 overload)">Set</data-lsp></span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE"><data-lsp lsp="(parameter) initialValues: any[]">initialValues</data-lsp></span><span style="color:#D4D4D4">);</span></span>
+<span class="line"><span style="color:#D4D4D4">}</span></span>
+<span class="line"></span></code></pre>
+<p>But now, any type can be passed to <code>createSet</code>:</p>
+<pre class="shiki dark-plus twoslash lsp not-prose" style="background-color:#1E1E1E;color:#D4D4D4" tabindex="0"><code><span class="line"></span>
+<span class="line"><span style="color:#569CD6">const</span><span style="color:#4FC1FF"> </span><span style="color:#4FC1FF"><data-lsp lsp="const setOfStrings: Set<string>">setOfStrings</data-lsp></span><span style="color:#D4D4D4"> = </span><span style="color:#DCDCAA"><data-lsp lsp="function createSet<string>(initialValues: any[]): Set<string>">createSet</data-lsp></span><span style="color:#D4D4D4">&#x3C;</span><span style="color:#4EC9B0">string</span><span style="color:#D4D4D4">>([</span><span style="color:#B5CEA8">1</span><span style="color:#D4D4D4">, </span><span style="color:#B5CEA8">2</span><span style="color:#D4D4D4">, </span><span style="color:#B5CEA8">3</span><span style="color:#D4D4D4">]); </span><span style="color:#6A9955">// No error!</span></span>
+<span class="line"></span></code></pre>
+<p>Here, we're creating a set of strings, but passing an array of numbers - and TypeScript doesn't complain.</p>
+<p>We actually want to link our runtime arguments to the type provided in the type argument. We can do that by typing <code>initialValues</code> as <code>T[]</code>:</p>
+<pre class="shiki dark-plus twoslash lsp not-prose" style="background-color:#1E1E1E;color:#D4D4D4" tabindex="0"><code><span class="line"><span style="color:#569CD6">function</span><span style="color:#DCDCAA"> </span><span style="color:#DCDCAA"><data-lsp lsp="function createSet<T>(initialValues: T[]): Set<T>">createSet</data-lsp></span><span style="color:#D4D4D4">&#x3C;</span><span style="color:#4EC9B0"><data-lsp lsp="(type parameter) T in createSet<T>(initialValues: T[]): Set<T>">T</data-lsp></span><span style="color:#D4D4D4">>(</span><span style="color:#9CDCFE"><data-lsp lsp="(parameter) initialValues: T[]">initialValues</data-lsp></span><span style="color:#D4D4D4">: </span><span style="color:#4EC9B0"><data-lsp lsp="(type parameter) T in createSet<T>(initialValues: T[]): Set<T>">T</data-lsp></span><span style="color:#D4D4D4">[]): </span><span style="color:#4EC9B0"><data-lsp lsp="interface Set<T>">Set</data-lsp></span><span style="color:#D4D4D4">&#x3C;</span><span style="color:#4EC9B0"><data-lsp lsp="(type parameter) T in createSet<T>(initialValues: T[]): Set<T>">T</data-lsp></span><span style="color:#D4D4D4">> {</span></span>
+<span class="line"><span style="color:#C586C0">  return</span><span style="color:#569CD6"> new</span><span style="color:#DCDCAA"> </span><span style="color:#DCDCAA"><data-lsp lsp="var Set: SetConstructor
+new <T>(iterable?: Iterable<T> | null | undefined) => Set<T> (+1 overload)">Set</data-lsp></span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE"><data-lsp lsp="(parameter) initialValues: T[]">initialValues</data-lsp></span><span style="color:#D4D4D4">);</span></span>
+<span class="line"><span style="color:#D4D4D4">}</span></span>
+<span class="line"></span></code></pre>
+<p>We've linked our runtime parameter, <code>initialValues</code>, to our type parameter, <code>T</code>. In the vast majority of generic functions, you'll see this pattern - a runtime argument linked to a type argument. This means that whatever gets passed in to <code>initialValues</code> MUST correspond to the type of <code>T</code> - or, in this case, be an array of <code>T</code>.</p>
+<p>This was my little trick - none of the examples we've seen so far have required this link. So, let's test it out a bit.</p>
+<h2>Type Arguments And Generic Functions</h2>
+<p>There are now a few different ways to call our <code>createSet</code> function. We can call it by passing a type argument. If we do, <code>T</code> will be whatever type argument we pass it:</p>
+<pre class="shiki dark-plus twoslash lsp not-prose" style="background-color:#1E1E1E;color:#D4D4D4" tabindex="0"><code><span class="line"></span>
+<span class="line"><span style="color:#569CD6">const</span><span style="color:#4FC1FF"> </span><span style="color:#4FC1FF"><data-lsp lsp="const setOfStrings: Set<string>">setOfStrings</data-lsp></span><span style="color:#D4D4D4"> = </span><span style="color:#DCDCAA"><data-lsp lsp="function createSet<string>(initialValues: string[]): Set<string>">createSet</data-lsp></span><span style="color:#D4D4D4">&#x3C;</span><span style="color:#4EC9B0">string</span><span style="color:#D4D4D4">>([</span><span style="color:#CE9178">"a"</span><span style="color:#D4D4D4">, </span><span style="color:#CE9178">"b"</span><span style="color:#D4D4D4">, </span><span style="color:#CE9178">"c"</span><span style="color:#D4D4D4">]);</span></span>
+<span class="line"></span></code></pre>
+<p>If we pass a runtime argument that doesn't match the type argument, TypeScript will show an error:</p>
+<pre class="shiki dark-plus twoslash lsp not-prose" style="background-color:#1E1E1E;color:#D4D4D4" tabindex="0"><code><span class="line"></span>
+<span class="line"><span style="color:#569CD6">const</span><span style="color:#4FC1FF"> </span><span style="color:#4FC1FF"><data-lsp lsp="const setOfStrings: Set<string>">setOfStrings</data-lsp></span><span style="color:#D4D4D4"> = </span><span style="color:#DCDCAA"><data-lsp lsp="function createSet<string>(initialValues: string[]): Set<string>">createSet</data-lsp></span><span style="color:#D4D4D4">&#x3C;</span><span style="color:#4EC9B0">string</span><span style="color:#D4D4D4">>([</span><span style="color:#CE9178">"a"</span><span style="color:#D4D4D4">, </span><span style="color:#CE9178">"b"</span><span style="color:#D4D4D4">, </span><span style="color:#B5CEA8"><data-err>1</data-err></span><span style="color:#D4D4D4">]);</span></span><div class="error"><span>Type 'number' is not assignable to type 'string'.</span><span class="code">2322</span></div><span class="error-behind">Type 'number' is not assignable to type 'string'.</span><span class="line"></span></code></pre>
+<p>But what happens if we don't pass in a type argument? Drumroll, please...</p>
+<pre class="shiki dark-plus twoslash lsp not-prose" style="background-color:#1E1E1E;color:#D4D4D4" tabindex="0"><code><span class="line"></span>
+<span class="line"><span style="color:#569CD6">const</span><span style="color:#4FC1FF"> </span><span style="color:#4FC1FF"><data-lsp lsp="const setOfStrings: Set<string>">setOfStrings</data-lsp></span><span style="color:#D4D4D4"> = </span><span style="color:#DCDCAA"><data-lsp lsp="function createSet<string>(initialValues: string[]): Set<string>">createSet</data-lsp></span><span style="color:#D4D4D4">([</span><span style="color:#CE9178">"a"</span><span style="color:#D4D4D4">, </span><span style="color:#CE9178">"b"</span><span style="color:#D4D4D4">, </span><span style="color:#CE9178">"c"</span><span style="color:#D4D4D4">]);</span></span><div class="meta-line">           <span class="popover"><div class="arrow"></div>const setOfStrings: Set&#x3C;string></span></div><span class="line"></span></code></pre>
+<p>That's right - <code>setOfStrings</code> is a <code>Set&#x3C;string></code>. TypeScript has inferred the type of <code>T</code> from our runtime argument.</p>
+<p>Let me say that again - TypeScript inferred the type of <code>T</code> based on the runtime argument we passed in. It's magic.</p>
+<h2>The Power Of Inference</h2>
+<p>This is the reason why generic functions are so powerful in TypeScript. A user of <code>createSet</code> doesn't even need to think about type annotations. They can just pass in an array of strings, and TypeScript will infer the returned <code>Set</code> for them.</p>
+<p>Let's hammer this home with another example, that also uses <code>Set</code>: <code>uniqueArray</code>.</p>
+<pre class="shiki dark-plus twoslash lsp not-prose" style="background-color:#1E1E1E;color:#D4D4D4" tabindex="0"><code><span class="line"><span style="color:#569CD6">function</span><span style="color:#DCDCAA"> </span><span style="color:#DCDCAA"><data-lsp lsp="function uniqueArray(array: any[]): any[]">uniqueArray</data-lsp></span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE"><data-lsp lsp="(parameter) array: any[]">array</data-lsp></span><span style="color:#D4D4D4">: </span><span style="color:#4EC9B0">any</span><span style="color:#D4D4D4">[]) {</span></span>
+<span class="line"><span style="color:#C586C0">  return</span><span style="color:#9CDCFE"> </span><span style="color:#9CDCFE"><data-lsp lsp="var Array: ArrayConstructor">Array</data-lsp></span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA"><data-lsp lsp="(method) ArrayConstructor.from<any>(iterable: Iterable<any> | ArrayLike<any>): any[] (+3 overloads)">from</data-lsp></span><span style="color:#D4D4D4">(</span><span style="color:#569CD6">new</span><span style="color:#DCDCAA"> </span><span style="color:#DCDCAA"><data-lsp lsp="var Set: SetConstructor
+new <any>(iterable?: Iterable<any> | null | undefined) => Set<any> (+1 overload)">Set</data-lsp></span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE"><data-lsp lsp="(parameter) array: any[]">array</data-lsp></span><span style="color:#D4D4D4">));</span></span>
+<span class="line"><span style="color:#D4D4D4">}</span></span>
+<span class="line"></span></code></pre>
+<p>This function takes in an array, creates a <code>Set</code> from it, and then converts it back to an array. It's a simple way to remove duplicates from an array.</p>
+<p>But it currently takes in <code>any[]</code>. This means that whatever we pass in, we'll get <code>any[]</code> back:</p>
+<pre class="shiki dark-plus twoslash lsp not-prose" style="background-color:#1E1E1E;color:#D4D4D4" tabindex="0"><code><span class="line"></span>
+<span class="line"><span style="color:#569CD6">const</span><span style="color:#4FC1FF"> </span><span style="color:#4FC1FF"><data-lsp lsp="const uniqueStrings: any[]">uniqueStrings</data-lsp></span><span style="color:#D4D4D4"> = </span><span style="color:#DCDCAA"><data-lsp lsp="function uniqueArray(array: any[]): any[]">uniqueArray</data-lsp></span><span style="color:#D4D4D4">([</span><span style="color:#CE9178">"a"</span><span style="color:#D4D4D4">, </span><span style="color:#CE9178">"b"</span><span style="color:#D4D4D4">, </span><span style="color:#CE9178">"a"</span><span style="color:#D4D4D4">]);</span></span><div class="meta-line">           <span class="popover"><div class="arrow"></div>const uniqueStrings: any[]</span></div><span class="line"></span></code></pre>
+<p>By adding a type parameter, we can get <code>uniqueArray</code> to infer the type it's passed, and return that type:</p>
+<pre class="shiki dark-plus twoslash lsp not-prose" style="background-color:#1E1E1E;color:#D4D4D4" tabindex="0"><code><span class="line"><span style="color:#569CD6">function</span><span style="color:#DCDCAA"> </span><span style="color:#DCDCAA"><data-lsp lsp="function uniqueArray<T>(array: T[]): T[]">uniqueArray</data-lsp></span><span style="color:#D4D4D4">&#x3C;</span><span style="color:#4EC9B0"><data-lsp lsp="(type parameter) T in uniqueArray<T>(array: T[]): T[]">T</data-lsp></span><span style="color:#D4D4D4">>(</span><span style="color:#9CDCFE"><data-lsp lsp="(parameter) array: T[]">array</data-lsp></span><span style="color:#D4D4D4">: </span><span style="color:#4EC9B0"><data-lsp lsp="(type parameter) T in uniqueArray<T>(array: T[]): T[]">T</data-lsp></span><span style="color:#D4D4D4">[]): </span><span style="color:#4EC9B0"><data-lsp lsp="(type parameter) T in uniqueArray<T>(array: T[]): T[]">T</data-lsp></span><span style="color:#D4D4D4">[] {</span></span>
+<span class="line"><span style="color:#C586C0">  return</span><span style="color:#9CDCFE"> </span><span style="color:#9CDCFE"><data-lsp lsp="var Array: ArrayConstructor">Array</data-lsp></span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA"><data-lsp lsp="(method) ArrayConstructor.from<T>(iterable: Iterable<T> | ArrayLike<T>): T[] (+3 overloads)">from</data-lsp></span><span style="color:#D4D4D4">(</span><span style="color:#569CD6">new</span><span style="color:#DCDCAA"> </span><span style="color:#DCDCAA"><data-lsp lsp="var Set: SetConstructor
+new <T>(iterable?: Iterable<T> | null | undefined) => Set<T> (+1 overload)">Set</data-lsp></span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE"><data-lsp lsp="(parameter) array: T[]">array</data-lsp></span><span style="color:#D4D4D4">));</span></span>
+<span class="line"><span style="color:#D4D4D4">}</span></span>
+<span class="line"></span></code></pre>
+<p>We refer to <code>T</code> in the runtime argument, <code>array</code>, and mark the return type as <code>T[]</code>.</p>
+<p>Now, <code>uniqueStrings</code> is a <code>string[]</code>:</p>
+<pre class="shiki dark-plus twoslash lsp not-prose" style="background-color:#1E1E1E;color:#D4D4D4" tabindex="0"><code><span class="line"></span>
+<span class="line"><span style="color:#569CD6">const</span><span style="color:#4FC1FF"> </span><span style="color:#4FC1FF"><data-lsp lsp="const uniqueStrings: string[]">uniqueStrings</data-lsp></span><span style="color:#D4D4D4"> = </span><span style="color:#DCDCAA"><data-lsp lsp="function uniqueArray<string>(array: string[]): string[]">uniqueArray</data-lsp></span><span style="color:#D4D4D4">([</span><span style="color:#CE9178">"a"</span><span style="color:#D4D4D4">, </span><span style="color:#CE9178">"b"</span><span style="color:#D4D4D4">, </span><span style="color:#CE9178">"a"</span><span style="color:#D4D4D4">]);</span></span><div class="meta-line">           <span class="popover"><div class="arrow"></div>const uniqueStrings: string[]</span></div><span class="line"></span></code></pre>
+<p>Not only has this made our function easier to use, but we've removed a potential source of 'any' in our codebase. We've made our code safer, smarter AND easier to use.</p>
+<h2>Summary</h2>
+<ul>
+<li>You don't have to pass type arguments to generic functions</li>
+<li>If you do pass a type argument, it becomes the source of truth for the function</li>
+<li>If you don't pass a type argument, TypeScript will attempt to infer it from the runtime arguments</li>
+<li>You can link runtime arguments to type arguments by referring to the type arguments (<code>T</code>) in the runtime arguments (<code>initialValues</code>)</li>
+<li>Users of your generic functions can pass in runtime arguments without worrying about type annotations</li>
+</ul>
+<p>In our next lesson, we'll be learning how to use our new-found powers. We'll learn <em>when</em> you should make a function generic - and what kinds of problems generic functions can solve.</p>
+<p>Want to get the next lesson now? Click the link below.</p>

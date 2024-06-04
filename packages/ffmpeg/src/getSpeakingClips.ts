@@ -17,9 +17,6 @@ export const getClipsOfSpeakingFromFFmpeg = (
     })
     .filter(({ silenceEnd, duration }) => {
       return !(isNaN(silenceEnd) || isNaN(duration));
-    })
-    .filter(({ duration }) => {
-      return duration > 1;
     });
 
   const clipsOfSpeaking: {
@@ -55,7 +52,7 @@ export const getClipsOfSpeakingFromFFmpeg = (
       endFrame: endFramePlusOne + framePadding,
       endTime: endTime + opts.padding,
       silenceEnd: currentSilence.silenceEnd,
-      duration: currentSilence.duration,
+      duration: endTime - startTime,
     });
   });
 

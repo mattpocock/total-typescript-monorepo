@@ -1,6 +1,6 @@
 import { resolve } from "path";
 import { DAVINCI_RESOLVE_SCRIPTS_LOCATION } from "./constants.js";
-import { execSync } from "child_process";
+import type { EmptyObject } from "./types.js";
 import { execAsync, exitProcessWithError } from "./utils.js";
 
 type Scripts = {
@@ -11,8 +11,8 @@ type Scripts = {
   "import-file-to-bin.lua": {
     INPUT: string;
   };
-  "get-current-timeline-clip.lua": {};
-  "add-subtitles.lua": {};
+  "get-current-timeline-clip.lua": EmptyObject;
+  "add-subtitles.lua": EmptyObject;
 };
 
 export const runDavinciResolveScript = async <TScript extends keyof Scripts>(

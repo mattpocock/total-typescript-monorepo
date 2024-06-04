@@ -8,11 +8,9 @@
     "tt-cli": "./dist/bin.js"
   },
   "scripts": {
-    "dev": "pnpm run \"/dev:/\"",
-    "dev:esbuild": "pnpm run build --watch",
-    "dev:tsc": "tsc --watch --preserveWatchOutput",
+    "dev": "pnpm run build --watch",
     "build": "esbuild --bundle src/bin.ts --platform=node --outfile=dist/bin.js --packages=external --format=esm",
-    "setup": "(yarn unlink --global | true) && yarn link --global"
+    "setup": "(npm unlink | true) && npm link"
   },
   "keywords": [],
   "author": "Matt Pocock",
@@ -25,7 +23,7 @@
     "@total-typescript/shared": "workspace:*",
     "chokidar": "^3.5.3",
     "colors": "^1.4.0",
-    "commander": "^10.0.1",
+    "commander": "^12.0.0",
     "fast-glob": "^3.2.12",
     "jsonc-parser": "^3.2.0",
     "prompts": "^2.4.2"

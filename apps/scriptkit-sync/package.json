@@ -3,10 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm run \"/dev:/\"",
-    "dev:tsc": "tsc --watch --preserveWatchOutput",
-    "dev:node": "node --watch dist/main.js",
-    "build": "tsc"
+    "dev": "node --watch dist/main.js"
   },
   "dependencies": {
     "@total-typescript/internal-cli": "workspace:*",

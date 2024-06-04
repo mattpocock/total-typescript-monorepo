@@ -6,6 +6,12 @@ import {
 } from "../../types";
 import { NextApiHandler } from "next";
 
+export const config = {
+  api: {
+    responseLimit: false,
+  },
+};
+
 const handler: NextApiHandler = async (req, res) => {
   const result = codeSnippetImageSchema.safeParse(req.query);
 

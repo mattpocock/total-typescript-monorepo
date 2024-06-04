@@ -3,9 +3,13 @@ import { encodeAllVideos } from "./encodeAllVideos.js";
 import { openPairedVideoDir } from "./openPairedVideoDir.js";
 import { selectLatestOBSVideo } from "./selectLatestOBSVideo.js";
 import { trimLatestOBSVideo } from "./trimLatestOBSVideo.js";
-import { SKILL_RECORDINGS_REPO_LOCATION } from "@total-typescript/shared";
+import {
+  DAVINCI_RESOLVE_EXPORTS_LOCATION,
+  SKILL_RECORDINGS_REPO_LOCATION,
+} from "@total-typescript/shared";
 import { appendVideoToTimeline } from "./appendVideoToTimeline.js";
 import { clearUnusedFootageFromDisk } from "./clearUnusedFootageFromDisk.js";
+import { getLatestMp4File } from "./getLatestOBSVideo.js";
 
 export type Command<TArgs extends readonly string[]> = {
   scriptkitName: string;
@@ -71,7 +75,6 @@ export const commands = createCommands([
     fileName: "append-video-to-timeline",
     description: "Append the latest OBS video to the Davinci Resolve timeline.",
     cliCommand: "append-video-to-timeline",
-    args: ["FPS"],
     run: appendVideoToTimeline,
   },
   {
@@ -81,5 +84,18 @@ export const commands = createCommands([
       "Clear footage not used in DaVinci Resolve from the external drive.",
     cliCommand: "clear-unused-footage-from-disk",
     run: clearUnusedFootageFromDisk,
+  },
+  {
+    scriptkitName: "Select Latest DaVinci Resolve Export",
+    fileName: "select-latest-davinci-resolve-export",
+    description:
+      "Select the latest DaVinci Resolve export from the external drive.",
+    cliCommand: "select-latest-davinci-resolve-export",
+    run: async () => {
+      const latestExport = await getLatestMp4File(
+        DAVINCI_RESOLVE_EXPORTS_LOCATION,
+      );
+      execSync(`open -R "${latestExport}"`);
+    },
   },
 ]);

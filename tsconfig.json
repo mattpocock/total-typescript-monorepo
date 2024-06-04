@@ -1,0 +1,35 @@
+{
+  "references": [
+    {
+      "path": "./packages/shared"
+    },
+    {
+      "path": "./packages/env"
+    },
+    {
+      "path": "./packages/ffmpeg"
+    },
+    {
+      "path": "./apps/internal-cli"
+    },
+    {
+      "path": "./apps/scriptkit-sync"
+    },
+    {
+      "path": "./packages/twoslash-shared",
+    },
+    {
+      "path": "./apps/twoslash-preview"
+    },
+    {
+      "path": "./apps/exercise-cli"
+    },
+    {
+      "path": "./apps/twoslash-preview-server"
+    },
+    {
+      "path": "./apps/twoslash-to-email"
+    },
+  ],
+  "files": [],
+}

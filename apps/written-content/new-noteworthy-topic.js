@@ -1,12 +1,15 @@
+import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
 
 const todaysDate = new Date().toISOString();
 
+const isScratch = Boolean(process.env.SCRATCH);
+
 const newPath = path.join(
   process.cwd(),
-  "noteworthy-topic",
-  todaysDate
+  isScratch ? "scratch" : "noteworthy-topic",
+  todaysDate,
 );
 
 fs.mkdirSync(newPath, {
@@ -17,4 +20,4 @@ const articlePath = path.join(newPath, "article.md");
 
 fs.writeFileSync(articlePath, "");
 
-console.log(articlePath);
+execSync(`code ${articlePath}`);

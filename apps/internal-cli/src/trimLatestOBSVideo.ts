@@ -15,13 +15,13 @@ import {
   REPOS_FOLDER,
   ensureDir,
   exitProcessWithError,
+  getActiveEditorFilePath,
   getExternalDrive,
   parseExercisePath,
   type AbsolutePath,
   type RelativePath,
 } from "@total-typescript/shared";
 import path from "path";
-import { getActiveEditorFilePath } from "./getActiveEditorFilePath.js";
 import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
 
 export const trimLatestOBSVideo = async () => {

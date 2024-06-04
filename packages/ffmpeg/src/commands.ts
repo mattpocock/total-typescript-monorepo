@@ -1,5 +1,6 @@
 import { execAsync, type AbsolutePath } from "@total-typescript/shared";
 import { getClipsOfSpeakingFromFFmpeg } from "./getSpeakingClips.js";
+import { MINIMUM_CLIP_LENGTH_IN_SECONDS } from "./constants.js";
 
 export const encodeVideo = async (
   inputVideo: AbsolutePath,
@@ -47,9 +48,12 @@ export const findSilenceInVideo = async (
   const endTime = endClip.endTime;
 
   return {
-    speakingClips,
+    speakingClips: speakingClips.filter(
+      (clip) => clip.duration > MINIMUM_CLIP_LENGTH_IN_SECONDS,
+    ),
     startTime,
     endTime,
+    rawStdout: output.stdout,
   };
 };
 
