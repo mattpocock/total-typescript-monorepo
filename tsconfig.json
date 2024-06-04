@@ -16,7 +16,7 @@
       "path": "./apps/scriptkit-sync"
     },
     {
-      "path": "./packages/twoslash-preview-shared",
+      "path": "./packages/twoslash-shared",
     },
     {
       "path": "./apps/twoslash-preview"

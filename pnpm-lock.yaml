@@ -115,9 +115,9 @@ importers:
       '@total-typescript/ts-reset':
         specifier: ^0.5.0
         version: 0.5.1
-      '@total-typescript/twoslash-preview-shared':
+      '@total-typescript/twoslash-shared':
         specifier: workspace:*
-        version: link:../../packages/twoslash-preview-shared
+        version: link:../../packages/twoslash-shared
       '@types/react':
         specifier: 18.3.3
         version: 18.3.3
@@ -170,9 +170,9 @@ importers:
       '@total-typescript/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@total-typescript/twoslash-preview-shared':
+      '@total-typescript/twoslash-shared':
         specifier: workspace:*
-        version: link:../../packages/twoslash-preview-shared
+        version: link:../../packages/twoslash-shared
       '@types/ws':
         specifier: ^8.5.4
         version: 8.5.10
@@ -192,9 +192,9 @@ importers:
       '@total-typescript/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@total-typescript/twoslash-preview-shared':
+      '@total-typescript/twoslash-shared':
         specifier: workspace:*
-        version: link:../../packages/twoslash-preview-shared
+        version: link:../../packages/twoslash-shared
       commander:
         specifier: ^12.0.0
         version: 12.1.0
@@ -257,7 +257,7 @@ importers:
         specifier: ^3.23.8
         version: 3.23.8
 
-  packages/twoslash-preview-shared:
+  packages/twoslash-shared:
     dependencies:
       '@shikijs/rehype':
         specifier: ^1.6.1
@@ -5926,7 +5926,7 @@ snapshots:
   micromark@4.0.0:
     dependencies:
       '@types/debug': 4.1.12
-      debug: 4.3.4
+      debug: 4.3.5
       decode-named-character-reference: 1.0.2
       devlop: 1.1.0
       micromark-core-commonmark: 2.0.1

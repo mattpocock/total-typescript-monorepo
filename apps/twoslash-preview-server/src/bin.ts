@@ -11,7 +11,7 @@ import {
   type WSEvent,
   applyShiki,
   SHIKI_TEST_LOCATION,
-} from "@total-typescript/twoslash-preview-shared";
+} from "@total-typescript/twoslash-shared";
 
 const server = new WebSocketServer({ port: 3001 });
 

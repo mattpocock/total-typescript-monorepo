@@ -1,8 +1,7 @@
 {
-  "name": "@total-typescript/twoslash-preview-shared",
+  "name": "@total-typescript/twoslash-shared",
   "version": "0.0.1",
   "type": "module",
-  "private": true,
   "exports": {
     ".": "./dist/index.js"
   },

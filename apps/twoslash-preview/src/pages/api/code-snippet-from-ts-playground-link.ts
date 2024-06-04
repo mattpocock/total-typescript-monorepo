@@ -2,7 +2,7 @@ import lzString from "lz-string";
 import { NextApiHandler } from "next";
 import { z } from "zod";
 import { createUrl } from "../../app/createUrl";
-import { applyShiki } from "@total-typescript/twoslash-preview-shared";
+import { applyShiki } from "@total-typescript/twoslash-shared";
 
 export const config = {
   api: {

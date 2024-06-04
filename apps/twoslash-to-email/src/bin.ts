@@ -2,16 +2,13 @@
 
 import {
   exitProcessWithError,
-  getActiveEditorFilePath,
   type AbsolutePath,
-  type AnyPath,
-  type RelativePath,
 } from "@total-typescript/shared";
-import { applyShiki } from "@total-typescript/twoslash-preview-shared";
+import { applyShiki } from "@total-typescript/twoslash-shared";
 import { Command } from "commander";
+import fg from "fast-glob";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "path";
-import fg from "fast-glob";
 
 const program = new Command();
 

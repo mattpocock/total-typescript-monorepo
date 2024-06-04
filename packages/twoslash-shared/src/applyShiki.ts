@@ -9,7 +9,8 @@ import { unified } from "unified";
 import type {
   CodeSnippet,
   EncodedHTML,
-} from "@total-typescript/twoslash-preview-shared";
+} from "@total-typescript/twoslash-shared";
+import path from "path";
 
 const visitNodes = (
   node: any,

@@ -11,7 +11,7 @@
     "@types/ws": "^8.5.4",
     "chokidar": "^3.5.3",
     "ws": "^8.13.0",
-    "@total-typescript/twoslash-preview-shared": "workspace:*"
+    "@total-typescript/twoslash-shared": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^18.3.3"

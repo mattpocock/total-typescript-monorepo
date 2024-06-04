@@ -19,7 +19,7 @@
   "dependencies": {
     "fast-glob": "^3.3.2",
     "@total-typescript/shared": "workspace:*",
-    "@total-typescript/twoslash-preview-shared": "workspace:*",
+    "@total-typescript/twoslash-shared": "workspace:*",
     "commander": "^12.0.0"
   }
 }
