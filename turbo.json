@@ -15,7 +15,7 @@
     },
     "build": {
       "dependsOn": ["^build", "//#build"],
-      "outputs": ["dist", "tsconfig.tsbuildinfo", ".next"]
+      "outputs": ["dist", "tsconfig.tsbuildinfo", ".next", "build"]
     },
     "start": {
       "dependsOn": ["build"],

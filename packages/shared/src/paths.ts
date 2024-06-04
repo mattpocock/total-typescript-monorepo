@@ -1,5 +1,6 @@
 import { execSync } from "child_process";
 import type { AnyPath } from "./types.js";
+import { execAsync } from "./utils.js";
 
 export class ExerciseNotFoundError {
   readonly _tag = "ExerciseNotFoundError";
@@ -27,5 +28,5 @@ export const parseExercisePath = <T extends AnyPath>(fullPathname: T) => {
 };
 
 export const ensureDir = async (dir: string) => {
-  execSync(`mkdir -p "${dir}"`);
+  execAsync(`mkdir -p "${dir}"`);
 };

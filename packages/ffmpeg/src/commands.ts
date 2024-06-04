@@ -1,5 +1,4 @@
-import { type AbsolutePath } from "@total-typescript/shared";
-import { execSync } from "child_process";
+import { execAsync, type AbsolutePath } from "@total-typescript/shared";
 import { getClipsOfSpeakingFromFFmpeg } from "./getSpeakingClips.js";
 import { MINIMUM_CLIP_LENGTH_IN_SECONDS } from "./constants.js";
 
@@ -7,7 +6,7 @@ export const encodeVideo = async (
   inputVideo: AbsolutePath,
   outputVideoPath: AbsolutePath,
 ) => {
-  await execSync(
+  await execAsync(
     `ffmpeg -y -hide_banner -i "${inputVideo}" -c:v libx264 -profile high -b:v 7000k -pix_fmt yuv420p -maxrate 16000k "${outputVideoPath}"`,
   );
 };
@@ -29,66 +28,32 @@ export const findSilenceInVideo = async (
     padding: number;
   },
 ) => {
-  const output = execSync(
+  const output = await execAsync(
     `ffmpeg -hide_banner -vn -i "${inputVideo}" -af "silencedetect=n=${opts.threshold}dB:d=${opts.silenceDuration}" -f null - 2>&1 | grep "silence_end" | awk '{print $5 " " $8}'`,
-  ).toString();
+  );
 
-  let silence = output
-    .trim()
-    .split("\n")
-    .map((line) => line.split(" "))
-    .map(([silenceEnd, duration]) => {
-      return {
-        silenceEnd: parseFloat(silenceEnd!),
-        duration: parseFloat(duration!),
-      };
-    });
+  const speakingClips = getClipsOfSpeakingFromFFmpeg(output.stdout, opts);
 
-  let foundFirstPeriodOfTalking = false;
-
-  while (!foundFirstPeriodOfTalking) {
-    // Unshift the first silence if the noise afterwards
-    // is less than 1 second long
-    const silenceElem = silence[0];
-    const nextSilenceElem = silence[1];
-
-    const nextSilenceStartTime =
-      nextSilenceElem!.silenceEnd - nextSilenceElem!.duration;
-
-    const lengthOfNoise = nextSilenceStartTime - silenceElem!.silenceEnd;
-
-    if (lengthOfNoise < 2) {
-      silence.shift();
-    } else {
-      foundFirstPeriodOfTalking = true;
-    }
+  if (!speakingClips[0]) {
+    throw new CouldNotFindStartTimeError();
   }
 
-  const firstSilence = silence[0];
+  const endClip = speakingClips[speakingClips.length - 1];
 
-  if (!firstSilence) {
-    return new CouldNotFindStartTimeError();
+  if (!endClip) {
+    throw new CouldNotFindEndTimeError();
   }
 
-  const lastSilence = silence[silence.length - 1];
-
-  if (!lastSilence) {
-    return new CouldNotFindEndTimeError();
-  }
-
-  const startTime = firstSilence.silenceEnd - opts.padding;
-
-  const endTime = lastSilence.silenceEnd - lastSilence.duration + opts.padding;
-
-  const speakingClips = getClipsOfSpeakingFromFFmpeg(output, opts.fps);
+  const startTime = speakingClips[0].startTime;
+  const endTime = endClip.endTime;
 
   return {
-    allSpeakingClips: speakingClips.filter(
+    speakingClips: speakingClips.filter(
       (clip) => clip.duration > MINIMUM_CLIP_LENGTH_IN_SECONDS,
     ),
     startTime,
     endTime,
-    rawStdout: output,
+    rawStdout: output.stdout,
   };
 };
 
@@ -102,7 +67,7 @@ export const trimVideo = async (
   startTime: number,
   endTime: number,
 ) => {
-  execSync(
+  await execAsync(
     `ffmpeg -y -hide_banner -ss ${formatFloatForFFmpeg(
       startTime,
     )} -to ${formatFloatForFFmpeg(
