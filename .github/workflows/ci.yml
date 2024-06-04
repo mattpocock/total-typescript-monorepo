@@ -16,3 +16,5 @@ jobs:
 
       - run: pnpm install --no-frozen-lockfile
       - run: pnpm run ci
+        env:
+          EXTERNAL_DRIVE_ROOT: "/example-root"
