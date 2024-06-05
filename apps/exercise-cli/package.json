@@ -4,6 +4,9 @@
   "description": "",
   "type": "module",
   "main": "dist/bin.js",
+  "files": [
+    "dist"
+  ],
   "bin": {
     "tt-cli": "./dist/bin.js"
   },
