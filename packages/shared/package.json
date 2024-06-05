@@ -2,6 +2,9 @@
   "name": "@total-typescript/shared",
   "version": "0.0.1",
   "type": "module",
+  "files": [
+    "./dist/*"
+  ],
   "scripts": {
     "test": "vitest run"
   },

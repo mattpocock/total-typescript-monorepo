@@ -5,6 +5,9 @@
   "exports": {
     ".": "./dist/index.js"
   },
+  "files": [
+    "./dist/*"
+  ],
   "dependencies": {
     "lz-string": "^1.5.0",
     "@shikijs/rehype": "^1.6.1",

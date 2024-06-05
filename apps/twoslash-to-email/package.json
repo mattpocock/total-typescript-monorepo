@@ -13,6 +13,9 @@
   "exports": {
     ".": "./dist/index.js"
   },
+  "files": [
+    "./dist/*"
+  ],
   "devDependencies": {
     "tailwindcss": "^3.4.3"
   },
