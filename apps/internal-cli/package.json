@@ -6,7 +6,7 @@
   },
   "type": "module",
   "scripts": {
-    "setup": "(npm unlink | true) && npm link"
+    "setup": "(pnpm unlink | true) && pnpm link --global"
   },
   "exports": {
     ".": "./dist/index.js"

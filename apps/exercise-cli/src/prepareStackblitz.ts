@@ -1,6 +1,6 @@
 import * as fs from "fs/promises";
 import * as path from "path";
-import { findAllExercises } from "./findAllExercises";
+import { findAllExercises } from "./findAllExercises.js";
 
 /**
  * Adds a bunch of scripts, like e-01, e-02 to package.json
@@ -28,9 +28,8 @@ export const prepareStackblitz = async () => {
 
   exerciseNames.forEach((exercise) => {
     newPackageJson.scripts[`e-${exercise}`] = `tt-cli run ${exercise}`;
-    newPackageJson.scripts[
-      `s-${exercise}`
-    ] = `tt-cli run ${exercise} --solution`;
+    newPackageJson.scripts[`s-${exercise}`] =
+      `tt-cli run ${exercise} --solution`;
   });
 
   await fs.writeFile(packageJsonPath, JSON.stringify(newPackageJson, null, 2));

@@ -1,7 +1,7 @@
 import prompts from "prompts";
 import path from "path";
-import { findAllExercises } from "./findAllExercises";
-import { runExerciseFile } from "./runExercise";
+import { findAllExercises } from "./findAllExercises.js";
+import { runExerciseFile } from "./runExercise.js";
 
 export const runPrompts = async () => {
   const srcPath = path.resolve(process.cwd(), "./src");
@@ -10,7 +10,7 @@ export const runPrompts = async () => {
     allowedTypes: ["explainer", "problem", "solution"],
   });
 
-  const { exercisePath }: { exercisePath: string } = await prompts({
+  const { exercisePath }: { exercisePath: string | undefined } = await prompts({
     type: "autocomplete",
     message: "Select an exercise file to run (type to autocomplete)",
     name: "exercisePath",
@@ -28,6 +28,10 @@ export const runPrompts = async () => {
       };
     }),
   });
+
+  if (!exercisePath) {
+    process.exit(0);
+  }
 
   await runExerciseFile(exercisePath);
 };

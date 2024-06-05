@@ -1,7 +1,7 @@
-import { detectExerciseType } from "./detectExerciseType";
-import { findExerciseInCwd } from "./findAllExercises";
-import { runFileBasedExercise } from "./runFileBasedExercise";
-import { runPackageJsonExercise } from "./runPackageJsonExercise";
+import { detectExerciseType } from "./detectExerciseType.js";
+import { findExerciseInCwd } from "./findAllExercises.js";
+import { runFileBasedExercise } from "./runFileBasedExercise.js";
+import { runPackageJsonExercise } from "./runPackageJsonExercise.js";
 
 export const runExercise = async (exercise: string, runSolution: boolean) => {
   if (!exercise) {

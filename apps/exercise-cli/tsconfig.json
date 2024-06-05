@@ -1,6 +1,8 @@
 {
-  "extends": "@total-typescript/tsconfig/bundler/no-dom",
+  "extends": "@total-typescript/tsconfig/tsc/no-dom/app",
   "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
     "composite": true
   }
 }
