@@ -1,6 +1,6 @@
 {
   "name": "@total-typescript/exercise-cli",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "",
   "type": "module",
   "main": "dist/bin.js",
