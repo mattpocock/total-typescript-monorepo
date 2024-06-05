@@ -9,7 +9,6 @@
     ".": "./dist/index.js"
   },
   "dependencies": {
-    "zod": "^3.23.8",
-    "@total-typescript/env": "workspace:*"
+    "zod": "^3.23.8"
   }
 }

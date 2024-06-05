@@ -121,6 +121,9 @@ importers:
 
   apps/internal-cli:
     dependencies:
+      '@total-typescript/env':
+        specifier: workspace:*
+        version: link:../../packages/env
       '@total-typescript/ffmpeg':
         specifier: workspace:*
         version: link:../../packages/ffmpeg
@@ -290,9 +293,6 @@ importers:
 
   packages/shared:
     dependencies:
-      '@total-typescript/env':
-        specifier: workspace:*
-        version: link:../env
       zod:
         specifier: ^3.23.8
         version: 3.23.8

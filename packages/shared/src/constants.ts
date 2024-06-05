@@ -1,24 +1,6 @@
 import path from "path";
 import os from "os";
 import type { AbsolutePath } from "./types.js";
-import { env } from "@total-typescript/env";
-
-export const EXTERNAL_DRIVE_ROOT = env.EXTERNAL_DRIVE_ROOT;
-
-export const EXTERNAL_DRIVE_MOVIES_ROOT = path.join(
-  EXTERNAL_DRIVE_ROOT,
-  "Movies",
-) as AbsolutePath;
-
-export const DAVINCI_RESOLVE_EXPORTS_LOCATION = path.join(
-  EXTERNAL_DRIVE_ROOT,
-  "Exports",
-) as AbsolutePath;
-
-export const EXTERNAL_DRIVE_RAW_FOOTAGE_ROOT = path.join(
-  EXTERNAL_DRIVE_MOVIES_ROOT,
-  "obs-output",
-) as AbsolutePath;
 
 export const DESKTOP_LOCATION = path.join(
   os.homedir(),
@@ -41,15 +23,6 @@ export const SCRIPTKIT_SCRIPTS_LOCATION = path.join(
   SCRIPTKIT_LOCATION,
   "scripts",
 ) as AbsolutePath;
-
-/**
- * Places where unencoded footage might be located.
- */
-export const POSSIBLE_UNENCODED_FOLDER_LOCATIONS = [
-  path.join(EXTERNAL_DRIVE_MOVIES_ROOT, "total-typescript"),
-  path.join(EXTERNAL_DRIVE_MOVIES_ROOT, "matt"),
-  path.join(EXTERNAL_DRIVE_MOVIES_ROOT, "one-shots"),
-] as AbsolutePath[];
 
 export const REPOS_FOLDER = path.join(os.homedir(), "repos") as AbsolutePath;
 
@@ -79,5 +52,3 @@ export const DAVINCI_RESOLVE_PROJECTS_LOCATION = path.join(
   "guest",
   "Projects",
 ) as AbsolutePath;
-
-export const OBS_OUTPUT_MODE = env.OBS_OUTPUT_MODE;

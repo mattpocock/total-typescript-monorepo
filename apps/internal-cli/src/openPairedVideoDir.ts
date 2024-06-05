@@ -1,16 +1,15 @@
 import {
-  EXTERNAL_DRIVE_MOVIES_ROOT,
   ExerciseNotFoundError,
   ExternalDriveNotFoundError,
   REPOS_FOLDER,
   exitProcessWithError,
   getActiveEditorFilePath,
-  getExternalDrive,
   parseExercisePath,
   type AbsolutePath,
 } from "@total-typescript/shared";
 import { execSync } from "child_process";
 import path from "path";
+import { EXTERNAL_DRIVE_MOVIES_ROOT, getExternalDrive } from "./constants.js";
 
 export const openPairedVideoDir = async () => {
   const activeEditorFilePath = await getActiveEditorFilePath();

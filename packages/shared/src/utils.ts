@@ -1,7 +1,6 @@
-import { exec, execSync, type ExecOptions } from "child_process";
-import { EXTERNAL_DRIVE_ROOT } from "./constants.js";
-import type { AbsolutePath } from "./types.js";
+import { exec, type ExecOptions } from "child_process";
 import { stat } from "fs/promises";
+import type { AbsolutePath } from "./types.js";
 
 export const pathExists = async (path: string): Promise<boolean> => {
   try {
@@ -45,14 +44,6 @@ export class ExternalDriveNotFoundError {
 
   constructor(public path: string) {}
 }
-
-export const getExternalDrive = async () => {
-  if (!(await pathExists(EXTERNAL_DRIVE_ROOT))) {
-    return new ExternalDriveNotFoundError(EXTERNAL_DRIVE_ROOT);
-  }
-
-  return EXTERNAL_DRIVE_ROOT;
-};
 
 export const toDashCase = (str: string) => {
   return str.replaceAll(" ", "-").toLowerCase();

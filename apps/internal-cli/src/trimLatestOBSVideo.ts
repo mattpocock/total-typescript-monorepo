@@ -9,20 +9,19 @@ import {
   trimVideo,
 } from "@total-typescript/ffmpeg";
 import {
-  EXTERNAL_DRIVE_MOVIES_ROOT,
   ExerciseNotFoundError,
   ExternalDriveNotFoundError,
   REPOS_FOLDER,
   ensureDir,
   exitProcessWithError,
   getActiveEditorFilePath,
-  getExternalDrive,
   parseExercisePath,
   type AbsolutePath,
   type RelativePath,
 } from "@total-typescript/shared";
 import path from "path";
 import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
+import { EXTERNAL_DRIVE_MOVIES_ROOT, getExternalDrive } from "./constants.js";
 
 export const trimLatestOBSVideo = async () => {
   const externalDrive = await getExternalDrive();

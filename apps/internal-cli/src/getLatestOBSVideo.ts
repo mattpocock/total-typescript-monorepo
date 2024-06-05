@@ -1,14 +1,16 @@
 import {
   DESKTOP_LOCATION,
-  EXTERNAL_DRIVE_RAW_FOOTAGE_ROOT,
   ExternalDriveNotFoundError,
-  OBS_OUTPUT_MODE,
   execAsync,
   exitProcessWithError,
-  getExternalDrive,
   type AbsolutePath,
 } from "@total-typescript/shared";
 import path from "path";
+import {
+  EXTERNAL_DRIVE_RAW_FOOTAGE_ROOT,
+  getExternalDrive,
+} from "./constants.js";
+import { env } from "@total-typescript/env";
 
 export const getLatestMp4File = async (
   dir: AbsolutePath,
@@ -21,7 +23,7 @@ export const getLatestMp4File = async (
 };
 
 export const getLatestOBSVideo = async () => {
-  if (OBS_OUTPUT_MODE === "desktop") {
+  if (env.OBS_OUTPUT_MODE === "desktop") {
     const video = await getLatestMp4File(DESKTOP_LOCATION);
 
     return video;

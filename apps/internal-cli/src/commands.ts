@@ -3,13 +3,11 @@ import { encodeAllVideos } from "./encodeAllVideos.js";
 import { openPairedVideoDir } from "./openPairedVideoDir.js";
 import { selectLatestOBSVideo } from "./selectLatestOBSVideo.js";
 import { trimLatestOBSVideo } from "./trimLatestOBSVideo.js";
-import {
-  DAVINCI_RESOLVE_EXPORTS_LOCATION,
-  SKILL_RECORDINGS_REPO_LOCATION,
-} from "@total-typescript/shared";
+import { SKILL_RECORDINGS_REPO_LOCATION } from "@total-typescript/shared";
 import { appendVideoToTimeline } from "./appendVideoToTimeline.js";
 import { clearUnusedFootageFromDisk } from "./clearUnusedFootageFromDisk.js";
 import { getLatestMp4File } from "./getLatestOBSVideo.js";
+import { DAVINCI_RESOLVE_EXPORTS_LOCATION } from "./constants.js";
 
 export type Command<TArgs extends readonly string[]> = {
   scriptkitName: string;

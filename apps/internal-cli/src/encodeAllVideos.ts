@@ -1,12 +1,12 @@
 import { encodeVideo } from "@total-typescript/ffmpeg";
 import {
-  POSSIBLE_UNENCODED_FOLDER_LOCATIONS,
   ensureDir,
   execAsync,
   type AbsolutePath,
 } from "@total-typescript/shared";
 import { rename } from "fs/promises";
 import path from "path";
+import { POSSIBLE_UNENCODED_FOLDER_LOCATIONS } from "./constants.js";
 
 export const encodeAllVideos = async () => {
   for (const folder of POSSIBLE_UNENCODED_FOLDER_LOCATIONS) {

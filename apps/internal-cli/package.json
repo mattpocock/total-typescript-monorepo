@@ -15,6 +15,7 @@
     "@total-typescript/ts-reset": "^0.5.1"
   },
   "dependencies": {
+    "@total-typescript/env": "workspace:*",
     "@total-typescript/shared": "workspace:*",
     "@total-typescript/ffmpeg": "workspace:*",
     "commander": "^12.0.0",
