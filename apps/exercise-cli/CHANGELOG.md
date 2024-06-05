@@ -1,5 +1,15 @@
 # @total-typescript/exercise-cli
 
+## 0.7.0
+
+### Minor Changes
+
+- b2818a2: Moved to ESM output.
+
+### Patch Changes
+
+- b2818a2: Fixed a bug where exiting an exercise from prompts would fail.
+
 ## 0.6.2
 
 ### Patch Changes
