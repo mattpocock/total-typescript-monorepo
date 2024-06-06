@@ -154,7 +154,7 @@ importers:
     dependencies:
       '@tailwindcss/typography':
         specifier: ^0.5.9
-        version: 0.5.13(tailwindcss@3.4.3)
+        version: 0.5.13(tailwindcss@3.4.4)
       '@total-typescript/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -196,7 +196,7 @@ importers:
         version: 18.3.1(react@18.3.1)
       tailwindcss:
         specifier: 3.4.3
-        version: 3.4.3
+        version: 3.4.4
       zod:
         specifier: ^3.21.4
         version: 3.23.8
@@ -244,7 +244,7 @@ importers:
     devDependencies:
       tailwindcss:
         specifier: ^3.4.3
-        version: 3.4.3
+        version: 3.4.4
 
   apps/written-content:
     devDependencies:
@@ -2659,8 +2659,8 @@ packages:
   javascript-stringify@2.1.0:
     resolution: {integrity: sha512-JVAfqNPTvNq3sB/VHQJAFxN/sPgKnsKrCwyRt15zwNCdrMMJDdcEOdubuy+DuJYYdm0ox1J4uzEuYKkN+9yhVg==}
 
-  jiti@1.21.1:
-    resolution: {integrity: sha512-KMXpzEJMsOFyRj6ZpDTnnlJrdr9umUY+eut5vlRvjVixohitnRFIRTFw9MEu9zPlBxTHZo6xD5ftKYiQZuJYQw==}
+  jiti@1.21.3:
+    resolution: {integrity: sha512-uy2bNX5zQ+tESe+TiC7ilGRz8AtRGmnJH55NC5S0nSUjvvvM2hJHmefHErugGXN4pNv4Qx7vLsnNw9qJ9mtIsw==}
     hasBin: true
 
   js-tokens@4.0.0:
@@ -4044,8 +4044,8 @@ packages:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
 
-  tailwindcss@3.4.3:
-    resolution: {integrity: sha512-U7sxQk/n397Bmx4JHbJx/iSOOv5G+II3f1kpLpY2QeUv5DcPdcTsYLlusZfq1NthHS1c1cZoyFmmkex1rzke0A==}
+  tailwindcss@3.4.4:
+    resolution: {integrity: sha512-ZoyXOdJjISB7/BcLTR6SEsLgKtDStYyYZVLsUtWChO4Ps20CBad7lfJKVDiejocV4ME1hLmyY0WJE3hSDcmQ2A==}
     engines: {node: '>=14.0.0'}
     hasBin: true
 
@@ -5561,13 +5561,13 @@ snapshots:
       '@swc/counter': 0.1.3
       tslib: 2.6.3
 
-  '@tailwindcss/typography@0.5.13(tailwindcss@3.4.3)':
+  '@tailwindcss/typography@0.5.13(tailwindcss@3.4.4)':
     dependencies:
       lodash.castarray: 4.4.0
       lodash.isplainobject: 4.0.6
       lodash.merge: 4.6.2
       postcss-selector-parser: 6.0.10
-      tailwindcss: 3.4.3
+      tailwindcss: 3.4.4
 
   '@tootallnate/quickjs-emscripten@0.23.0': {}
 
@@ -7184,7 +7184,7 @@ snapshots:
 
   javascript-stringify@2.1.0: {}
 
-  jiti@1.21.1: {}
+  jiti@1.21.3: {}
 
   js-tokens@4.0.0: {}
 
@@ -8912,7 +8912,7 @@ snapshots:
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
-  tailwindcss@3.4.3:
+  tailwindcss@3.4.4:
     dependencies:
       '@alloc/quick-lru': 5.2.0
       arg: 5.0.2
@@ -8922,7 +8922,7 @@ snapshots:
       fast-glob: 3.3.2
       glob-parent: 6.0.2
       is-glob: 4.0.3
-      jiti: 1.21.1
+      jiti: 1.21.3
       lilconfig: 2.1.0
       micromatch: 4.0.7
       normalize-path: 3.0.0
