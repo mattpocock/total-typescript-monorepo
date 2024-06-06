@@ -28,61 +28,57 @@ const visitNodes = (
   }
 };
 
-export const applyShiki = (() => {
-  const processor = (pushSnippet: (snippet: CodeSnippet) => void) =>
-    unified()
-      .use(remarkParse)
-      .use(remarkRehype)
-      .use(rehypeShiki, {
-        // or `theme` for a single theme
-        theme: "dark-plus",
-        langs: ["typescript", "tsx", "ts", "json"],
-        transformers: [
-          transformerTwoslash({
-            throws: true,
-            explicitTrigger: true,
-            renderer: rendererClassic(),
-          }),
-        ],
-      })
-      .use({
-        plugins: [
-          () => (rootNode) => {
-            (rootNode.children || []).forEach((child: any) => {
-              if (
-                child.tagName === "pre" &&
-                Array.isArray(child.properties.class)
-              ) {
-                child.properties.class.push("not-prose");
+const processor = (pushSnippet: (snippet: CodeSnippet) => void) =>
+  unified()
+    .use(remarkParse)
+    .use(remarkRehype)
+    .use(rehypeShiki, {
+      // or `theme` for a single theme
+      theme: "dark-plus",
+      langs: ["typescript", "tsx", "ts", "json"],
+      transformers: [
+        transformerTwoslash({
+          throws: true,
+          explicitTrigger: true,
+          renderer: rendererClassic(),
+        }),
+      ],
+    })
+    .use({
+      plugins: [
+        () => (rootNode) => {
+          (rootNode.children || []).forEach((child: any) => {
+            if (
+              child.tagName === "pre" &&
+              Array.isArray(child.properties.class)
+            ) {
+              child.properties.class.push("not-prose");
 
-                try {
-                  const html = toHtml(child);
+              try {
+                const html = toHtml(child);
 
-                  pushSnippet({
-                    rawHtml: lzString.compressToEncodedURIComponent(
-                      html,
-                    ) as EncodedHTML,
-                  });
-                } catch (e) {}
-              }
-            });
-          },
-        ],
-      })
-      .use(rehypeStringify);
+                pushSnippet({
+                  rawHtml: lzString.compressToEncodedURIComponent(
+                    html,
+                  ) as EncodedHTML,
+                });
+              } catch (e) {}
+            }
+          });
+        },
+      ],
+    })
+    .use(rehypeStringify);
 
-  const run = async (markdown: string) => {
-    const snippets: CodeSnippet[] = [];
+export const applyShiki = async (markdown: string) => {
+  const snippets: CodeSnippet[] = [];
 
-    const result = await processor((snippet) => snippets.push(snippet)).process(
-      markdown,
-    );
+  const result = await processor((snippet) => snippets.push(snippet)).process(
+    markdown,
+  );
 
-    return {
-      html: result.toString(),
-      snippets,
-    };
+  return {
+    html: result.toString(),
+    snippets,
   };
-
-  return run;
-})();
+};
