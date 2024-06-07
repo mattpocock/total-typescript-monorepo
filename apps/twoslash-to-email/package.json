@@ -7,7 +7,7 @@
   "type": "module",
   "scripts": {
     "setup": "(pnpm unlink | true) && pnpm link --global",
-    "build": "tailwind -i src/shiki.css -o dist/output.css",
+    "build": "tsc && tailwind -i src/shiki.css -o dist/output.css",
     "dev": "pnpm run build --watch"
   },
   "exports": {

@@ -5,6 +5,9 @@
   "exports": {
     ".": "./dist/index.js"
   },
+  "scripts": {
+    "build": "tsc"
+  },
   "dependencies": {
     "@total-typescript/shared": "workspace:*"
   }

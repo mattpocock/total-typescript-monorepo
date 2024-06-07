@@ -11,6 +11,7 @@
     "tt-cli": "./dist/bin.js"
   },
   "scripts": {
+    "build": "tsc",
     "setup": "(pnpm unlink | true) && pnpm link --global"
   },
   "keywords": [],

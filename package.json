@@ -14,8 +14,8 @@
     "write": "turbo start --filter=twoslash-preview --filter=twoslash-preview-server",
     "new": "(cd apps/written-content && pnpm run new)",
     "scratch": "(cd apps/written-content && pnpm run scratch)",
-    "dev": "tsc -b --watch",
-    "build": "tsc -b",
+    "dev": "turbo watch dev",
+    "build": "turbo build",
     "twoslash-preview": "pnpm turbo run dev --filter twoslash-preview --filter=twoslash-preview-server --filter //"
   },
   "keywords": [],

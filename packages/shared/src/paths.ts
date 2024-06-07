@@ -1,4 +1,3 @@
-import { execSync } from "child_process";
 import type { AnyPath } from "./types.js";
 import { execAsync } from "./utils.js";
 
