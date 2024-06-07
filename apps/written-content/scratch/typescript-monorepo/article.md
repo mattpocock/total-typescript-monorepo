@@ -30,6 +30,11 @@ Run `tsc -b` to build all packages, and `tsc -b --watch` to run in dev mode.
 - Need to duplicate the project structure inside the root `tsconfig.json`
 - Need to make sure that packages are correctly ordered inside `references` in the root `tsconfig.json`
 - TypeScript's caching via `.tsbuildinfo` files can be relatively inconsistent - for instance, updating a dependency doesn't bust the cache.
+- Might not scale well at 100+ packages
+
+### Summary
+
+I recommend this if you're below 100 packages, you want a single script you can run to build and typecheck everything, and you want to be able to have different `tsconfig.json` settings per package.
 
 ## `paths`
 
@@ -65,6 +70,10 @@ A single `tsconfig.json` in the root with:
 - Module resolution isn't linked to the `package.json` any more, so it's possible to make mistakes with `exports`/`main` etc
 - Need to configure a build script in each package, and co-ordinate it in the root `package.json`
 - Each package can always import from every other package, regardless of whether they have a dependency on it or not (this will be uncovered via unit tests, though)
+
+### Summary
+
+I recommend this if you're below 100 packages, want to avoid running a build step to get types working in the repo, and
 
 ## Turborepo And `tsc`
 
