@@ -33,6 +33,9 @@
     {
       "path": "./apps/twoslash-to-email"
     },
+    {
+      "path": "./apps/twoslash-lint"
+    },
   ],
   "files": [],
 }

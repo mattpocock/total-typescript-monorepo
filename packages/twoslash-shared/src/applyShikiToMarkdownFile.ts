@@ -1,16 +1,15 @@
 import rehypeShiki from "@shikijs/rehype";
 import { rendererClassic, transformerTwoslash } from "@shikijs/twoslash";
+import type {
+  CodeSnippet,
+  EncodedHTML,
+} from "@total-typescript/twoslash-shared";
 import { toHtml } from "hast-util-to-html";
 import lzString from "lz-string";
 import rehypeStringify from "rehype-stringify";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
-import type {
-  CodeSnippet,
-  EncodedHTML,
-} from "@total-typescript/twoslash-shared";
-import path from "path";
 
 const visitNodes = (
   node: any,
@@ -70,7 +69,7 @@ const processor = (pushSnippet: (snippet: CodeSnippet) => void) =>
     })
     .use(rehypeStringify);
 
-export const applyShiki = async (markdown: string) => {
+export const applyShikiToMarkdownFile = async (markdown: string) => {
   const snippets: CodeSnippet[] = [];
 
   const result = await processor((snippet) => snippets.push(snippet)).process(

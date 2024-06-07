@@ -8,6 +8,9 @@
   "files": [
     "./dist/*"
   ],
+  "scripts": {
+    "test": "vitest run"
+  },
   "dependencies": {
     "lz-string": "^1.5.0",
     "@shikijs/rehype": "^1.6.1",

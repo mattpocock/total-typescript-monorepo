@@ -2,7 +2,7 @@ import lzString from "lz-string";
 import { NextApiHandler } from "next";
 import { z } from "zod";
 import { createUrl } from "../../app/createUrl";
-import { applyShiki } from "@total-typescript/twoslash-shared";
+import { applyShikiToMarkdownFile } from "@total-typescript/twoslash-shared";
 
 export const config = {
   api: {
@@ -32,7 +32,7 @@ const handler: NextApiHandler = async (req, res) => {
   const { link: markdownCodeSample } = result.data;
 
   try {
-    const { html } = await applyShiki(markdownCodeSample);
+    const { html } = await applyShikiToMarkdownFile(markdownCodeSample);
 
     const encodedHtml = lzString.compressToEncodedURIComponent(html);
 

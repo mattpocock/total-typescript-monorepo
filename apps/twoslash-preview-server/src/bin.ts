@@ -9,7 +9,7 @@ import { type WebSocket, WebSocketServer } from "ws";
 import {
   type CodeSnippet,
   type WSEvent,
-  applyShiki,
+  applyShikiToMarkdownFile,
   SHIKI_TEST_LOCATION,
 } from "@total-typescript/twoslash-shared";
 
@@ -90,7 +90,7 @@ const runShikiOnFilePath = async (filePath: AbsolutePath) => {
         "```" + ext.slice(1) + " twoslash\n" + contents.trim() + "\n```";
     }
 
-    const { html, snippets } = await applyShiki(contents);
+    const { html, snippets } = await applyShikiToMarkdownFile(contents);
 
     updateHtml(html, snippets);
     console.log("No errors found!");

@@ -4,7 +4,7 @@ import {
   exitProcessWithError,
   type AbsolutePath,
 } from "@total-typescript/shared";
-import { applyShiki } from "@total-typescript/twoslash-shared";
+import { applyShikiToMarkdownFile } from "@total-typescript/twoslash-shared";
 import { Command } from "commander";
 import fg from "fast-glob";
 import { readFile, writeFile } from "node:fs/promises";
@@ -19,7 +19,7 @@ const wrappedApplyShiki = async (
   fileContents: string,
 ) => {
   try {
-    return await applyShiki(fileContents);
+    return await applyShikiToMarkdownFile(fileContents);
   } catch (error: any) {
     console.error(filePath);
     console.error(error.title);

@@ -12,7 +12,8 @@ export type CodeSnippet = {
   rawHtml: EncodedHTML;
 };
 
-export * from "./applyShiki.js";
+export * from "./applyShikiToMarkdownFile.js";
+export * from "./applyShikiToCode.js";
 
 export const SHIKI_TEST_LOCATION = path.resolve(
   import.meta.dirname,
