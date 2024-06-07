@@ -2,6 +2,22 @@
 
 ## Project References
 
+A root tsconfig.json with:
+
+```json
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/package-a" },
+    { "path": "./packages/package-b" }
+  ]
+}
+```
+
+Then, each package has its own `tsconfig.json`.
+
+Run `tsc -b` to build all packages, and `tsc -b --watch` to run in dev mode.
+
 ### Pro's
 
 - Each package's `tsconfig.json` can have different settings
@@ -16,6 +32,24 @@
 - TypeScript's caching via `.tsbuildinfo` files can be relatively inconsistent - for instance, updating a dependency doesn't bust the cache.
 
 ## `paths`
+
+A single `tsconfig.json` in the root with:
+
+```json
+{
+  "compilerOptions": {
+    // ... your compiler options
+    "paths": {
+      "@myorg/package-a": [
+        "packages/package-a/src/index.ts"
+      ],
+      "@myorg/package-b": [
+        "packages/package-b/src/index.ts"
+      ]
+    }
+  }
+}
+```
 
 ### Pro's
 
@@ -34,6 +68,18 @@
 
 ## Turborepo And `tsc`
 
+No root `tsconfig.json`, only individual `tsconfig.json` files in each package.
+
+Each package has a `build` script in its `package.json`:
+
+```json
+{
+  "scripts": {
+    "build": "tsc"
+  }
+}
+```
+
 ### Pro's
 
 - Each package's `tsconfig.json` can have different settings
@@ -45,3 +91,4 @@
 
 - Multiple instances of `tsc` at once means it's hard to get an overall picture of whether your app is broken
 - Some packages will have separate `build` and `lint` scripts (for instance, a frontend framework will never use `tsc` to build)
+- TBC
