@@ -30,9 +30,18 @@
 - Each project MUST have the same `tsconfig.json` settings
 - Module resolution isn't linked to the `package.json` any more, so it's possible to make mistakes with `exports`/`main` etc
 - Need to configure a build script in each package, and co-ordinate it in the root `package.json`
+- Each package can always import from every other package, regardless of whether they have a dependency on it or not (this will be uncovered via unit tests, though)
 
 ## Turborepo And `tsc`
 
 ### Pro's
 
-- Just like project references, can
+- Each package's `tsconfig.json` can have different settings
+- Very reliable caching of outputs (more reliable than `.tsbuildinfo` files)
+- No need to duplicate project structure in the root `tsconfig.json`
+- The code in the each package's `dist` is exactly the same as what gets sent to production - always a good thing
+
+### Con's
+
+- Multiple instances of `tsc` at once means it's hard to get an overall picture of whether your app is broken
+- Some packages will have separate `build` and `lint` scripts (for instance, a frontend framework will never use `tsc` to build)
