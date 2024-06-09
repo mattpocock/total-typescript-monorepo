@@ -33,6 +33,7 @@ const runChecks = async (
     autofix: boolean;
   },
 ) => {
+  let totalErrors = 0;
   for (const file of files) {
     const errors: {
       file: RelativePath;
@@ -110,6 +111,7 @@ const runChecks = async (
             recommendation: result.recommendation,
             errorFix: errorFix,
           });
+          totalErrors++;
         }
       }
     }
@@ -143,6 +145,9 @@ const runChecks = async (
         process.exit(1);
       }
     }
+  }
+  if (totalErrors === 0) {
+    console.log("No errors found");
   }
 };
 

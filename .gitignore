@@ -5,3 +5,4 @@ dist
 *.local.*
 *.local
 .env
+.twoslash-lint
