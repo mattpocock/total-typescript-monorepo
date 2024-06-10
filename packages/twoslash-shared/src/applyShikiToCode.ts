@@ -13,8 +13,6 @@ const storage = createStorage({
   }),
 });
 
-const LANGS = ["typescript", "ts", "js", "json", "tsx", "html", "bash"];
-
 const compilerOptions: CompilerOptions = {
   target: 9 /* ES2022 */,
   strict: true,

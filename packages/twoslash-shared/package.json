@@ -14,10 +14,10 @@
   "dependencies": {
     "@shikijs/rehype": "^1.6.3",
     "@shikijs/twoslash": "^1.6.3",
-    "hast-util-to-html": "^9.0.1",
     "lz-string": "^1.5.0",
     "rehype-stringify": "^10.0.0",
     "remark-parse": "^11.0.0",
+    "remark-html": "^16.0.1",
     "remark-rehype": "^11.1.0",
     "shiki": "^1.6.3",
     "twoslash-cdn": "^0.2.7",
