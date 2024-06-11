@@ -11,12 +11,12 @@
   "scripts": {
     "ci": "turbo build test",
     "release": "pnpm run ci && changeset publish",
-    "write": "turbo start --filter=twoslash-preview --filter=twoslash-preview-server",
+    "write": "turbo start --filter=twoslash-preview --filter=@total-typescript/twoslash-preview-server",
     "new": "(cd apps/written-content && pnpm run new)",
     "scratch": "(cd apps/written-content && pnpm run scratch)",
     "dev": "tsc -b --watch",
     "build": "tsc -b",
-    "twoslash-preview": "pnpm turbo run dev --filter twoslash-preview --filter=twoslash-preview-server --filter //"
+    "twoslash-preview": "pnpm turbo run dev --filter twoslash-preview --filter=@total-typescript/twoslash-preview-server --filter //"
   },
   "keywords": [],
   "author": "Matt Pocock",
