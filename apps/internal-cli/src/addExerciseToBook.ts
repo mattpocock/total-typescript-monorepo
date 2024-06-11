@@ -89,10 +89,12 @@ export const addExerciseToBook = async (glob: string) => {
 
       const codeToAdd = [
         "",
-        "<Exercise",
-        `  title="${section.heading}"`,
-        `  filePath="/${path.relative(process.cwd(), exercise)}"`,
-        "/>",
+        [
+          "<Exercise",
+          `title="${section.heading}"`,
+          `filePath="/${path.relative(process.cwd(), exercise)}"`,
+          "/>",
+        ].join(" "),
         "",
       ].join("\n");
 
