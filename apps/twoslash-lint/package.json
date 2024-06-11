@@ -9,9 +9,6 @@
     "setup": "(npm unlink | true) && npm link",
     "test": "vitest run"
   },
-  "exports": {
-    ".": "./dist/index.js"
-  },
   "files": [
     "./dist/*"
   ],

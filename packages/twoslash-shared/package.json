@@ -12,14 +12,17 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@shikijs/rehype": "^1.6.3",
+    "@shikijs/twoslash": "^1.6.3",
     "lz-string": "^1.5.0",
-    "@shikijs/rehype": "^1.6.1",
-    "@shikijs/twoslash": "^1.6.1",
-    "hast-util-to-html": "^9.0.1",
     "rehype-stringify": "^10.0.0",
     "remark-parse": "^11.0.0",
+    "remark-html": "^16.0.1",
     "remark-rehype": "^11.1.0",
-    "shiki": "^1.6.1",
-    "unified": "^11.0.4"
+    "shiki": "^1.6.3",
+    "twoslash-cdn": "^0.2.7",
+    "unified": "^11.0.4",
+    "unstorage": "^1.10.2",
+    "typescript": "^5.4.5"
   }
 }

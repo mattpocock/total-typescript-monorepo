@@ -1,6 +1,6 @@
 ```ts twoslash
 // @errors: 2322
-type Example = "abc";
+type Example = "def";
 //   ^?
 
 const a: string = 123;
