@@ -86,3 +86,27 @@ The `output` is being seen by TypeScript as `unknown`. This feels very odd, as t
 The difference here is that the user specified `consume` _before_ `produce`. Since TypeScript 4.7, in [this PR](https://github.com/microsoft/TypeScript/pull/48538), TypeScript now uses the order of properties to inform its inference. This was added to fix various long-standing bugs (linked in the PR) with context-sensitive functions.
 
 This means that, in some very narrow cases, the order you specify your properties matters. So if you're running up against strange errors to do with property ordering, that's why!
+
+## Could You Use `NoInfer`?
+
+You might be wondering if you could use [`NoInfer`](https://www.totaltypescript.com/noinfer) to fix this. That seems sensible, given that `NoInfer` is used to force TypeScript to avoid inference on certain targets.
+
+However, it doesn't:
+
+```ts twoslash
+const process = <T>(obj: {
+  produce: (input: string) => T;
+  consume: NoInfer<(t: T) => void>;
+}) => {
+  const value = obj.produce("abc");
+  obj.consume(value);
+};
+
+process({
+  consume: (output) => console.log(output),
+  //                               ^?
+  produce: (input) => Number(input),
+});
+```
+
+The result is still `unknown`. How frustrating!
