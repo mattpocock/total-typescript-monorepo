@@ -1,3 +1,0 @@
-- [ ] Capture text of question
-- [ ] Add to list of questions of the week
-- [ ] Add as

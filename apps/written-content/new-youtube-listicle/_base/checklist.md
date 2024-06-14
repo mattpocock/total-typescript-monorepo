@@ -1,6 +1,0 @@
-- [ ] Look through noteworthy topics for ideas
-- [ ] Add to notes.md
-- [ ] Consider best code sample for thumbnail
-- [ ] Create thumbnail and title
-- [ ] Record video
-- [ ] Post to YouTube
