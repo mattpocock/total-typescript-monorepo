@@ -343,7 +343,7 @@ importers:
         version: 11.1.0
       shiki:
         specifier: ^1.6.3
-        version: 1.6.4
+        version: 1.6.5
       twoslash-cdn:
         specifier: ^0.2.7
         version: 0.2.7(typescript@5.4.5)
@@ -1384,6 +1384,9 @@ packages:
 
   '@shikijs/core@1.6.4':
     resolution: {integrity: sha512-WTU9rzZae1p2v6LOxMf6LhtmZOkIHYYW160IuahUyJy7YXPPjyWZLR1ag+SgD22ZMxZtz1gfU6Tccc8t0Il/XA==}
+
+  '@shikijs/core@1.6.5':
+    resolution: {integrity: sha512-XcQYt6e4L61ruAxHiL3Xg1DL/XkWWjzDdeckB/DtN8jAxoAU+bcxsV6DetC8NafHpL4YpGhxy9iXF0ND/u6HmA==}
 
   '@shikijs/rehype@1.6.4':
     resolution: {integrity: sha512-rQFnJKb9uJm3lr6DDKoVBSnWcocHGIqfKM591NSDawMxfhm+gPGhgLP6/EX1N2v0qNHQeuzBuunkApWVQbVTCg==}
@@ -4072,6 +4075,9 @@ packages:
   shiki@1.6.4:
     resolution: {integrity: sha512-X88chM7w8jnadoZtjPTi5ahCJx9pc9f8GfEkZAEYUTlcUZIEw2D/RY86HI/LkkE7Nj8TQWkiBfaFTJ3VJT6ESg==}
 
+  shiki@1.6.5:
+    resolution: {integrity: sha512-iFzypldJG0zeyRHKAhaSGCf+YWXpMMyUyOrCVFBFKGGdF5vrB6jbd66/SQljxV20aSrVZEAQwUto/hhuNi/CIg==}
+
   side-channel@1.0.6:
     resolution: {integrity: sha512-fDW/EZ6Q9RiO8eFG8Hj+7u/oW+XrPTIChwCOM2+th2A6OblDtYYIpve9m+KvI9Z4C9qSEXlaGR6bTEYHReuglA==}
     engines: {node: '>= 0.4'}
@@ -5905,6 +5911,8 @@ snapshots:
     optional: true
 
   '@shikijs/core@1.6.4': {}
+
+  '@shikijs/core@1.6.5': {}
 
   '@shikijs/rehype@1.6.4':
     dependencies:
@@ -9201,6 +9209,10 @@ snapshots:
   shiki@1.6.4:
     dependencies:
       '@shikijs/core': 1.6.4
+
+  shiki@1.6.5:
+    dependencies:
+      '@shikijs/core': 1.6.5
 
   side-channel@1.0.6:
     dependencies:
