@@ -6,14 +6,24 @@ import {
 import { FSWatcher, watch } from "chokidar";
 import { readFileSync, writeFileSync } from "fs";
 import path from "path";
+import fm from "front-matter";
 
-const CODE_HIKE_CONTENT_LOCATION = path.join(
+const CODE_HIKE_SRC = path.join(
   import.meta.dirname,
   "..",
   "..",
   "remotion-code-hike",
   "src",
-  "content.md",
+) as AbsolutePath;
+
+const CODE_HIKE_CONTENT_LOCATION = path.join(
+  CODE_HIKE_SRC,
+  "content.local.md",
+) as AbsolutePath;
+
+const CODE_HIKE_META_LOCATION = path.join(
+  CODE_HIKE_SRC,
+  "meta.local.json",
 ) as AbsolutePath;
 
 const vscodeWatcher = watch(SCRIPTKIT_VSCODE_LOCATION);
@@ -40,7 +50,20 @@ const watchFile = (filePath: AbsolutePath) => {
 const updateFile = (filePath: AbsolutePath) => {
   const content = readFileSync(filePath, "utf-8");
 
+  const frontMatter = (fm as any)(content);
+
   writeFileSync(CODE_HIKE_CONTENT_LOCATION, content);
+  writeFileSync(
+    CODE_HIKE_META_LOCATION,
+    JSON.stringify(
+      {
+        width: frontMatter.attributes?.width,
+        height: frontMatter.attributes?.height,
+      },
+      null,
+      2,
+    ),
+  );
 
   console.log("File changed!");
 };

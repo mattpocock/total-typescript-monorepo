@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { CalculateMetadataFunction } from "remotion";
-import Content from "./content.md";
+import Content from "./content.local.md";
 import {
   Block,
   HighlightedCodeBlock,
