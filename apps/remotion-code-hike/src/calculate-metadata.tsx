@@ -1,9 +1,16 @@
 import { z } from "zod";
 import { CalculateMetadataFunction } from "remotion";
 import Content from "./content.md";
-import { Block, HighlightedCodeBlock, parseRoot } from "codehike/blocks";
+import {
+  Block,
+  HighlightedCodeBlock,
+  parseRoot,
+} from "codehike/blocks";
 import { createTwoslashFromCDN } from "twoslash-cdn";
-import { HighlightedCode, highlight } from "codehike/code";
+import {
+  HighlightedCode,
+  highlight,
+} from "codehike/code";
 import type { CompilerOptions } from "typescript";
 import { DEFAULT_STEP_DURATION } from "./constants";
 
@@ -30,49 +37,71 @@ type Props = {
   steps: HighlightedCode[];
 };
 
-export const calculateMetadata: CalculateMetadataFunction<Props> = async () => {
+export const calculateMetadata: CalculateMetadataFunction<
+  Props
+> = async () => {
   const { code } = parseRoot(Content, Schema);
 
-  const twoslashPromises = code.map(async (step: any) => {
-    const twoslashResult = await twoslash.run(step.value, step.lang, {
-      compilerOptions,
-    });
+  const twoslashPromises: Array<
+    Promise<HighlightedCode>
+  > = code.map(async (step: any) => {
+    const twoslashResult = await twoslash.run(
+      step.value,
+      step.lang,
+      {
+        compilerOptions,
+      },
+    );
     const highlighted = await highlight(
       { ...step, value: twoslashResult.code },
       "dark-plus",
     );
 
-    twoslashResult.queries.forEach(({ text, line, character, length }) => {
-      highlighted.annotations.push({
-        name: "query-callout",
-        query: text,
-        lineNumber: line + 1,
-        data: { character },
-        fromColumn: character,
-        toColumn: character + length,
-      });
-    });
+    twoslashResult.queries.forEach(
+      ({ text, line, character, length }) => {
+        highlighted.annotations.push({
+          name: "query-callout",
+          query: text,
+          lineNumber: line + 1,
+          data: { character },
+          fromColumn: character,
+          toColumn: character + length,
+        });
+      },
+    );
 
-    twoslashResult.errors.forEach(({ text, line, character, length }) => {
-      highlighted.annotations.push({
-        name: "error-callout",
-        query: text,
-        lineNumber: line + 1,
-        data: { character },
-        fromColumn: character,
-        toColumn: character + length,
-      });
-    });
+    twoslashResult.errors.forEach(
+      ({ text, line, character, length }) => {
+        highlighted.annotations.push({
+          name: "error-callout",
+          query: text,
+          lineNumber: line + 1,
+          data: { character },
+          fromColumn: character,
+          toColumn: character + length,
+        });
+      },
+    );
 
     return highlighted;
   });
 
-  const twoSlashedCode = await Promise.all(twoslashPromises);
+  const twoSlashedCode = await Promise.all(
+    twoslashPromises,
+  );
+
+  const heightOfLongestCodeSample = Math.max(
+    ...twoSlashedCode.map(
+      (c) => c.code.split("\n").length,
+    ),
+  );
 
   return {
-    durationInFrames: code.length * DEFAULT_STEP_DURATION,
+    durationInFrames:
+      code.length * DEFAULT_STEP_DURATION,
     props: {
       steps: twoSlashedCode,
     },
+    // height: heightOfLongestCodeSample * 80 + 100,
   };
 };

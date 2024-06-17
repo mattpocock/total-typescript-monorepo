@@ -1,28 +1,80 @@
-```ts !! dolor
-type ToNumber<T extends PropertyKey> =
-  T extends `${infer U extends number}` ? U : never;
+```ts !!
+// How do we turn this type...
+type BackendObj = {
+  id: string;
+  name: string;
+  email: string;
+};
 
-type Example = ToNumber<"42">;
+// ...into this - programmatically?
+type Target = {
+  getId: () => string;
+  getName: () => string;
+  getEmail: () => string;
+};
+```
+
+```ts !!
+type BackendObj = {
+  id: string;
+  name: string;
+  email: string;
+};
+
+// First, create a mapped type...
+type NewObj = {
+  [K in keyof BackendObj]: BackendObj[K];
+};
+
+type Target = NewObj;
 //   ^?
 ```
 
 ```ts !! dolor
-// @errors: 2322
-const example: string = 42;
-```
+type BackendObj = {
+  id: string;
+  name: string;
+  email: string;
+};
 
-```ts !! dolor
-type ToNumber<T extends PropertyKey> =
-  T extends `${infer U extends number}` ? U : never;
+// Then, remap the key of the mapped type...
+type NewObj = {
+  [K in keyof BackendObj as `get${K}`]: BackendObj[K];
+};
 
-type Example = ToNumber<"1000">;
+type Target = NewObj;
 //   ^?
 ```
 
 ```ts !! dolor
-type ToNumber<T extends PropertyKey> =
-  T extends `${infer U extends number}` ? U : never;
+type BackendObj = {
+  id: string;
+  name: string;
+  email: string;
+};
 
-type Example = ToNumber<"fred">;
+// Remember to capitalize the key!
+type NewObj = {
+  [K in keyof BackendObj as `get${Capitalize<K>}`]: BackendObj[K];
+};
+
+type Target = NewObj;
+//   ^?
+```
+
+```ts !! dolor
+type BackendObj = {
+  id: string;
+  name: string;
+  email: string;
+};
+
+// And turn the value into a function...
+type NewObj = {
+  [K in keyof BackendObj as `get${Capitalize<K>}`]: () => BackendObj[K];
+};
+
+// ...and we're done!
+type Target = NewObj;
 //   ^?
 ```

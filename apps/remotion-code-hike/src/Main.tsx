@@ -30,7 +30,10 @@ export const Main = (props: {
               <CodeTransition
                 oldCode={steps[index - 1]!}
                 newCode={step}
-                durationInFrames={TRANSITION_DURATION}
+                displayLength={stepDuration}
+                transitionDuration={
+                  TRANSITION_DURATION
+                }
               />
             </Series.Sequence>
           ))}

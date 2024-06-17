@@ -15,6 +15,7 @@ const Schema = Block.extend({
 import Content from "./content.md";
 import { calculateMetadata } from "./calculate-metadata";
 import { DEFAULT_STEP_DURATION } from "./constants";
+
 const { code } = parseRoot(Content, Schema);
 
 export const RemotionRoot = () => {
@@ -27,8 +28,8 @@ export const RemotionRoot = () => {
       durationInFrames={
         DEFAULT_STEP_DURATION * code.length
       }
-      width={1400}
-      height={600}
+      width={1850}
+      height={1300}
       calculateMetadata={calculateMetadata}
     />
   );

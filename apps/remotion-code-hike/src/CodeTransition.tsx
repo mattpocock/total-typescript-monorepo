@@ -1,13 +1,7 @@
-import { Easing, interpolate } from "remotion";
 import {
-  continueRender,
-  delayRender,
-  useCurrentFrame,
-} from "remotion";
-import {
-  Pre,
-  HighlightedCode,
   AnnotationHandler,
+  HighlightedCode,
+  Pre,
 } from "codehike/code";
 import React, {
   useEffect,
@@ -15,6 +9,13 @@ import React, {
   useMemo,
   useState,
 } from "react";
+import {
+  continueRender,
+  delayRender,
+  Easing,
+  interpolate,
+  useCurrentFrame,
+} from "remotion";
 
 import {
   calculateTransitions,
@@ -22,27 +23,54 @@ import {
   TokenTransitionsSnapshot,
 } from "codehike/utils/token-transitions";
 import { applyStyle } from "./utils";
-import { errorCallout } from "./annotations/errorCallout";
 
 import { inlineBlockTokens } from "./annotations/InlineToken";
-import { TRANSITION_DURATION } from "./constants";
-import { queryCallout } from "./annotations/queryCallout";
+import {
+  makeQueryComponent,
+  transformQuery,
+} from "./annotations/Query";
+
+const errorCallout = (
+  displayLength: number,
+): AnnotationHandler => ({
+  name: "error-callout",
+  transform: transformQuery,
+  AnnotatedLine: makeQueryComponent({
+    displayLength,
+    type: "error",
+  }),
+});
+
+const queryCallout = (
+  displayLength: number,
+): AnnotationHandler => ({
+  name: "query-callout",
+  transform: transformQuery,
+  AnnotatedLine: makeQueryComponent({
+    displayLength,
+    type: "query",
+  }),
+});
 
 export function CodeTransition({
   oldCode,
   newCode,
-  durationInFrames = TRANSITION_DURATION,
+  transitionDuration: transitionDuration,
+  displayLength,
 }: {
   oldCode: HighlightedCode | null;
   newCode: HighlightedCode;
-  durationInFrames?: number;
+  transitionDuration: number;
+  displayLength: number;
 }) {
   const frame = useCurrentFrame();
 
   const ref = React.useRef<HTMLPreElement>(null);
   const [oldSnapshot, setOldSnapshot] =
     useState<TokenTransitionsSnapshot | null>(null);
-  const [handle] = React.useState(() => delayRender());
+  const [delayRenderHandle] = React.useState(() =>
+    delayRender(),
+  );
 
   const prevCode: HighlightedCode = useMemo(() => {
     return (
@@ -79,9 +107,11 @@ export function CodeTransition({
     );
     transitions.forEach(
       ({ element, keyframes, options }) => {
-        const delay = durationInFrames * options.delay;
+        const delay =
+          transitionDuration * options.delay;
         const duration =
-          durationInFrames * options.duration;
+          transitionDuration * options.duration;
+
         const progress = interpolate(
           frame,
           [delay, delay + duration],
@@ -100,14 +130,14 @@ export function CodeTransition({
         });
       },
     );
-    continueRender(handle);
+    continueRender(delayRenderHandle);
   });
 
   const handlers: AnnotationHandler[] = useMemo(() => {
     return [
       inlineBlockTokens,
-      errorCallout,
-      queryCallout,
+      errorCallout(displayLength),
+      queryCallout(displayLength),
     ];
   }, []);
 

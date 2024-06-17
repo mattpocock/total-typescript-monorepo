@@ -7,6 +7,7 @@ import {
   interpolate,
   useCurrentFrame,
 } from "remotion";
+import { DATA_NO_OVERRIDE_ATTRIBUTE } from "../constants";
 
 type Data = {
   column: number;
@@ -23,7 +24,6 @@ export const transformQuery = (
     lineNumber,
     fromColumn,
     toColumn,
-    data,
   } = annotation;
   return {
     name,
@@ -39,7 +39,10 @@ export const transformQuery = (
 };
 
 export const makeQueryComponent =
-  (type: "error" | "query"): LineAnnotationComponent =>
+  (outerProps: {
+    type: "error" | "query";
+    displayLength: number;
+  }): LineAnnotationComponent =>
   ({
     InnerLine,
     annotation,
@@ -51,18 +54,25 @@ export const makeQueryComponent =
     const frame = useCurrentFrame();
     const opacity = interpolate(
       frame,
-      [35, 45],
-      [0, 1],
+      [
+        35,
+        45,
+        outerProps.displayLength - 35,
+        outerProps.displayLength,
+      ],
+      [0, 1, 1, 0],
       {
         extrapolateLeft: "clamp",
         extrapolateRight: "clamp",
       },
     );
 
+    const queryType = outerProps.type;
+
     return (
       <>
         <InnerLine {...props} />
-        {type === "error" && (
+        {queryType === "error" && (
           <div
             className="h-2 bg-red-500 absolute -mt-2"
             style={{
@@ -73,6 +83,9 @@ export const makeQueryComponent =
           ></div>
         )}
         <div
+          {...{
+            [DATA_NO_OVERRIDE_ATTRIBUTE]: "false",
+          }}
           style={{
             opacity,
             minWidth: `${column + 2}ch`,
@@ -84,14 +97,14 @@ export const makeQueryComponent =
           className={clsx(
             {
               "border-l-8 border-red-500 rounded-l-none mt-3":
-                type === "error",
+                queryType === "error",
               "bg-gray-700 text-gray-50 mt-2":
-                type === "query",
+                queryType === "query",
             },
             "bg-gray-700 text-gray-50 rounded-xl p-4 px-6 font-mono",
           )}
         >
-          {type === "query" && (
+          {queryType === "query" && (
             <div
               style={{
                 left: `${column - indentation - 0.5}ch`,
@@ -100,13 +113,7 @@ export const makeQueryComponent =
                   "rotate(45deg) translateY(-50%)",
                 top: "-3px",
               }}
-              className={clsx(
-                {
-                  "bg-red-900": type === "error",
-                  "bg-gray-700": type === "query",
-                },
-                "bg-gray-700 size-4",
-              )}
+              className={clsx("bg-gray-700 size-4")}
             />
           )}
           {annotation.data.children ||
