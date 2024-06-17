@@ -30,7 +30,7 @@ type Target = NewObj;
 //   ^?
 ```
 
-```ts !! dolor
+```ts !!
 type BackendObj = {
   id: string;
   name: string;
@@ -46,7 +46,7 @@ type Target = NewObj;
 //   ^?
 ```
 
-```ts !! dolor
+```ts !!
 type BackendObj = {
   id: string;
   name: string;
@@ -62,7 +62,7 @@ type Target = NewObj;
 //   ^?
 ```
 
-```ts !! dolor
+```ts !!
 type BackendObj = {
   id: string;
   name: string;

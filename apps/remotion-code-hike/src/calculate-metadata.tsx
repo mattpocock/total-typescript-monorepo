@@ -90,18 +90,11 @@ export const calculateMetadata: CalculateMetadataFunction<
     twoslashPromises,
   );
 
-  const heightOfLongestCodeSample = Math.max(
-    ...twoSlashedCode.map(
-      (c) => c.code.split("\n").length,
-    ),
-  );
-
   return {
     durationInFrames:
       code.length * DEFAULT_STEP_DURATION,
     props: {
       steps: twoSlashedCode,
     },
-    // height: heightOfLongestCodeSample * 80 + 100,
   };
 };
