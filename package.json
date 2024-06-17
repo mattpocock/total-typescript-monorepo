@@ -12,6 +12,7 @@
     "ci": "turbo build test",
     "release": "pnpm run ci && changeset publish",
     "write": "turbo start --filter=twoslash-preview --filter=@total-typescript/twoslash-preview-server",
+    "make-video": "turbo dev --filter=remotion-code-hike --filter=sync-current-markdown-file-to-remotion",
     "new": "(cd apps/written-content && pnpm run new)",
     "scratch": "(cd apps/written-content && pnpm run scratch)",
     "dev": "tsc -b --watch",

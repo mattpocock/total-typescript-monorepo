@@ -162,14 +162,17 @@ importers:
         specifier: 4.0.172
         version: 4.0.172(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@remotion/google-fonts':
-        specifier: 4.0.175
-        version: 4.0.175(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: 4.0.172
+        version: 4.0.172(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
       codehike:
         specifier: ^1.0.0-alpha.19
         version: 1.0.0-alpha.20
+      front-matter:
+        specifier: ^4.0.2
+        version: 4.0.2
       react:
         specifier: ^18.0.0
         version: 18.3.1
@@ -207,6 +210,15 @@ importers:
       '@total-typescript/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+
+  apps/sync-current-markdown-file-to-remotion:
+    dependencies:
+      '@total-typescript/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      chokidar:
+        specifier: ^3.6.0
+        version: 3.6.0
 
   apps/twoslash-lint:
     dependencies:
@@ -1761,8 +1773,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@remotion/google-fonts@4.0.175':
-    resolution: {integrity: sha512-0MrIQOGxECxk0/ud8tXzHxoS+qqRyLDRO1Xdm4HVY3sCQh1sTCLprxhJ3m4WuLRn3L6TRiQ7SVCtjX7fOoWoSg==}
+  '@remotion/google-fonts@4.0.172':
+    resolution: {integrity: sha512-U+SGZDFLI9DjSXqKKc8TShNn9gt5mL7cyIO4/Wyd339digy6N4W/1Hmp5nbyT4Rp3MMN8F4LBQUdT0wdjIwRtQ==}
 
   '@remotion/media-utils@4.0.172':
     resolution: {integrity: sha512-QGv4PrNdMT3HGVchQ+OG+1t4RGYirtn5NJuJFRMJWhFtQ/ovBzeWGSyizl75YE6kZ3MmJmq1LyQ0CDDbHLSnIg==}
@@ -3063,6 +3075,9 @@ packages:
   fresh@0.5.2:
     resolution: {integrity: sha512-zJ2mQYM18rEFOudeV4GShTGIQ7RbzA7ozbU9I/XBpm7kqgMywgmylMwXHxZJmkVoYkna9d2pVXVXPdYTP9ej8Q==}
     engines: {node: '>= 0.6'}
+
+  front-matter@4.0.2:
+    resolution: {integrity: sha512-I8ZuJ/qG92NWX8i5x1Y8qyj3vizhXS31OxjKDu3LKP+7/qBgfIKValiZIEwoVoJKUHlhWtYrktkxV1XsX+pPlg==}
 
   fs-constants@1.0.0:
     resolution: {integrity: sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==}
@@ -4908,12 +4923,6 @@ packages:
 
   remotion@4.0.172:
     resolution: {integrity: sha512-doS96m8w/TLwbwytRq8gz9e2/JDvHiSw4CM47Hf7IBHkDaLokkO8R/lyVYf8fNYwJ5t7g+ylSYSDyYkXROrZJA==}
-    peerDependencies:
-      react: '>=16.8.0'
-      react-dom: '>=16.8.0'
-
-  remotion@4.0.175:
-    resolution: {integrity: sha512-7aKer46dBXA55gduwn4NYKkTxumQsT8fEzI9nihwb2kIj73EHpYyB+gVV4qHdQMnVdsa0uweyRwcbnf88HmvbQ==}
     peerDependencies:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
@@ -7326,9 +7335,9 @@ snapshots:
   '@remotion/compositor-win32-x64-msvc@4.0.172':
     optional: true
 
-  '@remotion/google-fonts@4.0.175(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@remotion/google-fonts@4.0.172(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      remotion: 4.0.175(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      remotion: 4.0.172(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     transitivePeerDependencies:
       - react
       - react-dom
@@ -8927,6 +8936,10 @@ snapshots:
   fraction.js@4.3.7: {}
 
   fresh@0.5.2: {}
+
+  front-matter@4.0.2:
+    dependencies:
+      js-yaml: 3.14.1
 
   fs-constants@1.0.0: {}
 
@@ -11330,11 +11343,6 @@ snapshots:
       vfile: 6.0.1
 
   remotion@4.0.172(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
-    dependencies:
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-
-  remotion@4.0.175(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)

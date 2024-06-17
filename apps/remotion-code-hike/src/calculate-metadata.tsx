@@ -26,7 +26,7 @@ const compilerOptions: CompilerOptions = {
   noEmit: true,
   module: 99 /* ESNext */,
   moduleResolution: 100 /* Bundler */,
-  jsx: 2 /* React */,
+  jsx: 4 /* ReactJSX */,
 };
 
 const twoslash = createTwoslashFromCDN({
@@ -40,7 +40,7 @@ type Props = {
 export const calculateMetadata: CalculateMetadataFunction<
   Props
 > = async () => {
-  const { code } = parseRoot(Content, Schema);
+  const { code, ...rest } = parseRoot(Content, Schema);
 
   const twoslashPromises: Array<
     Promise<HighlightedCode>

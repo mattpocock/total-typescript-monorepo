@@ -10,7 +10,7 @@
     "@mdx-js/react": "3.0.1",
     "@remotion/animation-utils": "4.0.172",
     "@remotion/cli": "4.0.172",
-    "@remotion/google-fonts": "4.0.175",
+    "@remotion/google-fonts": "4.0.172",
     "codehike": "^1.0.0-alpha.19",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
@@ -29,7 +29,7 @@
     "printWidth": 55
   },
   "scripts": {
-    "dev": "remotion studio",
+    "dev": "remotion studio --port 3001",
     "build": "remotion render MyComp out/video.mp4",
     "upgrade": "remotion upgrade"
   }

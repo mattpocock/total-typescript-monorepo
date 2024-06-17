@@ -38,6 +38,9 @@
     },
     {
       "path": "./apps/remotion-code-hike"
+    },
+    {
+      "path": "./apps/sync-current-markdown-file-to-remotion"
     }
   ],
   "files": [],
