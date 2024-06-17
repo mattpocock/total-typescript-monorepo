@@ -36,6 +36,9 @@
     {
       "path": "./apps/twoslash-lint"
     },
+    {
+      "path": "./apps/remotion-code-hike"
+    }
   ],
   "files": [],
 }

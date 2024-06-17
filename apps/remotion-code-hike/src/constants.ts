@@ -1,0 +1,2 @@
+export const TRANSITION_DURATION = 60;
+export const DEFAULT_STEP_DURATION = 150;
