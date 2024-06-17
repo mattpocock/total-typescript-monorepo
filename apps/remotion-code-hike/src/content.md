@@ -7,6 +7,11 @@ type Example = ToNumber<"42">;
 ```
 
 ```ts !! dolor
+// @errors: 2322
+const example: string = 42;
+```
+
+```ts !! dolor
 type ToNumber<T extends PropertyKey> =
   T extends `${infer U extends number}` ? U : never;
 

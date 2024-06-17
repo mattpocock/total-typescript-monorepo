@@ -10,16 +10,20 @@
     "@mdx-js/react": "3.0.1",
     "@remotion/animation-utils": "4.0.172",
     "@remotion/cli": "4.0.172",
-    "@remotion/google-fonts": "4.0.172",
+    "@remotion/google-fonts": "4.0.175",
     "codehike": "^1.0.0-alpha.19",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "remotion": "4.0.172",
     "twoslash-cdn": "^0.2.8",
-    "zod": "3.21.4"
+    "zod": "3.21.4",
+    "clsx": "^2.1.1"
   },
   "devDependencies": {
-    "@types/react": "^18.0.26"
+    "@types/react": "^18.0.26",
+    "tailwindcss": "^3.4.4",
+    "@remotion/tailwind": "4.0.172",
+    "@remotion/bundler": "4.0.172"
   },
   "prettier": {
     "printWidth": 55

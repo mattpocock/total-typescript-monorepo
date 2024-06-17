@@ -1,13 +1,21 @@
-import { Config, WebpackOverrideFn } from "@remotion/cli/config";
+import {
+  Config,
+  WebpackOverrideFn,
+} from "@remotion/cli/config";
+import { enableTailwind } from "@remotion/tailwind";
+import type { CodeHikeConfig } from "codehike/mdx";
 
-const chConfig = {
+const chConfig: CodeHikeConfig = {
   syntaxHighlighting: {
-    theme: "github-dark",
+    theme: "dark-plus",
   },
 };
 
-const enableMdx: WebpackOverrideFn = async (currentConfiguration) => {
-  const { remarkCodeHike, recmaCodeHike } = await import("codehike/mdx");
+const enableMdx: WebpackOverrideFn = async (
+  currentConfiguration,
+) => {
+  const { remarkCodeHike, recmaCodeHike } =
+    await import("codehike/mdx");
   return {
     ...currentConfiguration,
     module: {
@@ -22,8 +30,12 @@ const enableMdx: WebpackOverrideFn = async (currentConfiguration) => {
             {
               loader: "@mdx-js/loader",
               options: {
-                remarkPlugins: [[remarkCodeHike, chConfig]],
-                recmaPlugins: [[recmaCodeHike, chConfig]],
+                remarkPlugins: [
+                  [remarkCodeHike, chConfig],
+                ],
+                recmaPlugins: [
+                  [recmaCodeHike, chConfig],
+                ],
               },
             },
           ],
@@ -33,6 +45,13 @@ const enableMdx: WebpackOverrideFn = async (currentConfiguration) => {
   };
 };
 
-Config.overrideWebpackConfig(enableMdx);
+Config.overrideWebpackConfig(
+  async (currentConfiguration) => {
+    return enableMdx(
+      await enableTailwind(currentConfiguration),
+    );
+  },
+);
+
 Config.setVideoImageFormat("jpeg");
 Config.setOverwriteOutput(true);

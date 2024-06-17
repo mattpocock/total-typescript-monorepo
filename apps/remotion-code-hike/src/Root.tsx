@@ -1,3 +1,4 @@
+import "./tailwind.css";
 import { Composition } from "remotion";
 import { Main } from "./Main";
 import {
@@ -26,7 +27,7 @@ export const RemotionRoot = () => {
       durationInFrames={
         DEFAULT_STEP_DURATION * code.length
       }
-      width={1600}
+      width={1400}
       height={600}
       calculateMetadata={calculateMetadata}
     />

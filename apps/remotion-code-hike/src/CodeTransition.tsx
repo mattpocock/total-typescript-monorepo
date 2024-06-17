@@ -24,11 +24,9 @@ import {
 import { applyStyle } from "./utils";
 import { errorCallout } from "./annotations/errorCallout";
 
-import { loadFont } from "@remotion/google-fonts/RobotoMono";
 import { inlineBlockTokens } from "./annotations/InlineToken";
 import { TRANSITION_DURATION } from "./constants";
 import { queryCallout } from "./annotations/queryCallout";
-const { fontFamily } = loadFont();
 
 export function CodeTransition({
   oldCode,
@@ -118,8 +116,6 @@ export function CodeTransition({
       position: "relative",
       fontSize: 40,
       lineHeight: 1.5,
-      fontFamily,
-      backgrouncColor: "#1a222f",
     };
   }, []);
 
