@@ -4,7 +4,6 @@
   "description": "My Remotion video",
   "repository": {},
   "private": true,
-  "license": "UNLICENSED",
   "type": "module",
   "dependencies": {
     "@mdx-js/loader": "3.0.1",
