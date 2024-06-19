@@ -1,6 +1,6 @@
 {
   "name": "@total-typescript/twoslash-to-email",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "bin": {
     "twoslash-to-email": "./dist/bin.js"
   },
