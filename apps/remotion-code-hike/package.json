@@ -30,7 +30,6 @@
   },
   "scripts": {
     "dev": "remotion studio --port 3001",
-    "build": "remotion render MyComp out/video.mp4",
     "upgrade": "remotion upgrade",
     "postinstall": "echo \"{}\" > src/meta.local.json"
   }
