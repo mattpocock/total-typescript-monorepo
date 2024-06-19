@@ -5,8 +5,10 @@ import {
   type AbsolutePath,
 } from "@total-typescript/shared";
 import { applyShikiToMarkdownFile } from "@total-typescript/twoslash-shared";
+import { load } from "cheerio";
 import { Command } from "commander";
 import fg from "fast-glob";
+import juice from "juice";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "path";
 
@@ -43,22 +45,19 @@ program.argument("<glob>").action(async (globString: string) => {
 
     const css = await readFile(cssLocation, "utf-8");
 
-    const output = [
-      `<html>`,
-      `<head>`,
-      `<style>`,
-      css,
-      `</style>`,
-      "</head>",
-      `<body>`,
-      result.html,
-      "</body>",
-      "</html>",
-    ].join("\n");
+    const output = [`<style>`, css, `</style>`, result.html].join("\n");
 
     const outputFilename = filePath + ".email.html";
 
-    writeFile(outputFilename, output, "utf-8");
+    const juicedOutput = juice(output);
+
+    const $ = load(juicedOutput);
+
+    $("data-lsp").contents().unwrap();
+
+    $("*").removeAttr("class");
+
+    writeFile(outputFilename, $("body").html()!, "utf-8");
   }
 });
 

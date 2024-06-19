@@ -41,6 +41,9 @@
     },
     {
       "path": "./apps/sync-current-markdown-file-to-remotion"
+    },
+    {
+      "path": "./apps/twoslash-to-simple-markdown"
     }
   ],
   "files": [],

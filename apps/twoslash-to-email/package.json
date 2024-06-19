@@ -20,7 +20,9 @@
     "fast-glob": "^3.3.2",
     "@total-typescript/shared": "workspace:*",
     "@total-typescript/twoslash-shared": "workspace:*",
-    "commander": "^12.0.0"
+    "commander": "^12.0.0",
+    "juice": "^10.0.0",
+    "cheerio": "^1.0.0-rc.12"
   },
   "devDependencies": {
     "stylelint": "^16.6.1",

@@ -1,0 +1,23 @@
+{
+  "name": "@total-typescript/twoslash-to-simple-markdown",
+  "version": "0.0.1",
+  "bin": {
+    "twoslash-to-simple-markdown": "./dist/bin.js"
+  },
+  "type": "module",
+  "scripts": {
+    "setup": "(pnpm unlink | true) && pnpm link --global"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": [
+    "./dist/*"
+  ],
+  "dependencies": {
+    "fast-glob": "^3.3.2",
+    "@total-typescript/shared": "workspace:*",
+    "@total-typescript/twoslash-shared": "workspace:*",
+    "commander": "^12.0.0"
+  }
+}

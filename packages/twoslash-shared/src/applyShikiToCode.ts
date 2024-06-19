@@ -13,8 +13,9 @@ const storage = createStorage({
   }),
 });
 
-const compilerOptions: CompilerOptions = {
+export const compilerOptions: CompilerOptions = {
   target: 9 /* ES2022 */,
+  lib: ["ES2022", "dom", "dom.iterable"],
   strict: true,
   allowJs: true,
   checkJs: true,
@@ -24,12 +25,17 @@ const compilerOptions: CompilerOptions = {
   jsx: 2 /* React */,
 };
 
-const twoslash = createTwoslashFromCDN({
+export const twoslashFromCDN = createTwoslashFromCDN({
   storage,
   compilerOptions,
+  twoSlashOptionsOverrides: {
+    compilerOptions,
+  },
 });
 
-export const transformerTwoslash = createTransformerFactory(twoslash.runSync)({
+export const transformerTwoslash = createTransformerFactory(
+  twoslashFromCDN.runSync,
+)({
   renderer: rendererClassic(),
   throws: true,
   twoslashOptions: {
@@ -54,7 +60,7 @@ export const applyShikiToCode = async (opts: {
   lang: string;
 }): Promise<ApplyShikiSuccess | ApplyShikiFailure> => {
   try {
-    await twoslash.prepareTypes(opts.code);
+    await twoslashFromCDN.prepareTypes(opts.code);
     const result = await codeToHtml(opts.code, {
       lang: opts.lang,
       theme: "dark-plus",
