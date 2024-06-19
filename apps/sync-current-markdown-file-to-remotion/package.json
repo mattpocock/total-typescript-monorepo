@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node --watch dist/main.js"
+    "dev": "node --watch dist/main.js",
+    "postinstall": "echo \"{}\" > src/meta.local.json"
   },
   "dependencies": {
     "@total-typescript/shared": "workspace:*",
