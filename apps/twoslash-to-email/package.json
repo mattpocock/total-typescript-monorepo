@@ -6,7 +6,8 @@
   },
   "type": "module",
   "scripts": {
-    "setup": "(pnpm unlink | true) && pnpm link --global"
+    "setup": "(pnpm unlink | true) && pnpm link --global",
+    "lint": "stylelint '**/*.css'"
   },
   "exports": {
     ".": "./dist/index.js"
@@ -20,5 +21,9 @@
     "@total-typescript/shared": "workspace:*",
     "@total-typescript/twoslash-shared": "workspace:*",
     "commander": "^12.0.0"
+  },
+  "devDependencies": {
+    "stylelint": "^16.6.1",
+    "stylelint-config-standard": "^36.0.0"
   }
 }

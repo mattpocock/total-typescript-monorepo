@@ -43,7 +43,18 @@ program.argument("<glob>").action(async (globString: string) => {
 
     const css = await readFile(cssLocation, "utf-8");
 
-    const output = [`<style>`, css, `</style>`, result.html].join("\n");
+    const output = [
+      `<html>`,
+      `<head>`,
+      `<style>`,
+      css,
+      `</style>`,
+      "</head>",
+      `<body>`,
+      result.html,
+      "</body>",
+      "</html>",
+    ].join("\n");
 
     const outputFilename = filePath + ".email.html";
 
