@@ -1,5 +1,11 @@
 # @total-typescript/twoslash-to-email
 
+## 0.0.3
+
+### Patch Changes
+
+- b06f083: Removed the dependency on css variables
+
 ## 0.0.2
 
 ### Patch Changes
