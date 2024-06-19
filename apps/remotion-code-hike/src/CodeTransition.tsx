@@ -52,6 +52,40 @@ const queryCallout = (
   }),
 });
 
+const bg = (outerProps: {
+  displayLength: number;
+}): AnnotationHandler => ({
+  name: "bg",
+  Inline: ({ annotation, children }) => {
+    const frame = useCurrentFrame();
+    const opacity = interpolate(
+      frame,
+      [
+        35,
+        45,
+        outerProps.displayLength - 35,
+        outerProps.displayLength,
+      ],
+      [0, 1, 1, 0],
+      {
+        extrapolateLeft: "clamp",
+        extrapolateRight: "clamp",
+      },
+    );
+    return (
+      <span className="relative">
+        <span
+          className="h-2 from-sky-300 to-yellow-200 rounded-full bg-gradient-to-r absolute w-full -bottom-2 left-0"
+          style={{
+            opacity,
+          }}
+        ></span>
+        {children}
+      </span>
+    );
+  },
+});
+
 export function CodeTransition({
   oldCode,
   newCode,
@@ -138,6 +172,7 @@ export function CodeTransition({
       inlineBlockTokens,
       errorCallout(displayLength),
       queryCallout(displayLength),
+      bg({ displayLength }),
     ];
   }, []);
 
