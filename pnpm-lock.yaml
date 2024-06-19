@@ -390,6 +390,9 @@ importers:
       '@shikijs/twoslash':
         specifier: ^1.6.3
         version: 1.6.4(typescript@5.4.5)
+      hast-util-to-html:
+        specifier: 9.0.1
+        version: 9.0.1
       lz-string:
         specifier: ^1.5.0
         version: 1.5.0
