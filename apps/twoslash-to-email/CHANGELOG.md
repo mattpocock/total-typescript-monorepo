@@ -1,5 +1,16 @@
 # @total-typescript/twoslash-to-email
 
+## 0.1.0
+
+### Minor Changes
+
+- 13f2327: Fixed out-of-sync package dependencies.
+
+### Patch Changes
+
+- Updated dependencies [13f2327]
+  - @total-typescript/twoslash-shared@0.1.0
+
 ## 0.0.3
 
 ### Patch Changes
