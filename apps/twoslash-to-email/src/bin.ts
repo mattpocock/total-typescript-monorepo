@@ -39,7 +39,7 @@ program.argument("<glob>").action(async (globString: string) => {
 
     const result = await wrappedApplyShiki(filePath, fileContents);
 
-    const cssLocation = path.resolve(import.meta.dirname, "output.css");
+    const cssLocation = path.resolve(import.meta.dirname, "..", "shiki.css");
 
     const css = await readFile(cssLocation, "utf-8");
 

@@ -6,19 +6,15 @@
   },
   "type": "module",
   "scripts": {
-    "setup": "(pnpm unlink | true) && pnpm link --global",
-    "build": "tailwind -i src/shiki.css -o dist/output.css",
-    "dev": "pnpm run build --watch"
+    "setup": "(pnpm unlink | true) && pnpm link --global"
   },
   "exports": {
     ".": "./dist/index.js"
   },
   "files": [
-    "./dist/*"
+    "./dist/*",
+    "shiki.css"
   ],
-  "devDependencies": {
-    "tailwindcss": "^3.4.3"
-  },
   "dependencies": {
     "fast-glob": "^3.3.2",
     "@total-typescript/shared": "workspace:*",
