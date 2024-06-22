@@ -14,15 +14,15 @@ const storage = createStorage({
 });
 
 export const compilerOptions: CompilerOptions = {
-  target: 9 /* ES2022 */,
-  lib: ["ES2022", "dom", "dom.iterable"],
+  target: 99 /* ESNExt */,
+  lib: ["esnext", "dom", "dom.iterable"],
   strict: true,
   allowJs: true,
   checkJs: true,
   noEmit: true,
   module: 99 /* ESNext */,
   moduleResolution: 100 /* Bundler */,
-  jsx: 2 /* React */,
+  jsx: 4 /* ReactJSX */,
 };
 
 export const twoslashFromCDN = createTwoslashFromCDN({
