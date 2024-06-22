@@ -23,7 +23,7 @@ export const appendVideoToTimeline = async () => {
   const silenceResult = await findSilenceInVideo(inputVideo, {
     threshold: THRESHOLD,
     fps,
-    padding: PADDING,
+    padding: 0,
     silenceDuration: SILENCE_DURATION,
   });
 
