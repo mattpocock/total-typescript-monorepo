@@ -8,6 +8,7 @@ export const getClipsOfSpeakingFromFFmpeg = (
   let silence = stdout
     .trim()
     .split("\n")
+    .filter((line) => !line.endsWith("]"))
     .map((line) => line.split(" "))
     .map(([silenceEnd, duration]) => {
       return {
