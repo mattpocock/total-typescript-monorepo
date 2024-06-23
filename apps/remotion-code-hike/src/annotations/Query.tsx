@@ -57,7 +57,7 @@ export const makeQueryComponent =
       [
         35,
         45,
-        outerProps.displayLength - 35,
+        outerProps.displayLength - 10,
         outerProps.displayLength,
       ],
       [0, 1, 1, 0],
