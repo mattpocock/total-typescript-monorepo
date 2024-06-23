@@ -1,7 +1,3 @@
----
-height: 700
----
-
 ```ts !!
 import { useRef } from "react";
 

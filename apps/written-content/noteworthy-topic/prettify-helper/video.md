@@ -1,6 +1,4 @@
 ---
-height: 1150
-width: 1400
 posted: 2024-06-20
 ---
 
@@ -91,11 +89,11 @@ type UserWithPerms = {
   age: number;
   permissions: string[];
 };
-// ---cut---
 type Prettify<T> = {
   [K in keyof T]: T[K];
 } & {};
 
+// ---cut---
 type Intersected = AdminUser & UserWithPerms & User;
 
 // With the `Prettify` helper, the hover overlay
@@ -120,15 +118,12 @@ type UserWithPerms = {
   age: number;
   permissions: string[];
 };
-// ---cut---
 type Prettify<T> = {
   [K in keyof T]: T[K];
 } & {};
 
-interface Intersected
-  extends AdminUser,
-    UserWithPerms,
-    User {}
+// ---cut---
+interface Intersected extends AdminUser, UserWithPerms, User {}
 
 // It even works with interfaces!
 type Show = Prettify<Intersected>;

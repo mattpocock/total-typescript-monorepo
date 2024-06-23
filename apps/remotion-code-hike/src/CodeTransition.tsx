@@ -1,8 +1,4 @@
-import {
-  AnnotationHandler,
-  HighlightedCode,
-  Pre,
-} from "codehike/code";
+import { HighlightedCode, Pre } from "codehike/code";
 import React, {
   useEffect,
   useLayoutEffect,
@@ -15,6 +11,7 @@ import {
   Easing,
   interpolate,
   useCurrentFrame,
+  useCurrentScale,
 } from "remotion";
 
 import {
@@ -23,75 +20,26 @@ import {
   TokenTransitionsSnapshot,
 } from "codehike/utils/token-transitions";
 import { applyStyle } from "./utils";
-
-import { inlineBlockTokens } from "./annotations/InlineToken";
+import { PreWithHandlers } from "./PreWithHandlers";
 import {
-  makeQueryComponent,
-  transformQuery,
-} from "./annotations/Query";
-
-const errorCallout = (
-  displayLength: number,
-): AnnotationHandler => ({
-  name: "error-callout",
-  transform: transformQuery,
-  AnnotatedLine: makeQueryComponent({
-    displayLength,
-    type: "error",
-  }),
-});
-
-const queryCallout = (
-  displayLength: number,
-): AnnotationHandler => ({
-  name: "query-callout",
-  transform: transformQuery,
-  AnnotatedLine: makeQueryComponent({
-    displayLength,
-    type: "query",
-  }),
-});
-
-const bg = (outerProps: {
-  displayLength: number;
-}): AnnotationHandler => ({
-  name: "bg",
-  Inline: ({ annotation, children }) => {
-    const frame = useCurrentFrame();
-    const opacity = interpolate(
-      frame,
-      [
-        35,
-        45,
-        outerProps.displayLength - 35,
-        outerProps.displayLength,
-      ],
-      [0, 1, 1, 0],
-      {
-        extrapolateLeft: "clamp",
-        extrapolateRight: "clamp",
-      },
-    );
-    return (
-      <span className="relative">
-        <span
-          className="h-2 from-sky-300 to-yellow-200 rounded-full bg-gradient-to-r absolute w-full -bottom-2 left-0"
-          style={{
-            opacity,
-          }}
-        ></span>
-        {children}
-      </span>
-    );
-  },
-});
+  featureFlags,
+  RESIZE_TRANSITION_LENGTH,
+} from "./constants";
 
 export function CodeTransition({
   oldCode,
+  oldScale,
+  newScale,
   newCode,
+  oldMarginTop,
+  newMarginTop,
   transitionDuration: transitionDuration,
   displayLength,
 }: {
+  oldScale: number;
+  oldMarginTop: number;
+  newMarginTop: number;
+  newScale: number;
   oldCode: HighlightedCode | null;
   newCode: HighlightedCode;
   transitionDuration: number;
@@ -167,29 +115,37 @@ export function CodeTransition({
     continueRender(delayRenderHandle);
   });
 
-  const handlers: AnnotationHandler[] = useMemo(() => {
-    return [
-      inlineBlockTokens,
-      errorCallout(displayLength),
-      queryCallout(displayLength),
-      bg({ displayLength }),
-    ];
-  }, []);
+  const scale = interpolate(
+    frame,
+    [0, RESIZE_TRANSITION_LENGTH],
+    [oldScale, newScale],
+    {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+      easing: Easing.inOut(Easing.ease),
+    },
+  );
 
-  const style = useMemo<React.CSSProperties>(() => {
-    return {
-      position: "relative",
-      fontSize: 40,
-      lineHeight: 1.5,
-    };
-  }, []);
+  const marginTop = interpolate(
+    frame,
+    [0, RESIZE_TRANSITION_LENGTH],
+    [oldMarginTop, newMarginTop],
+    {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+      easing: Easing.inOut(Easing.ease),
+    },
+  );
 
   return (
-    <Pre
+    <PreWithHandlers
       ref={ref}
       code={code}
-      handlers={handlers}
-      style={style}
+      displayLength={displayLength}
+      style={{
+        transform: `scale(${scale}) ${featureFlags.USE_CENTRED_TEXT ? `translateY(${marginTop}px)` : ""}`,
+        transformOrigin: "top left",
+      }}
     />
   );
 }

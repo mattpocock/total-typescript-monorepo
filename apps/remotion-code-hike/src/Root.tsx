@@ -34,8 +34,8 @@ export const RemotionRoot = () => {
       durationInFrames={
         DEFAULT_STEP_DURATION * code.length
       }
-      width={resolvedMeta.width || 1400}
-      height={resolvedMeta.height || 1400}
+      width={resolvedMeta.width || 1920}
+      height={resolvedMeta.height || 1080}
       calculateMetadata={calculateMetadata}
     />
   );
