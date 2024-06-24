@@ -1,22 +1,23 @@
-import {
-  AbsoluteFill,
-  Series,
-  continueRender,
-  delayRender,
-  useCurrentScale,
-  useVideoConfig,
-} from "remotion";
-import { ProgressBar } from "./ProgressBar";
-import { CodeTransition } from "./CodeTransition";
 import { HighlightedCode } from "codehike/code";
-import { TRANSITION_DURATION } from "./constants";
-import { CodeStepSizes } from "./CodeStepSizes";
 import {
   useLayoutEffect,
   useRef,
   useState,
 } from "react";
+import {
+  AbsoluteFill,
+  Audio,
+  Series,
+  continueRender,
+  delayRender,
+  useVideoConfig,
+} from "remotion";
+import { CodeStepSizes } from "./CodeStepSizes";
+import { CodeTransition } from "./CodeTransition";
+import { ProgressBar } from "./ProgressBar";
 import { calculateElemScale } from "./calculateElemScale";
+import { TRANSITION_DURATION } from "./constants";
+import chillMusic from "./media/chill.mp3";
 
 export const Main = (props: {
   steps: HighlightedCode[];
@@ -43,6 +44,7 @@ export const Main = (props: {
 
   return (
     <AbsoluteFill className="bg-gray-900 p-16 space-y-12">
+      <Audio src={chillMusic} startFrom={669} />
       <ProgressBar steps={steps} />
       <div
         className="h-full overflow-hidden"

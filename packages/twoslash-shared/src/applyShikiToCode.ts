@@ -2,9 +2,9 @@ import { rendererClassic } from "@shikijs/twoslash";
 import { createTransformerFactory } from "@shikijs/twoslash/core";
 import { createTwoslashFromCDN } from "twoslash-cdn";
 import { createStorage } from "unstorage";
+import fsDriver from "unstorage/drivers/fs";
 import { codeToHtml } from "shiki";
 import type { CompilerOptions } from "typescript";
-import fsDriver from "unstorage/drivers/fs";
 import path = require("path");
 
 const storage = createStorage({

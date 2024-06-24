@@ -11,6 +11,7 @@ import {
   useCurrentScale,
 } from "remotion";
 import { PreWithHandlers } from "./PreWithHandlers";
+import { featureFlags } from "./constants";
 
 interface CodeStepWithSizes {
   code: HighlightedCode;
@@ -64,7 +65,20 @@ export const CodeStepSizes = (
       },
     );
 
-    setSizes(newSizes);
+    const largestWidth = Math.max(
+      ...newSizes.map((s) => s.width),
+    );
+
+    const finalSizes = newSizes.map((s) => {
+      return {
+        ...s,
+        width: featureFlags.USE_STATIC_WIDTH
+          ? largestWidth
+          : s.width,
+      };
+    });
+
+    setSizes(finalSizes);
 
     continueRender(delayRenderHandle);
   }, []);

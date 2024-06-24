@@ -17,7 +17,8 @@
     "remotion": "4.0.172",
     "twoslash-cdn": "^0.2.8",
     "zod": "3.21.4",
-    "clsx": "^2.1.1"
+    "clsx": "^2.1.1",
+    "unstorage": "^1.10.2"
   },
   "devDependencies": {
     "@types/react": "^18.0.26",

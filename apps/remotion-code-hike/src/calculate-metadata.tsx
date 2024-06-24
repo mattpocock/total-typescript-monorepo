@@ -13,6 +13,8 @@ import {
 } from "codehike/code";
 import type { CompilerOptions } from "typescript";
 import { DEFAULT_STEP_DURATION } from "./constants";
+import localStorageDriver from "unstorage/drivers/localstorage";
+import { createStorage } from "unstorage";
 
 const Schema = Block.extend({
   code: z.array(HighlightedCodeBlock as any),
@@ -31,6 +33,11 @@ const compilerOptions: CompilerOptions = {
 
 const twoslash = createTwoslashFromCDN({
   compilerOptions,
+  storage: createStorage({
+    driver: localStorageDriver({
+      base: "app:",
+    }),
+  }),
 });
 
 type Props = {
@@ -45,6 +52,7 @@ export const calculateMetadata: CalculateMetadataFunction<
   const twoslashPromises: Array<
     Promise<HighlightedCode>
   > = code.map(async (step: any) => {
+    await twoslash.prepareTypes(step.value);
     const twoslashResult = await twoslash.run(
       step.value,
       step.lang,
