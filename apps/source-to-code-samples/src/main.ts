@@ -30,8 +30,8 @@ watcher.on("change", (_filePath) => {
   const isTsx = filePath.endsWith(".tsx");
 
   const targetFilePath = filePath
-    .replace(".source.ts", ".md")
-    .replace(".source.tsx", ".md");
+    .replace(".source.tsx", ".md")
+    .replace(".source.ts", ".md");
 
   let targetContent = "";
 

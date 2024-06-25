@@ -1,3 +1,6 @@
 {
-  "extends": "@total-typescript/tsconfig/bundler"
+  "extends": "@total-typescript/tsconfig/bundler",
+  "compilerOptions": {
+    "jsx": "react-jsx"
+  }
 }
