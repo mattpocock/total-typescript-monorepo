@@ -108,10 +108,8 @@ const runShikiOnFilePath = async (filePath: AbsolutePath) => {
 const main = async () => {
   const filePath = await getActiveEditorFilePath();
 
-  if (!filePath) {
+  if (filePath?.startsWith(root) && filePath.endsWith(".md")) {
     await runShikiOnFilePath(SHIKI_TEST_LOCATION as AbsolutePath);
-  } else if (filePath.startsWith(root) && filePath.endsWith(".md")) {
-    await runShikiOnFilePath(filePath);
   } else {
     await runShikiOnFilePath(SHIKI_TEST_LOCATION as AbsolutePath);
   }
