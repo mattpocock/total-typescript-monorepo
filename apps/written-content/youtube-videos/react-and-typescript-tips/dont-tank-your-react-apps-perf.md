@@ -56,7 +56,6 @@ const Button = (props: ButtonProps) => {
 // @errors: 2322
 import React from "react";
 
-// ---cut---
 type ButtonProps = {
   className?: string;
 };
@@ -70,9 +69,31 @@ const Button = (props: ButtonProps) => {
   );
 };
 
-// But this doesn't scale very well - we'd need
-// to add every single prop that a button can have
-// to ButtonProps.
+// ---cut---
+// But this doesn't scale very well.
+<Button />;
+```
+
+```tsx !!
+// @errors: 2322
+import React from "react";
+
+// ---cut---
+type ButtonProps = {
+  className?: string;
+};
+
+const Button = (props: ButtonProps) => {
+  return (
+    <button
+      {...props}
+      className={`bg-gray-400 ${props.className}`}
+    />
+  );
+};
+// ---cut---
+// For every new prop we need, we'd need to
+// add it to the ButtonProps.
 <Button onClick={() => {}} />;
 ```
 
@@ -93,6 +114,26 @@ const Button = (props: ButtonProps) => {
     />
   );
 };
+```
+
+```tsx !!
+// @errors: 2339
+import React from "react";
+
+type ButtonProps = React.ComponentProps<"button">;
+
+const Button = (props: ButtonProps) => {
+  return (
+    <button
+      {...props}
+      className={`bg-gray-400 ${props.className}`}
+    />
+  );
+};
+
+// ---cut---
+// And now, all the normal button props are available.
+<Button onClick={() => {}} />;
 ```
 
 ```tsx !!

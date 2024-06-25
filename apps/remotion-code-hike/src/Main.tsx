@@ -44,7 +44,10 @@ export const Main = (props: {
 
   return (
     <>
-      <Audio src={chillMusic} startFrom={669} />
+      {/* Only play audio on short vids */}
+      {durationInFrames < 3240 && (
+        <Audio src={chillMusic} startFrom={669} />
+      )}
       <AbsoluteFill className="bg-gray-900 p-16 space-y-12">
         <ProgressBar steps={steps} />
         <div
