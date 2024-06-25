@@ -1,0 +1,12 @@
+{
+  "name": "source-to-code-samples",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch dist/main.js"
+  },
+  "dependencies": {
+    "@total-typescript/shared": "workspace:*",
+    "chokidar": "^3.6.0"
+  }
+}

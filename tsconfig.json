@@ -44,7 +44,10 @@
     },
     {
       "path": "./apps/twoslash-to-simple-markdown"
-    }
+    },
+    {
+      "path": "./apps/source-to-code-samples"
+    },
   ],
   "files": [],
 }
