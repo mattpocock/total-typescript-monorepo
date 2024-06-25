@@ -38,6 +38,11 @@ export const transformQuery = (
   };
 };
 
+const getLastLineOfError = (query: string) => {
+  const lines = query.split("\n");
+  return lines[lines.length - 1]?.trim();
+};
+
 export const makeQueryComponent =
   (outerProps: {
     type: "error" | "query";
@@ -118,7 +123,9 @@ export const makeQueryComponent =
             />
           )}
           {annotation.data.children ||
-            annotation.query}
+          queryType === "error"
+            ? getLastLineOfError(annotation.query)
+            : annotation.query}
         </div>
       </>
     );
