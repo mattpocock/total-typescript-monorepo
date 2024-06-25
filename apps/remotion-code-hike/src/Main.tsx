@@ -43,94 +43,101 @@ export const Main = (props: {
   }, [containerRef.current]);
 
   return (
-    <AbsoluteFill className="bg-gray-900 p-16 space-y-12">
+    <>
       <Audio src={chillMusic} startFrom={669} />
-      <ProgressBar steps={steps} />
-      <div
-        className="h-full overflow-hidden"
-        ref={containerRef}
-      >
-        {containerRect && (
-          <CodeStepSizes
-            steps={steps}
-            displayLength={stepDuration}
-          >
-            {(stepsWithSizes) => {
-              return (
-                <Series>
-                  {stepsWithSizes.map(
-                    (thisStep, index) => {
-                      const prevStep =
-                        stepsWithSizes[index - 1] ??
-                        // If prevStep not found, default to this step
-                        thisStep;
+      <AbsoluteFill className="bg-gray-900 p-16 space-y-12">
+        <ProgressBar steps={steps} />
+        <div
+          className="h-full overflow-hidden"
+          ref={containerRef}
+        >
+          {containerRect && (
+            <CodeStepSizes
+              steps={steps}
+              displayLength={stepDuration}
+            >
+              {(stepsWithSizes) => {
+                return (
+                  <Series>
+                    {stepsWithSizes.map(
+                      (thisStep, index) => {
+                        const prevStep =
+                          stepsWithSizes[index - 1] ??
+                          // If prevStep not found, default to this step
+                          thisStep;
 
-                      const thisElemScale =
-                        calculateElemScale({
-                          targetHeight:
-                            containerRect.height,
-                          targetWidth:
-                            containerRect.width,
-                          elemHeight: thisStep.height,
-                          elemWidth: thisStep.width,
-                        });
+                        const thisElemScale =
+                          calculateElemScale({
+                            targetHeight:
+                              containerRect.height,
+                            targetWidth:
+                              containerRect.width,
+                            elemHeight:
+                              thisStep.height,
+                            elemWidth: thisStep.width,
+                          });
 
-                      const prevElemScale =
-                        calculateElemScale({
-                          targetHeight:
-                            containerRect.height,
-                          targetWidth:
-                            containerRect.width,
-                          elemHeight: prevStep.height,
-                          elemWidth: prevStep.width,
-                        });
+                        const prevElemScale =
+                          calculateElemScale({
+                            targetHeight:
+                              containerRect.height,
+                            targetWidth:
+                              containerRect.width,
+                            elemHeight:
+                              prevStep.height,
+                            elemWidth: prevStep.width,
+                          });
 
-                      const prevMarginTop =
-                        containerRect.height -
-                        prevStep.height *
-                          prevElemScale;
-                      const newMarginTop =
-                        containerRect.height -
-                        thisStep.height *
-                          thisElemScale;
+                        const prevMarginTop =
+                          containerRect.height -
+                          prevStep.height *
+                            prevElemScale;
+                        const newMarginTop =
+                          containerRect.height -
+                          thisStep.height *
+                            thisElemScale;
 
-                      return (
-                        <Series.Sequence
-                          key={index}
-                          layout="none"
-                          durationInFrames={
-                            stepDuration
-                          }
-                          name={thisStep.code.meta}
-                        >
-                          <CodeTransition
-                            oldScale={prevElemScale}
-                            newScale={thisElemScale}
-                            oldCode={
-                              steps[index - 1] ?? null
-                            }
-                            newMarginTop={newMarginTop}
-                            oldMarginTop={
-                              prevMarginTop
-                            }
-                            newCode={thisStep.code}
-                            displayLength={
+                        return (
+                          <Series.Sequence
+                            key={index}
+                            layout="none"
+                            durationInFrames={
                               stepDuration
                             }
-                            transitionDuration={
-                              TRANSITION_DURATION
-                            }
-                          />
-                        </Series.Sequence>
-                      );
-                    },
-                  )}
-                </Series>
-              );
-            }}
-          </CodeStepSizes>
-        )}
-      </div>
-    </AbsoluteFill>
+                            name={thisStep.code.meta}
+                          >
+                            <CodeTransition
+                              oldScale={prevElemScale}
+                              newScale={thisElemScale}
+                              oldCode={
+                                steps[index - 1] ??
+                                null
+                              }
+                              newMarginTop={
+                                newMarginTop
+                              }
+                              oldMarginTop={
+                                prevMarginTop
+                              }
+                              newCode={thisStep.code}
+                              displayLength={
+                                stepDuration
+                              }
+                              transitionDuration={
+                                TRANSITION_DURATION
+                              }
+                            />
+                          </Series.Sequence>
+                        );
+                      },
+                    )}
+                  </Series>
+                );
+              }}
+            </CodeStepSizes>
+          )}
+        </div>
+      </AbsoluteFill>
+    </>
   );
 };
