@@ -1,0 +1,5 @@
+{
+  "explorer.fileNesting.patterns": {
+    "*.md": "${capture}.source.ts, ${capture}.source.tsx",
+  }
+}
