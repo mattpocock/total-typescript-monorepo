@@ -111,11 +111,12 @@ export const calculateMetadata: CalculateMetadataFunction<
     twoslashPromises,
   );
 
-  const durationInFrames = meta.durations
-    ? msToFrames(
-        meta.durations.reduce((a, b) => a + b, 0),
-      )
-    : DEFAULT_STEP_DURATION * code.length;
+  const durationInFrames =
+    meta.durations && meta.durations.length > 0
+      ? msToFrames(
+          meta.durations.reduce((a, b) => a + b, 0),
+        )
+      : DEFAULT_STEP_DURATION * code.length;
 
   return {
     durationInFrames: Math.floor(durationInFrames),

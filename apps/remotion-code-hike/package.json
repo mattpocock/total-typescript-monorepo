@@ -21,6 +21,7 @@
     "unstorage": "^1.10.2"
   },
   "devDependencies": {
+    "file-loader": "^6.2.0",
     "@types/react": "^18.0.26",
     "tailwindcss": "^3.4.4",
     "@remotion/tailwind": "4.0.172",

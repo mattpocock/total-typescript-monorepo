@@ -1,12 +1,14 @@
 import { HighlightedCode } from "codehike/code";
 import {
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
 import {
   AbsoluteFill,
   Audio,
+  Sequence,
   Series,
   continueRender,
   delayRender,
@@ -45,12 +47,20 @@ export const Main = (props: {
     continueRender(delayRenderHandle);
   }, [containerRef.current]);
 
+  const narration = useMemo(() => {
+    try {
+      return require("./narration.local.ogg").default;
+    } catch (e) {}
+  }, []);
+
   return (
     <>
-      <Audio
-        src={staticFile("/narration.local.ogg")}
-      />
-      <AbsoluteFill className="bg-gray-900 p-16 space-y-12">
+      {narration && (
+        <Sequence from={25}>
+          <Audio src={narration} startFrom={25} />
+        </Sequence>
+      )}
+      <AbsoluteFill className="bg-gray-900 px-16 py-20 space-y-12">
         {/* <ProgressBar steps={steps} /> */}
         <div
           className="h-full overflow-hidden"

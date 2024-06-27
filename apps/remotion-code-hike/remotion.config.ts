@@ -45,10 +45,32 @@ const enableMdx: WebpackOverrideFn = async (
   };
 };
 
+const enableOgg: WebpackOverrideFn = async (
+  currentConfiguration,
+) => {
+  return {
+    ...currentConfiguration,
+    module: {
+      ...currentConfiguration.module,
+      rules: [
+        ...(currentConfiguration.module?.rules
+          ? currentConfiguration.module.rules
+          : []),
+        {
+          test: /\.ogg$/,
+          loader: "file-loader",
+        },
+      ],
+    },
+  };
+};
+
 Config.overrideWebpackConfig(
   async (currentConfiguration) => {
-    return enableMdx(
-      await enableTailwind(currentConfiguration),
+    return enableOgg(
+      await enableMdx(
+        await enableTailwind(currentConfiguration),
+      ),
     );
   },
 );

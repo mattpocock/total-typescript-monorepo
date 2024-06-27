@@ -4,7 +4,7 @@ import {
   type AbsolutePath,
 } from "@total-typescript/shared";
 import { FSWatcher, watch } from "chokidar";
-import { cpSync, readFileSync, writeFileSync } from "fs";
+import { cpSync, readFileSync, rmSync, writeFileSync } from "fs";
 import path from "path";
 import fm from "front-matter";
 
@@ -16,21 +16,13 @@ const CODE_HIKE_SRC = path.join(
   "src",
 ) as AbsolutePath;
 
-const CODE_HIKE_PUBLIC = path.join(
-  import.meta.dirname,
-  "..",
-  "..",
-  "remotion-code-hike",
-  "public",
-) as AbsolutePath;
-
 const CODE_HIKE_CONTENT_LOCATION = path.join(
   CODE_HIKE_SRC,
   "content.local.md",
 ) as AbsolutePath;
 
 const CODE_HIKE_AUDIO_LOCATION = path.join(
-  CODE_HIKE_PUBLIC,
+  CODE_HIKE_SRC,
   "narration.local.ogg",
 ) as AbsolutePath;
 
@@ -100,7 +92,9 @@ const createFileUpdater = (filePath: AbsolutePath) => () => {
   try {
     const narrationFilePath = getNarrationFilePath(filePath);
     cpSync(narrationFilePath, CODE_HIKE_AUDIO_LOCATION);
-  } catch (e) {}
+  } catch (e) {
+    rmSync(CODE_HIKE_AUDIO_LOCATION, { force: true });
+  }
 
   console.log("File changed!");
 };
