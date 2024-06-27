@@ -48,6 +48,9 @@
     {
       "path": "./apps/source-to-code-samples"
     },
+    {
+      "path": "./apps/record-narration"
+    },
   ],
   "files": [],
 }

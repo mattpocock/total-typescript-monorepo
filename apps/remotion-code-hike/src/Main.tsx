@@ -10,6 +10,7 @@ import {
   Series,
   continueRender,
   delayRender,
+  staticFile,
   useVideoConfig,
 } from "remotion";
 import { CodeStepSizes } from "./CodeStepSizes";
@@ -44,10 +45,9 @@ export const Main = (props: {
 
   return (
     <>
-      {/* Only play audio on short vids */}
-      {durationInFrames < 3240 && (
-        <Audio src={chillMusic} startFrom={669} />
-      )}
+      <Audio
+        src={staticFile("/narration.local.ogg")}
+      />
       <AbsoluteFill className="bg-gray-900 p-16 space-y-12">
         <ProgressBar steps={steps} />
         <div

@@ -19,3 +19,9 @@ export const SHIKI_TEST_LOCATION = path.resolve(
   import.meta.dirname,
   "../shiki-test.md",
 );
+
+export const getLangFromCodeFence = (line: string) => {
+  // line will likely be "```ts twoslash", and we need to get
+  // ts from it
+  return line.slice(3).trim().split(" ")[0]!;
+};

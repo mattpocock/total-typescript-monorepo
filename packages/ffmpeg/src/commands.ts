@@ -11,21 +11,23 @@ export const encodeVideo = async (
   );
 };
 
-export class CouldNotFindStartTimeError {
+export class CouldNotFindStartTimeError extends Error {
   readonly _tag = "CouldNotFindStartTimeError";
+  override message = "Could not find video start time.";
 }
 
-export class CouldNotFindEndTimeError {
+export class CouldNotFindEndTimeError extends Error {
   readonly _tag = "CouldNotFindEndTimeError";
+  override message = "Could not find video end time.";
 }
 
 export const findSilenceInVideo = async (
   inputVideo: AbsolutePath,
   opts: {
-    fps: number;
     threshold: number | string;
     silenceDuration: number | string;
     padding: number;
+    fps: number;
   },
 ) => {
   const output = await execAsync(

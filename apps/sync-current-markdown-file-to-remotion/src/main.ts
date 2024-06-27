@@ -4,7 +4,7 @@ import {
   type AbsolutePath,
 } from "@total-typescript/shared";
 import { FSWatcher, watch } from "chokidar";
-import { readFileSync, writeFileSync } from "fs";
+import { cpSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 import fm from "front-matter";
 
@@ -16,9 +16,22 @@ const CODE_HIKE_SRC = path.join(
   "src",
 ) as AbsolutePath;
 
+const CODE_HIKE_PUBLIC = path.join(
+  import.meta.dirname,
+  "..",
+  "..",
+  "remotion-code-hike",
+  "public",
+) as AbsolutePath;
+
 const CODE_HIKE_CONTENT_LOCATION = path.join(
   CODE_HIKE_SRC,
   "content.local.md",
+) as AbsolutePath;
+
+const CODE_HIKE_AUDIO_LOCATION = path.join(
+  CODE_HIKE_PUBLIC,
+  "narration.local.ogg",
 ) as AbsolutePath;
 
 const CODE_HIKE_META_LOCATION = path.join(
@@ -37,17 +50,22 @@ const closeWatcher = () => {
   }
 };
 
+const getNarrationFilePath = (filePath: AbsolutePath) => {
+  return filePath.replace(".md", ".narration.ogg") as AbsolutePath;
+};
+
 const watchFile = (filePath: AbsolutePath) => {
   closeWatcher();
 
-  fileWatcher = watch(filePath, {
+  const narrationFilePath = getNarrationFilePath(filePath);
+  fileWatcher = watch([filePath, narrationFilePath], {
     ignoreInitial: true,
   });
 
-  fileWatcher.on("change", updateFile);
+  fileWatcher.on("change", createFileUpdater(filePath));
 };
 
-const updateFile = (filePath: AbsolutePath) => {
+const createFileUpdater = (filePath: AbsolutePath) => () => {
   const content = readFileSync(filePath, "utf-8");
 
   const frontMatter = (fm as any)(content);
@@ -64,6 +82,11 @@ const updateFile = (filePath: AbsolutePath) => {
       2,
     ),
   );
+
+  try {
+    const narrationFilePath = getNarrationFilePath(filePath);
+    cpSync(narrationFilePath, CODE_HIKE_AUDIO_LOCATION);
+  } catch (e) {}
 
   console.log("File changed!");
 };
