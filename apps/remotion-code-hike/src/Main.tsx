@@ -17,15 +17,17 @@ import { CodeStepSizes } from "./CodeStepSizes";
 import { CodeTransition } from "./CodeTransition";
 import { ProgressBar } from "./ProgressBar";
 import { calculateElemScale } from "./calculateElemScale";
-import { TRANSITION_DURATION } from "./constants";
-import chillMusic from "./media/chill.mp3";
+import {
+  DEFAULT_STEP_DURATION,
+  TRANSITION_DURATION,
+} from "./constants";
+// import chillMusic from "./media/chill.mp3";
 
 export const Main = (props: {
   steps: HighlightedCode[];
+  durations: number[] | undefined;
 }) => {
   const { steps } = props;
-  const { durationInFrames } = useVideoConfig();
-  const stepDuration = durationInFrames / steps.length;
   const [delayRenderHandle] = useState(() =>
     delayRender(),
   );
@@ -49,16 +51,13 @@ export const Main = (props: {
         src={staticFile("/narration.local.ogg")}
       />
       <AbsoluteFill className="bg-gray-900 p-16 space-y-12">
-        <ProgressBar steps={steps} />
+        {/* <ProgressBar steps={steps} /> */}
         <div
           className="h-full overflow-hidden"
           ref={containerRef}
         >
           {containerRect && (
-            <CodeStepSizes
-              steps={steps}
-              displayLength={stepDuration}
-            >
+            <CodeStepSizes steps={steps}>
               {(stepsWithSizes) => {
                 return (
                   <Series>
@@ -100,12 +99,15 @@ export const Main = (props: {
                           thisStep.height *
                             thisElemScale;
 
+                        const durationInFrames =
+                          props.durations?.[index] ??
+                          DEFAULT_STEP_DURATION;
                         return (
                           <Series.Sequence
                             key={index}
                             layout="none"
                             durationInFrames={
-                              stepDuration
+                              durationInFrames
                             }
                             name={thisStep.code.meta}
                           >
@@ -124,7 +126,7 @@ export const Main = (props: {
                               }
                               newCode={thisStep.code}
                               displayLength={
-                                stepDuration
+                                durationInFrames
                               }
                               transitionDuration={
                                 TRANSITION_DURATION

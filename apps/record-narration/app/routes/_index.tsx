@@ -9,7 +9,10 @@ import {
 } from "@remix-run/node";
 import { createFileUploadHandler } from "@remix-run/node/dist/upload/fileUploadHandler";
 import { useLoaderData, useSubmit } from "@remix-run/react";
-import type { AbsolutePath } from "@total-typescript/shared";
+import {
+  getActiveEditorFilePath,
+  type AbsolutePath,
+} from "@total-typescript/shared";
 import {
   applyShikiToCode,
   getLangFromCodeFence,
@@ -26,7 +29,7 @@ export const meta: MetaFunction = () => {
 };
 
 export const action = async (args: ActionFunctionArgs) => {
-  const { copyFile, readFile } = await import("fs/promises");
+  const { copyFile, writeFile } = await import("fs/promises");
 
   const uploadHandler = unstable_composeUploadHandlers(
     createFileUploadHandler({
@@ -42,6 +45,9 @@ export const action = async (args: ActionFunctionArgs) => {
   const uploadedFile = formData.get("file") as unknown as {
     filepath: AbsolutePath;
   };
+  const durations = (formData.get("durations") as string)
+    .split(",")
+    .map(Number);
 
   // const silence = await findSilenceInVideo(uploadedFile.filepath, {
   //   fps: 60,
@@ -64,19 +70,20 @@ export const action = async (args: ActionFunctionArgs) => {
   //   silence.endTime,
   // );
 
-  const fileLocation = markdownFilepath.replace(".md", ".narration.ogg");
-
-  await copyFile(uploadedFile.filepath, fileLocation);
+  const narrationLocation = markdownFilepath.replace(".md", ".narration.ogg");
+  await copyFile(uploadedFile.filepath, narrationLocation);
+  const durationsLocation = markdownFilepath.replace(".md", ".meta.json");
+  await writeFile(durationsLocation, JSON.stringify({ durations }, null, 2));
 
   return {};
 };
 
 export const loader = async () => {
   const { copyFile, readFile } = await import("fs/promises");
-  // const activeFilePath = await getActiveEditorFilePath();
+  const activeFilePath = await getActiveEditorFilePath();
 
-  const activeFilePath =
-    "/Users/matt/repos/ts/total-typescript-monorepo/apps/written-content/confusions/let-vs-const-inference/video.md";
+  // const activeFilePath =
+  //   "/Users/matt/repos/ts/total-typescript-monorepo/apps/written-content/confusions/let-vs-const-inference/video.md";
 
   if (activeFilePath?.endsWith("md")) {
     const contents = await readFile(activeFilePath, "utf-8");
@@ -143,11 +150,12 @@ export default function Index() {
   const machine = useMemo(() => {
     return recordingMachine({
       codeSnippets: (data as any).codeSnippets,
-      submit: (file) => {
+      submit: ({ file, durations }) => {
         const formData = new FormData();
 
         formData.append("file", file);
-        formData.append("filepath", data.path);
+        formData.append("filepath", (data as any).path);
+        formData.append("durations", durations.join(","));
 
         submit(formData, {
           method: "POST",

@@ -25,7 +25,6 @@ interface CodeStepSizesProps {
   children: (
     stepsWithSizes: CodeStepWithSizes[],
   ) => ReactNode;
-  displayLength: number;
 }
 
 export const CodeStepSizes = (
@@ -92,7 +91,7 @@ export const CodeStepSizes = (
           return (
             <PreWithHandlers
               key={index}
-              displayLength={props.displayLength}
+              displayLength={100}
               code={code}
               className="inline-block"
             />

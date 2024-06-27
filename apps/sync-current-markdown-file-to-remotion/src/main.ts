@@ -54,21 +54,34 @@ const getNarrationFilePath = (filePath: AbsolutePath) => {
   return filePath.replace(".md", ".narration.ogg") as AbsolutePath;
 };
 
+const getMetaFilePath = (filePath: AbsolutePath) => {
+  return filePath.replace(".md", ".meta.json") as AbsolutePath;
+};
+
 const watchFile = (filePath: AbsolutePath) => {
   closeWatcher();
 
-  const narrationFilePath = getNarrationFilePath(filePath);
-  fileWatcher = watch([filePath, narrationFilePath], {
-    ignoreInitial: true,
-  });
+  fileWatcher = watch([
+    filePath,
+    getNarrationFilePath(filePath),
+    getMetaFilePath(filePath),
+  ]);
 
-  fileWatcher.on("change", createFileUpdater(filePath));
+  fileWatcher.on("all", createFileUpdater(filePath));
 };
 
 const createFileUpdater = (filePath: AbsolutePath) => () => {
   const content = readFileSync(filePath, "utf-8");
 
   const frontMatter = (fm as any)(content);
+
+  let durations: number[] = [];
+
+  try {
+    const meta = JSON.parse(readFileSync(getMetaFilePath(filePath), "utf-8"));
+
+    durations = meta.durations;
+  } catch (e) {}
 
   writeFileSync(CODE_HIKE_CONTENT_LOCATION, content);
   writeFileSync(
@@ -77,6 +90,7 @@ const createFileUpdater = (filePath: AbsolutePath) => () => {
       {
         width: frontMatter.attributes?.width,
         height: frontMatter.attributes?.height,
+        durations,
       },
       null,
       2,

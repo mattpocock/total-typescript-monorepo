@@ -1,7 +1,8 @@
-import type { SubmitFunction } from "@remix-run/react";
 import { assign, setup } from "xstate";
 
 type Context = {
+  startTime?: number;
+  slideTimings: number[];
   currentSnippetIndex: number;
   chunks: Blob[];
   mediaRecorder?: MediaRecorder;
@@ -24,7 +25,7 @@ type Events =
 
 export const recordingMachine = (input: {
   codeSnippets: string[];
-  submit: (file: File) => void;
+  submit: (contents: { file: File; durations: number[] }) => void;
 }) =>
   setup({
     types: {} as {
@@ -37,13 +38,30 @@ export const recordingMachine = (input: {
         x.context.currentSnippetIndex < input.codeSnippets.length - 1,
     },
     actions: {
+      resetSlideTimings: assign({
+        slideTimings: [],
+      }),
+      markSlideTiming: assign((x) => ({
+        slideTimings: [...x.context.slideTimings, Date.now()],
+      })),
+      markStartTime: assign(() => {
+        return {
+          startTime: Date.now(),
+        };
+      }),
       submitChunks: (x) => {
         const blob = new Blob(x.context.chunks, {
           type: "audio/ogg; codecs=opus",
         });
 
         const file = new File([blob], "filename.ogg");
-        input.submit(file);
+
+        const durations = x.context.slideTimings.map(
+          (time, i) =>
+            time - (x.context.slideTimings[i - 1] || x.context.startTime!),
+        );
+
+        input.submit({ file, durations });
       },
       stopRecorder: (x) => {
         x.context.mediaRecorder?.stop();
@@ -79,6 +97,7 @@ export const recordingMachine = (input: {
     context: {
       currentSnippetIndex: 0,
       chunks: [],
+      slideTimings: [],
     },
     on: {
       ARROW_LEFT: {
@@ -100,11 +119,22 @@ export const recordingMachine = (input: {
         },
       },
       recording: {
-        entry: ["goToFirstSnippet", "resetChunks"],
+        entry: [
+          "goToFirstSnippet",
+          "resetChunks",
+          "markStartTime",
+          "resetSlideTimings",
+        ],
         exit: ["stopRecorder"],
         on: {
+          ARROW_LEFT: {},
           RETURN: {
             target: "receivingFinalChunk",
+            actions: ["markSlideTiming"],
+          },
+          ARROW_RIGHT: {
+            guard: "isNotLastSnippet",
+            actions: ["goToNextSnippet", "markSlideTiming"],
           },
         },
       },

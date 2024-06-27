@@ -14,26 +14,25 @@ const Schema = Block.extend({
 
 import Content from "./content.local.md";
 import meta from "./meta.local.json";
+const resolvedMeta = meta as {
+  width?: number;
+  height?: number;
+  durations?: number[];
+};
 import { calculateMetadata } from "./calculate-metadata";
 import { DEFAULT_STEP_DURATION } from "./constants";
 
 const { code } = parseRoot(Content, Schema);
-
-const resolvedMeta = meta as {
-  width?: number;
-  height?: number;
-};
 
 export const RemotionRoot = () => {
   return (
     <Composition
       id="CodeHikeExample"
       component={Main}
-      defaultProps={{ steps: code }}
-      fps={60}
-      durationInFrames={
-        DEFAULT_STEP_DURATION * code.length
-      }
+      defaultProps={{
+        steps: code,
+        durations: [],
+      }}
       width={resolvedMeta.width || 1920}
       height={resolvedMeta.height || 1080}
       calculateMetadata={calculateMetadata}
