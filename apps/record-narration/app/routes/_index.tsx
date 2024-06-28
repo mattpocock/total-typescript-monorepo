@@ -34,6 +34,7 @@ export const action = async (args: ActionFunctionArgs) => {
   const uploadHandler = unstable_composeUploadHandlers(
     createFileUploadHandler({
       directory: "public/uploads",
+      maxPartSize: Infinity,
     }),
     unstable_createMemoryUploadHandler(),
   );
