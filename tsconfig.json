@@ -25,9 +25,6 @@
       "path": "./apps/twoslash-preview"
     },
     {
-      "path": "./apps/exercise-cli"
-    },
-    {
       "path": "./apps/twoslash-preview-server"
     },
     {
