@@ -23,7 +23,7 @@ const CODE_HIKE_CONTENT_LOCATION = path.join(
 
 const CODE_HIKE_AUDIO_LOCATION = path.join(
   CODE_HIKE_SRC,
-  "narration.local.ogg",
+  "narration.local.mkv",
 ) as AbsolutePath;
 
 const CODE_HIKE_META_LOCATION = path.join(
@@ -43,7 +43,7 @@ const closeWatcher = () => {
 };
 
 const getNarrationFilePath = (filePath: AbsolutePath) => {
-  return filePath.replace(".md", ".narration.ogg") as AbsolutePath;
+  return filePath.replace(".md", ".narration.mkv") as AbsolutePath;
 };
 
 const getMetaFilePath = (filePath: AbsolutePath) => {

@@ -12,12 +12,9 @@ import {
   Series,
   continueRender,
   delayRender,
-  staticFile,
-  useVideoConfig,
 } from "remotion";
 import { CodeStepSizes } from "./CodeStepSizes";
 import { CodeTransition } from "./CodeTransition";
-import { ProgressBar } from "./ProgressBar";
 import { calculateElemScale } from "./calculateElemScale";
 import {
   DEFAULT_STEP_DURATION,
@@ -49,7 +46,7 @@ export const Main = (props: {
 
   const narration = useMemo(() => {
     try {
-      return require("./narration.local.ogg").default;
+      return require("./narration.local.mkv").default;
     } catch (e) {}
   }, []);
 

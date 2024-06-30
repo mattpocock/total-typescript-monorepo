@@ -10,6 +10,7 @@ import {
 import { createFileUploadHandler } from "@remix-run/node/dist/upload/fileUploadHandler";
 import { useLoaderData, useSubmit } from "@remix-run/react";
 import {
+  execAsync,
   getActiveEditorFilePath,
   type AbsolutePath,
 } from "@total-typescript/shared";
@@ -20,6 +21,7 @@ import {
 import { useMachine } from "@xstate/react";
 import { useEffect, useMemo } from "react";
 import { recordingMachine } from "~/recordingMachine";
+import { normalizeAudio } from "@total-typescript/ffmpeg";
 
 export const meta: MetaFunction = () => {
   return [
@@ -46,6 +48,14 @@ export const action = async (args: ActionFunctionArgs) => {
   const uploadedFile = formData.get("file") as unknown as {
     filepath: AbsolutePath;
   };
+
+  const mkvFilepath = uploadedFile.filepath.replace(
+    ".ogg",
+    ".mkv",
+  ) as AbsolutePath;
+
+  await normalizeAudio(uploadedFile.filepath, mkvFilepath);
+
   const durations = (formData.get("durations") as string)
     .split(",")
     .map(Number);
@@ -71,8 +81,8 @@ export const action = async (args: ActionFunctionArgs) => {
   //   silence.endTime,
   // );
 
-  const narrationLocation = markdownFilepath.replace(".md", ".narration.ogg");
-  await copyFile(uploadedFile.filepath, narrationLocation);
+  const narrationLocation = markdownFilepath.replace(".md", ".narration.mkv");
+  await copyFile(mkvFilepath, narrationLocation);
   const durationsLocation = markdownFilepath.replace(".md", ".meta.json");
   await writeFile(durationsLocation, JSON.stringify({ durations }, null, 2));
 

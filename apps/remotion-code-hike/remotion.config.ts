@@ -60,6 +60,10 @@ const enableOgg: WebpackOverrideFn = async (
           test: /\.ogg$/,
           loader: "file-loader",
         },
+        {
+          test: /\.mkv$/,
+          loader: "file-loader",
+        },
       ],
     },
   };

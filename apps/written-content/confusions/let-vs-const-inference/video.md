@@ -16,7 +16,7 @@ let buttonType = "button";
 type ButtonProps = {
   type: "button" | "submit" | "reset";
 };
-// ---cut---
+
 let buttonType = "button";
 
 // When we try to pass this to the button props,
@@ -31,7 +31,7 @@ const buttonProps: ButtonProps = {
 type ButtonProps = {
   type: "button" | "submit" | "reset";
 };
-// ---cut---
+
 // It's because our buttonType is inferred as string,
 // not the specific 'button' type.
 let buttonType = "button";
@@ -43,7 +43,7 @@ let buttonType = "button";
 type ButtonProps = {
   type: "button" | "submit" | "reset";
 };
-// ---cut---
+
 let buttonType = "button";
 
 // That's because, at any time, we could mutate
@@ -57,7 +57,6 @@ type ButtonProps = {
   type: "button" | "submit" | "reset";
 };
 
-// ---cut---
 // But if we change it to a const, it's inferred
 // as the specific 'button' type.
 const buttonType = "button";
@@ -70,7 +69,6 @@ type ButtonProps = {
   type: "button" | "submit" | "reset";
 };
 
-// ---cut---
 const buttonType = "button";
 
 // And we can pass it to the button props
