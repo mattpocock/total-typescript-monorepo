@@ -23,7 +23,6 @@
     "twoslash-cdn": "^0.2.7",
     "unified": "^11.0.4",
     "unstorage": "^1.10.2",
-    "typescript": "^5.4.5",
     "hast-util-to-html": "9.0.1"
   }
 }

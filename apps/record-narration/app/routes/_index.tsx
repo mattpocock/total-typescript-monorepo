@@ -9,11 +9,8 @@ import {
 } from "@remix-run/node";
 import { createFileUploadHandler } from "@remix-run/node/dist/upload/fileUploadHandler";
 import { useLoaderData, useSubmit } from "@remix-run/react";
-import {
-  execAsync,
-  getActiveEditorFilePath,
-  type AbsolutePath,
-} from "@total-typescript/shared";
+import { normalizeAudio } from "@total-typescript/ffmpeg";
+import type { AbsolutePath } from "@total-typescript/shared";
 import {
   applyShikiToCode,
   getLangFromCodeFence,
@@ -21,7 +18,6 @@ import {
 import { useMachine } from "@xstate/react";
 import { useEffect, useMemo } from "react";
 import { recordingMachine } from "~/recordingMachine";
-import { normalizeAudio } from "@total-typescript/ffmpeg";
 
 export const meta: MetaFunction = () => {
   return [
@@ -91,6 +87,7 @@ export const action = async (args: ActionFunctionArgs) => {
 
 export const loader = async () => {
   const { copyFile, readFile } = await import("fs/promises");
+  const { getActiveEditorFilePath } = await import("@total-typescript/shared");
   const activeFilePath = await getActiveEditorFilePath();
 
   // const activeFilePath =
