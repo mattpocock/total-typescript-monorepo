@@ -9,15 +9,14 @@
   },
   "private": true,
   "scripts": {
+    "dev": "turbo watch build lint test",
     "ci": "turbo build test lint",
     "release": "pnpm run ci && changeset publish",
     "write": "turbo start --filter=twoslash-preview --filter=@total-typescript/twoslash-preview-server",
-    "make-video": "turbo dev --filter=remotion-code-hike --filter=sync-current-markdown-file-to-remotion --filter=source-to-code-samples --filter=// --filter=record-narration",
+    "make-video": "turbo watch dev --filter=remotion-code-hike --filter=sync-current-markdown-file-to-remotion --filter=source-to-code-samples --filter=record-narration",
     "new": "(cd apps/written-content && pnpm run new)",
     "scratch": "(cd apps/written-content && pnpm run scratch)",
-    "dev": "tsc -b --watch",
-    "build": "tsc -b",
-    "twoslash-preview": "pnpm turbo run dev --filter twoslash-preview --filter=@total-typescript/twoslash-preview-server --filter //"
+    "twoslash-preview": "pnpm turbo watch dev --filter twoslash-preview --filter=@total-typescript/twoslash-preview-server"
   },
   "keywords": [],
   "author": "Matt Pocock",

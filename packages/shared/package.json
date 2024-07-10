@@ -6,6 +6,7 @@
     "./dist/*"
   ],
   "scripts": {
+    "build": "tsc",
     "test": "vitest run"
   },
   "exports": {

@@ -6,34 +6,25 @@
       "cache": false
     },
     "dev": {
+      "dependsOn": ["^build"],
       "cache": false,
       "persistent": true
     },
     "lint": {
-      "cache": false
+      "dependsOn": ["^build"],
+      "cache": true
     },
     "test": {
-      "dependsOn": ["//#build"],
+      "dependsOn": ["^build"],
       "cache": true
     },
     "build": {
-      "dependsOn": ["^build", "//#build"],
-      "outputs": ["dist", "tsconfig.tsbuildinfo", ".next", "build"]
+      "dependsOn": ["^build"],
+      "outputs": ["dist", "*.tsbuildinfo", ".next", "build"],
+      "cache": true
     },
     "start": {
       "dependsOn": ["build"],
-      "cache": false,
-      "persistent": true
-    },
-    "//#build": {
-      "outputs": [
-        "packages/*/dist",
-        "packages/*/*.tsbuildinfo",
-        "apps/*/dist",
-        "apps/*/*.tsbuildinfo"
-      ]
-    },
-    "//#dev": {
       "cache": false,
       "persistent": true
     }

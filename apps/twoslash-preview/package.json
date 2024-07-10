@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "next dev",
     "start": "next start",
-    "build": "next build"
+    "build": "next build",
+    "lint": "tsc"
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.9",

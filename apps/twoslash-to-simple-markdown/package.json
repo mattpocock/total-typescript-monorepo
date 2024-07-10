@@ -6,6 +6,7 @@
   },
   "type": "module",
   "scripts": {
+    "build": "tsc",
     "setup": "(pnpm unlink | true) && pnpm link --global"
   },
   "exports": {

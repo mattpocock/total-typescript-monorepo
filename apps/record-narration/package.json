@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "remix vite:dev --port 3002",
+    "lint": "tsc",
     "start": "remix-serve ./build/server/index.js"
   },
   "dependencies": {

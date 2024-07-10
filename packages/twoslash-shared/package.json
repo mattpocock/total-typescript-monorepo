@@ -9,6 +9,7 @@
     "./dist/*"
   ],
   "scripts": {
+    "build": "tsc",
     "test": "vitest run"
   },
   "dependencies": {
