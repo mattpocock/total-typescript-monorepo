@@ -199,7 +199,7 @@ importers:
         version: 4.0.179(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       twoslash-cdn:
         specifier: ^0.2.8
-        version: 0.2.8(typescript@5.5.2)
+        version: 0.2.9(typescript@5.5.2)
       unstorage:
         specifier: ^1.10.2
         version: 1.10.2
@@ -470,7 +470,7 @@ importers:
         version: 1.6.4
       twoslash-cdn:
         specifier: ^0.2.7
-        version: 0.2.7(typescript@5.5.2)
+        version: 0.2.9(typescript@5.5.2)
       unified:
         specifier: ^11.0.4
         version: 11.0.4
@@ -5421,29 +5421,24 @@ packages:
     resolution: {integrity: sha512-Ilme/2Q5kYw0AeRr+aw3s02+WrEYaY7U8vPnqSZU/jaDG/qd6jHVN6nRWyd/9KXvJGYM69vE6JImoGoyNjLwaw==}
     hasBin: true
 
-  twoslash-cdn@0.2.7:
-    resolution: {integrity: sha512-eXhrMNeYi0HYRVCoMon1N8CKR/Wr/uzvHBnHCi+J6H5OD6uvPAJp9iVDxbyeA5b8lo9u7JyD8Pses39KLqUwxQ==}
+  twoslash-cdn@0.2.9:
+    resolution: {integrity: sha512-FnEl2+L49j5chaH6HYlbPa299PztzMi7xuhllxmWaHUx9VkTdmpdXjkR0kz2PwwT4zxUPrSFCaQetcTQRreWrw==}
     peerDependencies:
       typescript: '*'
-
-  twoslash-cdn@0.2.8:
-    resolution: {integrity: sha512-jbGsUfDG7P8O8nuPUDAy1Ul4jOGP42nzuCP44rEF3NHmnvK3+5gEMZWqDHxry5DTSDr1+G1F8p0djnjdwMUUiA==}
-    peerDependencies:
-      typescript: '*'
-
-  twoslash-protocol@0.2.7:
-    resolution: {integrity: sha512-iRPdeHx5kpg/abMS2IOyMioY2C2zJaCDJLZQhd7IyJ/S5ZVKOXQgddz4xZyFTeSWKbAC+XsgYbc+lpljgFc3Mw==}
 
   twoslash-protocol@0.2.8:
     resolution: {integrity: sha512-8l439jrFEJiQmQ6ugFtYXgHpQDp3nBYVF6RR88doLarFGWhjfq0sgntgQYc2aDmJb87Jzhh4EicV8k9DrqpIZg==}
 
-  twoslash@0.2.7:
-    resolution: {integrity: sha512-kd1ZEmQhTFjTc1SKTDFYTINVbnnykaPIjFtGYemHKawuogCcmTnuonzCtMplAoTOeAjmsjzFezZgoolLph87cw==}
-    peerDependencies:
-      typescript: '*'
+  twoslash-protocol@0.2.9:
+    resolution: {integrity: sha512-uKQl8UboT6JU4VAtYaSI3DbNtgaNhFaTpCSMy/n3tRl5lMlMhrjiuNKdqx15xjcviconuGJ9oObkz1h9zJFrJg==}
 
   twoslash@0.2.8:
     resolution: {integrity: sha512-mQiUB4SvBF58FJkEEtXvVhTO1h0oDpTZuEAyaC8xwf4P6392ydSFhsMiUBbJEOvaelN9DLesViopn3E9O2GKOA==}
+    peerDependencies:
+      typescript: '*'
+
+  twoslash@0.2.9:
+    resolution: {integrity: sha512-oj7XY6h8E9nTZBmfRE1gpsSSUqAQo5kcIpFkXyQPp8UCsyCQsUlP2bJ2s32o02c1n5+xl4h9rcCsQ1F97Z6LZg==}
     peerDependencies:
       typescript: '*'
 
@@ -11810,36 +11805,29 @@ snapshots:
       turbo-windows-64: 2.0.4
       turbo-windows-arm64: 2.0.4
 
-  twoslash-cdn@0.2.7(typescript@5.5.2):
+  twoslash-cdn@0.2.9(typescript@5.5.2):
     dependencies:
-      twoslash: 0.2.7(typescript@5.5.2)
+      twoslash: 0.2.9(typescript@5.5.2)
       typescript: 5.5.2
     transitivePeerDependencies:
       - supports-color
-
-  twoslash-cdn@0.2.8(typescript@5.5.2):
-    dependencies:
-      twoslash: 0.2.8(typescript@5.5.2)
-      typescript: 5.5.2
-    transitivePeerDependencies:
-      - supports-color
-
-  twoslash-protocol@0.2.7: {}
 
   twoslash-protocol@0.2.8: {}
 
-  twoslash@0.2.7(typescript@5.5.2):
-    dependencies:
-      '@typescript/vfs': 1.5.0
-      twoslash-protocol: 0.2.7
-      typescript: 5.5.2
-    transitivePeerDependencies:
-      - supports-color
+  twoslash-protocol@0.2.9: {}
 
   twoslash@0.2.8(typescript@5.5.2):
     dependencies:
       '@typescript/vfs': 1.5.0
       twoslash-protocol: 0.2.8
+      typescript: 5.5.2
+    transitivePeerDependencies:
+      - supports-color
+
+  twoslash@0.2.9(typescript@5.5.2):
+    dependencies:
+      '@typescript/vfs': 1.5.0
+      twoslash-protocol: 0.2.9
       typescript: 5.5.2
     transitivePeerDependencies:
       - supports-color
