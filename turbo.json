@@ -12,7 +12,7 @@
     },
     "lint": {
       "dependsOn": ["^build"],
-      "cache": false
+      "cache": true
     },
     "test": {
       "dependsOn": ["^build"],
