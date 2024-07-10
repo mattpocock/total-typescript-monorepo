@@ -55,7 +55,7 @@ importers:
         version: link:../../packages/shared
       isbot:
         specifier: ^5.0.0
-        version: 5.1.9
+        version: 5.1.12
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -126,7 +126,7 @@ importers:
         version: 4.1.1(@types/react@18.3.3)(react@18.3.1)(xstate@5.14.0)
       isbot:
         specifier: ^4.1.0
-        version: 4.4.0
+        version: 5.1.12
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -3507,12 +3507,8 @@ packages:
   isarray@1.0.0:
     resolution: {integrity: sha512-VLghIWNM6ELQzo7zwmcg0NmTVyWKYjvIeM83yjp0wRDTmUnrM678fQbcKBo6n2CJEF0szoG//ytg+TKla89ALQ==}
 
-  isbot@4.4.0:
-    resolution: {integrity: sha512-8ZvOWUA68kyJO4hHJdWjyreq7TYNWTS9y15IzeqVdKxR9pPr3P/3r9AHcoIv9M0Rllkao5qWz2v1lmcyKIVCzQ==}
-    engines: {node: '>=18'}
-
-  isbot@5.1.9:
-    resolution: {integrity: sha512-NITFjA2Jpcv1qWCpzqZQoW/66H3xXbF+n4yJIXr/gIn/wgaSKOPXTTczswiKMYx+BVymG9lm30ZGPtFWqAD4hA==}
+  isbot@5.1.12:
+    resolution: {integrity: sha512-Igy8nbj3Yn/XgYboRFTixH5ccUBvNPA89ek2zx3jCcBYkDkEnuFs0RkT36EPag5OFd2nLlK7u4uzG5AXfXR46w==}
     engines: {node: '>=18'}
 
   isexe@2.0.0:
@@ -9385,9 +9381,7 @@ snapshots:
 
   isarray@1.0.0: {}
 
-  isbot@4.4.0: {}
-
-  isbot@5.1.9: {}
+  isbot@5.1.12: {}
 
   isexe@2.0.0: {}
 
