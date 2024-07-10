@@ -1,6 +1,6 @@
 {
   "name": "@total-typescript/twoslash-lint",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "bin": {
     "twoslash-lint": "./dist/bin.js"
   },
