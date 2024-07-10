@@ -254,7 +254,6 @@ export default function Index() {
 
   return (
     <>
-      <pre>Chunks: {state.context.chunks.length}</pre>
       <div className="h-1 w-full">
         <div
           className="bg-blue-500 h-full"
