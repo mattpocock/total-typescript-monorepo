@@ -49,7 +49,7 @@ importers:
         version: link:../../packages/shared
       isbot:
         specifier: ^5.0.0
-        version: 5.1.9
+        version: 5.1.12
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -120,7 +120,7 @@ importers:
         version: 4.1.1(@types/react@18.3.3)(react@18.3.1)(xstate@5.14.0)
       isbot:
         specifier: ^4.1.0
-        version: 4.4.0
+        version: 5.1.12
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -3499,12 +3499,8 @@ packages:
   isarray@1.0.0:
     resolution: {integrity: sha512-VLghIWNM6ELQzo7zwmcg0NmTVyWKYjvIeM83yjp0wRDTmUnrM678fQbcKBo6n2CJEF0szoG//ytg+TKla89ALQ==}
 
-  isbot@4.4.0:
-    resolution: {integrity: sha512-8ZvOWUA68kyJO4hHJdWjyreq7TYNWTS9y15IzeqVdKxR9pPr3P/3r9AHcoIv9M0Rllkao5qWz2v1lmcyKIVCzQ==}
-    engines: {node: '>=18'}
-
-  isbot@5.1.9:
-    resolution: {integrity: sha512-NITFjA2Jpcv1qWCpzqZQoW/66H3xXbF+n4yJIXr/gIn/wgaSKOPXTTczswiKMYx+BVymG9lm30ZGPtFWqAD4hA==}
+  isbot@5.1.12:
+    resolution: {integrity: sha512-Igy8nbj3Yn/XgYboRFTixH5ccUBvNPA89ek2zx3jCcBYkDkEnuFs0RkT36EPag5OFd2nLlK7u4uzG5AXfXR46w==}
     engines: {node: '>=18'}
 
   isexe@2.0.0:
@@ -5832,18 +5828,6 @@ packages:
     peerDependencies:
       bufferutil: ^4.0.1
       utf-8-validate: ^5.0.2
-    peerDependenciesMeta:
-      bufferutil:
-        optional: true
-      utf-8-validate:
-        optional: true
-
-  ws@8.17.0:
-    resolution: {integrity: sha512-uJq6108EgZMAl20KagGkzCKfMEjxmKvZHG7Tlq0Z6nOky7YF7aq4mOx6xK8TJ/i1LeK4Qus7INktacctDgY8Ow==}
-    engines: {node: '>=10.0.0'}
-    peerDependencies:
-      bufferutil: ^4.0.1
-      utf-8-validate: '>=5.0.2'
     peerDependenciesMeta:
       bufferutil:
         optional: true
@@ -9385,9 +9369,7 @@ snapshots:
 
   isarray@1.0.0: {}
 
-  isbot@4.4.0: {}
-
-  isbot@5.1.9: {}
+  isbot@5.1.12: {}
 
   isexe@2.0.0: {}
 
@@ -12313,8 +12295,6 @@ snapshots:
       signal-exit: 4.1.0
 
   ws@7.5.9: {}
-
-  ws@8.17.0: {}
 
   ws@8.17.1: {}
 
