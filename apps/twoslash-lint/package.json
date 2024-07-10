@@ -7,7 +7,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "setup": "(npm unlink | true) && npm link",
+    "setup": "(pnpm unlink | true) && pnpm link --global",
     "test": "vitest run"
   },
   "files": [
