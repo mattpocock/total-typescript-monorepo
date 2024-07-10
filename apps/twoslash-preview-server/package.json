@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "tsc",
     "dev": "node --enable-source-maps --watch dist/bin.js",
     "start": "node --enable-source-maps dist/bin.js"
   },
