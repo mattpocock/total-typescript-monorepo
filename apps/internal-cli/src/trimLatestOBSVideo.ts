@@ -6,6 +6,7 @@ import {
   THRESHOLD,
   findSilenceInVideo,
   getFPS,
+  normalizeAudio,
   trimVideo,
 } from "@total-typescript/ffmpeg";
 import {
@@ -13,6 +14,7 @@ import {
   ExternalDriveNotFoundError,
   REPOS_FOLDER,
   ensureDir,
+  execAsync,
   exitProcessWithError,
   getActiveEditorFilePath,
   parseExercisePath,
@@ -22,6 +24,7 @@ import {
 import path from "path";
 import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
 import { EXTERNAL_DRIVE_MOVIES_ROOT, getExternalDrive } from "./constants.js";
+import { execSync } from "child_process";
 
 export const trimLatestOBSVideo = async () => {
   const externalDrive = await getExternalDrive();
@@ -85,13 +88,22 @@ export const trimLatestOBSVideo = async () => {
 
   console.log("Trimming video...");
 
-  const outputFilename = (result.resolvedPath.replace(/\.(ts|tsx)/g, "") +
-    ".un-encoded.mp4") as AbsolutePath;
+  const unNormalizedFilename = (result.resolvedPath.replace(/\.(ts|tsx)/g, "") +
+    ".un-encoded.un-normalized.mp4") as AbsolutePath;
 
   await trimVideo(
     latestOBSVideo,
-    outputFilename,
+    unNormalizedFilename,
     silenceResult.startTime,
     silenceResult.endTime,
   );
+
+  const finalOutputFilename = unNormalizedFilename.replace(
+    ".un-encoded.un-normalized.mp4",
+    ".un-encoded.mp4",
+  ) as AbsolutePath;
+
+  await normalizeAudio(unNormalizedFilename, finalOutputFilename);
+
+  await execAsync(`rm ${unNormalizedFilename}`);
 };

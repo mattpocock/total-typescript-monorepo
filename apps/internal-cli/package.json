@@ -6,6 +6,7 @@
   },
   "type": "module",
   "scripts": {
+    "test": "vitest run",
     "build": "tsc",
     "setup": "(pnpm unlink | true) && pnpm link --global"
   },
