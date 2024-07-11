@@ -481,7 +481,7 @@ importers:
         version: 0.2.9(typescript@5.5.3)
       unified:
         specifier: ^11.0.4
-        version: 11.0.4
+        version: 11.0.5
       unstorage:
         specifier: ^1.10.2
         version: 1.10.2
@@ -5448,8 +5448,8 @@ packages:
   unified@10.1.2:
     resolution: {integrity: sha512-pUSWAi/RAnVy1Pif2kAoeWNBa3JVrx0MId2LASj8G+7AiHWoKZNTomq6LG326T68U7/e263X6fTdcXIy7XnF7Q==}
 
-  unified@11.0.4:
-    resolution: {integrity: sha512-apMPnyLjAX+ty4OrNap7yumyVAMlKx5IWU2wlzzUdYJO9A8f1p9m/gywF/GM2ZDFcjQPrx59Mc90KwmxsoklxQ==}
+  unified@11.0.5:
+    resolution: {integrity: sha512-xKvGhPWw3k84Qjh8bI3ZeJjqnyadK+GEFtazSfZv/rKeTkTjOJho6mFqh2SM96iIcZokxiOpg78GazTSg8+KHA==}
 
   unique-filename@3.0.0:
     resolution: {integrity: sha512-afXhuC55wkAmZ0P18QsVE6kp8JaxrEokN2HGIoIVv2ijHQd419H0+6EigAFcIzXeMIkcIkNBpB3L/DXB3cTS/g==}
@@ -6794,7 +6794,7 @@ snapshots:
       remark-parse: 11.0.0
       remark-rehype: 11.1.0
       source-map: 0.7.4
-      unified: 11.0.4
+      unified: 11.0.5
       unist-util-position-from-estree: 2.0.0
       unist-util-stringify-position: 4.0.0
       unist-util-visit: 5.0.0
@@ -7351,7 +7351,7 @@ snapshots:
       '@types/hast': 3.0.4
       hast-util-to-string: 3.0.0
       shiki: 1.6.4
-      unified: 11.0.4
+      unified: 11.0.5
       unist-util-visit: 5.0.0
 
   '@shikijs/transformers@1.6.4':
@@ -11078,7 +11078,7 @@ snapshots:
     dependencies:
       '@types/hast': 3.0.4
       hast-util-to-html: 9.0.1
-      unified: 11.0.4
+      unified: 11.0.5
 
   remark-frontmatter@4.0.1:
     dependencies:
@@ -11093,7 +11093,7 @@ snapshots:
       hast-util-sanitize: 5.0.1
       hast-util-to-html: 9.0.1
       mdast-util-to-hast: 13.2.0
-      unified: 11.0.4
+      unified: 11.0.5
 
   remark-mdx-frontmatter@1.1.1:
     dependencies:
@@ -11129,7 +11129,7 @@ snapshots:
       '@types/mdast': 4.0.4
       mdast-util-from-markdown: 2.0.1
       micromark-util-types: 2.0.0
-      unified: 11.0.4
+      unified: 11.0.5
     transitivePeerDependencies:
       - supports-color
 
@@ -11145,7 +11145,7 @@ snapshots:
       '@types/hast': 3.0.4
       '@types/mdast': 4.0.4
       mdast-util-to-hast: 13.2.0
-      unified: 11.0.4
+      unified: 11.0.5
       vfile: 6.0.1
 
   remotion@4.0.180(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
@@ -11815,7 +11815,7 @@ snapshots:
       trough: 2.2.0
       vfile: 5.3.7
 
-  unified@11.0.4:
+  unified@11.0.5:
     dependencies:
       '@types/unist': 3.0.2
       bail: 2.0.2
