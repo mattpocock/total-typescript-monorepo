@@ -20,7 +20,8 @@ import {
   DEFAULT_STEP_DURATION,
   TRANSITION_DURATION,
 } from "./constants";
-// import chillMusic from "./media/chill.mp3";
+import chillMusic from "./media/chill.mp3";
+import { meta } from "./meta";
 
 export const Main = (props: {
   steps: HighlightedCode[];
@@ -52,6 +53,13 @@ export const Main = (props: {
 
   return (
     <>
+      {meta.music && (
+        <Audio
+          src={chillMusic}
+          volume={0.18}
+          startFrom={60}
+        />
+      )}
       {narration && (
         <Sequence from={25}>
           <Audio src={narration} startFrom={25} />

@@ -1,101 +1,6 @@
 {
   "prompts": [
     {
-      "name": "Run prompt from file",
-      "body": [
-        "Given the prompt above, reply to the prompt.",
-        "Use markdown formatting."
-      ]
-    },
-    {
-      "name": "Continue this list",
-      "body": [
-        "Given the list above, add more items to the list.",
-        "Do not duplicate existing items.",
-        "Copy the formatting of the existing items.",
-        "Do not return the existing list, return only the new items."
-      ]
-    },
-    {
-      "name": "SEO Summary",
-      "body": [
-        "Given the article above, write a short SEO-friendly summary of the article.",
-        "The output MUST, MUST not exceed 165 characters in length.",
-        "Do not use markdown formatting.",
-        "Do not use inline code examples using backticks.",
-        "Do not use double quotes."
-      ]
-    },
-    {
-      "name": "Rewrite Article",
-      "body": [
-        "Given the article above, write another one using a similar structure about ${TOPIC}.",
-        "Feel free to change the article completely, but write it in the same style.",
-        "Use markdown formatting.",
-        "Do not include the original article in the output.",
-        "Write in a friendly style.",
-        "Write as if to an expert audience.",
-        "Write extremely concisely.",
-        "NEVER provide a conclusion. NEVER use phrases like 'In conclusion', 'In summary,' or 'Overall,'.",
-        "When providing code samples, prefer multi-line code samples (```typescript) over single-line code samples (``)."
-      ]
-    },
-    {
-      "name": "Continue Writing Section",
-      "body": [
-        "Given the article above, continue writing the first empty section.",
-        "Use markdown formatting.",
-        "Do not include the original article in the output.",
-        "Write as if to an expert audience.",
-        "Write as if to a developer.",
-        "Write in a friendly style.",
-        "Write extremely concisely.",
-        "NEVER provide a conclusion. NEVER use phrases like 'In conclusion', 'In summary,' or 'Overall,'.",
-        "When providing code samples, prefer multi-line code samples (```typescript) over single-line code samples (``)."
-      ]
-    },
-    {
-      "name": "Write explainer",
-      "body": [
-        "Write an explainer on the topic of ${TOPIC}.",
-        "Use markdown formatting.",
-        "Write as if to an expert audience.",
-        "Write as if to a developer.",
-        "Write in a friendly style.",
-        "Write extremely concisely.",
-        "NEVER provide a conclusion. NEVER use phrases like 'In conclusion', 'In summary,' or 'Overall,'.",
-        "When providing code samples, prefer multi-line code samples (```typescript) over single-line code samples (``)."
-      ]
-    },
-    {
-      "name": "Add Code Sample",
-      "body": [
-        "Given the article above, provide code snippets that could be used to explain the concepts in the article.",
-        "Use markdown formatting.",
-        "Do not include the original article in the output.",
-        "Write as if to an expert audience.",
-        "Write as if to a developer.",
-        "Write in a friendly style.",
-        "When providing code samples, prefer multi-line code samples (```typescript) over single-line code samples (``).",
-        "Provide multiple examples.",
-        "Do not explain the code samples in text."
-      ]
-    },
-    {
-      "name": "Code Sample to Explainer",
-      "body": [
-        "Given the input above, write a 200-300 explainer based on the topics in the input.",
-        "Write in a friendly style.",
-        "Use paragraphs and headings, in markdown formatting.",
-        "If there are bullet points present in the text, use them as a guide for the explainer.",
-        "Write as if to an expert audience.",
-        "Write extremely concisely.",
-        "Use markdown formatting.",
-        "NEVER provide a conclusion. NEVER use phrases like 'In conclusion', 'In summary,' or 'Overall,'.",
-        "When providing code samples, prefer multi-line code samples (```typescript) over single-line code samples (``)."
-      ]
-    },
-    {
       "name": "Proofread Article",
       "body": [
         "Given the article above, proofread it. Correct any spelling mistakes and grammatical errors.",
@@ -103,6 +8,13 @@
         "Return the article with the corrections.",
         "Do not remove 'twoslash' from markdown code blocks.",
         "Correct any British spelling to the American version."
+      ]
+    },
+    {
+      "name": "Print Width: 30",
+      "body": [
+        "Given the markdown file above, reformat it to be printWidth: 30.",
+        "Keep the exact same amount of code samples"
       ]
     }
   ],

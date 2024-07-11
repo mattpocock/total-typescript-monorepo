@@ -80,8 +80,7 @@ const createFileUpdater = (filePath: AbsolutePath) => () => {
     CODE_HIKE_META_LOCATION,
     JSON.stringify(
       {
-        width: frontMatter.attributes?.width,
-        height: frontMatter.attributes?.height,
+        ...frontMatter.attributes,
         durations,
       },
       null,

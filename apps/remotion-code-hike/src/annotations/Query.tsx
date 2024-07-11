@@ -94,7 +94,7 @@ export const makeQueryComponent =
           style={{
             opacity,
             minWidth: `${column + 2}ch`,
-            maxWidth: 1000,
+            maxWidth: 600,
             marginLeft: `${indentation}ch`,
             width: "fit-content",
             position: "relative",
