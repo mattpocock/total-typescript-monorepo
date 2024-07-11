@@ -89,7 +89,7 @@ export const trimLatestOBSVideo = async () => {
   console.log("Trimming video...");
 
   const unNormalizedFilename = (result.resolvedPath.replace(/\.(ts|tsx)/g, "") +
-    ".un-encoded.un-normalized.mp4") as AbsolutePath;
+    ".un-encoded.mp4") as AbsolutePath;
 
   await trimVideo(
     latestOBSVideo,
@@ -98,12 +98,12 @@ export const trimLatestOBSVideo = async () => {
     silenceResult.endTime,
   );
 
-  const finalOutputFilename = unNormalizedFilename.replace(
-    ".un-encoded.un-normalized.mp4",
-    ".un-encoded.mp4",
-  ) as AbsolutePath;
+  // const finalOutputFilename = unNormalizedFilename.replace(
+  //   ".un-encoded.un-normalized.mp4",
+  //   ".un-encoded.mp4",
+  // ) as AbsolutePath;
 
-  await normalizeAudio(unNormalizedFilename, finalOutputFilename);
+  // await normalizeAudio(unNormalizedFilename, finalOutputFilename);
 
-  await execAsync(`rm ${unNormalizedFilename}`);
+  // await execAsync(`rm ${unNormalizedFilename}`);
 };

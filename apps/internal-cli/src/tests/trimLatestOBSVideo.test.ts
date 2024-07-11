@@ -43,32 +43,32 @@ it("Should call trim on the video", async () => {
 
   expect(spy).toHaveBeenLastCalledWith(
     "/tmp/video.mp4",
-    "/Drive/output/01-video.problem.un-encoded.un-normalized.mp4",
+    "/Drive/output/01-video.problem.un-encoded.mp4",
     0,
     10,
   );
 });
 
-it("Should normalize the video", async () => {
-  const spy = vi.spyOn(ffmpeg, "normalizeAudio");
+// it("Should normalize the video", async () => {
+//   const spy = vi.spyOn(ffmpeg, "normalizeAudio");
 
-  await trimLatestOBSVideo();
+//   await trimLatestOBSVideo();
 
-  expect(spy).toHaveBeenLastCalledWith(
-    "/Drive/output/01-video.problem.un-encoded.un-normalized.mp4",
-    "/Drive/output/01-video.problem.un-encoded.mp4",
-  );
-});
+//   expect(spy).not.toHaveBeenLastCalledWith(
+//     "/Drive/output/01-video.problem.un-encoded.un-normalized.mp4",
+//     "/Drive/output/01-video.problem.un-encoded.mp4",
+//   );
+// });
 
-it("Should delete the un-normalized video", async () => {
-  const spy = vi.spyOn(ttShared, "execAsync");
+// it("Should delete the un-normalized video", async () => {
+//   const spy = vi.spyOn(ttShared, "execAsync");
 
-  await trimLatestOBSVideo();
+//   await trimLatestOBSVideo();
 
-  expect(spy).toHaveBeenLastCalledWith(
-    `rm /Drive/output/01-video.problem.un-encoded.un-normalized.mp4`,
-  );
-});
+//   expect(spy).toHaveBeenLastCalledWith(
+//     `rm /Drive/output/01-video.problem.un-encoded.un-normalized.mp4`,
+//   );
+// });
 
 it("Should create a directory for the output folder", async () => {
   const ensureDir = vi.spyOn(ttShared, "ensureDir");
