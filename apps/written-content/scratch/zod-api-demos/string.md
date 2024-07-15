@@ -73,7 +73,7 @@ Schema.parse("not-a-url");
 ```ts !!
 import { z } from "zod";
 
-// Email format
+// Emails!
 const Schema = z.string().email();
 
 // "example@email.com"

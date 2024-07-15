@@ -35,9 +35,9 @@ const compilerOptions: CompilerOptions = {
 const twoslash = createTwoslashFromCDN({
   compilerOptions,
   storage: createStorage({
-    driver: localStorageDriver({
-      base: "app:",
-    }),
+    // driver: localStorageDriver({
+    //   base: "app:",
+    // }),
   }),
 });
 
@@ -57,9 +57,9 @@ export const calculateMetadata: CalculateMetadataFunction<
 > = async () => {
   const { code, ...rest } = parseRoot(Content, Schema);
 
-  const twoslashPromises: Array<
-    Promise<HighlightedCode>
-  > = code.map(async (step: any) => {
+  const twoSlashedCode: HighlightedCode[] = [];
+
+  for (const step of code) {
     await twoslash.prepareTypes(step.value);
     const twoslashResult = await twoslash.run(
       step.value,
@@ -99,12 +99,8 @@ export const calculateMetadata: CalculateMetadataFunction<
       },
     );
 
-    return highlighted;
-  });
-
-  const twoSlashedCode = await Promise.all(
-    twoslashPromises,
-  );
+    twoSlashedCode.push(highlighted);
+  }
 
   const durationInFrames =
     meta.durations && meta.durations.length > 0
