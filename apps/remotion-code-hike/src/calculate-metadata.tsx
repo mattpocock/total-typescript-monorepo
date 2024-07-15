@@ -15,12 +15,7 @@ import type { CompilerOptions } from "typescript";
 import { DEFAULT_STEP_DURATION } from "./constants";
 import localStorageDriver from "unstorage/drivers/localstorage";
 import { createStorage } from "unstorage";
-import _meta from "./meta.local.json";
-const meta = _meta as {
-  width?: number;
-  height?: number;
-  durations?: number[];
-};
+import { meta } from "./meta";
 
 const Schema = Block.extend({
   code: z.array(HighlightedCodeBlock as any),
@@ -116,7 +111,8 @@ export const calculateMetadata: CalculateMetadataFunction<
       ? msToFrames(
           meta.durations.reduce((a, b) => a + b, 0),
         )
-      : DEFAULT_STEP_DURATION * code.length;
+      : (meta.slideDuration ?? DEFAULT_STEP_DURATION) *
+        code.length;
 
   return {
     durationInFrames: Math.floor(durationInFrames),

@@ -423,6 +423,9 @@ importers:
       vite:
         specifier: ^5.0.10
         version: 5.3.3(@types/node@20.14.10)(terser@5.31.1)
+      zod:
+        specifier: ^3.23.8
+        version: 3.23.8
 
   packages/_example-package: {}
 

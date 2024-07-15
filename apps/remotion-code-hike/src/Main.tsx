@@ -116,6 +116,7 @@ export const Main = (props: {
 
                         const durationInFrames =
                           props.durations?.[index] ??
+                          meta.slideDuration ??
                           DEFAULT_STEP_DURATION;
                         return (
                           <Series.Sequence
