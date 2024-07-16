@@ -1,7 +1,8 @@
 import { createTwoslashFromCDN } from "twoslash-cdn";
 import { CompilerOptions } from "typescript";
 import { createStorage } from "unstorage";
-import localStorageDriver from "unstorage/drivers/localstorage";
+// import localStorageDriver from "unstorage/drivers/localstorage";
+import sessionStorageDriver from "unstorage/drivers/session-storage";
 
 export const compilerOptions: CompilerOptions = {
   target: 9 /* ES2022 */,
@@ -17,7 +18,7 @@ export const compilerOptions: CompilerOptions = {
 export const twoslash = createTwoslashFromCDN({
   compilerOptions,
   storage: createStorage({
-    driver: localStorageDriver({
+    driver: sessionStorageDriver({
       base: "app:",
     }),
   }),

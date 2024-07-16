@@ -8,17 +8,26 @@
   "scripts": {
     "new": "node ./new-noteworthy-topic.js",
     "scratch": "SCRATCH=true node ./new-noteworthy-topic.js",
-    "create-emails": "twoslash-to-email \"emails/**/*.md\""
+    "create-emails": "twoslash-to-email \"emails/**/*.md\"",
+    "test": "vitest run"
   },
   "devDependencies": {
-    "twoslash-preview": "workspace:*",
     "@total-typescript/helpers": "^0.0.1",
     "@types/node": "^20.10.6",
     "@types/react": "^18.2.11",
     "react": "^18.2.0",
     "string-ts": "^2.0.0",
     "ts-toolbelt": "^9.6.0",
+    "twoslash-preview": "workspace:*",
     "vite": "^5.0.10",
+    "vitest": "^2.0.3",
     "zod": "^3.23.8"
+  },
+  "dependencies": {
+    "@sinclair/typebox": "^0.32.34",
+    "ajv": "^8.17.1",
+    "arktype": "2.0.0-beta.0",
+    "joi": "^17.13.3",
+    "valibot": "^0.36.0"
   }
 }

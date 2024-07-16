@@ -53,10 +53,10 @@ export const Main = (props: {
 
   return (
     <>
-      {meta.music && (
+      {(meta.music || meta.musicFullVolume) && (
         <Audio
           src={chillMusic}
-          volume={0.18}
+          volume={meta.musicFullVolume ? 1 : 0.18}
           startFrom={60}
         />
       )}

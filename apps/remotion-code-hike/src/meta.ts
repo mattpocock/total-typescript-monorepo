@@ -5,5 +5,6 @@ export const meta = _meta as {
   height?: number;
   durations?: number[];
   music?: boolean;
+  musicFullVolume?: boolean;
   slideDuration?: number;
 };
