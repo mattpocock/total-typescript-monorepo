@@ -1,45 +1,22 @@
-import { z } from "zod";
-import { CalculateMetadataFunction } from "remotion";
-import Content from "./content.local.md";
 import {
   Block,
   HighlightedCodeBlock,
   parseRoot,
 } from "codehike/blocks";
-import { createTwoslashFromCDN } from "twoslash-cdn";
 import {
   HighlightedCode,
   highlight,
 } from "codehike/code";
-import type { CompilerOptions } from "typescript";
+import { CalculateMetadataFunction } from "remotion";
+import { z } from "zod";
 import { DEFAULT_STEP_DURATION } from "./constants";
-import localStorageDriver from "unstorage/drivers/localstorage";
-import { createStorage } from "unstorage";
+import Content from "./content.local.md";
 import { meta } from "./meta";
+import { compilerOptions, twoslash } from "./twoslash";
 
 const Schema = Block.extend({
   code: z.array(HighlightedCodeBlock as any),
 } as any);
-
-const compilerOptions: CompilerOptions = {
-  target: 9 /* ES2022 */,
-  strict: true,
-  allowJs: true,
-  checkJs: true,
-  noEmit: true,
-  module: 99 /* ESNext */,
-  moduleResolution: 100 /* Bundler */,
-  jsx: 4 /* ReactJSX */,
-};
-
-const twoslash = createTwoslashFromCDN({
-  compilerOptions,
-  storage: createStorage({
-    // driver: localStorageDriver({
-    //   base: "app:",
-    // }),
-  }),
-});
 
 type Props = {
   steps: HighlightedCode[];
@@ -60,12 +37,11 @@ export const calculateMetadata: CalculateMetadataFunction<
   const twoSlashedCode: HighlightedCode[] = [];
 
   for (const step of code) {
-    await twoslash.prepareTypes(step.value);
     const twoslashResult = await twoslash.run(
       step.value,
       step.lang,
       {
-        compilerOptions,
+        compilerOptions: compilerOptions,
       },
     );
     const highlighted = await highlight(
