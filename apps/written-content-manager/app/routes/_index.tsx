@@ -1,64 +1,22 @@
 import { useLoaderData } from "@remix-run/react";
-import type {
-  AbsolutePath,
-  AnyPath,
-  RelativePath,
-} from "@total-typescript/shared";
-import { readFile } from "fs/promises";
-import path from "path";
+import { execAsync, type AbsolutePath } from "@total-typescript/shared";
+import { useMemo, useState } from "react";
+import { groupFiles } from "~/groupFiles";
+import { isDir } from "~/isDir";
+import Fuse from "fuse.js";
 
 const DIRS_TO_INCLUDE = ["noteworthy-topic", "scratch"];
 
-const fileWithExtensionRegex = /\.[a-z]{1,}$/;
-
-const isDir = (file: string) => {
-  return !fileWithExtensionRegex.test(file);
-};
-
-type FileGroup = {
-  base: string;
-  name: string;
-  files: {
-    path: AbsolutePath;
-    name: string;
-  }[];
-};
-
-const groupFiles = async (
-  basePath: AbsolutePath,
-  files: AbsolutePath[],
-): Promise<FileGroup[]> => {
-  const fileMap = new Map<string, FileGroup>();
-
-  for (const filePath of files) {
-    const [base, name, ...rest] = path.relative(basePath, filePath).split("/");
-
-    if (!base || !name) continue;
-
-    if (!isDir(name)) continue;
-
-    const id = base + "/" + name;
-
-    const group = fileMap.get(id);
-
-    const file = {
-      path: filePath,
-      name: rest.join("/"),
-    };
-
-    if (group) {
-      group.files.push(file);
-    } else {
-      fileMap.set(id, {
-        base,
-        name,
-        files: [file],
-      });
+const createGetTags =
+  (ctx: { reactRelatedFiles: Set<AbsolutePath> }) =>
+  (files: AbsolutePath[]) => {
+    const tags: string[] = [];
+    if (files.some((file) => ctx.reactRelatedFiles.has(file))) {
+      tags.push("react");
     }
-  }
 
-  return Array.from(fileMap.values());
-};
+    return tags;
+  };
 
 const filterOutBadFiles = (files: AbsolutePath[]) => {
   return files.filter((file) => {
@@ -68,6 +26,16 @@ const filterOutBadFiles = (files: AbsolutePath[]) => {
 
     return true;
   });
+};
+
+const getReactRelatedFiles = async (basePath: AbsolutePath) => {
+  const grepResult = await execAsync(
+    `grep -Rnwl '${basePath}' -e 'react' --exclude-dir=node_modules`,
+  );
+
+  return new Set(
+    grepResult.stdout.trim().split("\n").filter(Boolean),
+  ) as Set<AbsolutePath>;
 };
 
 export const loader = async () => {
@@ -81,6 +49,8 @@ export const loader = async () => {
 
   const allFiles: AbsolutePath[] = [];
 
+  const reactRelatedFiles = await getReactRelatedFiles(WRITTEN_CONTENT_BASE);
+
   for (const dir of DIRS_TO_INCLUDE) {
     const dirPath = path.join(WRITTEN_CONTENT_BASE, dir);
     const files = await fs.readdir(dirPath, {
@@ -91,19 +61,66 @@ export const loader = async () => {
     }
   }
 
+  const groupedFiles = groupFiles({
+    basePath: WRITTEN_CONTENT_BASE,
+    files: filterOutBadFiles(allFiles),
+    getTags: createGetTags({ reactRelatedFiles }),
+  });
+
   return {
-    allFiles: await groupFiles(
-      WRITTEN_CONTENT_BASE,
-      filterOutBadFiles(allFiles),
-    ),
+    allFiles: groupedFiles,
   };
 };
 
 export default function Index() {
   const data = useLoaderData<typeof loader>();
+
+  const [search, setSearch] = useState("");
+
+  const fuse = useMemo(() => {
+    return new Fuse(data.allFiles, {
+      keys: ["name", "base", "tags"],
+    });
+  }, [data.allFiles]);
+
+  const searchResults = useMemo(() => {
+    if (!search) return data.allFiles;
+
+    return fuse.search(search).map((result) => result.item);
+  }, [search, fuse]);
+
   return (
-    <div>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
+    <div className="p-6 grid gap-4">
+      <label className="w-full block space-y-2">
+        <span className="block text-xl">Search</span>
+        <input
+          className="bg-gray-100 p-2 w-full"
+          onChange={(e) => {
+            setSearch(e.target.value);
+          }}
+          value={search}
+        ></input>
+      </label>
+      {searchResults.map((group) => {
+        return (
+          <div className="space-y-2">
+            <h2 className="text-xl">{group.name}</h2>
+            <div className="flex items-center gap-3">
+              <h3 className="text-xs bg-gray-200 inline-block px-3 py-1 rounded uppercase text-gray-700">
+                {group.base}
+              </h3>
+              {group.tags.map((tag) => (
+                <h3
+                  className="text-xs bg-gray-200 inline-block px-3 py-1 rounded uppercase text-gray-700"
+                  key={tag}
+                >
+                  {tag}
+                </h3>
+              ))}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
