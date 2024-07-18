@@ -57,7 +57,7 @@ export const Main = (props: {
         <Audio
           src={chillMusic}
           volume={meta.musicFullVolume ? 1 : 0.18}
-          startFrom={60}
+          startFrom={35}
         />
       )}
       {narration && (

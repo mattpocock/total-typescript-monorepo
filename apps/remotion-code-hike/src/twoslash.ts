@@ -17,9 +17,5 @@ export const compilerOptions: CompilerOptions = {
 
 export const twoslash = createTwoslashFromCDN({
   compilerOptions,
-  storage: createStorage({
-    driver: sessionStorageDriver({
-      base: "app:",
-    }),
-  }),
+  storage: createStorage({}),
 });
