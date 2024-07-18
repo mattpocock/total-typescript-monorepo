@@ -34,7 +34,6 @@
     "dev": "remotion studio --port 3001",
     "upgrade": "remotion upgrade",
     "lint": "tsc",
-    "postinstall": "echo \"{}\" > src/meta.local.json",
     "test": "vitest run"
   }
 }
