@@ -70,17 +70,17 @@ export const seed = async () => {
       });
     }
 
-    for (const file of group.files) {
-      db.prepare(
-        /* sql */ `
-        INSERT INTO "content-item-file" (content_item_id, filename, content)
-        VALUES (@content_item_id, @filename, @content)
-      `,
-      ).run({
-        content_item_id: contentItem.id,
-        filename: file.name,
-        content: file.content,
-      });
-    }
+    // for (const file of group.files) {
+    //   db.prepare(
+    //     /* sql */ `
+    //     INSERT INTO "content-item-file" (content_item_id, filename, content)
+    //     VALUES (@content_item_id, @filename, @content)
+    //   `,
+    //   ).run({
+    //     content_item_id: contentItem.id,
+    //     filename: file.name,
+    //     content: file.content,
+    //   });
+    // }
   }
 };
