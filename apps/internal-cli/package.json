@@ -1,6 +1,7 @@
 {
   "name": "@total-typescript/internal-cli",
   "private": true,
+  "version": "0.0.1",
   "bin": {
     "tt": "./dist/bin.js"
   },

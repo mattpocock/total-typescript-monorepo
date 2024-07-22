@@ -53,7 +53,7 @@ export const makeQueryComponent =
     annotation,
     indentation,
     ...props
-  }) => {
+  }: any) => {
     const { column, fromColumn, toColumn }: Data =
       annotation.data;
     const frame = useCurrentFrame();

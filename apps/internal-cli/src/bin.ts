@@ -3,10 +3,11 @@
 import { Command } from "commander";
 import { commands } from "./commands.js";
 import { toDashCase } from "@total-typescript/shared";
+import packageJson from "../package.json" with { type: "json" };
 
 const program = new Command();
 
-program.version("0.0.1");
+program.version(packageJson.version);
 
 commands.forEach((command) => {
   let cliCommand = command.cliCommand;

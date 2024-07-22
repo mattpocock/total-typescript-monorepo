@@ -11,6 +11,7 @@
   "scripts": {
     "dev": "turbo watch build lint test",
     "ci": "turbo build test lint",
+    "build": "turbo build",
     "release": "pnpm run ci && changeset publish",
     "write": "turbo start --filter=twoslash-preview --filter=@total-typescript/twoslash-preview-server",
     "make-video": "turbo watch dev --filter=remotion-code-hike --filter=sync-current-markdown-file-to-remotion --filter=source-to-code-samples --filter=record-narration",
@@ -27,6 +28,7 @@
     "@total-typescript/tsconfig": "^1.0.3",
     "@types/node": "^20.12.10",
     "prettier": "^3.2.5",
+    "tsx": "^4.16.2",
     "turbo": "^2.0.1",
     "typescript": "^5.5.2",
     "vitest": "^2.0.0"
