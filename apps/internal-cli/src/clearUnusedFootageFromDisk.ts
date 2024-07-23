@@ -1,14 +1,16 @@
 import {
   DAVINCI_RESOLVE_PROJECTS_LOCATION,
-  EXTERNAL_DRIVE_RAW_FOOTAGE_ROOT,
-  EXTERNAL_DRIVE_ROOT,
   ExternalDriveNotFoundError,
-  getExternalDrive,
   type AbsolutePath,
   type RelativePath,
 } from "@total-typescript/shared";
 import { readFileSync, readdirSync } from "fs";
 import path from "path";
+import {
+  EXTERNAL_DRIVE_RAW_FOOTAGE_ROOT,
+  EXTERNAL_DRIVE_ROOT,
+  getExternalDrive,
+} from "./constants.js";
 
 const regex = /Movies(\/{0,1}).{1,}\.mp4/g;
 

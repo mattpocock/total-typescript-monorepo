@@ -1,0 +1,351 @@
+<style>
+.shiki {
+  --tw-bg-opacity: 1 !important;
+  background-color: rgb(17 24 39 / var(--tw-bg-opacity)) !important;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+pre {
+  overflow-x: auto;
+  position: relative;
+}
+
+pre.shiki {
+  overflow-x: auto;
+}
+
+pre.shiki div.dim {
+  opacity: 0.5;
+}
+
+pre.shiki div.dim,
+pre.shiki div.highlight {
+  margin: 0;
+  padding: 0;
+}
+
+pre.shiki div.highlight {
+  opacity: 1;
+  background-color: #f1f8ff;
+}
+
+pre.shiki div.line {
+  min-height: 1rem;
+}
+
+pre.shiki .language-id {
+  display: none;
+}
+
+pre .code-container {
+  overflow: auto;
+}
+
+pre code {
+  font-family: 'JetBrains Mono', Menlo, Monaco, Consolas, Courier New, monospace;
+  white-space: pre;
+  -webkit-overflow-scrolling: touch;
+}
+
+pre code a {
+  text-decoration: none;
+}
+
+pre data-err {
+  /* Extracted from VS Code */
+  background: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%206%203'%20enable-background%3D'new%200%200%206%203'%20height%3D'3'%20width%3D'6'%3E%3Cg%20fill%3D'%23c94824'%3E%3Cpolygon%20points%3D'5.5%2C0%202.5%2C3%201.1%2C3%204.1%2C0'%2F%3E%3Cpolygon%20points%3D'4%2C0%206%2C2%206%2C0.6%205.4%2C0'%2F%3E%3Cpolygon%20points%3D'0%2C2%201%2C3%202.4%2C3%200%2C0.6'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E")
+    repeat-x bottom left;
+  padding-bottom: 3px;
+}
+
+pre .query {
+  margin-bottom: 10px;
+  color: #137998;
+  display: inline-block;
+}
+
+pre .error,
+pre .error-behind {
+  margin-left: -14px;
+  margin-top: 8px;
+  margin-bottom: 4px;
+  padding: 6px;
+  padding-left: 14px;
+  padding-right: 14px;
+  white-space: pre-wrap;
+  display: block;
+  max-width: 42rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+pre .error {
+  --tw-bg-opacity: 1;
+  background-color: rgb(31 41 55 / var(--tw-bg-opacity));
+  --tw-text-opacity: 1;
+  color: rgb(254 242 242 / var(--tw-text-opacity));
+  position: absolute;
+  border-left: 4px solid #bf1818;
+  /* Give the space to the error code */
+  display: flex;
+  align-items: center;
+}
+
+pre .error .code {
+  display: none;
+}
+
+pre .error-behind {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+  visibility: transparent;
+  color: transparent;
+}
+
+/* Queries */
+
+pre .arrow {
+  /* Transparent background */
+  --tw-bg-opacity: 1;
+  background-color: rgb(31 41 55 / var(--tw-bg-opacity));
+  position: relative;
+  top: -7px;
+  margin-left: 0.1rem;
+  /* Edges */
+  border-left: 1px solid rgb(51, 65, 85);
+  border-top: 1px solid rgb(51, 65, 85);
+  transform: translateY(25%) rotate(45deg);
+  /* Size */
+  height: 8px;
+  width: 8px;
+}
+
+pre .popover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(31 41 55 / var(--tw-bg-opacity));
+  --tw-text-opacity: 1;
+  color: rgb(243 244 246 / var(--tw-text-opacity));
+  margin-bottom: 10px;
+  display: inline-block;
+  padding: 0 0.5rem 0.3rem;
+  margin-top: 10px;
+  border-radius: 3px;
+  max-width: 42rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+/* Completion */
+
+pre .inline-completions ul.dropdown {
+  display: inline-block;
+  position: absolute;
+  width: 240px;
+  background-color: gainsboro;
+  color: grey;
+  padding-top: 4px;
+  font-family: var(--code-font);
+  font-size: 0.8rem;
+  margin: 0;
+  padding: 0;
+  border-left: 4px solid #4b9edd;
+}
+
+pre .inline-completions ul.dropdown::before {
+  background-color: #4b9edd;
+  width: 2px;
+  position: absolute;
+  top: -1.2rem;
+  left: -3px;
+  content: ' ';
+}
+
+pre .inline-completions ul.dropdown li {
+  overflow-x: hidden;
+  padding-left: 4px;
+  margin-bottom: 4px;
+}
+
+pre .inline-completions ul.dropdown li.deprecated {
+  text-decoration: line-through;
+}
+
+pre .inline-completions ul.dropdown li span.result-found {
+  color: #4b9edd;
+}
+
+pre .inline-completions ul.dropdown li span.result {
+  width: 100px;
+  color: black;
+  display: inline-block;
+}
+
+.dark-theme .markdown pre {
+  background-color: #d8d8d8;
+  border-color: #ddd;
+  filter: invert(98%) hue-rotate(180deg);
+}
+
+data-lsp {
+  /* Fades in unobtrusively */
+  transition-timing-function: ease;
+  transition: border-color 0.3s;
+}
+
+/** Annotations support, providing a tool for meta commentary */
+
+.tag-container {
+  position: relative;
+}
+
+.tag-container .twoslash-annotation {
+  position: absolute;
+  font-family: 'JetBrains Mono', Menlo, Monaco, Consolas, Courier New, monospace;
+  right: -10px;
+  /** Default annotation text to 200px */
+  width: 200px;
+  color: #187abf;
+  background-color: #fcf3d9 bb;
+}
+
+.tag-container .twoslash-annotation p {
+  text-align: left;
+  font-size: 0.8rem;
+  line-height: 0.9rem;
+}
+
+.tag-container .twoslash-annotation svg {
+  float: left;
+  margin-left: -44px;
+}
+
+.tag-container .twoslash-annotation.left {
+  right: auto;
+  left: -200px;
+}
+
+.tag-container .twoslash-annotation.left svg {
+  float: right;
+  margin-right: -5px;
+}
+
+/** Support for showing console log/warn/errors inline */
+
+pre .logger {
+  display: flex;
+  align-items: center;
+  color: black;
+  padding: 6px;
+  padding-left: 8px;
+  width: calc(100% - 19px);
+  white-space: pre-wrap;
+}
+
+pre .logger svg {
+  margin-right: 9px;
+}
+
+pre .logger.error-log {
+  --tw-bg-opacity: 1;
+  background-color: rgb(31 41 55 / var(--tw-bg-opacity));
+  border-left: 4px solid #bf1818;
+}
+
+pre .logger.warn-log {
+  background-color: #ffe;
+  border-left: 4px solid #eae662;
+}
+
+pre .logger.log-log {
+  background-color: #e9e9e9;
+  border-left: 4px solid #ababab;
+}
+
+pre .logger.log-log svg {
+  margin-left: 6px;
+  margin-right: 9px;
+}
+</style>
+<h1>ARTICLE: Generic functions are everywhere</h1>
+<p>In our last lesson, we doubled down on generic types - adding constraints and defaults to them. In this lesson, we're going to start our exploration of generic functions.</p>
+<h2>What Are Generic Functions?</h2>
+<p>The phrase 'generic function' can feel extremely scary. But it has a pretty simple definition.</p>
+<p>A 'normal' function is one that takes zero or more <em>runtime</em> arguments. An <code>add</code> function, for example, takes two numbers and returns their sum:</p>
+<pre class="shiki dark-plus twoslash lsp not-prose" style="background-color:#1E1E1E;color:#D4D4D4" tabindex="0"><code><span class="line"><span style="color:#569CD6">const</span><span style="color:#DCDCAA"> </span><span style="color:#DCDCAA"><data-lsp lsp="const add: (a: number, b: number) => number">add</data-lsp></span><span style="color:#D4D4D4"> = (</span><span style="color:#9CDCFE"><data-lsp lsp="(parameter) a: number">a</data-lsp></span><span style="color:#D4D4D4">: </span><span style="color:#4EC9B0">number</span><span style="color:#D4D4D4">, </span><span style="color:#9CDCFE"><data-lsp lsp="(parameter) b: number">b</data-lsp></span><span style="color:#D4D4D4">: </span><span style="color:#4EC9B0">number</span><span style="color:#D4D4D4">) </span><span style="color:#569CD6">=></span><span style="color:#9CDCFE"> </span><span style="color:#9CDCFE"><data-lsp lsp="(parameter) a: number">a</data-lsp></span><span style="color:#D4D4D4"> + </span><span style="color:#9CDCFE"><data-lsp lsp="(parameter) b: number">b</data-lsp></span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span></code></pre>
+<p>A generic function is exactly the same, with one additional feature: it can receive <em>type arguments</em>.</p>
+<pre class="shiki dark-plus twoslash lsp not-prose" style="background-color:#1E1E1E;color:#D4D4D4" tabindex="0"><code><span class="line"><span style="color:#569CD6">const</span><span style="color:#DCDCAA"> </span><span style="color:#DCDCAA"><data-lsp lsp="const uniqueArray: <T>(array: T[]) => T[]">uniqueArray</data-lsp></span><span style="color:#D4D4D4"> = &#x3C;</span><span style="color:#4EC9B0"><data-lsp lsp="(type parameter) T in <T>(array: T[]): T[]">T</data-lsp></span><span style="color:#D4D4D4">>(</span><span style="color:#9CDCFE"><data-lsp lsp="(parameter) array: T[]">array</data-lsp></span><span style="color:#D4D4D4">: </span><span style="color:#4EC9B0"><data-lsp lsp="(type parameter) T in <T>(array: T[]): T[]">T</data-lsp></span><span style="color:#D4D4D4">[]) </span><span style="color:#569CD6">=></span><span style="color:#D4D4D4"> {</span></span>
+<span class="line"><span style="color:#C586C0">  return</span><span style="color:#9CDCFE"> </span><span style="color:#9CDCFE"><data-lsp lsp="var Array: ArrayConstructor">Array</data-lsp></span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA"><data-lsp lsp="(method) ArrayConstructor.from<T>(iterable: Iterable<T> | ArrayLike<T>): T[] (+3 overloads)">from</data-lsp></span><span style="color:#D4D4D4">(</span><span style="color:#569CD6">new</span><span style="color:#DCDCAA"> </span><span style="color:#DCDCAA"><data-lsp lsp="var Set: SetConstructor
+new <T>(iterable?: Iterable<T> | null | undefined) => Set<T> (+1 overload)">Set</data-lsp></span><span style="color:#D4D4D4">(</span><span style="color:#9CDCFE"><data-lsp lsp="(parameter) array: T[]">array</data-lsp></span><span style="color:#D4D4D4">));</span></span>
+<span class="line"><span style="color:#D4D4D4">};</span></span>
+<span class="line"></span></code></pre>
+<p>In this example, <code>uniqueArray</code> is a generic function. It defines a single type parameter, <code>T</code>, and a single runtime argument, <code>array</code>.</p>
+<p>Without the type parameter, <code>uniqueArray</code> would be a normal function.</p>
+<p>So, the same rules apply to generic types as they do to generic functions. Got a type parameter? It's a <em>generic</em> function/type. No type parameter? It's a <em>non-generic</em> (I usually say "normal") function/type.</p>
+<h2>Passing Type Arguments To Generic Functions</h2>
+<p>You might not realize it, but you've likely used generic functions a lot. TypeScript's built-in typings for JavaScript, which ship with every TypeScript installation, are full of generic functions.</p>
+<p>A classic example is a <code>Set</code>. A <code>Set</code> is a collection of unique values. Let's say you wanted to create a <code>Set</code> without passing it an initial value:</p>
+<pre class="shiki dark-plus twoslash lsp not-prose" style="background-color:#1E1E1E;color:#D4D4D4" tabindex="0"><code><span class="line"><span style="color:#569CD6">const</span><span style="color:#4FC1FF"> </span><span style="color:#4FC1FF"><data-lsp lsp="const set: Set<unknown>">set</data-lsp></span><span style="color:#D4D4D4"> = </span><span style="color:#569CD6">new</span><span style="color:#DCDCAA"> </span><span style="color:#DCDCAA"><data-lsp lsp="var Set: SetConstructor
+new <unknown>(iterable?: Iterable<unknown> | null | undefined) => Set<unknown> (+1 overload)">Set</data-lsp></span><span style="color:#D4D4D4">();</span></span>
+<span class="line"></span></code></pre>
+<p>How does TypeScript know what type of values are in the <code>Set</code>? It doesn't!</p>
+<p>This means we can pass any sort of value to the <code>Set</code>:</p>
+<pre class="shiki dark-plus twoslash lsp not-prose" style="background-color:#1E1E1E;color:#D4D4D4" tabindex="0"><code><span class="line"></span>
+<span class="line"><span style="color:#9CDCFE"><data-lsp lsp="const set: Set<unknown>">set</data-lsp></span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA"><data-lsp lsp="(method) Set<unknown>.add(value: unknown): Set<unknown>">add</data-lsp></span><span style="color:#D4D4D4">(</span><span style="color:#B5CEA8">1</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"><span style="color:#9CDCFE"><data-lsp lsp="const set: Set<unknown>">set</data-lsp></span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA"><data-lsp lsp="(method) Set<unknown>.add(value: unknown): Set<unknown>">add</data-lsp></span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">"hello"</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"><span style="color:#9CDCFE"><data-lsp lsp="const set: Set<unknown>">set</data-lsp></span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA"><data-lsp lsp="(method) Set<unknown>.add(value: unknown): Set<unknown>">add</data-lsp></span><span style="color:#D4D4D4">({ </span><span style="color:#9CDCFE"><data-lsp lsp="(property) key: string">key</data-lsp></span><span style="color:#9CDCFE">:</span><span style="color:#CE9178"> "value"</span><span style="color:#D4D4D4"> });</span></span>
+<span class="line"></span></code></pre>
+<p>As it turns out, <code>Set</code> is a generic function. It has a type parameter, <code>T</code>, which defaults to <code>unknown</code>. If we want to specify what types should be included in our <code>Set</code>, we can pass a type argument:</p>
+<pre class="shiki dark-plus twoslash lsp not-prose" style="background-color:#1E1E1E;color:#D4D4D4" tabindex="0"><code><span class="line"><span style="color:#569CD6">const</span><span style="color:#4FC1FF"> </span><span style="color:#4FC1FF"><data-lsp lsp="const numberSet: Set<number>">numberSet</data-lsp></span><span style="color:#D4D4D4"> = </span><span style="color:#569CD6">new</span><span style="color:#DCDCAA"> </span><span style="color:#DCDCAA"><data-lsp lsp="var Set: SetConstructor
+new <number>(iterable?: Iterable<number> | null | undefined) => Set<number> (+1 overload)">Set</data-lsp></span><span style="color:#D4D4D4">&#x3C;</span><span style="color:#4EC9B0">number</span><span style="color:#D4D4D4">>();</span></span>
+<span class="line"></span></code></pre>
+<p>We use the angle brackets (<code>&#x3C;</code> and <code>></code>) to pass the type argument inside. Now, TypeScript knows that <code>numberSet</code> can only contain numbers:</p>
+<pre class="shiki dark-plus twoslash lsp not-prose" style="background-color:#1E1E1E;color:#D4D4D4" tabindex="0"><code><span class="line"></span>
+<span class="line"><span style="color:#9CDCFE"><data-lsp lsp="const numberSet: Set<number>">numberSet</data-lsp></span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA"><data-lsp lsp="(method) Set<number>.add(value: number): Set<number>">add</data-lsp></span><span style="color:#D4D4D4">(</span><span style="color:#B5CEA8">1</span><span style="color:#D4D4D4">);</span></span>
+<span class="line"><span style="color:#9CDCFE"><data-lsp lsp="const numberSet: Set<number>">numberSet</data-lsp></span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA"><data-lsp lsp="(method) Set<number>.add(value: number): Set<number>">add</data-lsp></span><span style="color:#D4D4D4">(</span><span style="color:#CE9178"><data-err>"hello"</data-err></span><span style="color:#D4D4D4">);</span></span><div class="error"><span>Argument of type 'string' is not assignable to parameter of type 'number'.</span><span class="code">2345</span></div><span class="error-behind">Argument of type 'string' is not assignable to parameter of type 'number'.</span><span class="line"></span></code></pre>
+<h2>Non-Generic Functions</h2>
+<p>There are many other examples of commonly-used functions. <code>document.getElementById</code>. <code>Map</code>, <code>Array</code>. <code>useState</code> in React.</p>
+<p>But some functions are <em>not</em> generic. <code>JSON.parse</code> is a good example. If we try to tell <code>JSON.parse</code> what type we expect it to return, TypeScript will throw an error:</p>
+<pre class="shiki dark-plus twoslash lsp not-prose" style="background-color:#1E1E1E;color:#D4D4D4" tabindex="0"><code><span class="line"><span style="color:#569CD6">const</span><span style="color:#4FC1FF"> </span><span style="color:#4FC1FF"><data-lsp lsp="const parsed: any">parsed</data-lsp></span><span style="color:#D4D4D4"> = </span><span style="color:#4FC1FF"><data-lsp lsp="var JSON: JSON">JSON</data-lsp></span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA"><data-lsp lsp="(method) JSON.parse(text: string, reviver?: ((this: any, key: string, value: any) => any) | undefined): any">parse</data-lsp></span><span style="color:#D4D4D4">&#x3C;</span><span style="color:#4EC9B0"><data-err>number</data-err></span><span style="color:#D4D4D4">>(</span><span style="color:#CE9178">"42"</span><span style="color:#D4D4D4">);</span></span><div class="error"><span>Expected 0 type arguments, but got 1.</span><span class="code">2558</span></div><span class="error-behind">Expected 0 type arguments, but got 1.</span><span class="line"></span></code></pre>
+<p>It 'expected 0 type arguments, but got 1'. This is because <code>JSON.parse</code> is not a generic function - it doesn't accept type arguments.</p>
+<p>Another example is <code>fetch</code>. A common pattern when fetching from a server is to parse the response as JSON:</p>
+<pre class="shiki dark-plus twoslash lsp not-prose" style="background-color:#1E1E1E;color:#D4D4D4" tabindex="0"><code><span class="line"></span>
+<span class="line"><span style="color:#569CD6">const</span><span style="color:#4FC1FF"> </span><span style="color:#4FC1FF"><data-lsp lsp="const result: any">result</data-lsp></span><span style="color:#D4D4D4"> = </span><span style="color:#C586C0">await</span><span style="color:#DCDCAA"> </span><span style="color:#DCDCAA"><data-lsp lsp="function fetch(input: RequestInfo | URL, init?: RequestInit | undefined): Promise<Response>">fetch</data-lsp></span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">"/todos/1"</span><span style="color:#D4D4D4">).</span><span style="color:#DCDCAA"><data-lsp lsp="(method) Promise<Response>.then<any, never>(onfulfilled?: ((value: Response) => any) | null | undefined, onrejected?: ((reason: any) => PromiseLike<never>) | null | undefined): Promise<any>">then</data-lsp></span><span style="color:#D4D4D4">((</span><span style="color:#9CDCFE"><data-lsp lsp="(parameter) response: Response">response</data-lsp></span><span style="color:#D4D4D4">) </span><span style="color:#569CD6">=></span></span>
+<span class="line"><span style="color:#9CDCFE">  </span><span style="color:#9CDCFE"><data-lsp lsp="(parameter) response: Response">response</data-lsp></span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA"><data-lsp lsp="(method) Body.json(): Promise<any>">json</data-lsp></span><span style="color:#D4D4D4">(),</span></span>
+<span class="line"><span style="color:#D4D4D4">);</span></span>
+<span class="line"></span></code></pre>
+<p>But, if we attempt to pass a type argument to <code>response.json</code>, TypeScript will throw an error:</p>
+<pre class="shiki dark-plus twoslash lsp not-prose" style="background-color:#1E1E1E;color:#D4D4D4" tabindex="0"><code><span class="line"></span>
+<span class="line"><span style="color:#569CD6">const</span><span style="color:#4FC1FF"> </span><span style="color:#4FC1FF"><data-lsp lsp="const result: any">result</data-lsp></span><span style="color:#D4D4D4"> = </span><span style="color:#C586C0">await</span><span style="color:#DCDCAA"> </span><span style="color:#DCDCAA"><data-lsp lsp="function fetch(input: RequestInfo | URL, init?: RequestInit | undefined): Promise<Response>">fetch</data-lsp></span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">"/todos/1"</span><span style="color:#D4D4D4">).</span><span style="color:#DCDCAA"><data-lsp lsp="(method) Promise<Response>.then<any, never>(onfulfilled?: ((value: Response) => any) | null | undefined, onrejected?: ((reason: any) => PromiseLike<never>) | null | undefined): Promise<any>">then</data-lsp></span><span style="color:#D4D4D4">((</span><span style="color:#9CDCFE"><data-lsp lsp="(parameter) response: Response">response</data-lsp></span><span style="color:#D4D4D4">) </span><span style="color:#569CD6">=></span></span>
+<span class="line"><span style="color:#9CDCFE">  </span><span style="color:#9CDCFE"><data-lsp lsp="(parameter) response: Response">response</data-lsp></span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA"><data-lsp lsp="(method) Body.json(): Promise<any>">json</data-lsp></span><span style="color:#D4D4D4">&#x3C;</span><span style="color:#4EC9B0"><data-err>Todo</data-err></span><span style="color:#D4D4D4">>(),</span></span><div class="error"><span>Expected 0 type arguments, but got 1.</span><span class="code">2558</span></div><span class="error-behind">Expected 0 type arguments, but got 1.</span><span class="line"><span style="color:#D4D4D4">);</span></span>
+<span class="line"></span></code></pre>
+<p>The way to handle these functions is either to cast their results (using <code>as Todo</code> or <code>as number</code>) or, since they return <code>any</code>, type their results using a variable annotation:</p>
+<pre class="shiki dark-plus twoslash lsp not-prose" style="background-color:#1E1E1E;color:#D4D4D4" tabindex="0"><code><span class="line"></span>
+<span class="line"><span style="color:#6A9955">// Casting</span></span>
+<span class="line"><span style="color:#569CD6">const</span><span style="color:#4FC1FF"> </span><span style="color:#4FC1FF"><data-lsp lsp="const result1: number">result1</data-lsp></span><span style="color:#D4D4D4"> = </span><span style="color:#4FC1FF"><data-lsp lsp="var JSON: JSON">JSON</data-lsp></span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA"><data-lsp lsp="(method) JSON.parse(text: string, reviver?: ((this: any, key: string, value: any) => any) | undefined): any">parse</data-lsp></span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">"42"</span><span style="color:#D4D4D4">) </span><span style="color:#C586C0">as</span><span style="color:#4EC9B0"> number</span><span style="color:#D4D4D4">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A9955">// Variable annotation</span></span>
+<span class="line"><span style="color:#569CD6">const</span><span style="color:#4FC1FF"> </span><span style="color:#4FC1FF"><data-lsp lsp="const result: Todo">result</data-lsp></span><span style="color:#D4D4D4">: </span><span style="color:#4EC9B0"><data-lsp lsp="type Todo = {
+    id: number;
+    title: string;
+    completed: boolean;
+}">Todo</data-lsp></span><span style="color:#D4D4D4"> = </span><span style="color:#C586C0">await</span><span style="color:#DCDCAA"> </span><span style="color:#DCDCAA"><data-lsp lsp="function fetch(input: RequestInfo | URL, init?: RequestInit | undefined): Promise<Response>">fetch</data-lsp></span><span style="color:#D4D4D4">(</span><span style="color:#CE9178">"/todos/1"</span><span style="color:#D4D4D4">).</span><span style="color:#DCDCAA"><data-lsp lsp="(method) Promise<Response>.then<any, Todo>(onfulfilled?: ((value: Response) => any) | null | undefined, onrejected?: ((reason: any) => Todo | PromiseLike<Todo>) | null | undefined): Promise<...>">then</data-lsp></span><span style="color:#D4D4D4">(</span></span>
+<span class="line"><span style="color:#D4D4D4">  (</span><span style="color:#9CDCFE"><data-lsp lsp="(parameter) response: Response">response</data-lsp></span><span style="color:#D4D4D4">) </span><span style="color:#569CD6">=></span><span style="color:#9CDCFE"> </span><span style="color:#9CDCFE"><data-lsp lsp="(parameter) response: Response">response</data-lsp></span><span style="color:#D4D4D4">.</span><span style="color:#DCDCAA"><data-lsp lsp="(method) Body.json(): Promise<any>">json</data-lsp></span><span style="color:#D4D4D4">(),</span></span>
+<span class="line"><span style="color:#D4D4D4">);</span></span>
+<span class="line"></span></code></pre>
+<p>You might be wondering why these functions aren't generic. We'll look at that in a future lesson.</p>
+<h2>Summary</h2>
+<ul>
+<li>All functions can receive runtime arguments. Generic functions can also receive type arguments.</li>
+<li>Type arguments can be used to specify the types of values that a function should work with.</li>
+<li>You can pass type arguments to generic functions using angle brackets (<code>&#x3C;</code> and <code>></code>).</li>
+<li>Not all functions are generic. Some functions, like <code>JSON.parse</code> and <code>fetch</code> do not receive type arguments.</li>
+</ul>
+<p>In our next lesson, we'll start writing our own generic functions, and figure out what they're useful for.</p>
+<p>Want to get the next lesson now? Click the link below.</p>

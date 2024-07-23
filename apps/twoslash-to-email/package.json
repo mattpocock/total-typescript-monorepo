@@ -1,0 +1,32 @@
+{
+  "name": "@total-typescript/twoslash-to-email",
+  "version": "0.1.1",
+  "bin": {
+    "twoslash-to-email": "./dist/bin.js"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "setup": "(pnpm unlink | true) && pnpm link --global",
+    "lint": "stylelint '**/*.css'"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": [
+    "./dist/*",
+    "shiki.css"
+  ],
+  "dependencies": {
+    "fast-glob": "^3.3.2",
+    "@total-typescript/shared": "workspace:*",
+    "@total-typescript/twoslash-shared": "workspace:*",
+    "commander": "^12.0.0",
+    "juice": "^10.0.0",
+    "cheerio": "^1.0.0-rc.12"
+  },
+  "devDependencies": {
+    "stylelint": "^16.6.1",
+    "stylelint-config-standard": "^36.0.0"
+  }
+}

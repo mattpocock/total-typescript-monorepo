@@ -2,19 +2,23 @@
   "name": "total-typescript-monorepo",
   "version": "1.0.0",
   "type": "module",
+  "packageManager": "pnpm@9.5.0",
   "description": "",
   "engines": {
-    "node": ">=20",
-    "turbo": ">=1.13"
+    "node": ">=20"
   },
   "private": true,
   "scripts": {
-    "ci": "turbo build test",
+    "dev": "turbo watch build lint test",
+    "ci": "turbo build test lint",
+    "build": "turbo build",
     "release": "pnpm run ci && changeset publish",
-    "write": "turbo start --filter=twoslash-preview",
+    "write": "turbo watch start test --filter=twoslash-preview --filter=@total-typescript/twoslash-preview-server --filter=written-content",
+    "make-video": "turbo watch dev --filter=remotion-code-hike --filter=sync-current-markdown-file-to-remotion --filter=source-to-code-samples --filter=record-narration",
     "new": "(cd apps/written-content && pnpm run new)",
-    "dev": "tsc -b --watch",
-    "build": "tsc -b"
+    "scratch": "(cd apps/written-content && pnpm run scratch)",
+    "twoslash-preview": "pnpm turbo watch dev --filter twoslash-preview --filter=@total-typescript/twoslash-preview-server",
+    "manage": "pnpm turbo watch dev --filter=written-content-manager"
   },
   "keywords": [],
   "author": "Matt Pocock",
@@ -24,13 +28,9 @@
     "@total-typescript/tsconfig": "^1.0.3",
     "@types/node": "^20.12.10",
     "prettier": "^3.2.5",
-    "turbo": "1.13.4-canary.5",
-    "typescript": "^5.4.5",
-    "vitest": "^1.6.0"
-  },
-  "pnpm": {
-    "overrides": {
-      "shiki": "^0.14.6"
-    }
+    "tsx": "^4.16.2",
+    "turbo": "^2.0.1",
+    "typescript": "^5.5.2",
+    "vitest": "^2.0.0"
   }
 }

@@ -1,0 +1,31 @@
+{
+  "name": "ffmpeg-playground",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "scripts": {
+    "dev": "remix vite:dev",
+    "start": "remix-serve ./build/server/index.js",
+    "lint": "tsc"
+  },
+  "dependencies": {
+    "@remix-run/node": "^2.9.1",
+    "@remix-run/react": "^2.9.1",
+    "@remix-run/serve": "^2.9.1",
+    "isbot": "^5.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@total-typescript/ffmpeg": "workspace:*",
+    "@total-typescript/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@remix-run/dev": "^2.9.1",
+    "@types/react": "^18.2.20",
+    "@types/react-dom": "^18.2.7",
+    "vite": "^5.1.0",
+    "vite-tsconfig-paths": "^4.2.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

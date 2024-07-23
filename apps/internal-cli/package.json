@@ -1,24 +1,30 @@
 {
   "name": "@total-typescript/internal-cli",
   "private": true,
+  "version": "0.0.1",
   "bin": {
     "tt": "./dist/bin.js"
   },
   "type": "module",
   "scripts": {
-    "setup": "(yarn unlink --global | true) && yarn link --global"
+    "test": "vitest run",
+    "build": "tsc",
+    "setup": "(pnpm unlink | true) && pnpm link --global"
   },
   "exports": {
     ".": "./dist/index.js"
   },
   "devDependencies": {
-    "@total-typescript/ts-reset": "^0.5.1"
+    "@total-typescript/ts-reset": "^0.5.1",
+    "@types/prompts": "^2.4.9"
   },
   "dependencies": {
+    "@total-typescript/env": "workspace:*",
     "@total-typescript/shared": "workspace:*",
     "@total-typescript/ffmpeg": "workspace:*",
     "commander": "^12.0.0",
     "zod": "^3.23.6",
-    "prompts": "^2.4.2"
+    "prompts": "^2.4.2",
+    "fast-glob": "^3.3.2"
   }
 }

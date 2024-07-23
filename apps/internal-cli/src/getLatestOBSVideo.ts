@@ -1,17 +1,21 @@
 import {
-  EXTERNAL_DRIVE_RAW_FOOTAGE_ROOT,
+  DESKTOP_LOCATION,
   ExternalDriveNotFoundError,
+  execAsync,
   exitProcessWithError,
-  getExternalDrive,
   type AbsolutePath,
 } from "@total-typescript/shared";
-import { execSync } from "child_process";
 import path from "path";
+import {
+  EXTERNAL_DRIVE_RAW_FOOTAGE_ROOT,
+  getExternalDrive,
+} from "./constants.js";
+import { env } from "@total-typescript/env";
 
 export const getLatestMp4File = async (
   dir: AbsolutePath,
 ): Promise<AbsolutePath> => {
-  const stdout = execSync(`ls -t ${path.join(dir, "*.mp4")}`).toString();
+  const { stdout } = await execAsync(`ls -t ${path.join(dir, "*.mp4")}`);
 
   const video = stdout.trim().split("\n")[0]!.trim() as AbsolutePath;
 
@@ -19,6 +23,12 @@ export const getLatestMp4File = async (
 };
 
 export const getLatestOBSVideo = async () => {
+  if (env.OBS_OUTPUT_MODE === "desktop") {
+    const video = await getLatestMp4File(DESKTOP_LOCATION);
+
+    return video;
+  }
+
   const result = await getExternalDrive();
 
   if (result instanceof ExternalDriveNotFoundError) {

@@ -1,7 +1,0 @@
-- [ ] Write article subheadings
-- [ ] Add links to other articles
-- [ ] Write quick explanation
-- [ ] Write code examples
-- [ ] Write article
-- [ ] Add to GitHub and Sanity
-- [ ] Post article to LinkedIn/Twitter

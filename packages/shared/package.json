@@ -1,11 +1,18 @@
 {
   "name": "@total-typescript/shared",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
+  "files": [
+    "./dist/*"
+  ],
   "scripts": {
+    "build": "tsc",
     "test": "vitest run"
   },
   "exports": {
     ".": "./dist/index.js"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
   }
 }

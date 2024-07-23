@@ -38,10 +38,10 @@ const columns = [
 
 type ToTuple<
   T extends readonly any[],
-  Accum extends readonly any[] = []
+  Accum extends readonly any[] = [],
 > = T extends readonly [
   { field: infer TField },
-  ...infer TRest
+  ...infer TRest,
 ]
   ? ToTuple<TRest, [...Accum, TField]>
   : Accum;

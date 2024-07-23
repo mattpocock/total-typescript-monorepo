@@ -1,0 +1,70 @@
+{
+  "prompts": [
+    {
+      "name": "Proofread Article",
+      "body": [
+        "Given the article above, proofread it. Correct any spelling mistakes and grammatical errors.",
+        "Use markdown formatting.",
+        "Return the article with the corrections.",
+        "Do not remove 'twoslash' from markdown code blocks.",
+        "Correct any British spelling to the American version."
+      ]
+    },
+    {
+      "name": "SEO Summary",
+      "body": [
+        "Given the article above, write a short SEO-friendly summary of the article.",
+        "The output MUST, MUST not exceed 165 characters in length.",
+        "Do not use markdown formatting.",
+        "Do not use inline code examples using backticks.",
+        "Do not use double quotes."
+      ]
+    },
+    {
+      "name": "Print Width: 30",
+      "body": [
+        "Given the markdown file above, reformat it to be printWidth: 30.",
+        "Keep the exact same amount of code samples"
+      ]
+    }
+  ],
+  "old": [
+    {
+      "name": "Get Dependent Concepts",
+      "body": [
+        "Given the article above, list the concepts that are required to understand the article.",
+        "Keep the list short, with only the 3-5 most relevant items.",
+        "Do not provide explanations for the concepts."
+      ]
+    },
+    {
+      "name": "Put List into Sections",
+      "body": [
+        "Given the list above, reorganize it into sections.",
+        "Each section should have a title.",
+        "Each section should have a list of items.",
+        "Return the new list.",
+        "Use markdown formatting.",
+        "The list should organized so that someone could learn all of the concepts in order."
+      ]
+    },
+    {
+      "name": "Code Sample to Article",
+      "body": [
+        "Given the code above, write a 300-400 word article about it.",
+        "Write in a friendly style.",
+        "Write as if to an expert audience.",
+        "Use markdown formatting."
+      ]
+    },
+    {
+      "name": "Add More Code Sample Ideas",
+      "body": [
+        "Given the code sample above, provide more ideas for code samples that illustrate a similar concept.",
+        "For instance, if given an example of a for loop, provide more examples of for loops.",
+        "Try to find interesting use cases for application and library development.",
+        "Use markdown formatting."
+      ]
+    }
+  ]
+}

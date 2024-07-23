@@ -30,12 +30,22 @@ class Example {
   method() {
     console.log("method", this);
   }
+
+  boundMethod() {
+    console.log("boundMethod", this);
+  }
+
+  constructor() {
+    this.bound = this.bound.bind(this);
+  }
 }
+
+const example = new Example();
 
 const obj = {
   location: "Object",
-  arrow: new Example().arrow,
-  method: new Example().method,
+  arrow: example.arrow,
+  method: example.method,
 };
 
 obj.arrow(); // { location: 'Class' }

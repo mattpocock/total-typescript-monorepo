@@ -1,0 +1,37 @@
+{
+  "name": "record-narration",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "scripts": {
+    "dev": "remix vite:dev --port 3002",
+    "lint": "tsc",
+    "start": "remix-serve ./build/server/index.js"
+  },
+  "dependencies": {
+    "@remix-run/node": "2.10.2",
+    "@remix-run/react": "2.10.2",
+    "@remix-run/serve": "2.10.2",
+    "isbot": "^5.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "xstate": "^5.14.0",
+    "@xstate/react": "^4.1.1"
+  },
+  "devDependencies": {
+    "@remix-run/dev": "2.10.2",
+    "@types/react": "^18.2.20",
+    "@types/react-dom": "^18.2.7",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4",
+    "vite": "^5.1.0",
+    "vite-tsconfig-paths": "^4.2.1",
+    "@total-typescript/shared": "workspace:*",
+    "@total-typescript/ffmpeg": "workspace:*",
+    "@total-typescript/twoslash-shared": "workspace:*"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

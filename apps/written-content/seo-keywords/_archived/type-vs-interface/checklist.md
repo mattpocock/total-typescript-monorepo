@@ -1,3 +1,0 @@
-- [x] Write article
-- [x] Add to GitHub and Sanity
-- [x] Post article to LinkedIn/Twitter

@@ -2,6 +2,9 @@
   "name": "@total-typescript/ffmpeg",
   "private": true,
   "type": "module",
+  "scripts": {
+    "build": "tsc"
+  },
   "exports": {
     ".": "./dist/index.js"
   },

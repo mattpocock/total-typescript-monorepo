@@ -2,3 +2,7 @@ node_modules
 dist
 .turbo
 *.tsbuildinfo
+*.local.*
+*.local
+.env
+.twoslash-lint

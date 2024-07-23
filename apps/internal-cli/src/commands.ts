@@ -3,13 +3,12 @@ import { encodeAllVideos } from "./encodeAllVideos.js";
 import { openPairedVideoDir } from "./openPairedVideoDir.js";
 import { selectLatestOBSVideo } from "./selectLatestOBSVideo.js";
 import { trimLatestOBSVideo } from "./trimLatestOBSVideo.js";
-import {
-  DAVINCI_RESOLVE_EXPORTS_LOCATION,
-  SKILL_RECORDINGS_REPO_LOCATION,
-} from "@total-typescript/shared";
+import { SKILL_RECORDINGS_REPO_LOCATION } from "@total-typescript/shared";
 import { appendVideoToTimeline } from "./appendVideoToTimeline.js";
 import { clearUnusedFootageFromDisk } from "./clearUnusedFootageFromDisk.js";
 import { getLatestMp4File } from "./getLatestOBSVideo.js";
+import { DAVINCI_RESOLVE_EXPORTS_LOCATION } from "./constants.js";
+import { addExerciseToBook } from "./addExerciseToBook.js";
 
 export type Command<TArgs extends readonly string[]> = {
   scriptkitName: string;
@@ -75,7 +74,6 @@ export const commands = createCommands([
     fileName: "append-video-to-timeline",
     description: "Append the latest OBS video to the Davinci Resolve timeline.",
     cliCommand: "append-video-to-timeline",
-    args: ["FPS"],
     run: appendVideoToTimeline,
   },
   {
@@ -98,5 +96,13 @@ export const commands = createCommands([
       );
       execSync(`open -R "${latestExport}"`);
     },
+  },
+  {
+    scriptkitName: "Add Exercise To Book",
+    fileName: "add-exercise-to-book",
+    description: "Add an exercise to the TT book.",
+    cliCommand: "add-exercise-to-book",
+    args: ["glob"],
+    run: addExerciseToBook,
   },
 ]);

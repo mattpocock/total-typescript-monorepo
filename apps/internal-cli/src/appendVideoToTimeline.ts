@@ -12,6 +12,8 @@ import {
   runDavinciResolveScript,
 } from "@total-typescript/shared";
 import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
+import path from "path";
+import { writeFileSync } from "fs";
 
 export const appendVideoToTimeline = async () => {
   const inputVideo = await getLatestOBSVideo();
@@ -21,7 +23,7 @@ export const appendVideoToTimeline = async () => {
   const silenceResult = await findSilenceInVideo(inputVideo, {
     threshold: THRESHOLD,
     fps,
-    padding: PADDING,
+    padding: 0,
     silenceDuration: SILENCE_DURATION,
   });
 
@@ -33,7 +35,13 @@ export const appendVideoToTimeline = async () => {
     exitProcessWithError("Could not find end time");
   }
 
-  const serialisedClipsOfSpeaking = silenceResult.allSpeakingClips
+  const textFileOutput = path.resolve(
+    inputVideo.replace(".mp4", ".silence.txt"),
+  );
+
+  writeFileSync(textFileOutput, silenceResult.rawStdout);
+
+  const serialisedClipsOfSpeaking = silenceResult.speakingClips
     .map((clip) => {
       return `${clip.startFrame}___${clip.endFrame}`;
     })

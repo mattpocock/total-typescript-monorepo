@@ -1,0 +1,20 @@
+{
+  "name": "@total-typescript/twoslash-preview-server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "node --enable-source-maps --watch dist/bin.js",
+    "start": "node --enable-source-maps dist/bin.js"
+  },
+  "dependencies": {
+    "@total-typescript/shared": "workspace:*",
+    "@types/ws": "^8.5.4",
+    "chokidar": "^3.5.3",
+    "ws": "^8.13.0",
+    "@total-typescript/twoslash-shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3"
+  }
+}

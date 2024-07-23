@@ -1,0 +1,16 @@
+{
+  "name": "example-package",
+  "version": "0.0.2",
+  "private": true,
+  "type": "module",
+  "files": [
+    "./dist/*"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  }
+}

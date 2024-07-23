@@ -1,0 +1,39 @@
+{
+  "name": "remotion-code-hike",
+  "version": "1.0.0",
+  "description": "My Remotion video",
+  "repository": {},
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@mdx-js/loader": "3.0.1",
+    "@mdx-js/react": "3.0.1",
+    "@remotion/animation-utils": "4.0.180",
+    "@remotion/cli": "4.0.180",
+    "@remotion/google-fonts": "4.0.180",
+    "codehike": "^1.0.0-alpha.19",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "4.0.180",
+    "twoslash-cdn": "^0.2.8",
+    "zod": "3.21.4",
+    "clsx": "^2.1.1",
+    "unstorage": "^1.10.2"
+  },
+  "devDependencies": {
+    "file-loader": "^6.2.0",
+    "@types/react": "^18.0.26",
+    "tailwindcss": "^3.4.4",
+    "@remotion/tailwind": "4.0.180",
+    "@remotion/bundler": "4.0.180"
+  },
+  "prettier": {
+    "printWidth": 55
+  },
+  "scripts": {
+    "dev": "remotion studio --port 3001",
+    "upgrade": "remotion upgrade",
+    "lint": "tsc",
+    "test": "vitest run"
+  }
+}

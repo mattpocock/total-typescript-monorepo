@@ -1,31 +1,30 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "experimentalUI": true,
-  "pipeline": {
+  "tasks": {
     "setup": {
       "dependsOn": ["build"],
       "cache": false
     },
     "dev": {
+      "dependsOn": ["^build"],
       "cache": false,
       "persistent": true
     },
+    "lint": {
+      "dependsOn": ["^build"],
+      "cache": true
+    },
     "test": {
+      "dependsOn": ["^build"],
       "cache": true
     },
     "build": {
-      "dependsOn": ["^build", "//#build"],
-      "outputs": ["dist", "tsconfig.tsbuildinfo", ".next"]
+      "dependsOn": ["^build"],
+      "outputs": ["dist", "*.tsbuildinfo", ".next", "build"],
+      "cache": true
     },
     "start": {
       "dependsOn": ["build"],
-      "cache": false,
-      "persistent": true
-    },
-    "//#build": {
-      "outputs": ["packages/*/dist", "packages/*/*.tsbuildinfo"]
-    },
-    "//#dev": {
       "cache": false,
       "persistent": true
     }
