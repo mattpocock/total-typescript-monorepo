@@ -25,7 +25,7 @@
     "@types/react": "^18.0.26",
     "tailwindcss": "^3.4.4",
     "@remotion/tailwind": "4.0.180",
-    "@remotion/bundler": "4.0.180"
+    "@remotion/bundler": "4.0.185"
   },
   "prettier": {
     "printWidth": 55
