@@ -189,8 +189,8 @@ importers:
         specifier: 4.0.185
         version: 4.0.185(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@remotion/google-fonts':
-        specifier: 4.0.180
-        version: 4.0.180(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: 4.0.185
+        version: 4.0.185(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -1791,8 +1791,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@remotion/google-fonts@4.0.180':
-    resolution: {integrity: sha512-F3PcTRKuNpkl23e7Jj+Flgzw8OWpyh+ZCS5dJP4kj3ui12KuKuczQdWlX/fu+UrfYdV7+P3g428e/00KMy4yAg==}
+  '@remotion/google-fonts@4.0.185':
+    resolution: {integrity: sha512-kC56FEwI7hP6543sxSHm1hY7fpXg8VEwthsBbb84xAs1W3sDc9d1iVttL+C2uctAo9y4d0jtDg72un5eMWd6+Q==}
 
   '@remotion/media-utils@4.0.185':
     resolution: {integrity: sha512-kGWzVM3GmiO+HrDfWuFUclfkMgeDJibFfw0sHGcD2ytYw54uEtshOQwaeNQZHYWCiONo2sptpxJEvMKJ6z3MPw==}
@@ -7288,9 +7288,9 @@ snapshots:
   '@remotion/compositor-win32-x64-msvc@4.0.185':
     optional: true
 
-  '@remotion/google-fonts@4.0.180(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@remotion/google-fonts@4.0.185(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      remotion: 4.0.180(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      remotion: 4.0.185(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     transitivePeerDependencies:
       - react
       - react-dom
