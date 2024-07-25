@@ -183,8 +183,8 @@ importers:
         specifier: 3.0.1
         version: 3.0.1(@types/react@18.3.3)(react@18.3.1)
       '@remotion/animation-utils':
-        specifier: 4.0.186
-        version: 4.0.186(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: 4.0.187
+        version: 4.0.187(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@remotion/cli':
         specifier: 4.0.186
         version: 4.0.186(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -302,7 +302,7 @@ importers:
         version: 18.3.0
       autoprefixer:
         specifier: 10.4.19
-        version: 10.4.19(postcss@8.4.40)
+        version: 10.4.19(postcss@8.4.38)
       clsx:
         specifier: ^2.1.0
         version: 2.1.1
@@ -314,7 +314,7 @@ importers:
         version: 14.2.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       postcss:
         specifier: 8.4.38
-        version: 8.4.40
+        version: 8.4.38
       puppeteer:
         specifier: ^22.9.0
         version: 22.13.1(typescript@5.5.3)
@@ -1737,8 +1737,8 @@ packages:
   '@remix-run/web-stream@1.1.0':
     resolution: {integrity: sha512-KRJtwrjRV5Bb+pM7zxcTJkhIqWWSy+MYsIxHK+0m5atcznsf15YwUBWHWulZerV2+vvHH1Lp1DD7pw6qKW8SgA==}
 
-  '@remotion/animation-utils@4.0.186':
-    resolution: {integrity: sha512-13F2mC7kCctNItXvrs8TAOFbd1gLqLVBd7ifFkITECMYH+wmSZVAox0gdsk5QvHxOtu2rrnvtsrooBJ5CzNyzw==}
+  '@remotion/animation-utils@4.0.187':
+    resolution: {integrity: sha512-oAVqh+1lPpHSL8s4Mm+1RkXWWfTNwsYRuLkwRSORXDoLalEhTtXWwUK0Nu1BxeRFYL7TSUiYth70d/Yl3EETkQ==}
     peerDependencies:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
@@ -4956,6 +4956,12 @@ packages:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
 
+  remotion@4.0.187:
+    resolution: {integrity: sha512-wPSoFidlJ50qf65SX3eIcFlSXZbq5KttOL3ndTQpUA0jUm7F4g9qKjGJcDch+VMGMd3WfWi9YMBhdG9d5LsqTg==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+
   require-directory@2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
     engines: {node: '>=0.10.0'}
@@ -7224,11 +7230,11 @@ snapshots:
     dependencies:
       web-streams-polyfill: 3.3.3
 
-  '@remotion/animation-utils@4.0.186(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@remotion/animation-utils@4.0.187(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      remotion: 4.0.186(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      remotion: 4.0.187(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
   '@remotion/bundler@4.0.186(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
@@ -7890,6 +7896,16 @@ snapshots:
 
   astring@1.8.6: {}
 
+  autoprefixer@10.4.19(postcss@8.4.38):
+    dependencies:
+      browserslist: 4.23.2
+      caniuse-lite: 1.0.30001642
+      fraction.js: 4.3.7
+      normalize-range: 0.1.2
+      picocolors: 1.0.1
+      postcss: 8.4.38
+      postcss-value-parser: 4.2.0
+
   autoprefixer@10.4.19(postcss@8.4.40):
     dependencies:
       browserslist: 4.23.2
@@ -8284,13 +8300,13 @@ snapshots:
 
   css-loader@5.2.7(webpack@5.83.1(esbuild@0.18.6)):
     dependencies:
-      icss-utils: 5.1.0(postcss@8.4.40)
+      icss-utils: 5.1.0(postcss@8.4.38)
       loader-utils: 2.0.4
-      postcss: 8.4.40
-      postcss-modules-extract-imports: 3.1.0(postcss@8.4.40)
-      postcss-modules-local-by-default: 4.0.5(postcss@8.4.40)
-      postcss-modules-scope: 3.2.0(postcss@8.4.40)
-      postcss-modules-values: 4.0.0(postcss@8.4.40)
+      postcss: 8.4.38
+      postcss-modules-extract-imports: 3.1.0(postcss@8.4.38)
+      postcss-modules-local-by-default: 4.0.5(postcss@8.4.38)
+      postcss-modules-scope: 3.2.0(postcss@8.4.38)
+      postcss-modules-values: 4.0.0(postcss@8.4.38)
       postcss-value-parser: 4.2.0
       schema-utils: 3.3.0
       semver: 7.6.3
@@ -9249,10 +9265,6 @@ snapshots:
   icss-utils@5.1.0(postcss@8.4.38):
     dependencies:
       postcss: 8.4.38
-
-  icss-utils@5.1.0(postcss@8.4.40):
-    dependencies:
-      postcss: 8.4.40
 
   ieee754@1.2.1: {}
 
@@ -10785,21 +10797,10 @@ snapshots:
     dependencies:
       postcss: 8.4.38
 
-  postcss-modules-extract-imports@3.1.0(postcss@8.4.40):
-    dependencies:
-      postcss: 8.4.40
-
   postcss-modules-local-by-default@4.0.5(postcss@8.4.38):
     dependencies:
       icss-utils: 5.1.0(postcss@8.4.38)
       postcss: 8.4.38
-      postcss-selector-parser: 6.1.1
-      postcss-value-parser: 4.2.0
-
-  postcss-modules-local-by-default@4.0.5(postcss@8.4.40):
-    dependencies:
-      icss-utils: 5.1.0(postcss@8.4.40)
-      postcss: 8.4.40
       postcss-selector-parser: 6.1.1
       postcss-value-parser: 4.2.0
 
@@ -10808,20 +10809,10 @@ snapshots:
       postcss: 8.4.38
       postcss-selector-parser: 6.1.1
 
-  postcss-modules-scope@3.2.0(postcss@8.4.40):
-    dependencies:
-      postcss: 8.4.40
-      postcss-selector-parser: 6.1.1
-
   postcss-modules-values@4.0.0(postcss@8.4.38):
     dependencies:
       icss-utils: 5.1.0(postcss@8.4.38)
       postcss: 8.4.38
-
-  postcss-modules-values@4.0.0(postcss@8.4.40):
-    dependencies:
-      icss-utils: 5.1.0(postcss@8.4.40)
-      postcss: 8.4.40
 
   postcss-modules@6.0.0(postcss@8.4.38):
     dependencies:
@@ -11271,6 +11262,11 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
 
   remotion@4.0.186(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+    dependencies:
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+
+  remotion@4.0.187(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
