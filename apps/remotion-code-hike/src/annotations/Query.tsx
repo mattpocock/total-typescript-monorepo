@@ -1,7 +1,6 @@
 import clsx from "clsx";
 import {
   InlineAnnotation,
-  // @ts-ignore
   LineAnnotationComponent,
 } from "codehike/code";
 import {
