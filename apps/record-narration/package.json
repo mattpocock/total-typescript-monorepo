@@ -9,9 +9,9 @@
     "start": "remix-serve ./build/server/index.js"
   },
   "dependencies": {
-    "@remix-run/node": "2.10.2",
-    "@remix-run/react": "2.10.2",
-    "@remix-run/serve": "2.10.2",
+    "@remix-run/node": "2.10.3",
+    "@remix-run/react": "2.10.3",
+    "@remix-run/serve": "2.10.3",
     "isbot": "^5.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -19,7 +19,7 @@
     "@xstate/react": "^4.1.1"
   },
   "devDependencies": {
-    "@remix-run/dev": "2.10.2",
+    "@remix-run/dev": "2.10.3",
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
     "autoprefixer": "^10.4.19",
