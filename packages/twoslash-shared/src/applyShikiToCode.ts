@@ -13,7 +13,7 @@ const storage = createStorage({
   }),
 });
 
-export const compilerOptions: CompilerOptions = {
+export const compilerOptions: any = {
   target: 99 /* ESNExt */,
   lib: ["esnext", "dom", "dom.iterable"],
   strict: true,
@@ -23,7 +23,7 @@ export const compilerOptions: CompilerOptions = {
   module: 99 /* ESNext */,
   moduleResolution: 100 /* Bundler */,
   jsx: 4 /* ReactJSX */,
-};
+} satisfies CompilerOptions;
 
 export const twoslashFromCDN = createTwoslashFromCDN({
   storage,

@@ -4,7 +4,7 @@ import { createStorage } from "unstorage";
 // import localStorageDriver from "unstorage/drivers/localstorage";
 import sessionStorageDriver from "unstorage/drivers/session-storage";
 
-export const compilerOptions: CompilerOptions = {
+export const compilerOptions: any = {
   target: 9 /* ES2022 */,
   strict: true,
   allowJs: true,
@@ -13,7 +13,7 @@ export const compilerOptions: CompilerOptions = {
   module: 99 /* ESNext */,
   moduleResolution: 100 /* Bundler */,
   jsx: 4 /* ReactJSX */,
-};
+} satisfies CompilerOptions;
 
 export const twoslash = createTwoslashFromCDN({
   compilerOptions,
