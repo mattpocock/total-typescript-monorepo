@@ -16,7 +16,7 @@
     "react-dom": "^18.3.1",
     "remotion": "4.0.187",
     "twoslash-cdn": "^0.2.8",
-    "zod": "3.22.3",
+    "zod": "3.23.8",
     "clsx": "^2.1.1",
     "unstorage": "^1.10.2"
   },
