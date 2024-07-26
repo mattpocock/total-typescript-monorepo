@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  typescript: 5.6.0-beta
+
 importers:
 
   .:
@@ -208,7 +211,7 @@ importers:
         version: 4.0.187(react-dom@18.3.1)(react@18.3.1)
       twoslash-cdn:
         specifier: ^0.2.8
-        version: 0.2.9(typescript@5.5.3)
+        version: 0.2.9(typescript@5.6.0-beta)
       unstorage:
         specifier: ^1.10.2
         version: 1.10.2
@@ -221,7 +224,7 @@ importers:
         version: 4.0.187(react-dom@18.3.1)(react@18.3.1)
       '@remotion/tailwind':
         specifier: 4.0.187
-        version: 4.0.187(@remotion/bundler@4.0.187)(typescript@5.5.3)(webpack@5.93.0)
+        version: 4.0.187(@remotion/bundler@4.0.187)(typescript@5.6.0-beta)(webpack@5.93.0)
       '@types/react':
         specifier: ^18.0.26
         version: 18.3.3
@@ -540,7 +543,7 @@ importers:
         version: 1.10.3
       '@shikijs/twoslash':
         specifier: ^1.6.3
-        version: 1.10.3(typescript@5.5.3)
+        version: 1.10.3(typescript@5.6.0-beta)
       hast-util-to-html:
         specifier: 9.0.1
         version: 9.0.1
@@ -564,7 +567,7 @@ importers:
         version: 1.10.3
       twoslash-cdn:
         specifier: ^0.2.7
-        version: 0.2.9(typescript@5.5.3)
+        version: 0.2.9(typescript@5.6.0-beta)
       unified:
         specifier: ^11.0.4
         version: 11.0.5
@@ -2544,7 +2547,7 @@ packages:
     peerDependencies:
       '@remix-run/react': ^2.10.2
       '@remix-run/serve': ^2.10.2
-      typescript: ^5.1.0
+      typescript: 5.6.0-beta
       vite: ^5.1.0
       wrangler: ^3.28.2
     peerDependenciesMeta:
@@ -2637,7 +2640,7 @@ packages:
     peerDependencies:
       '@remix-run/react': ^2.10.3
       '@remix-run/serve': ^2.10.3
-      typescript: ^5.1.0
+      typescript: 5.6.0-beta
       vite: ^5.1.0
       wrangler: ^3.28.2
     peerDependenciesMeta:
@@ -2728,7 +2731,7 @@ packages:
     engines: {node: '>=18.0.0'}
     peerDependencies:
       express: ^4.19.2
-      typescript: ^5.1.0
+      typescript: 5.6.0-beta
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -2742,7 +2745,7 @@ packages:
     engines: {node: '>=18.0.0'}
     peerDependencies:
       express: ^4.19.2
-      typescript: ^5.1.0
+      typescript: 5.6.0-beta
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -2755,7 +2758,7 @@ packages:
     resolution: {integrity: sha512-Ni4yMQCf6avK2fz91/luuS3wnHzqtbxsdc19es1gAWEnUKfeCwqq5v1R0kzNwrXyh5NYCRhxaegzVH3tGsdYFg==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      typescript: ^5.1.0
+      typescript: 5.6.0-beta
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -2773,7 +2776,7 @@ packages:
     resolution: {integrity: sha512-LBqsgADJKW7tYdJZZi2wu20gfMm6UcOXbvb5U70P2jCNxjJvuIw1gXVvNXRJKAdxPKLonjm8cSpfoI6HeQKEDg==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      typescript: ^5.1.0
+      typescript: 5.6.0-beta
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -2793,7 +2796,7 @@ packages:
     peerDependencies:
       react: ^18.0.0
       react-dom: ^18.0.0
-      typescript: ^5.1.0
+      typescript: 5.6.0-beta
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -2813,7 +2816,7 @@ packages:
     peerDependencies:
       react: ^18.0.0
       react-dom: ^18.0.0
-      typescript: ^5.1.0
+      typescript: 5.6.0-beta
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -2873,7 +2876,7 @@ packages:
     resolution: {integrity: sha512-c6CzKw4WBP4FkPnz63ua7g73/P1v34Uho2C44SZZf8IOVCGzEM9liLq6slDivn0m/UbyQnXThdXmsVjFcobmZg==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      typescript: ^5.1.0
+      typescript: 5.6.0-beta
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -2891,7 +2894,7 @@ packages:
     resolution: {integrity: sha512-vUl5jONUI6Lj0ICg9FSRFhoPzQdZ/7dpT1m7ID13DF5BEeF3t/9uCJS61XXWgQ/JEu7YRiwvZiwSRTrgM7zeWw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      typescript: ^5.1.0
+      typescript: 5.6.0-beta
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -3163,7 +3166,7 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@remotion/tailwind@4.0.187(@remotion/bundler@4.0.187)(typescript@5.5.3)(webpack@5.93.0):
+  /@remotion/tailwind@4.0.187(@remotion/bundler@4.0.187)(typescript@5.6.0-beta)(webpack@5.93.0):
     resolution: {integrity: sha512-FR4c4jjQN7RhpMDTeHzlnE/Pe40lBzW+wnE6CdwBgRePWF5MWHGbM8aa74OFL9m2af5BBBp0pirvXR/uPW/+yA==}
     peerDependencies:
       '@remotion/bundler': 4.0.187
@@ -3172,7 +3175,7 @@ packages:
       autoprefixer: 10.4.19(postcss@8.4.38)
       css-loader: 5.2.7(webpack@5.93.0)
       postcss: 8.4.38
-      postcss-loader: 7.3.4(postcss@8.4.38)(typescript@5.5.3)(webpack@5.93.0)
+      postcss-loader: 7.3.4(postcss@8.4.38)(typescript@5.6.0-beta)(webpack@5.93.0)
       postcss-preset-env: 8.5.1(postcss@8.4.38)
       style-loader: 2.0.0(webpack@5.93.0)
       tailwindcss: 3.4.4
@@ -3317,11 +3320,11 @@ packages:
       shiki: 1.10.3
     dev: false
 
-  /@shikijs/twoslash@1.10.3(typescript@5.5.3):
+  /@shikijs/twoslash@1.10.3(typescript@5.6.0-beta):
     resolution: {integrity: sha512-9HlQgvy51jnO46Tcr87A7v6gxlzdKzcpYk15/CQfO48svAslOf+6QYXf0Gao3HWPywOwVj2alMAe0zQhT59y9w==}
     dependencies:
       '@shikijs/core': 1.10.3
-      twoslash: 0.2.9(typescript@5.5.3)
+      twoslash: 0.2.9(typescript@5.6.0-beta)
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -4468,11 +4471,11 @@ packages:
     resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
     dev: true
 
-  /cosmiconfig@8.3.6(typescript@5.5.3):
+  /cosmiconfig@8.3.6(typescript@5.6.0-beta):
     resolution: {integrity: sha512-kcZ6+W5QzcJ3P1Mt+83OUv/oHFqZHIx8DuxG6eZ5RGMERoLqp4BuGjhHLYGK+Kf5XVkQvqBSmAy/nGWN3qDgEA==}
     engines: {node: '>=14'}
     peerDependencies:
-      typescript: '>=4.9.5'
+      typescript: 5.6.0-beta
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -4481,14 +4484,14 @@ packages:
       js-yaml: 4.1.0
       parse-json: 5.2.0
       path-type: 4.0.0
-      typescript: 5.5.3
+      typescript: 5.6.0-beta
     dev: true
 
   /cosmiconfig@9.0.0(typescript@5.6.0-beta):
     resolution: {integrity: sha512-itvL5h8RETACmOTFc4UfIyB2RfEHi71Ax6E/PivVxq9NseKbOWpeyHEOIbmAw1rs8Ak0VursQNww7lf7YtUwzg==}
     engines: {node: '>=14'}
     peerDependencies:
-      typescript: '>=4.9.5'
+      typescript: 5.6.0-beta
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -8344,14 +8347,14 @@ packages:
       postcss: 8.4.40
       yaml: 2.4.5
 
-  /postcss-loader@7.3.4(postcss@8.4.38)(typescript@5.5.3)(webpack@5.93.0):
+  /postcss-loader@7.3.4(postcss@8.4.38)(typescript@5.6.0-beta)(webpack@5.93.0):
     resolution: {integrity: sha512-iW5WTTBSC5BfsBJ9daFMPVrLT36MrNiC6fqOZTTaHjBNX6Pfd5p+hSBqe/fEeNd7pc13QiAyGt7VdGMw4eRC4A==}
     engines: {node: '>= 14.15.0'}
     peerDependencies:
       postcss: ^7.0.0 || ^8.0.1
       webpack: ^5.0.0
     dependencies:
-      cosmiconfig: 8.3.6(typescript@5.5.3)
+      cosmiconfig: 8.3.6(typescript@5.6.0-beta)
       jiti: 1.21.6
       postcss: 8.4.38
       semver: 7.6.3
@@ -10066,7 +10069,7 @@ packages:
     engines: {node: ^18 || >=20}
     hasBin: true
     peerDependencies:
-      typescript: ^5.0.0
+      typescript: 5.6.0-beta
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -10166,13 +10169,13 @@ packages:
       turbo-windows-arm64: 2.0.7
     dev: false
 
-  /twoslash-cdn@0.2.9(typescript@5.5.3):
+  /twoslash-cdn@0.2.9(typescript@5.6.0-beta):
     resolution: {integrity: sha512-FnEl2+L49j5chaH6HYlbPa299PztzMi7xuhllxmWaHUx9VkTdmpdXjkR0kz2PwwT4zxUPrSFCaQetcTQRreWrw==}
     peerDependencies:
-      typescript: '*'
+      typescript: 5.6.0-beta
     dependencies:
-      twoslash: 0.2.9(typescript@5.5.3)
-      typescript: 5.5.3
+      twoslash: 0.2.9(typescript@5.6.0-beta)
+      typescript: 5.6.0-beta
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -10181,14 +10184,14 @@ packages:
     resolution: {integrity: sha512-uKQl8UboT6JU4VAtYaSI3DbNtgaNhFaTpCSMy/n3tRl5lMlMhrjiuNKdqx15xjcviconuGJ9oObkz1h9zJFrJg==}
     dev: false
 
-  /twoslash@0.2.9(typescript@5.5.3):
+  /twoslash@0.2.9(typescript@5.6.0-beta):
     resolution: {integrity: sha512-oj7XY6h8E9nTZBmfRE1gpsSSUqAQo5kcIpFkXyQPp8UCsyCQsUlP2bJ2s32o02c1n5+xl4h9rcCsQ1F97Z6LZg==}
     peerDependencies:
-      typescript: '*'
+      typescript: 5.6.0-beta
     dependencies:
       '@typescript/vfs': 1.5.0
       twoslash-protocol: 0.2.9
-      typescript: 5.5.3
+      typescript: 5.6.0-beta
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -10199,11 +10202,6 @@ packages:
     dependencies:
       media-typer: 0.3.0
       mime-types: 2.1.35
-
-  /typescript@5.5.3:
-    resolution: {integrity: sha512-/hreyEujaB0w76zKo6717l3L0o/qEUtRgdvUBvlkhoWeOVMjMuHNHk0BRBzikzuGDqNmPQbg5ifMEqsHLiIUcQ==}
-    engines: {node: '>=14.17'}
-    hasBin: true
 
   /typescript@5.6.0-beta:
     resolution: {integrity: sha512-wqVumY25SwHmCJvZPHqbWfjSyWdAqTTUM+LqaPpFccOnln54EZoPr8Ra7qJV8HMEdFYcDc+S5xro0RyvaHvIvw==}
