@@ -1,7 +1,8 @@
 import clsx from "clsx";
 import {
   InlineAnnotation,
-  LineAnnotationComponent,
+  InnerLine,
+  AnnotationHandler,
 } from "codehike/code";
 import {
   interpolate,
@@ -47,13 +48,9 @@ export const makeQueryComponent =
   (outerProps: {
     type: "error" | "query";
     displayLength: number;
-  }): LineAnnotationComponent =>
-  ({
-    InnerLine,
-    annotation,
-    indentation,
-    ...props
-  }: any) => {
+  }): AnnotationHandler["AnnotatedLine"] =>
+  (props) => {
+    const { annotation, indentation } = props;
     const { column, fromColumn, toColumn }: Data =
       annotation.data;
     const frame = useCurrentFrame();
@@ -76,7 +73,7 @@ export const makeQueryComponent =
 
     return (
       <>
-        <InnerLine {...props} />
+        <InnerLine merge={props} />
         {queryType === "error" && (
           <div
             className="h-2 bg-red-500 absolute -mt-2"
