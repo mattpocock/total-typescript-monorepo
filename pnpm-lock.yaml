@@ -195,8 +195,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       codehike:
-        specifier: 1.0.0-alpha.19
-        version: 1.0.0-alpha.19
+        specifier: 1.0.0-beta.3
+        version: 1.0.0-beta.3
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -807,8 +807,8 @@ packages:
   '@changesets/write@0.3.1':
     resolution: {integrity: sha512-SyGtMXzH3qFqlHKcvFY2eX+6b0NGiFcNav8AFsYwy5l8hejOeoeTDemu5Yjmke2V5jpzY+pBvM0vCCQ3gdZpfw==}
 
-  '@code-hike/lighter@0.9.1':
-    resolution: {integrity: sha512-AS7m3VOEBHdvfJ7plloOW/M35W+WmopdAHSuI2hGM2xbzFWp4DTEpzATiuepC6b+QSSetfmKMuE5aQy8+i5+SQ==}
+  '@code-hike/lighter@0.9.4':
+    resolution: {integrity: sha512-WnYhKFaYDHOVKXyII5iYegve/W3jgV9kOfo34rKDXdZjTFbCJMbTPzdG+SKfvUtw7lzWWuJGmu0WQJ0/PDhL0g==}
 
   '@csstools/cascade-layer-name-parser@1.0.13':
     resolution: {integrity: sha512-MX0yLTwtZzr82sQ0zOjqimpZbzjMaK/h2pmlrLK7DCzlmiZLYFpoO94WmN1akRVo6ll/TdpHb53vihHLUMyvng==}
@@ -2488,8 +2488,8 @@ packages:
     resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
     engines: {node: '>=6'}
 
-  codehike@1.0.0-alpha.19:
-    resolution: {integrity: sha512-DI0Sb3+U+zBKZWSDq1c27F0L48W9rz5j0xoCJe9AabO8Z44lgQoOuCBnd5Gm7yARghxXF2MucaDEl4o6u/Odiw==}
+  codehike@1.0.0-beta.3:
+    resolution: {integrity: sha512-D1t/jy8y+sjgy+Bj2BNLdoaSkEs71pb41/q/aS3K9GRmP3W1OBJeVnydFOBkWn4r1TE8jzbX4n3EiZKoTu41KA==}
 
   collapse-white-space@2.1.0:
     resolution: {integrity: sha512-loKTxY1zCOuG4j9f6EPnuyyYkf58RnhhWTvRoZEokgB+WbdXehfjFviyOVYkqzEWz1Q5kRiZdBYS5SwxbQYwzw==}
@@ -6379,7 +6379,7 @@ snapshots:
       human-id: 1.0.2
       prettier: 2.8.8
 
-  '@code-hike/lighter@0.9.1':
+  '@code-hike/lighter@0.9.4':
     dependencies:
       ansi-sequence-parser: 1.1.1
 
@@ -8144,11 +8144,12 @@ snapshots:
 
   clsx@2.1.1: {}
 
-  codehike@1.0.0-alpha.19:
+  codehike@1.0.0-beta.3:
     dependencies:
-      '@code-hike/lighter': 0.9.1
+      '@code-hike/lighter': 0.9.4
       diff: 5.2.0
       estree-util-visit: 2.0.0
+      front-matter: 4.0.2
       mdast-util-mdx-jsx: 3.1.2
       unist-util-visit: 5.0.0
     transitivePeerDependencies:
