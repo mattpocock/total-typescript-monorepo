@@ -412,8 +412,8 @@ importers:
         specifier: ^8.17.1
         version: 8.17.1
       arktype:
-        specifier: 2.0.0-beta.1
-        version: 2.0.0-beta.1
+        specifier: 2.0.0-beta.2
+        version: 2.0.0-beta.2
       joi:
         specifier: ^17.13.3
         version: 17.13.3
@@ -540,10 +540,10 @@ importers:
     dependencies:
       '@shikijs/rehype':
         specifier: ^1.6.3
-        version: 1.10.3
+        version: 1.12.0
       '@shikijs/twoslash':
         specifier: ^1.6.3
-        version: 1.10.3(typescript@5.6.0-dev.20240726)
+        version: 1.12.0(typescript@5.6.0-dev.20240726)
       hast-util-to-html:
         specifier: 9.0.1
         version: 9.0.1
@@ -564,7 +564,7 @@ importers:
         version: 11.1.0
       shiki:
         specifier: ^1.6.3
-        version: 1.10.3
+        version: 1.12.0
       twoslash-cdn:
         specifier: ^0.2.7
         version: 0.2.9(typescript@5.6.0-dev.20240726)
@@ -585,11 +585,11 @@ packages:
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
 
-  '@ark/schema@0.2.1':
-    resolution: {integrity: sha512-1ZEpMV3dmK+UmgsNXS7BkdUkdoyzz7Y3cuku9gLdntGAz4WqJWhoHwUtjvY/xcfqPfRuJhG8m//xaMJjLlLAEQ==}
+  '@ark/schema@0.2.2':
+    resolution: {integrity: sha512-3GyWVptFzmUZTBAwobiuk2Xa1wXeWNOOaHWcYl3pYTTdl5QNuB/53JnHXL0NrFW4Yvv7cgTcRsZQby7pNAeeJA==}
 
-  '@ark/util@0.1.1':
-    resolution: {integrity: sha512-dmMJ5gC14NaBtsFqL8hbmWRBPz9yfZooXiMMHhyfZrxFaDuFtpN3gBxB/xA9eEK21A03x7cu7fG2wpByxi8Xvw==}
+  '@ark/util@0.1.2':
+    resolution: {integrity: sha512-JhcPZhF8T8Eb9UxJqh3X8tOwZpnuW89azKlPnRhFXymhy/wBFPRC9+J+Vu+iUc/kplW3uloZb9n5R3EVVWUBgw==}
 
   '@babel/code-frame@7.24.7':
     resolution: {integrity: sha512-BcYH1CVJBO9tvyIZ2jVeXgSIMvGZ2FDRvDdOIVQyuklNKSsx+eppDEBq/g47Ayw+RqNFE+URvOShmf+f/qwAlA==}
@@ -1980,17 +1980,17 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@shikijs/core@1.10.3':
-    resolution: {integrity: sha512-D45PMaBaeDHxww+EkcDQtDAtzv00Gcsp72ukBtaLSmqRvh0WgGMq3Al0rl1QQBZfuneO75NXMIzEZGFitThWbg==}
+  '@shikijs/core@1.12.0':
+    resolution: {integrity: sha512-mc1cLbm6UQ8RxLc0dZES7v5rkH+99LxQp/ZvTqV3NLyYsO/fD6JhEflP1H5b2SDq9gI0+0G36AVZWxvounfR9w==}
 
-  '@shikijs/rehype@1.10.3':
-    resolution: {integrity: sha512-ghLPkqtx+AEL3LNTR8YpVJroAuiGvZZv+2u2CUB5rw5l4gsJ/2SycrC7s3Hpe+5qMuVXDAq/xImFQyhB0nQpuw==}
+  '@shikijs/rehype@1.12.0':
+    resolution: {integrity: sha512-DX42LdI9OB/0X5euLjRJfgoYZukqGn1GBkgiyvQkv4bHDCST0BzQMcdL80erp5as9R6bp7+2/cKlA+TmQTySbQ==}
 
-  '@shikijs/transformers@1.10.3':
-    resolution: {integrity: sha512-MNjsyye2WHVdxfZUSr5frS97sLGe6G1T+1P41QjyBFJehZphMcr4aBlRLmq6OSPBslYe9byQPVvt/LJCOfxw8Q==}
+  '@shikijs/transformers@1.12.0':
+    resolution: {integrity: sha512-ZS6RzDCWbnDljViMaeuraGaoMesCzDxzO2Slhpvic6j+Wqq4RXfQgb2ITTSrtBjv2HGCLP22mvXydtWCOKea8g==}
 
-  '@shikijs/twoslash@1.10.3':
-    resolution: {integrity: sha512-9HlQgvy51jnO46Tcr87A7v6gxlzdKzcpYk15/CQfO48svAslOf+6QYXf0Gao3HWPywOwVj2alMAe0zQhT59y9w==}
+  '@shikijs/twoslash@1.12.0':
+    resolution: {integrity: sha512-SX0NpsTYnO26mpWCu2asByzgWnlMP5NPzrhYNGyqS/AQI14sM1AL3/Egc3F2x5u2wa7I9IyokViXOiaPNL46+Q==}
 
   '@sideway/address@4.1.5':
     resolution: {integrity: sha512-IqO/DUQHUkPeixNQ8n0JA6102hT9CmaljNTPmQ1u8MEhBo/R4Q8eKLN/vGZxuebwOroDB4cbpjheD4+/sKFK4Q==}
@@ -2295,8 +2295,8 @@ packages:
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
 
-  arktype@2.0.0-beta.1:
-    resolution: {integrity: sha512-ztMquaiJR7HPks6ojXYwVw5qvXyt81v6vD++E5JQSFGD/556I1StFYYmicJS1jm5oiECCLAscYQFX6V3tsoHow==}
+  arktype@2.0.0-beta.2:
+    resolution: {integrity: sha512-WLxtViYiR8T+COYzZgHGnl3eVGwAJJXHRPfGMqRCoMeNpVb1EE+9kMhiEOq0yzEoP6Y91yTPTuhINt3WbBCYxA==}
 
   array-flatten@1.1.1:
     resolution: {integrity: sha512-PCVAQswWemu6UdxsDFFX/+gVeYqKAod3D3UVm91jHwynguOwAvYPhx8nNlM++NqRcK6CxxpUafjmhIdKiHibqg==}
@@ -5151,8 +5151,8 @@ packages:
     resolution: {integrity: sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==}
     engines: {node: '>=8'}
 
-  shiki@1.10.3:
-    resolution: {integrity: sha512-eneCLncGuvPdTutJuLyUGS8QNPAVFO5Trvld2wgEq1e002mwctAhJKeMGWtWVXOIEzmlcLRqcgPSorR6AVzOmQ==}
+  shiki@1.12.0:
+    resolution: {integrity: sha512-BuAxWOm5JhRcbSOl7XCei8wGjgJJonnV0oipUupPY58iULxUGyHhW5CF+9FRMuM1pcJ5cGEJGll1LusX6FwpPA==}
 
   side-channel@1.0.6:
     resolution: {integrity: sha512-fDW/EZ6Q9RiO8eFG8Hj+7u/oW+XrPTIChwCOM2+th2A6OblDtYYIpve9m+KvI9Z4C9qSEXlaGR6bTEYHReuglA==}
@@ -6076,11 +6076,11 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@ark/schema@0.2.1':
+  '@ark/schema@0.2.2':
     dependencies:
-      '@ark/util': 0.1.1
+      '@ark/util': 0.1.2
 
-  '@ark/util@0.1.1': {}
+  '@ark/util@0.1.2': {}
 
   '@babel/code-frame@7.24.7':
     dependencies:
@@ -7659,26 +7659,26 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.18.1':
     optional: true
 
-  '@shikijs/core@1.10.3':
+  '@shikijs/core@1.12.0':
     dependencies:
       '@types/hast': 3.0.4
 
-  '@shikijs/rehype@1.10.3':
+  '@shikijs/rehype@1.12.0':
     dependencies:
-      '@shikijs/transformers': 1.10.3
+      '@shikijs/transformers': 1.12.0
       '@types/hast': 3.0.4
       hast-util-to-string: 3.0.0
-      shiki: 1.10.3
+      shiki: 1.12.0
       unified: 11.0.5
       unist-util-visit: 5.0.0
 
-  '@shikijs/transformers@1.10.3':
+  '@shikijs/transformers@1.12.0':
     dependencies:
-      shiki: 1.10.3
+      shiki: 1.12.0
 
-  '@shikijs/twoslash@1.10.3(typescript@5.6.0-dev.20240726)':
+  '@shikijs/twoslash@1.12.0(typescript@5.6.0-dev.20240726)':
     dependencies:
-      '@shikijs/core': 1.10.3
+      '@shikijs/core': 1.12.0
       twoslash: 0.2.9(typescript@5.6.0-dev.20240726)
     transitivePeerDependencies:
       - supports-color
@@ -8077,10 +8077,10 @@ snapshots:
 
   argparse@2.0.1: {}
 
-  arktype@2.0.0-beta.1:
+  arktype@2.0.0-beta.2:
     dependencies:
-      '@ark/schema': 0.2.1
-      '@ark/util': 0.1.1
+      '@ark/schema': 0.2.2
+      '@ark/util': 0.1.2
 
   array-flatten@1.1.1: {}
 
@@ -11668,9 +11668,9 @@ snapshots:
 
   shebang-regex@3.0.0: {}
 
-  shiki@1.10.3:
+  shiki@1.12.0:
     dependencies:
-      '@shikijs/core': 1.10.3
+      '@shikijs/core': 1.12.0
       '@types/hast': 3.0.4
 
   side-channel@1.0.6:
