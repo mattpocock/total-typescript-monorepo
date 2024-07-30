@@ -1,0 +1,16 @@
+{
+  "extends": "@total-typescript/tsconfig/tsc/no-dom/app",
+  "compilerOptions": {
+    "target": "es6",
+    "lib": [
+      "es6"
+    ],
+    "moduleDetection": "auto",
+    "composite": true,
+    "declaration": true,
+    "typeRoots": [
+      "./node_modules/@types",
+      "./node_modules/@figma"
+    ],
+  }
+}

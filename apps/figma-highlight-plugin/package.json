@@ -1,0 +1,11 @@
+{
+  "name": "code-highlight-plugin",
+  "version": "1.0.0",
+  "description": "Your Figma Plugin",
+  "main": "code.js",
+  "author": "",
+  "license": "",
+  "devDependencies": {
+    "@figma/plugin-typings": "*"
+  }
+}

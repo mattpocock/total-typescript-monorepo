@@ -85,6 +85,12 @@ importers:
         specifier: ^4.2.1
         version: 4.3.2(typescript@5.6.0-dev.20240729)(vite@5.3.4)
 
+  apps/figma-highlight-plugin:
+    devDependencies:
+      '@figma/plugin-typings':
+        specifier: '*'
+        version: 1.97.0
+
   apps/internal-cli:
     dependencies:
       '@total-typescript/env':
@@ -2073,6 +2079,10 @@ packages:
     os: [win32]
     requiresBuild: true
     optional: true
+
+  /@figma/plugin-typings@1.97.0:
+    resolution: {integrity: sha512-AcmZey7TBbc43g2dO+9hjrcTbgb0UFY32do3to3rFU1OXb9hinsrmmbddyhD5105DHzRDac4oT7A5+VOow7p1Q==}
+    dev: true
 
   /@hapi/hoek@9.3.0:
     resolution: {integrity: sha512-/c6rf4UJlmHlC9b5BaNvzAcFv7HZ2QHaV0D4/HNlBdvFnvQq8RI4kYdhyPCl7Xj+oWvTWQ8ujhqS53LIgAe6KQ==}
