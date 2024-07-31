@@ -198,8 +198,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       codehike:
-        specifier: 1.0.0-beta.3
-        version: 1.0.0-beta.3
+        specifier: 1.0.0-beta.4
+        version: 1.0.0-beta.4
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -2559,8 +2559,8 @@ packages:
     resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
     engines: {node: '>=6'}
 
-  codehike@1.0.0-beta.3:
-    resolution: {integrity: sha512-D1t/jy8y+sjgy+Bj2BNLdoaSkEs71pb41/q/aS3K9GRmP3W1OBJeVnydFOBkWn4r1TE8jzbX4n3EiZKoTu41KA==}
+  codehike@1.0.0-beta.4:
+    resolution: {integrity: sha512-0C3TzzJx5HVl7fEJpMHT3UUeARj5a7q0WERwgfZHv6KW7t8puwjZkryqxL/BWBEg0SPAHNq0r4iBd/+bG+UGpA==}
 
   collapse-white-space@2.1.0:
     resolution: {integrity: sha512-loKTxY1zCOuG4j9f6EPnuyyYkf58RnhhWTvRoZEokgB+WbdXehfjFviyOVYkqzEWz1Q5kRiZdBYS5SwxbQYwzw==}
@@ -8395,7 +8395,7 @@ snapshots:
 
   clsx@2.1.1: {}
 
-  codehike@1.0.0-beta.3:
+  codehike@1.0.0-beta.4:
     dependencies:
       '@code-hike/lighter': 0.9.4
       diff: 5.2.0
