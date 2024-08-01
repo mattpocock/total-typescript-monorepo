@@ -2,19 +2,19 @@
 
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
-import { applyShikiToMarkdownFile } from "@total-typescript/twoslash-shared";
-import { readFile } from "fs/promises";
+import { getCodeSamplesFromFile } from "@total-typescript/twoslash-shared";
+import type { HTMLRendererSearchParams } from "~/types.js";
 import { useSubscribeToSocket } from "../useSubscribeToSocket";
-import type { HTMLRendererSearchParams } from "~/types";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "Narration Recorder" },
+    { title: "Twoslash Preview" },
     { name: "description", content: "Welcome to Remix!" },
   ];
 };
 
 export const loader = async (args: LoaderFunctionArgs) => {
+  const { readFile } = await import("fs/promises");
   const url = new URL(args.request.url);
 
   const uri = url.searchParams.get("uri");
@@ -27,13 +27,11 @@ export const loader = async (args: LoaderFunctionArgs) => {
 
   const fileContents = await readFile(uri, "utf-8");
 
-  const markdown = await applyShikiToMarkdownFile(fileContents);
-
-  const numberOfSnippets = markdown.snippets.length;
+  const codeBlocks = Array.from(getCodeSamplesFromFile(fileContents));
 
   return {
     status: "ready" as const,
-    numberOfSnippets,
+    numberOfSnippets: codeBlocks.length,
     uri,
   };
 };
@@ -61,10 +59,10 @@ export default function Index() {
       <img
         src={`/render?${new URLSearchParams({
           uri: data.uri,
-          mode: "all-basic",
+          mode: "all-basic-with-border",
           cacheBuster: String(cacheBuster),
         } satisfies HTMLRendererSearchParams)}`}
-        className="size-96"
+        className="width-96"
       />
     </div>
   );

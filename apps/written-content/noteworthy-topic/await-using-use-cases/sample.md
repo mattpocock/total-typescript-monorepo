@@ -1,4 +1,5 @@
-```typescript
+```ts twoslash
+// @noErrors
 const getConnection = async () => {
   const connection = await getDb();
 
@@ -12,8 +13,5 @@ const getConnection = async () => {
 
 async function main() {
   await using { connection } = getConnection();
-
-  // Do stuff with connection
 }
-// Automatically closed after the function is called!
 ```

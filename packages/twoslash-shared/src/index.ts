@@ -14,6 +14,7 @@ export type CodeSnippet = {
 
 export * from "./applyShikiToMarkdownFile.js";
 export * from "./applyShikiToCode.js";
+export * from "./getCodeSamplesFromFile.js";
 
 export const SHIKI_TEST_LOCATION = path.resolve(
   import.meta.dirname,
