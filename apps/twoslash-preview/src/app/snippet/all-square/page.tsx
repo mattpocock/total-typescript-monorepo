@@ -8,7 +8,10 @@ export default function Snippet(props: {
   const { snippets, index } = allSquareSnippetSchema.parse(props.searchParams);
 
   return (
-    <ScreenshotSnippetWrapper outerClassName="aspect-square" index={index}>
+    <ScreenshotSnippetWrapper
+      outerClassName="aspect-square"
+      gradientIndex={index}
+    >
       {snippets.map((snippet, key) => {
         return <CodeSnippet html={snippet} key={key} />;
       })}

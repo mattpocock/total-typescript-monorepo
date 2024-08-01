@@ -1,10 +1,6 @@
-import { takeCodeImage } from "../../takeCodeImage";
-import {
-  CodeSnippetImageSchema,
-  SnippetSchema,
-  codeSnippetImageSchema,
-} from "../../types";
 import { NextApiHandler } from "next";
+import { takeCodeImage } from "../../takeCodeImage";
+import { codeSnippetImageSchema } from "../../types";
 
 export const config = {
   api: {
@@ -27,10 +23,8 @@ const handler: NextApiHandler = async (req, res) => {
   });
 
   const base = {
-    square: "http://localhost:3000/snippet/square",
-    basic: "http://localhost:3000/snippet/basic",
+    basic: "http://localhost:3000/snippet",
     "all-square": "http://localhost:3000/snippet/all-square",
-    vertical: "http://localhost:3000/snippet/vertical-phone",
   }[result.data.mode];
 
   const url = `${base}?${searchParams.toString()}`;

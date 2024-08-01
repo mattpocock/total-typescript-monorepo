@@ -3,15 +3,13 @@ import { z } from "zod";
 
 export type Routes = {
   "/api/code-snippet-image": CodeSnippetImageSchema;
-  "/snippet/square": SnippetSchema;
   "/snippet": SnippetSchema;
   "/snippet/all-square": SnippetSchema;
-  "/snippet/vertical-phone": SnippetSchema;
 };
 
 export const codeSnippetImageSchema = z.object({
   encodedHtml: z.string(),
-  mode: z.enum(["square", "basic", "all-square", "vertical"]),
+  mode: z.enum(["all-square"]),
   index: z.string(),
 });
 

@@ -2,23 +2,20 @@ import {
   type AbsolutePath,
   getActiveEditorFilePath,
 } from "@total-typescript/shared";
-import chokidar from "chokidar";
-import { readFile } from "fs/promises";
-import path from "path";
-import { type WebSocket, WebSocketServer } from "ws";
 import {
-  type CodeSnippet,
   type WSEvent,
-  applyShikiToMarkdownFile,
   SHIKI_TEST_LOCATION,
 } from "@total-typescript/twoslash-shared";
+import chokidar from "chokidar";
+import path from "path";
+import { type WebSocket, WebSocketServer } from "ws";
 
 const server = new WebSocketServer({ port: 3001 });
 
 const clientWrapper = () => {
   let idCounter = 0;
-  let html: string = "";
-  let snippets: CodeSnippet[] = [];
+
+  let currentFilePath: AbsolutePath | undefined;
 
   const clients: Record<number, WebSocket> = {};
 
@@ -26,7 +23,12 @@ const clientWrapper = () => {
     idCounter++;
     clients[idCounter] = client;
 
-    reportValueUpdated();
+    if (currentFilePath) {
+      send({
+        type: "change",
+        uri: currentFilePath,
+      });
+    }
 
     return idCounter;
   };
@@ -41,84 +43,54 @@ const clientWrapper = () => {
     });
   };
 
-  const reportValueUpdated = () => {
+  const updateFilePath = (filePath: AbsolutePath) => {
+    currentFilePath = filePath;
     send({
-      type: "new-html",
-      html,
-      snippets,
+      type: "change",
+      uri: filePath,
     });
-  };
-
-  const updateHtml = (newValue: string, newSnippets: CodeSnippet[]) => {
-    html = newValue;
-    snippets = newSnippets;
-    reportValueUpdated();
   };
 
   return {
     addClient,
     removeClient,
-    updateHtml,
+    updateFilePath,
   };
 };
 
-const { addClient, removeClient, updateHtml } = clientWrapper();
+const { addClient, removeClient, updateFilePath } = clientWrapper();
 
 server.on("connection", (client) => {
   const id = addClient(client);
 
-  client.on("event", (data) => {});
   client.on("disconnect", () => {
     removeClient(id);
   });
 });
 
-const contentPath = path.resolve(process.cwd(), `../written-content/**/*.md`);
-const root = path.resolve(process.cwd(), "../written-content");
+const CONTENT_PATH = path.resolve(process.cwd(), `../written-content/**/*.md`);
+const ROOT = path.resolve(process.cwd(), "../written-content");
 
-const runShikiOnFilePath = async (filePath: AbsolutePath) => {
-  console.clear();
-  console.log("File changed: " + path.relative(root, filePath));
+const reportFilePath = (filePath: AbsolutePath) => {
+  console.log("File changed: " + path.relative(ROOT, filePath));
 
-  try {
-    let contents = await readFile(filePath, "utf-8");
-
-    if (!filePath.endsWith("md")) {
-      const ext = path.extname(filePath);
-
-      contents =
-        "```" + ext.slice(1) + " twoslash\n" + contents.trim() + "\n```";
-    }
-
-    const { html, snippets } = await applyShikiToMarkdownFile(contents);
-
-    updateHtml(html, snippets);
-    console.log("No errors found!");
-  } catch (e: any) {
-    if (e.title && e.description && e.recommendation) {
-      console.log(e.title);
-      console.log(e.description);
-      console.log(e.recommendation);
-    } else {
-      console.error(e);
-    }
-  }
+  updateFilePath(filePath);
 };
 
 const main = async () => {
   const filePath = await getActiveEditorFilePath();
 
-  if (filePath?.startsWith(root) && filePath.endsWith(".md")) {
-    await runShikiOnFilePath(SHIKI_TEST_LOCATION as AbsolutePath);
+  if (filePath?.startsWith(ROOT) && filePath.endsWith(".md")) {
+    reportFilePath(SHIKI_TEST_LOCATION as AbsolutePath);
   } else {
-    await runShikiOnFilePath(SHIKI_TEST_LOCATION as AbsolutePath);
+    reportFilePath(SHIKI_TEST_LOCATION as AbsolutePath);
   }
 
   chokidar
-    .watch([contentPath, SHIKI_TEST_LOCATION], {
+    .watch([CONTENT_PATH, SHIKI_TEST_LOCATION], {
       ignored: ["**/node_modules/**", "**/.next/**"],
     })
-    .on("change", runShikiOnFilePath);
+    .on("change", reportFilePath);
 };
 
 main().catch(console.error);

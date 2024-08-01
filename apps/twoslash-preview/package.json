@@ -1,11 +1,7 @@
 {
   "name": "twoslash-preview",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "start": "next start",
-    "build": "next build"
-  },
+  "scripts": {},
   "dependencies": {
     "@tailwindcss/typography": "^0.5.9",
     "@total-typescript/shared": "workspace:*",

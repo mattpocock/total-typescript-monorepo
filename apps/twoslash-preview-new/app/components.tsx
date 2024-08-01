@@ -1,5 +1,5 @@
-import { SCREENSHOT_TARGET_ID } from "../constants";
-import { useForceSquareAspectRatio } from "./useForceSquareAspectRatio";
+import { SCREENSHOT_TARGET_ID } from "./constants";
+import { useForceSquareAspectRatio } from "./useForceSquareAspectRatio.js";
 import clsx from "clsx";
 
 const gradients = [
@@ -16,7 +16,7 @@ const getGradient = (index: number) => {
 export const ScreenshotSnippetWrapper = (props: {
   outerClassName?: string;
   children: React.ReactNode;
-  gradientIndex: string;
+  gradientIndex?: string;
 }) => {
   const { outerRef, innerRef } = useForceSquareAspectRatio();
 
@@ -27,7 +27,7 @@ export const ScreenshotSnippetWrapper = (props: {
       className={clsx(
         "bg-gradient-to-br inline-flex items-center justify-center",
         props.outerClassName,
-        getGradient(Number(props.gradientIndex) ?? 0),
+        getGradient(Number(props.gradientIndex ?? 0)),
       )}
     >
       <div ref={innerRef} className="inline-block p-8 space-y-8">

@@ -57,7 +57,8 @@ const processor = (pushSnippet: (snippet: CodeSnippet) => void) =>
                 const html = toHtml(child);
 
                 pushSnippet({
-                  rawHtml: lzString.compressToEncodedURIComponent(
+                  rawHtml: html,
+                  encodedHtml: lzString.compressToEncodedURIComponent(
                     html,
                   ) as EncodedHTML,
                 });

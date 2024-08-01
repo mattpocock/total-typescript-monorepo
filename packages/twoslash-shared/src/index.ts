@@ -1,15 +1,15 @@
 import path from "path";
 
 export type WSEvent = {
-  type: "new-html";
-  html: string;
-  snippets: CodeSnippet[];
+  type: "change";
+  uri: string;
 };
 
 export type EncodedHTML = string & { __brand: "EncodedHTML" };
 
 export type CodeSnippet = {
-  rawHtml: EncodedHTML;
+  encodedHtml: EncodedHTML;
+  rawHtml: string;
 };
 
 export * from "./applyShikiToMarkdownFile.js";

@@ -8,9 +8,6 @@ export default function Home() {
 
   return (
     <div className="max-w-6xl mx-auto my-16 px-8">
-      <div>
-        <a href={`/present`}>Present</a>
-      </div>
       <h1 className="my-12 text-5xl">Article</h1>
       <div
         className=" my-16 prose prose-invert"
@@ -18,44 +15,10 @@ export default function Home() {
           __html: state.html ?? "",
         }}
       ></div>
-      {/* <h1 className="my-12 text-5xl">Images</h1>
-      <div className=" grid grid-cols-3 gap-6">
-        {state.snippets.map((snippet, index) => {
-          return (
-            <img
-              src={createUrl("/api/code-snippet-image", {
-                mode: "basic",
-                encodedHtml: snippet.rawHtml,
-              })}
-              key={index}
-              className="w-full"
-            />
-          );
-        })}
-      </div> */}
       {state.snippets.length > 0 && (
         <>
           <h1 className="my-12 text-5xl">Single Images</h1>
           <div className=" grid grid-cols-2 gap-6">
-            <a
-              href={createUrl("/snippet/vertical-phone", {
-                encodedHtml: state.snippets
-                  .map((snippet) => snippet.rawHtml)
-                  .join(","),
-                index: "0",
-              })}
-            >
-              <img
-                src={createUrl("/api/code-snippet-image", {
-                  mode: "vertical",
-                  encodedHtml: state.snippets
-                    .map((snippet) => snippet.rawHtml)
-                    .join(","),
-                  index: "0",
-                })}
-                className="w-full"
-              />
-            </a>
             <a
               href={createUrl("/snippet/all-square", {
                 encodedHtml: state.snippets
