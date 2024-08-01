@@ -3,8 +3,14 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
 import { getCodeSamplesFromFile } from "@total-typescript/twoslash-shared";
-import type { HTMLRendererSearchParams } from "~/types.js";
+import {
+  RENDER_TYPE_HUMAN_READABLE_NAMES,
+  RENDER_TYPES,
+  type HTMLRendererSearchParams,
+  type RenderType,
+} from "~/types.js";
 import { useSubscribeToSocket } from "../useSubscribeToSocket";
+import { useState } from "react";
 
 export const meta: MetaFunction = () => {
   return [
@@ -39,31 +45,89 @@ export const loader = async (args: LoaderFunctionArgs) => {
 let cacheBuster = 0;
 
 export default function Index() {
-  const [, setSearchParams] = useSearchParams();
+  const [params, setSearchParams] = useSearchParams();
 
   useSubscribeToSocket((uri) => {
     console.log("setting search params");
     cacheBuster++;
-    setSearchParams({ uri, cacheBuster: String(cacheBuster) });
+    setSearchParams((prev) => {
+      prev.set("uri", uri);
+      prev.set("cacheBuster", String(cacheBuster));
+
+      return prev;
+    });
   });
 
   const data = useLoaderData<typeof loader>();
+
+  const renderType =
+    (params.get("renderType") as RenderType) ?? RENDER_TYPES.basicWithBorder;
 
   if (data.status === "waiting") {
     return <div>Waiting for snippet...</div>;
   }
 
   return (
-    <div className="max-w-3xl mx-auto my-16 px-8">
-      <h1>Basic Snippet</h1>
-      <img
-        src={`/render?${new URLSearchParams({
-          uri: data.uri,
-          mode: "all-basic-with-border",
-          cacheBuster: String(cacheBuster),
-        } satisfies HTMLRendererSearchParams)}`}
-        className="width-96"
-      />
+    <div className="max-w-3xl mx-auto my-16 px-8 space-y-8">
+      <select
+        value={renderType}
+        onChange={(e) => {
+          setSearchParams((prev) => {
+            prev.set("renderType", e.target.value);
+
+            return prev;
+          });
+        }}
+        className="bg-gray-800 p-2 rounded-md"
+      >
+        {Object.entries(RENDER_TYPES).map(([key, value]) => {
+          if (key === "error") return null;
+          return (
+            <option key={key} value={value}>
+              {
+                RENDER_TYPE_HUMAN_READABLE_NAMES[
+                  key as keyof typeof RENDER_TYPES
+                ]
+              }
+            </option>
+          );
+        })}
+      </select>
+      {(() => {
+        switch (renderType) {
+          case RENDER_TYPES.allBasicWithBorder:
+          case RENDER_TYPES.allSquareWithBorder:
+            return (
+              <img
+                src={`/render?${new URLSearchParams({
+                  uri: data.uri,
+                  mode: renderType,
+                  cacheBuster: String(cacheBuster),
+                } satisfies HTMLRendererSearchParams)}`}
+                className="width-96 border-2 border-gray-700 rounded-lg"
+              />
+            );
+          case RENDER_TYPES.basicWithBorder:
+          case RENDER_TYPES.simpleNoBorder:
+            return Array.from({ length: data.numberOfSnippets }).map(
+              (_, index) => {
+                return (
+                  <img
+                    key={index}
+                    src={`/render?${new URLSearchParams({
+                      uri: data.uri,
+                      mode: renderType,
+                      snippetIndex: String(index),
+                      cacheBuster: String(cacheBuster),
+                    } satisfies HTMLRendererSearchParams)}`}
+                    className="width-96 border-2 border-gray-700 rounded-lg"
+                  />
+                );
+              },
+            );
+        }
+        return null;
+      })()}
     </div>
   );
 }

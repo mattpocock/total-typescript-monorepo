@@ -1,32 +1,42 @@
 import { z } from "zod";
 
 export const RENDER_TYPES = {
-  allSquareWithBorder: "all-square-with-border",
+  simpleNoBorder: "basic",
   basicWithBorder: "basic-with-border",
   allBasicWithBorder: "all-basic-with-border",
+  allSquareWithBorder: "all-square-with-border",
   error: "error",
 } as const;
 
+export type RenderType = (typeof RENDER_TYPES)[keyof typeof RENDER_TYPES];
+
 export const RENDER_TYPE_HUMAN_READABLE_NAMES = {
-  allSquareWithBorder: "All Square with Border",
-  basicWithBorder: "Basic with Border",
-  allBasicWithBorder: "All Basic with Border",
+  allSquareWithBorder: "Square with Border (Single Image)",
+  basicWithBorder: "Simple with Border",
+  allBasicWithBorder: "Simple with Border (Single Image)",
   error: "Error",
+  simpleNoBorder: "Simple",
 } satisfies Record<keyof typeof RENDER_TYPES, string>;
 
-export const renderType = z.union([
+const indexSchema = z
+  .string()
+  .transform((x) => Number(x))
+  .pipe(z.number().int().min(0));
+
+export const renderTypeDiscriminatedUnionSchema = z.union([
   z.object({
     mode: z.literal(RENDER_TYPES.allSquareWithBorder),
   }),
   z.object({
     mode: z.literal(RENDER_TYPES.basicWithBorder),
-    snippetIndex: z
-      .string()
-      .transform((x) => Number(x))
-      .pipe(z.number().int().min(0)),
+    snippetIndex: indexSchema,
   }),
   z.object({
     mode: z.literal(RENDER_TYPES.allBasicWithBorder),
+  }),
+  z.object({
+    mode: z.literal(RENDER_TYPES.simpleNoBorder),
+    snippetIndex: indexSchema,
   }),
 ]);
 
@@ -35,7 +45,7 @@ export const htmlRendererSchema = z.intersection(
     uri: z.string(),
     cacheBuster: z.string().optional(),
   }),
-  renderType,
+  renderTypeDiscriminatedUnionSchema,
 );
 
 export type HTMLRendererSearchParams = z.input<typeof htmlRendererSchema>;

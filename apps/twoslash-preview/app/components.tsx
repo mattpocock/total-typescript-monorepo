@@ -1,3 +1,4 @@
+import React, { forwardRef } from "react";
 import { SCREENSHOT_TARGET_ID } from "./constants";
 import { useForceSquareAspectRatio } from "./useForceSquareAspectRatio.js";
 import clsx from "clsx";
@@ -13,7 +14,30 @@ const getGradient = (index: number) => {
   return gradients[index % gradients.length];
 };
 
-export const ScreenshotSnippetWrapper = (props: {
+export const ScreenshotSnippetWrapper = forwardRef(
+  (
+    props: {
+      children: React.ReactNode;
+      className?: string;
+    },
+    ref: React.ForwardedRef<HTMLDivElement>,
+  ) => {
+    return (
+      <div
+        ref={ref}
+        id={SCREENSHOT_TARGET_ID}
+        className={clsx(
+          props.className,
+          "inline-flex items-center justify-center",
+        )}
+      >
+        {props.children}
+      </div>
+    );
+  },
+);
+
+export const ScreenshotSnippetWrapperWithBorder = (props: {
   outerClassName?: string;
   children: React.ReactNode;
   gradientIndex?: string;
@@ -21,9 +45,8 @@ export const ScreenshotSnippetWrapper = (props: {
   const { outerRef, innerRef } = useForceSquareAspectRatio();
 
   return (
-    <div
+    <ScreenshotSnippetWrapper
       ref={outerRef}
-      id={SCREENSHOT_TARGET_ID}
       className={clsx(
         "bg-gradient-to-br inline-flex items-center justify-center",
         props.outerClassName,
@@ -33,7 +56,7 @@ export const ScreenshotSnippetWrapper = (props: {
       <div ref={innerRef} className="inline-block p-8 space-y-8">
         {props.children}
       </div>
-    </div>
+    </ScreenshotSnippetWrapper>
   );
 };
 

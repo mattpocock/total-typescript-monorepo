@@ -15,15 +15,11 @@ The ComponentProps type helper lets you extract the props from a component.
 ```tsx twoslash
 import { ComponentProps } from "react";
 
-const MyComponent = (props: {
-  label: string;
-}) => {
+const MyComponent = (props: { label: string }) => {
   return <div>{props.label}</div>;
 };
 
-type WrapperProps = ComponentProps<
-  typeof MyComponent
->;
+type WrapperProps = ComponentProps<typeof MyComponent>;
 ```
 
 This can be extremely useful when you don't control the component definition, but need to use its props.
@@ -54,8 +50,7 @@ type PropsWithRef = ComponentPropsWithRef<"div">;
 type Ref = PropsWithRef["ref"];
 //   ^?
 
-type PropsWithoutRef =
-  ComponentPropsWithoutRef<"div">;
+type PropsWithoutRef = ComponentPropsWithoutRef<"div">;
 
 type Ref2 = PropsWithoutRef["ref"];
 ```
@@ -68,9 +63,7 @@ Just like `ComponentProps`, these can be used on custom components too. Though, 
 // @errors: 2339
 import { ComponentPropsWithRef } from "react";
 
-const MyComponent = (props: {
-  label: string;
-}) => {
+const MyComponent = (props: { label: string }) => {
   return <div>{props.label}</div>;
 };
 

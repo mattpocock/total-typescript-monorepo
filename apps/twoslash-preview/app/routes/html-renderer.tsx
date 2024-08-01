@@ -9,7 +9,11 @@ import {
   getCodeSamplesFromFile,
 } from "@total-typescript/twoslash-shared";
 import { readFile } from "fs/promises";
-import { CodeSnippet, ScreenshotSnippetWrapper } from "~/components";
+import {
+  CodeSnippet,
+  ScreenshotSnippetWrapper,
+  ScreenshotSnippetWrapperWithBorder,
+} from "~/components";
 import { htmlRendererSchema, RENDER_TYPES } from "~/types";
 
 export const loader = async (args: LoaderFunctionArgs) => {
@@ -22,7 +26,10 @@ export const loader = async (args: LoaderFunctionArgs) => {
   const fileContents = await readFile(uri, "utf-8");
   const snippets = Array.from(getCodeSamplesFromFile(fileContents));
 
-  if (renderType.mode === "basic-with-border") {
+  if (
+    renderType.mode === RENDER_TYPES.basicWithBorder ||
+    renderType.mode === RENDER_TYPES.simpleNoBorder
+  ) {
     const snippet = snippets[renderType.snippetIndex]!;
 
     const shikiResult = await applyShikiToCode({
@@ -39,7 +46,7 @@ export const loader = async (args: LoaderFunctionArgs) => {
     }
 
     return {
-      mode: RENDER_TYPES.basicWithBorder,
+      mode: renderType.mode,
       html: shikiResult.html,
     };
   } else if (
@@ -81,6 +88,13 @@ export default function Render() {
   switch (data.mode) {
     case RENDER_TYPES.basicWithBorder: {
       return (
+        <ScreenshotSnippetWrapperWithBorder>
+          <CodeSnippet html={data.html} />
+        </ScreenshotSnippetWrapperWithBorder>
+      );
+    }
+    case RENDER_TYPES.simpleNoBorder: {
+      return (
         <ScreenshotSnippetWrapper>
           <CodeSnippet html={data.html} />
         </ScreenshotSnippetWrapper>
@@ -88,31 +102,31 @@ export default function Render() {
     }
     case RENDER_TYPES.allSquareWithBorder:
       return (
-        <ScreenshotSnippetWrapper outerClassName="aspect-square">
+        <ScreenshotSnippetWrapperWithBorder outerClassName="aspect-square">
           {data.html.map((html, index) => {
             return <CodeSnippet key={index} html={html} />;
           })}
-        </ScreenshotSnippetWrapper>
+        </ScreenshotSnippetWrapperWithBorder>
       );
     case RENDER_TYPES.allBasicWithBorder: {
       return (
-        <ScreenshotSnippetWrapper>
+        <ScreenshotSnippetWrapperWithBorder>
           {data.html.map((html, index) => {
             return <CodeSnippet key={index} html={html} />;
           })}
-        </ScreenshotSnippetWrapper>
+        </ScreenshotSnippetWrapperWithBorder>
       );
     }
     case "error":
       return (
-        <ScreenshotSnippetWrapper>
+        <ScreenshotSnippetWrapperWithBorder>
           <div className="p-6 space-y-4 bg-gray-900 text-4xl">
             <pre className="leading-snug">{data.code}</pre>
             <h1 className="">{data.title}</h1>
             <p className="">{data.description}</p>
             <p className="">{data.recommendation}</p>
           </div>
-        </ScreenshotSnippetWrapper>
+        </ScreenshotSnippetWrapperWithBorder>
       );
   }
 }
