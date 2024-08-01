@@ -10,7 +10,7 @@ import {
 } from "@total-typescript/twoslash-shared";
 import { readFile } from "fs/promises";
 import { CodeSnippet, ScreenshotSnippetWrapper } from "~/components";
-import { htmlRendererSchema } from "~/types";
+import { htmlRendererSchema, RENDER_TYPES } from "~/types";
 
 export const loader = async (args: LoaderFunctionArgs) => {
   const url = new URL(args.request.url);
@@ -39,12 +39,12 @@ export const loader = async (args: LoaderFunctionArgs) => {
     }
 
     return {
-      mode: "basic" as const,
+      mode: RENDER_TYPES.basicWithBorder,
       html: shikiResult.html,
     };
   } else if (
-    renderType.mode === "all-basic-with-border" ||
-    renderType.mode === "all-square-with-border"
+    renderType.mode === RENDER_TYPES.allBasicWithBorder ||
+    renderType.mode === RENDER_TYPES.allSquareWithBorder
   ) {
     const html: string[] = [];
 
@@ -79,14 +79,14 @@ export default function Render() {
   const data = useLoaderData<typeof loader>();
 
   switch (data.mode) {
-    case "basic": {
+    case RENDER_TYPES.basicWithBorder: {
       return (
         <ScreenshotSnippetWrapper>
           <CodeSnippet html={data.html} />
         </ScreenshotSnippetWrapper>
       );
     }
-    case "all-square-with-border":
+    case RENDER_TYPES.allSquareWithBorder:
       return (
         <ScreenshotSnippetWrapper outerClassName="aspect-square">
           {data.html.map((html, index) => {
@@ -94,7 +94,7 @@ export default function Render() {
           })}
         </ScreenshotSnippetWrapper>
       );
-    case "all-basic-with-border": {
+    case RENDER_TYPES.allBasicWithBorder: {
       return (
         <ScreenshotSnippetWrapper>
           {data.html.map((html, index) => {

@@ -4,7 +4,15 @@ export const RENDER_TYPES = {
   allSquareWithBorder: "all-square-with-border",
   basicWithBorder: "basic-with-border",
   allBasicWithBorder: "all-basic-with-border",
+  error: "error",
 } as const;
+
+export const RENDER_TYPE_HUMAN_READABLE_NAMES = {
+  allSquareWithBorder: "All Square with Border",
+  basicWithBorder: "Basic with Border",
+  allBasicWithBorder: "All Basic with Border",
+  error: "Error",
+} satisfies Record<keyof typeof RENDER_TYPES, string>;
 
 export const renderType = z.union([
   z.object({
