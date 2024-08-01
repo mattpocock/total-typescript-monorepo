@@ -8,13 +8,13 @@
   "dependencies": {
     "@mdx-js/loader": "3.0.1",
     "@mdx-js/react": "3.0.1",
-    "@remotion/animation-utils": "4.0.188",
-    "@remotion/cli": "4.0.188",
-    "@remotion/google-fonts": "4.0.188",
-    "codehike": "1.0.0-beta.3",
+    "@remotion/animation-utils": "4.0.189",
+    "@remotion/cli": "4.0.189",
+    "@remotion/google-fonts": "4.0.189",
+    "codehike": "1.0.0-beta.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "remotion": "4.0.188",
+    "remotion": "4.0.189",
     "twoslash-cdn": "^0.2.8",
     "zod": "3.23.8",
     "clsx": "^2.1.1",
@@ -24,8 +24,8 @@
     "file-loader": "^6.2.0",
     "@types/react": "^18.0.26",
     "tailwindcss": "^3.4.4",
-    "@remotion/tailwind": "4.0.188",
-    "@remotion/bundler": "4.0.188"
+    "@remotion/tailwind": "4.0.189",
+    "@remotion/bundler": "4.0.189"
   },
   "prettier": {
     "printWidth": 55
