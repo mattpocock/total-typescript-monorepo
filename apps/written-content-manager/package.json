@@ -10,16 +10,16 @@
     "seed": "node --watch --import tsx ./scripts/seed.ts"
   },
   "dependencies": {
-    "@remix-run/node": "2.10.3",
-    "@remix-run/react": "2.10.3",
-    "@remix-run/serve": "2.10.3",
+    "@remix-run/node": "2.11.0",
+    "@remix-run/react": "2.11.0",
+    "@remix-run/serve": "2.11.0",
     "better-sqlite3": "^11.1.2",
     "isbot": "^5.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@remix-run/dev": "2.10.3",
+    "@remix-run/dev": "2.11.0",
     "@total-typescript/shared": "workspace:*",
     "@types/better-sqlite3": "^7.6.11",
     "@types/react": "^18.2.20",
