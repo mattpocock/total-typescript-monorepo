@@ -68,6 +68,7 @@ export default function Index() {
       },
       {
         preventScrollReset: true,
+        replace: true,
       },
     );
   });
@@ -89,11 +90,11 @@ export default function Index() {
           setSearchParams(
             (prev) => {
               prev.set("renderType", e.target.value);
-
               return prev;
             },
             {
               preventScrollReset: true,
+              replace: true,
             },
           );
         }}
@@ -132,21 +133,18 @@ export default function Index() {
           case RENDER_TYPES.simpleNoBorder:
             return data.snippetHashes.map((hash, index) => {
               return (
-                <div>
-                  <p>{hash}</p>
-                  <img
-                    key={index}
-                    src={`http://localhost:${IMAGE_SERVER_PORT}/render?${new URLSearchParams(
-                      {
-                        uri: data.uri,
-                        mode: renderType,
-                        snippetIndex: String(index),
-                        cacheBuster: hash,
-                      } satisfies HTMLRendererSearchParams,
-                    )}`}
-                    className="width-96 border-2 border-gray-700 rounded-lg"
-                  />
-                </div>
+                <img
+                  key={index}
+                  src={`http://localhost:${IMAGE_SERVER_PORT}/render?${new URLSearchParams(
+                    {
+                      uri: data.uri,
+                      mode: renderType,
+                      snippetIndex: String(index),
+                      cacheBuster: hash,
+                    } satisfies HTMLRendererSearchParams,
+                  )}`}
+                  className="width-96 border-2 border-gray-700 rounded-lg"
+                />
               );
             });
         }

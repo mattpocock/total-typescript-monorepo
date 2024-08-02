@@ -358,6 +358,9 @@ importers:
       chokidar:
         specifier: ^3.5.3
         version: 3.6.0
+      fastq:
+        specifier: ^1.17.1
+        version: 1.17.1
       puppeteer:
         specifier: ^22.15.0
         version: 22.15.0(typescript@5.6.0-dev.20240801)

@@ -14,7 +14,8 @@
     "ws": "^8.13.0",
     "@total-typescript/twoslash-shared": "workspace:*",
     "zod": "^3.23.8",
-    "puppeteer": "^22.15.0"
+    "puppeteer": "^22.15.0",
+    "fastq": "^1.17.1"
   },
   "devDependencies": {
     "@types/react": "^18.3.3"

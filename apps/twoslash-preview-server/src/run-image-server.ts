@@ -3,8 +3,13 @@ import {
   htmlRendererSchema,
   IMAGE_SERVER_PORT,
 } from "@total-typescript/twoslash-shared";
+import fastq from "fastq";
 import { createServer } from "http";
 import { takeCodeImage } from "./takeCodeImage.js";
+
+const CONCURRENCY = 2;
+
+const screenshotQueue = fastq.promise(takeCodeImage, CONCURRENCY);
 
 const server = createServer(async (req, res) => {
   if (!req.url) {
@@ -29,12 +34,12 @@ const server = createServer(async (req, res) => {
       params,
     )}`;
 
-    const image = await takeCodeImage(urlToTakeScreenshotOf);
+    const image = await screenshotQueue.push(urlToTakeScreenshotOf);
 
     res.writeHead(200, {
       "Content-Type": "image/png",
       // Cache for 5 minutes
-      "Cache-Control": "max-age=300, s-maxage=300",
+      "Cache-Control": "max-age=6000, public",
     });
     res.write(image);
     res.end();
