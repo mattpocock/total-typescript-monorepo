@@ -49,3 +49,15 @@ export const htmlRendererSchema = z.intersection(
 );
 
 export type HTMLRendererSearchParams = z.input<typeof htmlRendererSchema>;
+
+export type WSEvent = {
+  type: "change";
+  uri: string;
+};
+
+export type EncodedHTML = string & { __brand: "EncodedHTML" };
+
+export type CodeSnippet = {
+  encodedHtml: EncodedHTML;
+  rawHtml: string;
+};

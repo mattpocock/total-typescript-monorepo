@@ -1,5 +1,5 @@
+import { SCREENSHOT_TARGET_ID } from "@total-typescript/twoslash-shared";
 import puppeteer from "puppeteer";
-import { SCREENSHOT_TARGET_ID } from "./constants";
 
 export const takeCodeImage = async (url: string) => {
   const browser = await puppeteer.launch({

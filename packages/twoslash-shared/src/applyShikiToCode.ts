@@ -1,16 +1,14 @@
 import { rendererClassic } from "@shikijs/twoslash";
 import { createTransformerFactory } from "@shikijs/twoslash/core";
-import { createTwoslashFromCDN } from "twoslash-cdn";
-import { createStorage } from "unstorage";
-import fsDriver from "unstorage/drivers/fs";
 import { codeToHtml } from "shiki";
+import { createTwoslashFromCDN } from "twoslash-cdn";
 import type { CompilerOptions } from "typescript";
-import path = require("path");
+import { createStorage } from "unstorage";
 
 const storage = createStorage({
-  driver: (fsDriver as any)({
-    base: path.resolve(process.cwd(), ".twoslash-lint", "cache"),
-  }),
+  // driver: (fsDriver as any)({
+  //   base: path.resolve(process.cwd(), ".twoslash-lint", "cache"),
+  // }),
 });
 
 export const compilerOptions: any = {

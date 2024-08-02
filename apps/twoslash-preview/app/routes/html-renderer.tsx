@@ -9,6 +9,8 @@ import { useLoaderData } from "@remix-run/react";
 import {
   applyShikiToCode,
   getCodeSamplesFromFile,
+  htmlRendererSchema,
+  RENDER_TYPES,
 } from "@total-typescript/twoslash-shared";
 import { readFile } from "fs/promises";
 import {
@@ -16,7 +18,6 @@ import {
   ScreenshotSnippetWrapper,
   ScreenshotSnippetWrapperWithBorder,
 } from "~/components";
-import { htmlRendererSchema, RENDER_TYPES } from "~/types";
 
 export const loader = async (args: LoaderFunctionArgs) => {
   const url = new URL(args.request.url);

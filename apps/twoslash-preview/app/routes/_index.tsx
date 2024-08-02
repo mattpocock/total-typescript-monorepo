@@ -2,13 +2,14 @@
 
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
-import { getCodeSamplesFromFile } from "@total-typescript/twoslash-shared";
 import {
+  getCodeSamplesFromFile,
+  IMAGE_SERVER_PORT,
   RENDER_TYPE_HUMAN_READABLE_NAMES,
   RENDER_TYPES,
   type HTMLRendererSearchParams,
   type RenderType,
-} from "~/types.js";
+} from "@total-typescript/twoslash-shared";
 import { useSubscribeToSocket } from "../useSubscribeToSocket";
 
 export const meta: MetaFunction = () => {
@@ -109,11 +110,13 @@ export default function Index() {
           case RENDER_TYPES.allSquareWithBorder:
             return (
               <img
-                src={`/render?${new URLSearchParams({
-                  uri: data.uri,
-                  mode: renderType,
-                  cacheBuster: String(cacheBuster),
-                } satisfies HTMLRendererSearchParams)}`}
+                src={`http:localhost:${IMAGE_SERVER_PORT}/render?${new URLSearchParams(
+                  {
+                    uri: data.uri,
+                    mode: renderType,
+                    cacheBuster: String(cacheBuster),
+                  } satisfies HTMLRendererSearchParams,
+                )}`}
                 className="width-96 border-2 border-gray-700 rounded-lg"
               />
             );
@@ -124,12 +127,14 @@ export default function Index() {
                 return (
                   <img
                     key={index}
-                    src={`/render?${new URLSearchParams({
-                      uri: data.uri,
-                      mode: renderType,
-                      snippetIndex: String(index),
-                      cacheBuster: String(cacheBuster),
-                    } satisfies HTMLRendererSearchParams)}`}
+                    src={`http:localhost:${IMAGE_SERVER_PORT}/render?${new URLSearchParams(
+                      {
+                        uri: data.uri,
+                        mode: renderType,
+                        snippetIndex: String(index),
+                        cacheBuster: String(cacheBuster),
+                      } satisfies HTMLRendererSearchParams,
+                    )}`}
                     className="width-96 border-2 border-gray-700 rounded-lg"
                   />
                 );

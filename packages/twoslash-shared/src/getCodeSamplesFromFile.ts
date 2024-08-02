@@ -1,4 +1,4 @@
-import { getLangFromCodeFence } from "./index.js";
+import { getLangFromCodeFence } from "./getLangFromCodeFence.js";
 
 const CODE_BLOCKS_REGEX = /```[\s\S]*?```/g;
 

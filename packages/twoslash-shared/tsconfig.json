@@ -5,6 +5,7 @@
     "rootDir": "src",
     "lib": [
       "es2023"
-    ]
+    ],
+    "disableSourceOfProjectReferenceRedirect": true
   },
 }

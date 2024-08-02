@@ -358,9 +358,15 @@ importers:
       chokidar:
         specifier: ^3.5.3
         version: 3.6.0
+      puppeteer:
+        specifier: ^22.15.0
+        version: 22.15.0(typescript@5.6.0-dev.20240801)
       ws:
         specifier: ^8.13.0
         version: 8.18.0
+      zod:
+        specifier: ^3.23.8
+        version: 3.23.8
     devDependencies:
       '@types/react':
         specifier: ^18.3.3
@@ -580,6 +586,9 @@ importers:
       unstorage:
         specifier: ^1.10.2
         version: 1.10.2
+      zod:
+        specifier: ^3.23.8
+        version: 3.23.8
 
 packages:
 

@@ -1,9 +1,9 @@
 "use client";
 
 import React, { forwardRef } from "react";
-import { SCREENSHOT_TARGET_ID } from "./constants";
 import { useForceSquareAspectRatio } from "./useForceSquareAspectRatio.js";
 import clsx from "clsx";
+import { SCREENSHOT_TARGET_ID } from "@total-typescript/twoslash-shared";
 
 const gradients = [
   "from-indigo-600 to-cyan-500",
