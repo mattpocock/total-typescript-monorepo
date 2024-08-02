@@ -110,7 +110,7 @@ export default function Index() {
           case RENDER_TYPES.allSquareWithBorder:
             return (
               <img
-                src={`http:localhost:${IMAGE_SERVER_PORT}/render?${new URLSearchParams(
+                src={`http://localhost:${IMAGE_SERVER_PORT}/render?${new URLSearchParams(
                   {
                     uri: data.uri,
                     mode: renderType,
@@ -127,7 +127,7 @@ export default function Index() {
                 return (
                   <img
                     key={index}
-                    src={`http:localhost:${IMAGE_SERVER_PORT}/render?${new URLSearchParams(
+                    src={`http://localhost:${IMAGE_SERVER_PORT}/render?${new URLSearchParams(
                       {
                         uri: data.uri,
                         mode: renderType,

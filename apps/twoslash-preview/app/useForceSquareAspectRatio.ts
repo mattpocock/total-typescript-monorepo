@@ -1,16 +1,10 @@
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 export const useForceSquareAspectRatio = () => {
   const outerRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
 
-  useLayoutEffect(() => {
-    // Check if innerRef is taller than it is wide
-
-    // If so, set outerRef's height to innerRef's height
-
-    // If not, set outerRef's width to innerRef's width
-
+  useEffect(() => {
     const outer = outerRef.current;
     const inner = innerRef.current;
 
