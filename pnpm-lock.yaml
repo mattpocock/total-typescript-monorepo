@@ -129,7 +129,7 @@ importers:
         version: 2.10.3(typescript@5.6.0-dev.20240801)
       '@xstate/react':
         specifier: ^4.1.1
-        version: 4.1.1(@types/react@18.3.3)(react@18.3.1)(xstate@5.15.0)
+        version: 4.1.1(@types/react@18.3.3)(react@18.3.1)(xstate@5.17.1)
       isbot:
         specifier: ^5.0.0
         version: 5.1.13
@@ -141,7 +141,7 @@ importers:
         version: 18.3.1(react@18.3.1)
       xstate:
         specifier: ^5.14.0
-        version: 5.15.0
+        version: 5.17.1
     devDependencies:
       '@remix-run/dev':
         specifier: 2.10.3
@@ -5927,8 +5927,8 @@ packages:
       utf-8-validate:
         optional: true
 
-  xstate@5.15.0:
-    resolution: {integrity: sha512-0DGArbj+ych7PcCqHzhEvXH1qVG41lhenwdbEPBRJyxQP9TLooUsR7oiR4YWYHblLOVWvz/esiw8HUtHXp/kZA==}
+  xstate@5.17.1:
+    resolution: {integrity: sha512-RNwcXdth+kboWZg+Zhf6f6iNP6CtAAiS4z4qwyTd/fWBH9PHXRqko6OdW3xOTwP62f0mVD+jsPOSqY4Ar8nZKQ==}
 
   xtend@4.0.2:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
@@ -7847,13 +7847,13 @@ snapshots:
       '@webassemblyjs/ast': 1.12.1
       '@xtuc/long': 4.2.2
 
-  '@xstate/react@4.1.1(@types/react@18.3.3)(react@18.3.1)(xstate@5.15.0)':
+  '@xstate/react@4.1.1(@types/react@18.3.3)(react@18.3.1)(xstate@5.17.1)':
     dependencies:
       react: 18.3.1
       use-isomorphic-layout-effect: 1.1.2(@types/react@18.3.3)(react@18.3.1)
       use-sync-external-store: 1.2.2(react@18.3.1)
     optionalDependencies:
-      xstate: 5.15.0
+      xstate: 5.17.1
     transitivePeerDependencies:
       - '@types/react'
 
@@ -12470,7 +12470,7 @@ snapshots:
 
   ws@8.18.0: {}
 
-  xstate@5.15.0: {}
+  xstate@5.17.1: {}
 
   xtend@4.0.2: {}
 
