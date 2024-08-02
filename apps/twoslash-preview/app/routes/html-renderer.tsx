@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Responsible for rendering the snippets to a HTML file.
  */
@@ -38,7 +40,14 @@ export const loader = async (args: LoaderFunctionArgs) => {
     });
 
     if (!shikiResult.success) {
-      throw new Error("Failed to apply shiki to code sample");
+      return {
+        mode: "error" as const,
+        error: "Failed to apply shiki to code sample",
+        title: shikiResult.title,
+        description: shikiResult.description,
+        recommendation: shikiResult.recommendation,
+        code: snippet.code,
+      };
     }
 
     if (!snippet) {
@@ -119,14 +128,14 @@ export default function Render() {
     }
     case "error":
       return (
-        <ScreenshotSnippetWrapperWithBorder>
+        <ScreenshotSnippetWrapper>
           <div className="p-6 space-y-4 bg-gray-900 text-4xl">
             <pre className="leading-snug">{data.code}</pre>
             <h1 className="">{data.title}</h1>
             <p className="">{data.description}</p>
             <p className="">{data.recommendation}</p>
           </div>
-        </ScreenshotSnippetWrapperWithBorder>
+        </ScreenshotSnippetWrapper>
       );
   }
 }

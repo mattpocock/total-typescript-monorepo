@@ -10,7 +10,6 @@ import {
   type RenderType,
 } from "~/types.js";
 import { useSubscribeToSocket } from "../useSubscribeToSocket";
-import { useState } from "react";
 
 export const meta: MetaFunction = () => {
   return [
@@ -50,18 +49,24 @@ export default function Index() {
   useSubscribeToSocket((uri) => {
     console.log("setting search params");
     cacheBuster++;
-    setSearchParams((prev) => {
-      prev.set("uri", uri);
-      prev.set("cacheBuster", String(cacheBuster));
 
-      return prev;
-    });
+    setSearchParams(
+      (prev) => {
+        prev.set("uri", uri);
+        prev.set("cacheBuster", String(cacheBuster));
+
+        return prev;
+      },
+      {
+        preventScrollReset: true,
+      },
+    );
   });
 
   const data = useLoaderData<typeof loader>();
 
   const renderType =
-    (params.get("renderType") as RenderType) ?? RENDER_TYPES.basicWithBorder;
+    (params.get("renderType") as RenderType) ?? RENDER_TYPES.allBasicWithBorder;
 
   if (data.status === "waiting") {
     return <div>Waiting for snippet...</div>;
@@ -72,11 +77,16 @@ export default function Index() {
       <select
         value={renderType}
         onChange={(e) => {
-          setSearchParams((prev) => {
-            prev.set("renderType", e.target.value);
+          setSearchParams(
+            (prev) => {
+              prev.set("renderType", e.target.value);
 
-            return prev;
-          });
+              return prev;
+            },
+            {
+              preventScrollReset: true,
+            },
+          );
         }}
         className="bg-gray-800 p-2 rounded-md"
       >

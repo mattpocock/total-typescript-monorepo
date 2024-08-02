@@ -1,3 +1,5 @@
+"use client";
+
 import React, { forwardRef } from "react";
 import { SCREENSHOT_TARGET_ID } from "./constants";
 import { useForceSquareAspectRatio } from "./useForceSquareAspectRatio.js";
