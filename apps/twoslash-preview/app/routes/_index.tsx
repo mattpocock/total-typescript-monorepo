@@ -21,6 +21,8 @@ export const meta: MetaFunction = () => {
 
 export const loader = async (args: LoaderFunctionArgs) => {
   const { readFile } = await import("fs/promises");
+  const { createHash } = await import("crypto");
+
   const url = new URL(args.request.url);
 
   const uri = url.searchParams.get("uri");
@@ -33,28 +35,34 @@ export const loader = async (args: LoaderFunctionArgs) => {
 
   const fileContents = await readFile(uri, "utf-8");
 
-  const codeBlocks = Array.from(getCodeSamplesFromFile(fileContents));
+  const snippetHashes = Array.from(getCodeSamplesFromFile(fileContents)).map(
+    (codeBlock) => {
+      const hash = createHash("md5")
+        .update(`${codeBlock.code}${codeBlock.lang}`)
+        .digest("hex");
+      return hash;
+    },
+  );
+
+  const fileContentsHash = createHash("md5").update(fileContents).digest("hex");
 
   return {
     status: "ready" as const,
-    numberOfSnippets: codeBlocks.length,
+    snippetHashes,
+    fileContentsHash,
     uri,
   };
 };
-
-let cacheBuster = 0;
 
 export default function Index() {
   const [params, setSearchParams] = useSearchParams();
 
   useSubscribeToSocket((uri) => {
     console.log("setting search params");
-    cacheBuster++;
 
     setSearchParams(
       (prev) => {
         prev.set("uri", uri);
-        prev.set("cacheBuster", String(cacheBuster));
 
         return prev;
       },
@@ -114,7 +122,7 @@ export default function Index() {
                   {
                     uri: data.uri,
                     mode: renderType,
-                    cacheBuster: String(cacheBuster),
+                    cacheBuster: data.fileContentsHash,
                   } satisfies HTMLRendererSearchParams,
                 )}`}
                 className="width-96 border-2 border-gray-700 rounded-lg"
@@ -122,9 +130,10 @@ export default function Index() {
             );
           case RENDER_TYPES.basicWithBorder:
           case RENDER_TYPES.simpleNoBorder:
-            return Array.from({ length: data.numberOfSnippets }).map(
-              (_, index) => {
-                return (
+            return data.snippetHashes.map((hash, index) => {
+              return (
+                <div>
+                  <p>{hash}</p>
                   <img
                     key={index}
                     src={`http://localhost:${IMAGE_SERVER_PORT}/render?${new URLSearchParams(
@@ -132,14 +141,14 @@ export default function Index() {
                         uri: data.uri,
                         mode: renderType,
                         snippetIndex: String(index),
-                        cacheBuster: String(cacheBuster),
+                        cacheBuster: hash,
                       } satisfies HTMLRendererSearchParams,
                     )}`}
                     className="width-96 border-2 border-gray-700 rounded-lg"
                   />
-                );
-              },
-            );
+                </div>
+              );
+            });
         }
         return null;
       })()}

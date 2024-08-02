@@ -1,14 +1,10 @@
-import { createServer } from "http";
-import path from "path";
-import { readFile } from "fs/promises";
 import {
   FRONTEND_APP_PORT,
   htmlRendererSchema,
   IMAGE_SERVER_PORT,
 } from "@total-typescript/twoslash-shared";
+import { createServer } from "http";
 import { takeCodeImage } from "./takeCodeImage.js";
-
-const DEMO_IMAGE_LOCATION = path.resolve(import.meta.dirname, "../example.png");
 
 const server = createServer(async (req, res) => {
   if (!req.url) {
@@ -35,7 +31,11 @@ const server = createServer(async (req, res) => {
 
     const image = await takeCodeImage(urlToTakeScreenshotOf);
 
-    res.writeHead(200, { "Content-Type": "image/png" });
+    res.writeHead(200, {
+      "Content-Type": "image/png",
+      // Cache for 5 minutes
+      "Cache-Control": "max-age=300, s-maxage=300",
+    });
     res.write(image);
     res.end();
     return;
