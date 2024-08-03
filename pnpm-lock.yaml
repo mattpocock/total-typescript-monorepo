@@ -207,8 +207,8 @@ importers:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
       remotion:
-        specifier: 4.0.189
-        version: 4.0.189(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: 4.0.191
+        version: 4.0.191(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       twoslash-cdn:
         specifier: ^0.2.8
         version: 0.2.9(typescript@5.6.0-dev.20240801)
@@ -4859,12 +4859,6 @@ packages:
 
   remark-rehype@11.1.0:
     resolution: {integrity: sha512-z3tJrAs2kIs1AqIIy6pzHmAHlF1hWQ+OdY4/hv+Wxe35EhyLKcajL33iUEn3ScxtFox9nUvRufR/Zre8Q08H/g==}
-
-  remotion@4.0.189:
-    resolution: {integrity: sha512-ZrYu9oh8zHIQ++1ZZOk9ZFqmJOE3UJIXiPW4GXxSc1Kgy+ADAaou4LoXIFnmQi8cXvBTRSKA/lSYiXZBX7SmUw==}
-    peerDependencies:
-      react: '>=16.8.0'
-      react-dom: '>=16.8.0'
 
   remotion@4.0.191:
     resolution: {integrity: sha512-LfHqMZTw1lwLK+0tsdW+00u3PRI73NZ8xenUCftw+y/38+kzQvIC5LPdAs9G3N5MIqy06Ue7x7+dVxtPtTJ10Q==}
@@ -11071,11 +11065,6 @@ snapshots:
       mdast-util-to-hast: 13.2.0
       unified: 11.0.5
       vfile: 6.0.2
-
-  remotion@4.0.189(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
-    dependencies:
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
 
   remotion@4.0.191(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
