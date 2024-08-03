@@ -163,7 +163,7 @@ importers:
         version: 18.3.0
       autoprefixer:
         specifier: ^10.4.19
-        version: 10.4.19(postcss@8.4.38)
+        version: 10.4.20(postcss@8.4.38)
       postcss:
         specifier: ^8.4.38
         version: 8.4.38
@@ -324,7 +324,7 @@ importers:
         version: 18.3.0
       autoprefixer:
         specifier: ^10.4.19
-        version: 10.4.19(postcss@8.4.40)
+        version: 10.4.20(postcss@8.4.40)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -508,7 +508,7 @@ importers:
         version: 18.3.0
       autoprefixer:
         specifier: ^10.4.19
-        version: 10.4.19(postcss@8.4.38)
+        version: 10.4.20(postcss@8.4.38)
       fuse.js:
         specifier: ^7.0.0
         version: 7.0.0
@@ -2201,8 +2201,8 @@ packages:
     resolution: {integrity: sha512-ISvCdHdlTDlH5IpxQJIex7BWBywFWgjJSVdwst+/iQCoEYnyOaQ95+X1JGshuBjGp6nxKUy1jMgE3zPqN7fQdg==}
     hasBin: true
 
-  autoprefixer@10.4.19:
-    resolution: {integrity: sha512-BaENR2+zBZ8xXhM4pUaKUxlVdxZ0EZhjvbopwnXmxRUfqDmwSpC2lAi/QXvx7NRdPCo1WKEcEF6mV64si1z4Ew==}
+  autoprefixer@10.4.20:
+    resolution: {integrity: sha512-XY25y5xSv/wEoqzDyXXME4AFfkZI0P23z6Fs3YgymDnKJkCGOnkL0iTxCa85UTqaSgfcqyf3UA6+c7wUvx/16g==}
     engines: {node: ^10 || ^12 || >=14}
     hasBin: true
     peerDependencies:
@@ -2287,11 +2287,6 @@ packages:
   browserify-zlib@0.1.4:
     resolution: {integrity: sha512-19OEpq7vWgsH6WkvkBJQDFvJS1uPcbFOQ4v9CU839dO+ZZXUZO6XpE6hNCqvlIIj+4fZvRiJ6DsAQ382GwiyTQ==}
 
-  browserslist@4.23.2:
-    resolution: {integrity: sha512-qkqSyistMYdxAcw+CzbZwlBy8AGmS/eEWs+sEV5TnLRGDOL+C5M2EnH6tlZyg0YoAxGJAFKh61En9BR941GnHA==}
-    engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
-    hasBin: true
-
   browserslist@4.23.3:
     resolution: {integrity: sha512-btwCFJVjI4YWDNfau8RhZ+B1Q/VLoUITrm3RlP6y1tYGWIOa+InuYiRGXUBXo8nA1qKmHMyLB/iVQg5TT4eFoA==}
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
@@ -2334,14 +2329,8 @@ packages:
     resolution: {integrity: sha512-QOSvevhslijgYwRx6Rv7zKdMF8lbRmx+uQGx2+vDc+KI/eBnsy9kit5aj23AgGu3pa4t9AgwbnXWqS+iOY+2aA==}
     engines: {node: '>= 6'}
 
-  caniuse-lite@1.0.30001642:
-    resolution: {integrity: sha512-3XQ0DoRgLijXJErLSl+bLnJ+Et4KqV1PY6JJBGAFlsNsz31zeAIncyeZfLCabHK/jtSh+671RM9YMldxjUPZtA==}
-
-  caniuse-lite@1.0.30001645:
-    resolution: {integrity: sha512-GFtY2+qt91kzyMk6j48dJcwJVq5uTkk71XxE3RtScx7XWRLsO7bU44LOFkOZYR8w9YMS0UhPSYpN/6rAMImmLw==}
-
-  caniuse-lite@1.0.30001646:
-    resolution: {integrity: sha512-dRg00gudiBDDTmUhClSdv3hqRfpbOnU28IpI1T6PBTLWa+kOj0681C8uML3PifYfREuBrVjDGhL3adYpBT6spw==}
+  caniuse-lite@1.0.30001647:
+    resolution: {integrity: sha512-n83xdNiyeNcHpzWY+1aFbqCK7LuLfBricc4+alSQL2Xb6OR3XpnQAmlDG+pQcdTfiHRuLcQ96VOfrPSGiNJYSg==}
 
   ccount@2.0.1:
     resolution: {integrity: sha512-eyrF0jiFpY+3drT6383f1qhkbGsLSifNAjA61IUjZjmLCWjItY6LB9ft9YhoDgwfmclB2zhu51Lc7+95b8NRAg==}
@@ -2778,9 +2767,6 @@ packages:
 
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
-
-  electron-to-chromium@1.4.830:
-    resolution: {integrity: sha512-TrPKKH20HeN0J1LHzsYLs2qwXrp8TF4nHdu4sq61ozGbzMpWhI7iIOPYPPkxeq1azMT9PZ8enPFcftbs/Npcjg==}
 
   electron-to-chromium@1.5.4:
     resolution: {integrity: sha512-orzA81VqLyIGUEA77YkVA1D+N+nNfl2isJVjjmOyrlxuooZ19ynb+dOlaDTqd/idKRS9lDCSBmtzM+kyCsMnkA==}
@@ -4161,9 +4147,6 @@ packages:
   node-forge@1.3.1:
     resolution: {integrity: sha512-dPEtOeMvF9VMcYV/1Wb8CPoVAXtp6MKMlcbAt4ddqmGqUJ6fQZFXkNZNkNlfevtNkGtaSoXf/vNNNSvgrdXwtA==}
     engines: {node: '>= 6.13.0'}
-
-  node-releases@2.0.17:
-    resolution: {integrity: sha512-Ww6ZlOiEQfPfXM45v17oabk77Z7mg5bOt7AjDyzy7RjK9OrLrLC8dyZQoAPEOtFX9SaNf1Tdvr5gRJWdTJj7GA==}
 
   node-releases@2.0.18:
     resolution: {integrity: sha512-d9VeXT4SJ7ZeOqGX6R5EM022wpL+eWPooLI+5UpWn2jCT1aosUQEhQP214x33Wkwx3JQMvIm+tIoVOdodFS40g==}
@@ -7268,7 +7251,7 @@ snapshots:
   '@remotion/tailwind@4.0.191(@remotion/bundler@4.0.191(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.6.0-dev.20240801)(webpack@5.83.1)':
     dependencies:
       '@remotion/bundler': 4.0.191(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      autoprefixer: 10.4.19(postcss@8.4.40)
+      autoprefixer: 10.4.20(postcss@8.4.40)
       css-loader: 5.2.7(webpack@5.83.1(esbuild@0.18.6))
       postcss: 8.4.40
       postcss-loader: 7.3.4(postcss@8.4.40)(typescript@5.6.0-dev.20240801)(webpack@5.83.1)
@@ -7762,20 +7745,20 @@ snapshots:
 
   astring@1.8.6: {}
 
-  autoprefixer@10.4.19(postcss@8.4.38):
+  autoprefixer@10.4.20(postcss@8.4.38):
     dependencies:
-      browserslist: 4.23.2
-      caniuse-lite: 1.0.30001642
+      browserslist: 4.23.3
+      caniuse-lite: 1.0.30001647
       fraction.js: 4.3.7
       normalize-range: 0.1.2
       picocolors: 1.0.1
       postcss: 8.4.38
       postcss-value-parser: 4.2.0
 
-  autoprefixer@10.4.19(postcss@8.4.40):
+  autoprefixer@10.4.20(postcss@8.4.40):
     dependencies:
-      browserslist: 4.23.2
-      caniuse-lite: 1.0.30001642
+      browserslist: 4.23.3
+      caniuse-lite: 1.0.30001647
       fraction.js: 4.3.7
       normalize-range: 0.1.2
       picocolors: 1.0.1
@@ -7879,16 +7862,9 @@ snapshots:
     dependencies:
       pako: 0.2.9
 
-  browserslist@4.23.2:
-    dependencies:
-      caniuse-lite: 1.0.30001645
-      electron-to-chromium: 1.4.830
-      node-releases: 2.0.17
-      update-browserslist-db: 1.1.0(browserslist@4.23.2)
-
   browserslist@4.23.3:
     dependencies:
-      caniuse-lite: 1.0.30001646
+      caniuse-lite: 1.0.30001647
       electron-to-chromium: 1.5.4
       node-releases: 2.0.18
       update-browserslist-db: 1.1.0(browserslist@4.23.3)
@@ -7935,11 +7911,7 @@ snapshots:
 
   camelcase-css@2.0.1: {}
 
-  caniuse-lite@1.0.30001642: {}
-
-  caniuse-lite@1.0.30001645: {}
-
-  caniuse-lite@1.0.30001646: {}
+  caniuse-lite@1.0.30001647: {}
 
   ccount@2.0.1: {}
 
@@ -8344,8 +8316,6 @@ snapshots:
   eastasianwidth@0.2.0: {}
 
   ee-first@1.1.1: {}
-
-  electron-to-chromium@1.4.830: {}
 
   electron-to-chromium@1.5.4: {}
 
@@ -10247,8 +10217,6 @@ snapshots:
 
   node-forge@1.3.1: {}
 
-  node-releases@2.0.17: {}
-
   node-releases@2.0.18: {}
 
   normalize-package-data@5.0.0:
@@ -10745,7 +10713,7 @@ snapshots:
       '@csstools/postcss-text-decoration-shorthand': 2.2.4(postcss@8.4.40)
       '@csstools/postcss-trigonometric-functions': 2.1.1(postcss@8.4.40)
       '@csstools/postcss-unset-value': 2.0.1(postcss@8.4.40)
-      autoprefixer: 10.4.19(postcss@8.4.40)
+      autoprefixer: 10.4.20(postcss@8.4.40)
       browserslist: 4.23.3
       css-blank-pseudo: 5.0.2(postcss@8.4.40)
       css-has-pseudo: 5.0.2(postcss@8.4.40)
@@ -11914,12 +11882,6 @@ snapshots:
       citty: 0.1.6
       consola: 3.2.3
       pathe: 1.1.2
-
-  update-browserslist-db@1.1.0(browserslist@4.23.2):
-    dependencies:
-      browserslist: 4.23.2
-      escalade: 3.1.2
-      picocolors: 1.0.1
 
   update-browserslist-db@1.1.0(browserslist@4.23.3):
     dependencies:
