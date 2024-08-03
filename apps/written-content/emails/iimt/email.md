@@ -9,14 +9,13 @@ I call it the **IIMT** (rhymes with 'limped'): the **Immediately Indexed Mapped 
 Here's what it looks like:
 
 ```ts twoslash
-// @errors: 2537 2538 2552
 type SomeObject = {
   a: string;
   b: number;
 };
 
 type Example = {
-  [K in keyof SomeObjec]: {
+  [K in keyof SomeObject]: {
     key: K;
   };
 };

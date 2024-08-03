@@ -14,7 +14,7 @@ import { useSubscribeToSocket } from "../useSubscribeToSocket";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "Twoslash Preview" },
+    { title: "Twoslash Screenshot Tool" },
     { name: "description", content: "Welcome to Remix!" },
   ];
 };
@@ -58,8 +58,6 @@ export default function Index() {
   const [params, setSearchParams] = useSearchParams();
 
   useSubscribeToSocket((uri) => {
-    console.log("setting search params");
-
     setSearchParams(
       (prev) => {
         prev.set("uri", uri);
@@ -76,7 +74,7 @@ export default function Index() {
   const data = useLoaderData<typeof loader>();
 
   const renderType =
-    (params.get("renderType") as RenderType) ?? RENDER_TYPES.allBasicWithBorder;
+    (params.get("renderType") as RenderType) ?? RENDER_TYPES.simpleNoBorder;
 
   if (data.status === "waiting") {
     return <div>Waiting for snippet...</div>;
