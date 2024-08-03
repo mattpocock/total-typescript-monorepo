@@ -223,8 +223,8 @@ importers:
         specifier: 4.0.191
         version: 4.0.191(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@remotion/tailwind':
-        specifier: 4.0.189
-        version: 4.0.189(@remotion/bundler@4.0.191(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.6.0-dev.20240801)(webpack@5.83.1)
+        specifier: 4.0.191
+        version: 4.0.191(@remotion/bundler@4.0.191(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.6.0-dev.20240801)(webpack@5.83.1)
       '@types/react':
         specifier: ^18.0.26
         version: 18.3.3
@@ -1776,10 +1776,10 @@ packages:
   '@remotion/studio@4.0.191':
     resolution: {integrity: sha512-uhAzSluxfG1E5EfreQ2l7qNKSMlbra8UtT+fGOf4/BJia8om6hkC3oPmSjP2w3wSSvH+4R3EqXDtw60AIw9NYw==}
 
-  '@remotion/tailwind@4.0.189':
-    resolution: {integrity: sha512-3rNYvxhXaQh/aHLeHBfCdtXIn7GTOQrEqvakDE786gp1iuZHVhXFI3Jx1JAdfCWABm5CPpH/dCSM3Uju/dahvw==}
+  '@remotion/tailwind@4.0.191':
+    resolution: {integrity: sha512-/CdKur6AhLroQYZXqNKk80JxKqxzMeBDq0fi761Q2KXm7uRYMTeqph7uJI15WTPNXnqvqcgKJfQregM6YWe8MQ==}
     peerDependencies:
-      '@remotion/bundler': 4.0.189
+      '@remotion/bundler': 4.0.191
 
   '@rollup/rollup-android-arm-eabi@4.18.1':
     resolution: {integrity: sha512-lncuC4aHicncmbORnx+dUaAgzee9cm/PbIqgWz1PpXuwc+sa1Ct83tnqUDy/GFKleLiN7ZIeytM6KJ4cAn1SxA==}
@@ -7265,7 +7265,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@remotion/tailwind@4.0.189(@remotion/bundler@4.0.191(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.6.0-dev.20240801)(webpack@5.83.1)':
+  '@remotion/tailwind@4.0.191(@remotion/bundler@4.0.191(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.6.0-dev.20240801)(webpack@5.83.1)':
     dependencies:
       '@remotion/bundler': 4.0.191(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       autoprefixer: 10.4.19(postcss@8.4.40)
@@ -10746,7 +10746,7 @@ snapshots:
       '@csstools/postcss-trigonometric-functions': 2.1.1(postcss@8.4.40)
       '@csstools/postcss-unset-value': 2.0.1(postcss@8.4.40)
       autoprefixer: 10.4.19(postcss@8.4.40)
-      browserslist: 4.23.2
+      browserslist: 4.23.3
       css-blank-pseudo: 5.0.2(postcss@8.4.40)
       css-has-pseudo: 5.0.2(postcss@8.4.40)
       css-prefers-color-scheme: 8.0.2(postcss@8.4.40)
