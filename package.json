@@ -30,10 +30,10 @@
     "prettier": "^3.2.5",
     "tsx": "^4.16.2",
     "turbo": "^2.0.1",
-    "typescript": "5.6.0-dev.20240801",
+    "typescript": "5.6.0-dev.20240803",
     "vitest": "^2.0.0"
   },
   "resolutions": {
-    "typescript": "5.6.0-dev.20240801"
+    "typescript": "5.6.0-dev.20240803"
   }
 }
