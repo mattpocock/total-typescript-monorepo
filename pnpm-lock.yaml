@@ -198,8 +198,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       codehike:
-        specifier: 1.0.0-beta.4
-        version: 1.0.0-beta.4
+        specifier: 1.0.0-beta.6
+        version: 1.0.0-beta.6
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -816,8 +816,8 @@ packages:
   '@changesets/write@0.3.1':
     resolution: {integrity: sha512-SyGtMXzH3qFqlHKcvFY2eX+6b0NGiFcNav8AFsYwy5l8hejOeoeTDemu5Yjmke2V5jpzY+pBvM0vCCQ3gdZpfw==}
 
-  '@code-hike/lighter@0.9.4':
-    resolution: {integrity: sha512-WnYhKFaYDHOVKXyII5iYegve/W3jgV9kOfo34rKDXdZjTFbCJMbTPzdG+SKfvUtw7lzWWuJGmu0WQJ0/PDhL0g==}
+  '@code-hike/lighter@1.0.0-beta.0':
+    resolution: {integrity: sha512-y+1VwKY+oF23vN/v0AkhekY1IcwOWB9FygEnyGMHYjCVi9IxZLNGRI1TtYK4avaTJxHudQ16wkxqqupIrLJy/w==}
 
   '@csstools/cascade-layer-name-parser@1.0.13':
     resolution: {integrity: sha512-MX0yLTwtZzr82sQ0zOjqimpZbzjMaK/h2pmlrLK7DCzlmiZLYFpoO94WmN1akRVo6ll/TdpHb53vihHLUMyvng==}
@@ -2428,8 +2428,8 @@ packages:
     resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
     engines: {node: '>=6'}
 
-  codehike@1.0.0-beta.4:
-    resolution: {integrity: sha512-0C3TzzJx5HVl7fEJpMHT3UUeARj5a7q0WERwgfZHv6KW7t8puwjZkryqxL/BWBEg0SPAHNq0r4iBd/+bG+UGpA==}
+  codehike@1.0.0-beta.6:
+    resolution: {integrity: sha512-KHRL9Fj+hjsLFmcXQB37bjmRbGn20AS8ZlZO3UiSNblApI71Yl1ua2sm7MboOxK1a9c2nzDzTLMJ89N+AzHKmw==}
 
   collapse-white-space@2.1.0:
     resolution: {integrity: sha512-loKTxY1zCOuG4j9f6EPnuyyYkf58RnhhWTvRoZEokgB+WbdXehfjFviyOVYkqzEWz1Q5kRiZdBYS5SwxbQYwzw==}
@@ -6281,7 +6281,7 @@ snapshots:
       human-id: 1.0.2
       prettier: 2.8.8
 
-  '@code-hike/lighter@0.9.4':
+  '@code-hike/lighter@1.0.0-beta.0':
     dependencies:
       ansi-sequence-parser: 1.1.1
 
@@ -8014,9 +8014,9 @@ snapshots:
 
   clsx@2.1.1: {}
 
-  codehike@1.0.0-beta.4:
+  codehike@1.0.0-beta.6:
     dependencies:
-      '@code-hike/lighter': 0.9.4
+      '@code-hike/lighter': 1.0.0-beta.0
       diff: 5.2.0
       estree-util-visit: 2.0.0
       front-matter: 4.0.2
