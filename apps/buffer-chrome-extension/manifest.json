@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json.schemastore.org/chrome-manifest.json",
+  "manifest_version": 3,
+  "name": "Buffer Thread Creator",
+  "version": "1.0.0",
+  "action": { "default_popup": "index.html" },
+  "permissions": ["tabs", "activeTab"]
+}
