@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  typescript: 5.6.0-dev.20240803
+  typescript: 5.6.0-dev.20240804
 
 importers:
 
@@ -30,8 +30,8 @@ importers:
         specifier: ^2.0.1
         version: 2.0.11
       typescript:
-        specifier: 5.6.0-dev.20240803
-        version: 5.6.0-dev.20240803
+        specifier: 5.6.0-dev.20240804
+        version: 5.6.0-dev.20240804
       vitest:
         specifier: ^2.0.0
         version: 2.0.5(@types/node@20.14.14)(terser@5.31.3)
@@ -46,13 +46,13 @@ importers:
     dependencies:
       '@remix-run/node':
         specifier: ^2.9.1
-        version: 2.11.0(typescript@5.6.0-dev.20240803)
+        version: 2.11.0(typescript@5.6.0-dev.20240804)
       '@remix-run/react':
         specifier: ^2.9.1
-        version: 2.11.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240803)
+        version: 2.11.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240804)
       '@remix-run/serve':
         specifier: ^2.9.1
-        version: 2.11.0(typescript@5.6.0-dev.20240803)
+        version: 2.11.0(typescript@5.6.0-dev.20240804)
       '@total-typescript/ffmpeg':
         specifier: workspace:*
         version: link:../../packages/ffmpeg
@@ -61,7 +61,7 @@ importers:
         version: link:../../packages/shared
       isbot:
         specifier: ^5.0.0
-        version: 5.1.13
+        version: 5.1.14
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -71,7 +71,7 @@ importers:
     devDependencies:
       '@remix-run/dev':
         specifier: ^2.9.1
-        version: 2.11.0(@remix-run/react@2.11.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240803))(@remix-run/serve@2.11.0(typescript@5.6.0-dev.20240803))(@types/node@22.0.3)(terser@5.31.3)(typescript@5.6.0-dev.20240803)(vite@5.3.4(@types/node@22.0.3)(terser@5.31.3))
+        version: 2.11.0(@remix-run/react@2.11.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240804))(@remix-run/serve@2.11.0(typescript@5.6.0-dev.20240804))(@types/node@22.0.3)(terser@5.31.3)(typescript@5.6.0-dev.20240804)(vite@5.3.4(@types/node@22.0.3)(terser@5.31.3))
       '@types/react':
         specifier: ^18.2.20
         version: 18.3.3
@@ -83,7 +83,7 @@ importers:
         version: 5.3.4(@types/node@22.0.3)(terser@5.31.3)
       vite-tsconfig-paths:
         specifier: ^4.2.1
-        version: 4.3.2(typescript@5.6.0-dev.20240803)(vite@5.3.4(@types/node@22.0.3)(terser@5.31.3))
+        version: 4.3.2(typescript@5.6.0-dev.20240804)(vite@5.3.4(@types/node@22.0.3)(terser@5.31.3))
 
   apps/internal-cli:
     dependencies:
@@ -120,19 +120,19 @@ importers:
     dependencies:
       '@remix-run/node':
         specifier: 2.11.0
-        version: 2.11.0(typescript@5.6.0-dev.20240803)
+        version: 2.11.0(typescript@5.6.0-dev.20240804)
       '@remix-run/react':
         specifier: 2.11.0
-        version: 2.11.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240803)
+        version: 2.11.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240804)
       '@remix-run/serve':
         specifier: 2.11.0
-        version: 2.11.0(typescript@5.6.0-dev.20240803)
+        version: 2.11.0(typescript@5.6.0-dev.20240804)
       '@xstate/react':
         specifier: ^4.1.1
         version: 4.1.1(@types/react@18.3.3)(react@18.3.1)(xstate@5.17.1)
       isbot:
         specifier: ^5.0.0
-        version: 5.1.13
+        version: 5.1.14
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -145,7 +145,7 @@ importers:
     devDependencies:
       '@remix-run/dev':
         specifier: 2.11.0
-        version: 2.11.0(@remix-run/react@2.11.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240803))(@remix-run/serve@2.11.0(typescript@5.6.0-dev.20240803))(@types/node@22.0.3)(terser@5.31.3)(typescript@5.6.0-dev.20240803)(vite@5.3.4(@types/node@22.0.3)(terser@5.31.3))
+        version: 2.11.0(@remix-run/react@2.11.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240804))(@remix-run/serve@2.11.0(typescript@5.6.0-dev.20240804))(@types/node@22.0.3)(terser@5.31.3)(typescript@5.6.0-dev.20240804)(vite@5.3.4(@types/node@22.0.3)(terser@5.31.3))
       '@total-typescript/ffmpeg':
         specifier: workspace:*
         version: link:../../packages/ffmpeg
@@ -175,7 +175,7 @@ importers:
         version: 5.3.4(@types/node@22.0.3)(terser@5.31.3)
       vite-tsconfig-paths:
         specifier: ^4.2.1
-        version: 4.3.2(typescript@5.6.0-dev.20240803)(vite@5.3.4(@types/node@22.0.3)(terser@5.31.3))
+        version: 4.3.2(typescript@5.6.0-dev.20240804)(vite@5.3.4(@types/node@22.0.3)(terser@5.31.3))
 
   apps/remotion-code-hike:
     dependencies:
@@ -211,7 +211,7 @@ importers:
         version: 4.0.191(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       twoslash-cdn:
         specifier: ^0.2.8
-        version: 0.2.9(typescript@5.6.0-dev.20240803)
+        version: 0.2.9(typescript@5.6.0-dev.20240804)
       unstorage:
         specifier: ^1.10.2
         version: 1.10.2
@@ -224,7 +224,7 @@ importers:
         version: 4.0.191(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@remotion/tailwind':
         specifier: 4.0.191
-        version: 4.0.191(@remotion/bundler@4.0.191(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.6.0-dev.20240803)(webpack@5.83.1)
+        version: 4.0.191(@remotion/bundler@4.0.191(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.6.0-dev.20240804)(webpack@5.83.1)
       '@types/react':
         specifier: ^18.0.26
         version: 18.3.3
@@ -287,19 +287,19 @@ importers:
     dependencies:
       '@remix-run/node':
         specifier: 2.11.0
-        version: 2.11.0(typescript@5.6.0-dev.20240803)
+        version: 2.11.0(typescript@5.6.0-dev.20240804)
       '@remix-run/react':
         specifier: 2.11.0
-        version: 2.11.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240803)
+        version: 2.11.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240804)
       '@remix-run/serve':
         specifier: 2.11.0
-        version: 2.11.0(typescript@5.6.0-dev.20240803)
+        version: 2.11.0(typescript@5.6.0-dev.20240804)
       isbot:
         specifier: ^5.0.0
-        version: 5.1.13
+        version: 5.1.14
       puppeteer:
         specifier: ^22.15.0
-        version: 22.15.0(typescript@5.6.0-dev.20240803)
+        version: 22.15.0(typescript@5.6.0-dev.20240804)
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -309,7 +309,7 @@ importers:
     devDependencies:
       '@remix-run/dev':
         specifier: 2.11.0
-        version: 2.11.0(@remix-run/react@2.11.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240803))(@remix-run/serve@2.11.0(typescript@5.6.0-dev.20240803))(@types/node@22.0.3)(terser@5.31.3)(typescript@5.6.0-dev.20240803)(vite@5.3.4(@types/node@22.0.3)(terser@5.31.3))
+        version: 2.11.0(@remix-run/react@2.11.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240804))(@remix-run/serve@2.11.0(typescript@5.6.0-dev.20240804))(@types/node@22.0.3)(terser@5.31.3)(typescript@5.6.0-dev.20240804)(vite@5.3.4(@types/node@22.0.3)(terser@5.31.3))
       '@total-typescript/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -339,7 +339,7 @@ importers:
         version: 5.3.4(@types/node@22.0.3)(terser@5.31.3)
       vite-tsconfig-paths:
         specifier: ^4.2.1
-        version: 4.3.2(typescript@5.6.0-dev.20240803)(vite@5.3.4(@types/node@22.0.3)(terser@5.31.3))
+        version: 4.3.2(typescript@5.6.0-dev.20240804)(vite@5.3.4(@types/node@22.0.3)(terser@5.31.3))
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -363,7 +363,7 @@ importers:
         version: 1.17.1
       puppeteer:
         specifier: ^22.15.0
-        version: 22.15.0(typescript@5.6.0-dev.20240803)
+        version: 22.15.0(typescript@5.6.0-dev.20240804)
       ws:
         specifier: ^8.13.0
         version: 8.18.0
@@ -398,10 +398,10 @@ importers:
     devDependencies:
       stylelint:
         specifier: ^16.6.1
-        version: 16.7.0(typescript@5.6.0-dev.20240803)
+        version: 16.7.0(typescript@5.6.0-dev.20240804)
       stylelint-config-standard:
         specifier: ^36.0.0
-        version: 36.0.1(stylelint@16.7.0(typescript@5.6.0-dev.20240803))
+        version: 36.0.1(stylelint@16.7.0(typescript@5.6.0-dev.20240804))
 
   apps/twoslash-to-simple-markdown:
     dependencies:
@@ -427,14 +427,14 @@ importers:
         specifier: ^8.17.1
         version: 8.17.1
       arktype:
-        specifier: 2.0.0-beta.2
-        version: 2.0.0-beta.2
+        specifier: 2.0.0-beta.3
+        version: 2.0.0-beta.3
       joi:
         specifier: ^17.13.3
         version: 17.13.3
       valibot:
         specifier: ^0.37.0
-        version: 0.37.0(typescript@5.6.0-dev.20240803)
+        version: 0.37.0(typescript@5.6.0-dev.20240804)
     devDependencies:
       '@total-typescript/helpers':
         specifier: ^0.0.1
@@ -471,19 +471,19 @@ importers:
     dependencies:
       '@remix-run/node':
         specifier: 2.11.0
-        version: 2.11.0(typescript@5.6.0-dev.20240803)
+        version: 2.11.0(typescript@5.6.0-dev.20240804)
       '@remix-run/react':
         specifier: 2.11.0
-        version: 2.11.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240803)
+        version: 2.11.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240804)
       '@remix-run/serve':
         specifier: 2.11.0
-        version: 2.11.0(typescript@5.6.0-dev.20240803)
+        version: 2.11.0(typescript@5.6.0-dev.20240804)
       better-sqlite3:
         specifier: ^11.1.2
         version: 11.1.2
       isbot:
         specifier: ^5.0.0
-        version: 5.1.13
+        version: 5.1.14
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -493,7 +493,7 @@ importers:
     devDependencies:
       '@remix-run/dev':
         specifier: 2.11.0
-        version: 2.11.0(@remix-run/react@2.11.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240803))(@remix-run/serve@2.11.0(typescript@5.6.0-dev.20240803))(@types/node@22.0.3)(terser@5.31.3)(typescript@5.6.0-dev.20240803)(vite@5.3.4(@types/node@22.0.3)(terser@5.31.3))
+        version: 2.11.0(@remix-run/react@2.11.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240804))(@remix-run/serve@2.11.0(typescript@5.6.0-dev.20240804))(@types/node@22.0.3)(terser@5.31.3)(typescript@5.6.0-dev.20240804)(vite@5.3.4(@types/node@22.0.3)(terser@5.31.3))
       '@total-typescript/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -526,7 +526,7 @@ importers:
         version: 5.3.4(@types/node@22.0.3)(terser@5.31.3)
       vite-tsconfig-paths:
         specifier: ^4.2.1
-        version: 4.3.2(typescript@5.6.0-dev.20240803)(vite@5.3.4(@types/node@22.0.3)(terser@5.31.3))
+        version: 4.3.2(typescript@5.6.0-dev.20240804)(vite@5.3.4(@types/node@22.0.3)(terser@5.31.3))
 
   packages/_example-package: {}
 
@@ -555,10 +555,10 @@ importers:
     dependencies:
       '@shikijs/rehype':
         specifier: ^1.6.3
-        version: 1.10.3
+        version: 1.12.1
       '@shikijs/twoslash':
         specifier: ^1.6.3
-        version: 1.10.3(typescript@5.6.0-dev.20240803)
+        version: 1.12.1(typescript@5.6.0-dev.20240804)
       hast-util-to-html:
         specifier: 9.0.1
         version: 9.0.1
@@ -579,10 +579,10 @@ importers:
         version: 11.1.0
       shiki:
         specifier: ^1.6.3
-        version: 1.10.3
+        version: 1.12.1
       twoslash-cdn:
         specifier: ^0.2.7
-        version: 0.2.9(typescript@5.6.0-dev.20240803)
+        version: 0.2.9(typescript@5.6.0-dev.20240804)
       unified:
         specifier: ^11.0.4
         version: 11.0.5
@@ -603,11 +603,11 @@ packages:
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
 
-  '@ark/schema@0.2.2':
-    resolution: {integrity: sha512-3GyWVptFzmUZTBAwobiuk2Xa1wXeWNOOaHWcYl3pYTTdl5QNuB/53JnHXL0NrFW4Yvv7cgTcRsZQby7pNAeeJA==}
+  '@ark/schema@0.3.0':
+    resolution: {integrity: sha512-Xw6MkotVCgmmZ/OYFIXZ4DIbchNI0Okl20xrF7aZGouODZ75bED0EVyYsLDVrQ3PSKr0G4WOQbGCfM1FuN5oJw==}
 
-  '@ark/util@0.1.2':
-    resolution: {integrity: sha512-JhcPZhF8T8Eb9UxJqh3X8tOwZpnuW89azKlPnRhFXymhy/wBFPRC9+J+Vu+iUc/kplW3uloZb9n5R3EVVWUBgw==}
+  '@ark/util@0.2.0':
+    resolution: {integrity: sha512-L38ALnAR1wXxYQN9pn0ir+9ybPKA0O1+hl8PKZOvT9JSbTues4kEB8lgo80DeE0X1Jw+qoHe4lxgSwaHNa3xyg==}
 
   '@babel/code-frame@7.24.7':
     resolution: {integrity: sha512-BcYH1CVJBO9tvyIZ2jVeXgSIMvGZ2FDRvDdOIVQyuklNKSsx+eppDEBq/g47Ayw+RqNFE+URvOShmf+f/qwAlA==}
@@ -1612,7 +1612,7 @@ packages:
     peerDependencies:
       '@remix-run/react': ^2.11.0
       '@remix-run/serve': ^2.11.0
-      typescript: 5.6.0-dev.20240803
+      typescript: 5.6.0-dev.20240804
       vite: ^5.1.0
       wrangler: ^3.28.2
     peerDependenciesMeta:
@@ -1630,7 +1630,7 @@ packages:
     engines: {node: '>=18.0.0'}
     peerDependencies:
       express: ^4.19.2
-      typescript: 5.6.0-dev.20240803
+      typescript: 5.6.0-dev.20240804
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -1639,7 +1639,7 @@ packages:
     resolution: {integrity: sha512-YAaueZqsCPgMlDCS3J66I6OV9xCnSw6IKZccrn/Kt1EsEM67SmOAi74bQNSPh6ayqnKkIcqPSKqMOb8v5ASLoA==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      typescript: 5.6.0-dev.20240803
+      typescript: 5.6.0-dev.20240804
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -1650,7 +1650,7 @@ packages:
     peerDependencies:
       react: ^18.0.0
       react-dom: ^18.0.0
-      typescript: 5.6.0-dev.20240803
+      typescript: 5.6.0-dev.20240804
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -1668,7 +1668,7 @@ packages:
     resolution: {integrity: sha512-9fU4Nyvplge6dlyTl90qvAq8fiWWZ922xtJUIWAkFpSOGIcIUIdlqUVSpfsYU6l2e6JQcKr8C14LfjgciBUX+A==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      typescript: 5.6.0-dev.20240803
+      typescript: 5.6.0-dev.20240804
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -1861,17 +1861,17 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@shikijs/core@1.10.3':
-    resolution: {integrity: sha512-D45PMaBaeDHxww+EkcDQtDAtzv00Gcsp72ukBtaLSmqRvh0WgGMq3Al0rl1QQBZfuneO75NXMIzEZGFitThWbg==}
+  '@shikijs/core@1.12.1':
+    resolution: {integrity: sha512-biCz/mnkMktImI6hMfMX3H9kOeqsInxWEyCHbSlL8C/2TR1FqfmGxTLRNwYCKsyCyxWLbB8rEqXRVZuyxuLFmA==}
 
-  '@shikijs/rehype@1.10.3':
-    resolution: {integrity: sha512-ghLPkqtx+AEL3LNTR8YpVJroAuiGvZZv+2u2CUB5rw5l4gsJ/2SycrC7s3Hpe+5qMuVXDAq/xImFQyhB0nQpuw==}
+  '@shikijs/rehype@1.12.1':
+    resolution: {integrity: sha512-AZLC80TIiRWFwPbSqdwykeSeMjQwYWlkX8yfI7T4nan0qgWfvv/oP7C767JQ8USudEylbe5KzBdE8Ao2sHsidA==}
 
-  '@shikijs/transformers@1.10.3':
-    resolution: {integrity: sha512-MNjsyye2WHVdxfZUSr5frS97sLGe6G1T+1P41QjyBFJehZphMcr4aBlRLmq6OSPBslYe9byQPVvt/LJCOfxw8Q==}
+  '@shikijs/transformers@1.12.1':
+    resolution: {integrity: sha512-zOpj/S2thBvnJV4Ty3EE8aRs/VqCbV+lgtEYeBRkPxTW22uLADEIZq0qjt5W2Rfy2KSu29e73nRyzp4PefjUTg==}
 
-  '@shikijs/twoslash@1.10.3':
-    resolution: {integrity: sha512-9HlQgvy51jnO46Tcr87A7v6gxlzdKzcpYk15/CQfO48svAslOf+6QYXf0Gao3HWPywOwVj2alMAe0zQhT59y9w==}
+  '@shikijs/twoslash@1.12.1':
+    resolution: {integrity: sha512-k4D6sC9p9GksbHa4RnB1VkQIZtQ+L7nQMqi/YAxEgTKZF5v7IW6dHak0Z7bvZXrfhle36NIqWMJXz5xDexupvw==}
 
   '@sideway/address@4.1.5':
     resolution: {integrity: sha512-IqO/DUQHUkPeixNQ8n0JA6102hT9CmaljNTPmQ1u8MEhBo/R4Q8eKLN/vGZxuebwOroDB4cbpjheD4+/sKFK4Q==}
@@ -2171,8 +2171,8 @@ packages:
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
 
-  arktype@2.0.0-beta.2:
-    resolution: {integrity: sha512-WLxtViYiR8T+COYzZgHGnl3eVGwAJJXHRPfGMqRCoMeNpVb1EE+9kMhiEOq0yzEoP6Y91yTPTuhINt3WbBCYxA==}
+  arktype@2.0.0-beta.3:
+    resolution: {integrity: sha512-a08Q7Mj+5hes+UvV9CdqWoXPc/qdYpCIANcg8Bhs+iYyIdKGxMpj976oevd19uRkx0qtqMwS/O4QeyvHT0/oRQ==}
 
   array-flatten@1.1.1:
     resolution: {integrity: sha512-PCVAQswWemu6UdxsDFFX/+gVeYqKAod3D3UVm91jHwynguOwAvYPhx8nNlM++NqRcK6CxxpUafjmhIdKiHibqg==}
@@ -2515,7 +2515,7 @@ packages:
     resolution: {integrity: sha512-kcZ6+W5QzcJ3P1Mt+83OUv/oHFqZHIx8DuxG6eZ5RGMERoLqp4BuGjhHLYGK+Kf5XVkQvqBSmAy/nGWN3qDgEA==}
     engines: {node: '>=14'}
     peerDependencies:
-      typescript: 5.6.0-dev.20240803
+      typescript: 5.6.0-dev.20240804
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -2524,7 +2524,7 @@ packages:
     resolution: {integrity: sha512-itvL5h8RETACmOTFc4UfIyB2RfEHi71Ax6E/PivVxq9NseKbOWpeyHEOIbmAw1rs8Ak0VursQNww7lf7YtUwzg==}
     engines: {node: '>=14'}
     peerDependencies:
-      typescript: 5.6.0-dev.20240803
+      typescript: 5.6.0-dev.20240804
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -3510,8 +3510,8 @@ packages:
   isarray@1.0.0:
     resolution: {integrity: sha512-VLghIWNM6ELQzo7zwmcg0NmTVyWKYjvIeM83yjp0wRDTmUnrM678fQbcKBo6n2CJEF0szoG//ytg+TKla89ALQ==}
 
-  isbot@5.1.13:
-    resolution: {integrity: sha512-RXtBib4m9zChSb+187EpNQML7Z3u2i34zDdqcRFZnqSJs0xdh91xzJytc5apYVg+9Y4NGnUQ0AIeJvX9FAnCUw==}
+  isbot@5.1.14:
+    resolution: {integrity: sha512-4X8KZHyaIqXOqEv1qfZOqshMX3r7Q/VtMEMzuGPZljDMEIGpX7bcGODR9gZztXdcPBEJpNioQXXBJun+xi2G5g==}
     engines: {node: '>=18'}
 
   isexe@2.0.0:
@@ -4987,8 +4987,8 @@ packages:
     resolution: {integrity: sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==}
     engines: {node: '>=8'}
 
-  shiki@1.10.3:
-    resolution: {integrity: sha512-eneCLncGuvPdTutJuLyUGS8QNPAVFO5Trvld2wgEq1e002mwctAhJKeMGWtWVXOIEzmlcLRqcgPSorR6AVzOmQ==}
+  shiki@1.12.1:
+    resolution: {integrity: sha512-nwmjbHKnOYYAe1aaQyEBHvQymJgfm86ZSS7fT8OaPRr4sbAcBNz7PbfAikMEFSDQ6se2j2zobkXvVKcBOm0ysg==}
 
   side-channel@1.0.6:
     resolution: {integrity: sha512-fDW/EZ6Q9RiO8eFG8Hj+7u/oW+XrPTIChwCOM2+th2A6OblDtYYIpve9m+KvI9Z4C9qSEXlaGR6bTEYHReuglA==}
@@ -5350,7 +5350,7 @@ packages:
     engines: {node: ^18 || >=20}
     hasBin: true
     peerDependencies:
-      typescript: 5.6.0-dev.20240803
+      typescript: 5.6.0-dev.20240804
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -5410,7 +5410,7 @@ packages:
   twoslash-cdn@0.2.9:
     resolution: {integrity: sha512-FnEl2+L49j5chaH6HYlbPa299PztzMi7xuhllxmWaHUx9VkTdmpdXjkR0kz2PwwT4zxUPrSFCaQetcTQRreWrw==}
     peerDependencies:
-      typescript: 5.6.0-dev.20240803
+      typescript: 5.6.0-dev.20240804
 
   twoslash-protocol@0.2.9:
     resolution: {integrity: sha512-uKQl8UboT6JU4VAtYaSI3DbNtgaNhFaTpCSMy/n3tRl5lMlMhrjiuNKdqx15xjcviconuGJ9oObkz1h9zJFrJg==}
@@ -5418,14 +5418,14 @@ packages:
   twoslash@0.2.9:
     resolution: {integrity: sha512-oj7XY6h8E9nTZBmfRE1gpsSSUqAQo5kcIpFkXyQPp8UCsyCQsUlP2bJ2s32o02c1n5+xl4h9rcCsQ1F97Z6LZg==}
     peerDependencies:
-      typescript: 5.6.0-dev.20240803
+      typescript: 5.6.0-dev.20240804
 
   type-is@1.6.18:
     resolution: {integrity: sha512-TkRKr9sUTxEH8MdfuCSP7VizJyzRNMjj2J2do2Jr3Kym598JVdEksuzPQCnlFPW4ky9Q+iA+ma9BGm06XQBy8g==}
     engines: {node: '>= 0.6'}
 
-  typescript@5.6.0-dev.20240803:
-    resolution: {integrity: sha512-iVzsoMLqRMA/IdjeRAOm3k0nGH/2oBPeDfWYazVPW+vL4MKyhGtQB8UyMc4lZqSNIBNcql41SS6m2As86qYJqw==}
+  typescript@5.6.0-dev.20240804:
+    resolution: {integrity: sha512-ceiGncJ10hB9IgD3BxGc5e9Ug+4a/JVQKZFQR+ctQGzktWKH/vUZZNwg+PadUipPk/EH4WLFUc7infEUCNOtLQ==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -5617,7 +5617,7 @@ packages:
   valibot@0.37.0:
     resolution: {integrity: sha512-FQz52I8RXgFgOHym3XHYSREbNtkgSjF9prvMFH1nBsRyfL6SfCzoT1GuSDTlbsuPubM7/6Kbw0ZMQb8A+V+VsQ==}
     peerDependencies:
-      typescript: 5.6.0-dev.20240803
+      typescript: 5.6.0-dev.20240804
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -5903,11 +5903,11 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@ark/schema@0.2.2':
+  '@ark/schema@0.3.0':
     dependencies:
-      '@ark/util': 0.1.2
+      '@ark/util': 0.2.0
 
-  '@ark/util@0.1.2': {}
+  '@ark/util@0.2.0': {}
 
   '@babel/code-frame@7.24.7':
     dependencies:
@@ -6918,7 +6918,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@remix-run/dev@2.11.0(@remix-run/react@2.11.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240803))(@remix-run/serve@2.11.0(typescript@5.6.0-dev.20240803))(@types/node@22.0.3)(terser@5.31.3)(typescript@5.6.0-dev.20240803)(vite@5.3.4(@types/node@22.0.3)(terser@5.31.3))':
+  '@remix-run/dev@2.11.0(@remix-run/react@2.11.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240804))(@remix-run/serve@2.11.0(typescript@5.6.0-dev.20240804))(@types/node@22.0.3)(terser@5.31.3)(typescript@5.6.0-dev.20240804)(vite@5.3.4(@types/node@22.0.3)(terser@5.31.3))':
     dependencies:
       '@babel/core': 7.25.2
       '@babel/generator': 7.25.0
@@ -6930,10 +6930,10 @@ snapshots:
       '@babel/types': 7.25.2
       '@mdx-js/mdx': 2.3.0
       '@npmcli/package-json': 4.0.1
-      '@remix-run/node': 2.11.0(typescript@5.6.0-dev.20240803)
-      '@remix-run/react': 2.11.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240803)
+      '@remix-run/node': 2.11.0(typescript@5.6.0-dev.20240804)
+      '@remix-run/react': 2.11.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240804)
       '@remix-run/router': 1.19.0
-      '@remix-run/server-runtime': 2.11.0(typescript@5.6.0-dev.20240803)
+      '@remix-run/server-runtime': 2.11.0(typescript@5.6.0-dev.20240804)
       '@types/mdx': 2.0.13
       '@vanilla-extract/integration': 6.5.0(@types/node@22.0.3)(terser@5.31.3)
       arg: 5.0.2
@@ -6975,8 +6975,8 @@ snapshots:
       tsconfig-paths: 4.2.0
       ws: 7.5.10
     optionalDependencies:
-      '@remix-run/serve': 2.11.0(typescript@5.6.0-dev.20240803)
-      typescript: 5.6.0-dev.20240803
+      '@remix-run/serve': 2.11.0(typescript@5.6.0-dev.20240804)
+      typescript: 5.6.0-dev.20240804
       vite: 5.3.4(@types/node@22.0.3)(terser@5.31.3)
     transitivePeerDependencies:
       - '@types/node'
@@ -6993,16 +6993,16 @@ snapshots:
       - ts-node
       - utf-8-validate
 
-  '@remix-run/express@2.11.0(express@4.19.2)(typescript@5.6.0-dev.20240803)':
+  '@remix-run/express@2.11.0(express@4.19.2)(typescript@5.6.0-dev.20240804)':
     dependencies:
-      '@remix-run/node': 2.11.0(typescript@5.6.0-dev.20240803)
+      '@remix-run/node': 2.11.0(typescript@5.6.0-dev.20240804)
       express: 4.19.2
     optionalDependencies:
-      typescript: 5.6.0-dev.20240803
+      typescript: 5.6.0-dev.20240804
 
-  '@remix-run/node@2.11.0(typescript@5.6.0-dev.20240803)':
+  '@remix-run/node@2.11.0(typescript@5.6.0-dev.20240804)':
     dependencies:
-      '@remix-run/server-runtime': 2.11.0(typescript@5.6.0-dev.20240803)
+      '@remix-run/server-runtime': 2.11.0(typescript@5.6.0-dev.20240804)
       '@remix-run/web-fetch': 4.4.2
       '@web3-storage/multipart-parser': 1.0.0
       cookie-signature: 1.2.1
@@ -7010,26 +7010,26 @@ snapshots:
       stream-slice: 0.1.2
       undici: 6.19.5
     optionalDependencies:
-      typescript: 5.6.0-dev.20240803
+      typescript: 5.6.0-dev.20240804
 
-  '@remix-run/react@2.11.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240803)':
+  '@remix-run/react@2.11.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240804)':
     dependencies:
       '@remix-run/router': 1.19.0
-      '@remix-run/server-runtime': 2.11.0(typescript@5.6.0-dev.20240803)
+      '@remix-run/server-runtime': 2.11.0(typescript@5.6.0-dev.20240804)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       react-router: 6.26.0(react@18.3.1)
       react-router-dom: 6.26.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       turbo-stream: 2.2.0
     optionalDependencies:
-      typescript: 5.6.0-dev.20240803
+      typescript: 5.6.0-dev.20240804
 
   '@remix-run/router@1.19.0': {}
 
-  '@remix-run/serve@2.11.0(typescript@5.6.0-dev.20240803)':
+  '@remix-run/serve@2.11.0(typescript@5.6.0-dev.20240804)':
     dependencies:
-      '@remix-run/express': 2.11.0(express@4.19.2)(typescript@5.6.0-dev.20240803)
-      '@remix-run/node': 2.11.0(typescript@5.6.0-dev.20240803)
+      '@remix-run/express': 2.11.0(express@4.19.2)(typescript@5.6.0-dev.20240804)
+      '@remix-run/node': 2.11.0(typescript@5.6.0-dev.20240804)
       chokidar: 3.6.0
       compression: 1.7.4
       express: 4.19.2
@@ -7040,7 +7040,7 @@ snapshots:
       - supports-color
       - typescript
 
-  '@remix-run/server-runtime@2.11.0(typescript@5.6.0-dev.20240803)':
+  '@remix-run/server-runtime@2.11.0(typescript@5.6.0-dev.20240804)':
     dependencies:
       '@remix-run/router': 1.19.0
       '@types/cookie': 0.6.0
@@ -7050,7 +7050,7 @@ snapshots:
       source-map: 0.7.4
       turbo-stream: 2.2.0
     optionalDependencies:
-      typescript: 5.6.0-dev.20240803
+      typescript: 5.6.0-dev.20240804
 
   '@remix-run/web-blob@3.1.0':
     dependencies:
@@ -7242,13 +7242,13 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@remotion/tailwind@4.0.191(@remotion/bundler@4.0.191(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.6.0-dev.20240803)(webpack@5.83.1)':
+  '@remotion/tailwind@4.0.191(@remotion/bundler@4.0.191(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.6.0-dev.20240804)(webpack@5.83.1)':
     dependencies:
       '@remotion/bundler': 4.0.191(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       autoprefixer: 10.4.20(postcss@8.4.40)
       css-loader: 5.2.7(webpack@5.83.1(esbuild@0.18.6))
       postcss: 8.4.40
-      postcss-loader: 7.3.4(postcss@8.4.40)(typescript@5.6.0-dev.20240803)(webpack@5.83.1)
+      postcss-loader: 7.3.4(postcss@8.4.40)(typescript@5.6.0-dev.20240804)(webpack@5.83.1)
       postcss-preset-env: 8.5.1(postcss@8.4.40)
       style-loader: 2.0.0(webpack@5.83.1(esbuild@0.18.6))
       tailwindcss: 3.4.7
@@ -7305,27 +7305,27 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.18.1':
     optional: true
 
-  '@shikijs/core@1.10.3':
+  '@shikijs/core@1.12.1':
     dependencies:
       '@types/hast': 3.0.4
 
-  '@shikijs/rehype@1.10.3':
+  '@shikijs/rehype@1.12.1':
     dependencies:
-      '@shikijs/transformers': 1.10.3
+      '@shikijs/transformers': 1.12.1
       '@types/hast': 3.0.4
       hast-util-to-string: 3.0.0
-      shiki: 1.10.3
+      shiki: 1.12.1
       unified: 11.0.5
       unist-util-visit: 5.0.0
 
-  '@shikijs/transformers@1.10.3':
+  '@shikijs/transformers@1.12.1':
     dependencies:
-      shiki: 1.10.3
+      shiki: 1.12.1
 
-  '@shikijs/twoslash@1.10.3(typescript@5.6.0-dev.20240803)':
+  '@shikijs/twoslash@1.12.1(typescript@5.6.0-dev.20240804)':
     dependencies:
-      '@shikijs/core': 1.10.3
-      twoslash: 0.2.9(typescript@5.6.0-dev.20240803)
+      '@shikijs/core': 1.12.1
+      twoslash: 0.2.9(typescript@5.6.0-dev.20240804)
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -7716,10 +7716,10 @@ snapshots:
 
   argparse@2.0.1: {}
 
-  arktype@2.0.0-beta.2:
+  arktype@2.0.0-beta.3:
     dependencies:
-      '@ark/schema': 0.2.2
-      '@ark/util': 0.1.2
+      '@ark/schema': 0.3.0
+      '@ark/util': 0.2.0
 
   array-flatten@1.1.1: {}
 
@@ -8089,23 +8089,23 @@ snapshots:
 
   core-util-is@1.0.3: {}
 
-  cosmiconfig@8.3.6(typescript@5.6.0-dev.20240803):
+  cosmiconfig@8.3.6(typescript@5.6.0-dev.20240804):
     dependencies:
       import-fresh: 3.3.0
       js-yaml: 4.1.0
       parse-json: 5.2.0
       path-type: 4.0.0
     optionalDependencies:
-      typescript: 5.6.0-dev.20240803
+      typescript: 5.6.0-dev.20240804
 
-  cosmiconfig@9.0.0(typescript@5.6.0-dev.20240803):
+  cosmiconfig@9.0.0(typescript@5.6.0-dev.20240804):
     dependencies:
       env-paths: 2.2.1
       import-fresh: 3.3.0
       js-yaml: 4.1.0
       parse-json: 5.2.0
     optionalDependencies:
-      typescript: 5.6.0-dev.20240803
+      typescript: 5.6.0-dev.20240804
 
   cross-spawn@5.1.0:
     dependencies:
@@ -9235,7 +9235,7 @@ snapshots:
 
   isarray@1.0.0: {}
 
-  isbot@5.1.13: {}
+  isbot@5.1.14: {}
 
   isexe@2.0.0: {}
 
@@ -10600,9 +10600,9 @@ snapshots:
     optionalDependencies:
       postcss: 8.4.40
 
-  postcss-loader@7.3.4(postcss@8.4.40)(typescript@5.6.0-dev.20240803)(webpack@5.83.1):
+  postcss-loader@7.3.4(postcss@8.4.40)(typescript@5.6.0-dev.20240804)(webpack@5.83.1):
     dependencies:
-      cosmiconfig: 8.3.6(typescript@5.6.0-dev.20240803)
+      cosmiconfig: 8.3.6(typescript@5.6.0-dev.20240804)
       jiti: 1.21.6
       postcss: 8.4.40
       semver: 7.6.3
@@ -10883,10 +10883,10 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  puppeteer@22.15.0(typescript@5.6.0-dev.20240803):
+  puppeteer@22.15.0(typescript@5.6.0-dev.20240804):
     dependencies:
       '@puppeteer/browsers': 2.3.0
-      cosmiconfig: 9.0.0(typescript@5.6.0-dev.20240803)
+      cosmiconfig: 9.0.0(typescript@5.6.0-dev.20240804)
       devtools-protocol: 0.0.1312386
       puppeteer-core: 22.15.0
     transitivePeerDependencies:
@@ -11210,9 +11210,9 @@ snapshots:
 
   shebang-regex@3.0.0: {}
 
-  shiki@1.10.3:
+  shiki@1.12.1:
     dependencies:
-      '@shikijs/core': 1.10.3
+      '@shikijs/core': 1.12.1
       '@types/hast': 3.0.4
 
   side-channel@1.0.6:
@@ -11386,16 +11386,16 @@ snapshots:
     dependencies:
       inline-style-parser: 0.2.3
 
-  stylelint-config-recommended@14.0.1(stylelint@16.7.0(typescript@5.6.0-dev.20240803)):
+  stylelint-config-recommended@14.0.1(stylelint@16.7.0(typescript@5.6.0-dev.20240804)):
     dependencies:
-      stylelint: 16.7.0(typescript@5.6.0-dev.20240803)
+      stylelint: 16.7.0(typescript@5.6.0-dev.20240804)
 
-  stylelint-config-standard@36.0.1(stylelint@16.7.0(typescript@5.6.0-dev.20240803)):
+  stylelint-config-standard@36.0.1(stylelint@16.7.0(typescript@5.6.0-dev.20240804)):
     dependencies:
-      stylelint: 16.7.0(typescript@5.6.0-dev.20240803)
-      stylelint-config-recommended: 14.0.1(stylelint@16.7.0(typescript@5.6.0-dev.20240803))
+      stylelint: 16.7.0(typescript@5.6.0-dev.20240804)
+      stylelint-config-recommended: 14.0.1(stylelint@16.7.0(typescript@5.6.0-dev.20240804))
 
-  stylelint@16.7.0(typescript@5.6.0-dev.20240803):
+  stylelint@16.7.0(typescript@5.6.0-dev.20240804):
     dependencies:
       '@csstools/css-parser-algorithms': 2.7.1(@csstools/css-tokenizer@2.4.1)
       '@csstools/css-tokenizer': 2.4.1
@@ -11404,7 +11404,7 @@ snapshots:
       '@dual-bundle/import-meta-resolve': 4.1.0
       balanced-match: 2.0.0
       colord: 2.9.3
-      cosmiconfig: 9.0.0(typescript@5.6.0-dev.20240803)
+      cosmiconfig: 9.0.0(typescript@5.6.0-dev.20240804)
       css-functions-list: 3.2.2
       css-tree: 2.3.1
       debug: 4.3.5
@@ -11652,9 +11652,9 @@ snapshots:
 
   ts-toolbelt@9.6.0: {}
 
-  tsconfck@3.1.1(typescript@5.6.0-dev.20240803):
+  tsconfck@3.1.1(typescript@5.6.0-dev.20240804):
     optionalDependencies:
-      typescript: 5.6.0-dev.20240803
+      typescript: 5.6.0-dev.20240804
 
   tsconfig-paths@4.2.0:
     dependencies:
@@ -11704,20 +11704,20 @@ snapshots:
       turbo-windows-64: 2.0.11
       turbo-windows-arm64: 2.0.11
 
-  twoslash-cdn@0.2.9(typescript@5.6.0-dev.20240803):
+  twoslash-cdn@0.2.9(typescript@5.6.0-dev.20240804):
     dependencies:
-      twoslash: 0.2.9(typescript@5.6.0-dev.20240803)
-      typescript: 5.6.0-dev.20240803
+      twoslash: 0.2.9(typescript@5.6.0-dev.20240804)
+      typescript: 5.6.0-dev.20240804
     transitivePeerDependencies:
       - supports-color
 
   twoslash-protocol@0.2.9: {}
 
-  twoslash@0.2.9(typescript@5.6.0-dev.20240803):
+  twoslash@0.2.9(typescript@5.6.0-dev.20240804):
     dependencies:
       '@typescript/vfs': 1.5.0
       twoslash-protocol: 0.2.9
-      typescript: 5.6.0-dev.20240803
+      typescript: 5.6.0-dev.20240804
     transitivePeerDependencies:
       - supports-color
 
@@ -11726,7 +11726,7 @@ snapshots:
       media-typer: 0.3.0
       mime-types: 2.1.35
 
-  typescript@5.6.0-dev.20240803: {}
+  typescript@5.6.0-dev.20240804: {}
 
   ufo@1.5.4: {}
 
@@ -11915,9 +11915,9 @@ snapshots:
       kleur: 4.1.5
       sade: 1.8.1
 
-  valibot@0.37.0(typescript@5.6.0-dev.20240803):
+  valibot@0.37.0(typescript@5.6.0-dev.20240804):
     optionalDependencies:
-      typescript: 5.6.0-dev.20240803
+      typescript: 5.6.0-dev.20240804
 
   valid-data-url@3.0.1: {}
 
@@ -11992,11 +11992,11 @@ snapshots:
       - supports-color
       - terser
 
-  vite-tsconfig-paths@4.3.2(typescript@5.6.0-dev.20240803)(vite@5.3.4(@types/node@22.0.3)(terser@5.31.3)):
+  vite-tsconfig-paths@4.3.2(typescript@5.6.0-dev.20240804)(vite@5.3.4(@types/node@22.0.3)(terser@5.31.3)):
     dependencies:
       debug: 4.3.5
       globrex: 0.1.2
-      tsconfck: 3.1.1(typescript@5.6.0-dev.20240803)
+      tsconfck: 3.1.1(typescript@5.6.0-dev.20240804)
     optionalDependencies:
       vite: 5.3.4(@types/node@22.0.3)(terser@5.31.3)
     transitivePeerDependencies:
