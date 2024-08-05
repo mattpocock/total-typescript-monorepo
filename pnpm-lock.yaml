@@ -61,7 +61,7 @@ importers:
         version: link:../../packages/shared
       isbot:
         specifier: ^5.0.0
-        version: 5.1.13
+        version: 5.1.14
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -132,7 +132,7 @@ importers:
         version: 4.1.1(@types/react@18.3.3)(react@18.3.1)(xstate@5.17.1)
       isbot:
         specifier: ^5.0.0
-        version: 5.1.13
+        version: 5.1.14
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -296,7 +296,7 @@ importers:
         version: 2.11.0(typescript@5.6.0-dev.20240804)
       isbot:
         specifier: ^5.0.0
-        version: 5.1.13
+        version: 5.1.14
       puppeteer:
         specifier: ^22.15.0
         version: 22.15.0(typescript@5.6.0-dev.20240804)
@@ -427,8 +427,8 @@ importers:
         specifier: ^8.17.1
         version: 8.17.1
       arktype:
-        specifier: 2.0.0-beta.2
-        version: 2.0.0-beta.2
+        specifier: 2.0.0-beta.3
+        version: 2.0.0-beta.3
       joi:
         specifier: ^17.13.3
         version: 17.13.3
@@ -483,7 +483,7 @@ importers:
         version: 11.1.2
       isbot:
         specifier: ^5.0.0
-        version: 5.1.13
+        version: 5.1.14
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -603,11 +603,11 @@ packages:
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
 
-  '@ark/schema@0.2.2':
-    resolution: {integrity: sha512-3GyWVptFzmUZTBAwobiuk2Xa1wXeWNOOaHWcYl3pYTTdl5QNuB/53JnHXL0NrFW4Yvv7cgTcRsZQby7pNAeeJA==}
+  '@ark/schema@0.3.0':
+    resolution: {integrity: sha512-Xw6MkotVCgmmZ/OYFIXZ4DIbchNI0Okl20xrF7aZGouODZ75bED0EVyYsLDVrQ3PSKr0G4WOQbGCfM1FuN5oJw==}
 
-  '@ark/util@0.1.2':
-    resolution: {integrity: sha512-JhcPZhF8T8Eb9UxJqh3X8tOwZpnuW89azKlPnRhFXymhy/wBFPRC9+J+Vu+iUc/kplW3uloZb9n5R3EVVWUBgw==}
+  '@ark/util@0.2.0':
+    resolution: {integrity: sha512-L38ALnAR1wXxYQN9pn0ir+9ybPKA0O1+hl8PKZOvT9JSbTues4kEB8lgo80DeE0X1Jw+qoHe4lxgSwaHNa3xyg==}
 
   '@babel/code-frame@7.24.7':
     resolution: {integrity: sha512-BcYH1CVJBO9tvyIZ2jVeXgSIMvGZ2FDRvDdOIVQyuklNKSsx+eppDEBq/g47Ayw+RqNFE+URvOShmf+f/qwAlA==}
@@ -2171,8 +2171,8 @@ packages:
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
 
-  arktype@2.0.0-beta.2:
-    resolution: {integrity: sha512-WLxtViYiR8T+COYzZgHGnl3eVGwAJJXHRPfGMqRCoMeNpVb1EE+9kMhiEOq0yzEoP6Y91yTPTuhINt3WbBCYxA==}
+  arktype@2.0.0-beta.3:
+    resolution: {integrity: sha512-a08Q7Mj+5hes+UvV9CdqWoXPc/qdYpCIANcg8Bhs+iYyIdKGxMpj976oevd19uRkx0qtqMwS/O4QeyvHT0/oRQ==}
 
   array-flatten@1.1.1:
     resolution: {integrity: sha512-PCVAQswWemu6UdxsDFFX/+gVeYqKAod3D3UVm91jHwynguOwAvYPhx8nNlM++NqRcK6CxxpUafjmhIdKiHibqg==}
@@ -3510,8 +3510,8 @@ packages:
   isarray@1.0.0:
     resolution: {integrity: sha512-VLghIWNM6ELQzo7zwmcg0NmTVyWKYjvIeM83yjp0wRDTmUnrM678fQbcKBo6n2CJEF0szoG//ytg+TKla89ALQ==}
 
-  isbot@5.1.13:
-    resolution: {integrity: sha512-RXtBib4m9zChSb+187EpNQML7Z3u2i34zDdqcRFZnqSJs0xdh91xzJytc5apYVg+9Y4NGnUQ0AIeJvX9FAnCUw==}
+  isbot@5.1.14:
+    resolution: {integrity: sha512-4X8KZHyaIqXOqEv1qfZOqshMX3r7Q/VtMEMzuGPZljDMEIGpX7bcGODR9gZztXdcPBEJpNioQXXBJun+xi2G5g==}
     engines: {node: '>=18'}
 
   isexe@2.0.0:
@@ -5903,11 +5903,11 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@ark/schema@0.2.2':
+  '@ark/schema@0.3.0':
     dependencies:
-      '@ark/util': 0.1.2
+      '@ark/util': 0.2.0
 
-  '@ark/util@0.1.2': {}
+  '@ark/util@0.2.0': {}
 
   '@babel/code-frame@7.24.7':
     dependencies:
@@ -7716,10 +7716,10 @@ snapshots:
 
   argparse@2.0.1: {}
 
-  arktype@2.0.0-beta.2:
+  arktype@2.0.0-beta.3:
     dependencies:
-      '@ark/schema': 0.2.2
-      '@ark/util': 0.1.2
+      '@ark/schema': 0.3.0
+      '@ark/util': 0.2.0
 
   array-flatten@1.1.1: {}
 
@@ -9235,7 +9235,7 @@ snapshots:
 
   isarray@1.0.0: {}
 
-  isbot@5.1.13: {}
+  isbot@5.1.14: {}
 
   isexe@2.0.0: {}
 
