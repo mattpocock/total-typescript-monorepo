@@ -223,8 +223,8 @@ importers:
         specifier: 4.0.192
         version: 4.0.192(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@remotion/tailwind':
-        specifier: 4.0.191
-        version: 4.0.191(@remotion/bundler@4.0.192(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.6.0-dev.20240804)(webpack@5.83.1)
+        specifier: 4.0.192
+        version: 4.0.192(@remotion/bundler@4.0.192(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.6.0-dev.20240804)(webpack@5.83.1)
       '@types/react':
         specifier: ^18.0.26
         version: 18.3.3
@@ -1776,10 +1776,10 @@ packages:
   '@remotion/studio@4.0.192':
     resolution: {integrity: sha512-/01qFEzMsKKGtmKuE/BS1moDFQpCTU+/EqAzuBe0VWU3RICtnytwgV78OVEhUA9P4qr9WU+UV44mKHNum3Kpfw==}
 
-  '@remotion/tailwind@4.0.191':
-    resolution: {integrity: sha512-/CdKur6AhLroQYZXqNKk80JxKqxzMeBDq0fi761Q2KXm7uRYMTeqph7uJI15WTPNXnqvqcgKJfQregM6YWe8MQ==}
+  '@remotion/tailwind@4.0.192':
+    resolution: {integrity: sha512-CP3LOIPAZQk1uutalNCS3OwYdTBpMxLhQo8BlbLluPOvl1NXkIlfg78MlN+NDbLDcHC6I5JiCCEFXmTYimzfXQ==}
     peerDependencies:
-      '@remotion/bundler': 4.0.191
+      '@remotion/bundler': 4.0.192
 
   '@rollup/rollup-android-arm-eabi@4.18.1':
     resolution: {integrity: sha512-lncuC4aHicncmbORnx+dUaAgzee9cm/PbIqgWz1PpXuwc+sa1Ct83tnqUDy/GFKleLiN7ZIeytM6KJ4cAn1SxA==}
@@ -7248,7 +7248,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@remotion/tailwind@4.0.191(@remotion/bundler@4.0.192(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.6.0-dev.20240804)(webpack@5.83.1)':
+  '@remotion/tailwind@4.0.192(@remotion/bundler@4.0.192(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.6.0-dev.20240804)(webpack@5.83.1)':
     dependencies:
       '@remotion/bundler': 4.0.192(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       autoprefixer: 10.4.20(postcss@8.4.40)
