@@ -3,7 +3,11 @@
 import React, { forwardRef } from "react";
 import { useForceSquareAspectRatio } from "./useForceSquareAspectRatio.js";
 import clsx from "clsx";
-import { SCREENSHOT_TARGET_ID } from "@total-typescript/twoslash-shared";
+import {
+  RENDER_TYPES,
+  SCREENSHOT_TARGET_ID,
+  type RenderType,
+} from "@total-typescript/twoslash-shared";
 
 const gradients = [
   "from-indigo-600 to-cyan-500",
@@ -72,3 +76,71 @@ export const CodeSnippet = (props: { html: string }) => {
     ></div>
   );
 };
+
+export type RendererData =
+  | {
+      mode:
+        | typeof RENDER_TYPES.basicWithBorder
+        | typeof RENDER_TYPES.simpleNoBorder;
+      html: string;
+    }
+  | {
+      mode:
+        | typeof RENDER_TYPES.allSquareWithBorder
+        | typeof RENDER_TYPES.allBasicWithBorder;
+      html: string[];
+    }
+  | {
+      mode: "error";
+      code: string;
+      title: string;
+      description: string;
+      recommendation: string;
+    };
+
+export function CodeSnippetRenderer({ data }: { data: RendererData }) {
+  switch (data.mode) {
+    case RENDER_TYPES.basicWithBorder: {
+      return (
+        <ScreenshotSnippetWrapperWithBorder>
+          <CodeSnippet html={data.html} />
+        </ScreenshotSnippetWrapperWithBorder>
+      );
+    }
+    case RENDER_TYPES.simpleNoBorder: {
+      return (
+        <ScreenshotSnippetWrapper>
+          <CodeSnippet html={data.html} />
+        </ScreenshotSnippetWrapper>
+      );
+    }
+    case RENDER_TYPES.allSquareWithBorder:
+      return (
+        <ScreenshotSnippetWrapperWithBorder outerClassName="aspect-square">
+          {data.html.map((html, index) => {
+            return <CodeSnippet key={index} html={html} />;
+          })}
+        </ScreenshotSnippetWrapperWithBorder>
+      );
+    case RENDER_TYPES.allBasicWithBorder: {
+      return (
+        <ScreenshotSnippetWrapperWithBorder>
+          {data.html.map((html, index) => {
+            return <CodeSnippet key={index} html={html} />;
+          })}
+        </ScreenshotSnippetWrapperWithBorder>
+      );
+    }
+    case "error":
+      return (
+        <ScreenshotSnippetWrapper>
+          <div className="p-6 space-y-4 bg-gray-900 text-4xl">
+            <pre className="leading-snug">{data.code}</pre>
+            <h1 className="">{data.title}</h1>
+            <p className="">{data.description}</p>
+            <p className="">{data.recommendation}</p>
+          </div>
+        </ScreenshotSnippetWrapper>
+      );
+  }
+}

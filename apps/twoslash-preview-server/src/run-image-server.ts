@@ -1,6 +1,7 @@
 import {
   FRONTEND_APP_PORT,
-  htmlRendererSchema,
+  htmlRendererFromCodeSchema,
+  htmlRendererFromFileUrlSchema,
   IMAGE_SERVER_PORT,
 } from "@total-typescript/twoslash-shared";
 import fastq from "fastq";
@@ -19,18 +20,42 @@ const server = createServer(async (req, res) => {
 
   const url = new URL(`http://localhost:${IMAGE_SERVER_PORT}${req.url}`);
 
-  // If url is /render, send an image
-  if (url.pathname === "/render") {
+  // If url is /render-from-uri, send an image
+  if (url.pathname === "/render-from-uri") {
     const params = Object.fromEntries(url.searchParams);
 
-    const result = htmlRendererSchema.safeParse(params);
+    const result = htmlRendererFromFileUrlSchema.safeParse(params);
 
     if (!result.success) {
       res.writeHead(400).end(result.error.message);
       return;
     }
 
-    const urlToTakeScreenshotOf = `http://localhost:${FRONTEND_APP_PORT}/html-renderer?${new URLSearchParams(
+    const urlToTakeScreenshotOf = `http://localhost:${FRONTEND_APP_PORT}/html-renderer-from-file-uri?${new URLSearchParams(
+      params,
+    )}`;
+
+    const image = await screenshotQueue.push(urlToTakeScreenshotOf);
+
+    res.writeHead(200, {
+      "Content-Type": "image/png",
+      // Cache for 5 minutes
+      "Cache-Control": "max-age=6000, public",
+    });
+    res.write(image);
+    res.end();
+    return;
+  } else if (url.pathname === "/render-from-code") {
+    const params = Object.fromEntries(url.searchParams);
+
+    const result = htmlRendererFromCodeSchema.safeParse(params);
+
+    if (!result.success) {
+      res.writeHead(400).end(result.error.message);
+      return;
+    }
+
+    const urlToTakeScreenshotOf = `http://localhost:${FRONTEND_APP_PORT}/html-renderer-from-code?${new URLSearchParams(
       params,
     )}`;
 

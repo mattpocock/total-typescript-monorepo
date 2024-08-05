@@ -9,22 +9,19 @@ import { useLoaderData } from "@remix-run/react";
 import {
   applyShikiToCode,
   getCodeSamplesFromFile,
-  htmlRendererSchema,
+  htmlRendererFromFileUrlSchema,
   RENDER_TYPES,
 } from "@total-typescript/twoslash-shared";
 import { readFile } from "fs/promises";
-import {
-  CodeSnippet,
-  ScreenshotSnippetWrapper,
-  ScreenshotSnippetWrapperWithBorder,
-} from "~/components";
+import { CodeSnippetRenderer } from "~/components";
 
 export const loader = async (args: LoaderFunctionArgs) => {
   const url = new URL(args.request.url);
 
   const searchParams = Object.fromEntries(url.searchParams);
 
-  const { uri, ...renderType } = htmlRendererSchema.parse(searchParams);
+  const { uri, ...renderType } =
+    htmlRendererFromFileUrlSchema.parse(searchParams);
 
   const fileContents = await readFile(uri, "utf-8");
   const snippets = Array.from(getCodeSamplesFromFile(fileContents));
@@ -92,51 +89,8 @@ export const loader = async (args: LoaderFunctionArgs) => {
   }
 };
 
-export default function Render() {
+export default function HTMLRendererFromFileURI() {
   const data = useLoaderData<typeof loader>();
 
-  switch (data.mode) {
-    case RENDER_TYPES.basicWithBorder: {
-      return (
-        <ScreenshotSnippetWrapperWithBorder>
-          <CodeSnippet html={data.html} />
-        </ScreenshotSnippetWrapperWithBorder>
-      );
-    }
-    case RENDER_TYPES.simpleNoBorder: {
-      return (
-        <ScreenshotSnippetWrapper>
-          <CodeSnippet html={data.html} />
-        </ScreenshotSnippetWrapper>
-      );
-    }
-    case RENDER_TYPES.allSquareWithBorder:
-      return (
-        <ScreenshotSnippetWrapperWithBorder outerClassName="aspect-square">
-          {data.html.map((html, index) => {
-            return <CodeSnippet key={index} html={html} />;
-          })}
-        </ScreenshotSnippetWrapperWithBorder>
-      );
-    case RENDER_TYPES.allBasicWithBorder: {
-      return (
-        <ScreenshotSnippetWrapperWithBorder>
-          {data.html.map((html, index) => {
-            return <CodeSnippet key={index} html={html} />;
-          })}
-        </ScreenshotSnippetWrapperWithBorder>
-      );
-    }
-    case "error":
-      return (
-        <ScreenshotSnippetWrapper>
-          <div className="p-6 space-y-4 bg-gray-900 text-4xl">
-            <pre className="leading-snug">{data.code}</pre>
-            <h1 className="">{data.title}</h1>
-            <p className="">{data.description}</p>
-            <p className="">{data.recommendation}</p>
-          </div>
-        </ScreenshotSnippetWrapper>
-      );
-  }
+  return <CodeSnippetRenderer data={data} />;
 }

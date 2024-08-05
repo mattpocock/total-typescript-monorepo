@@ -40,7 +40,7 @@ export const renderTypeDiscriminatedUnionSchema = z.union([
   }),
 ]);
 
-export const htmlRendererSchema = z.intersection(
+export const htmlRendererFromFileUrlSchema = z.intersection(
   z.object({
     uri: z.string(),
     cacheBuster: z.string().optional(),
@@ -48,7 +48,17 @@ export const htmlRendererSchema = z.intersection(
   renderTypeDiscriminatedUnionSchema,
 );
 
-export type HTMLRendererSearchParams = z.input<typeof htmlRendererSchema>;
+export const htmlRendererFromCodeSchema = z.object({
+  code: z.string(),
+  lang: z.string(),
+  renderType: z
+    .enum([RENDER_TYPES.basicWithBorder, RENDER_TYPES.simpleNoBorder])
+    .default(RENDER_TYPES.simpleNoBorder),
+});
+
+export type HTMLRendererSearchParams = z.input<
+  typeof htmlRendererFromFileUrlSchema
+>;
 
 export type WSEvent = {
   type: "change";

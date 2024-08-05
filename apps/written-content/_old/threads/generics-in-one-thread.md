@@ -2,7 +2,7 @@ If you don't know generics, I promise you'll understand them by the end of this 
 
 I like a challenge.
 
-```typescript
+```ts twoslash
 const objKeys = <T extends object>(obj: T) => {
   return Object.keys(obj) as Array<keyof T>;
 };
@@ -16,7 +16,7 @@ What you might think of as generics in TypeScript is actually three separate con
 - Passing types to functions
 - Inferring types from arguments passed to functions
 
-```typescript
+```ts twoslash
 // 1. Passing types to types
 type PartialUser = Partial<{
   id: string;
@@ -41,7 +41,7 @@ Let's start with passing types to types.
 
 In TypeScript, you can declare a type which represents an object, primitive, function - whatever you want, really.
 
-```typescript
+```ts twoslash
 type User = {
   id: string;
   name: string;
@@ -56,7 +56,7 @@ But let's say you need to create a few types with a similar structure. For insta
 
 The code below isn't very DRY - can we clean it up?
 
-```typescript
+```ts twoslash
 type ErrorShape = {
   message: string;
   code: number;
@@ -91,7 +91,7 @@ type GetCommentsData = {
 
 If you're OOP-inclined, you could do this using a reusable interface...
 
-```typescript
+```ts twoslash
 interface DataBaseInterface {
   error?: ErrorShape;
 }
@@ -110,8 +110,7 @@ interface GetPostsData extends DataBaseInterface {
   }[];
 }
 
-interface GetCommentsData
-  extends DataBaseInterface {
+interface GetCommentsData extends DataBaseInterface {
   data: {
     id: string;
     content: string;
@@ -123,7 +122,7 @@ interface GetCommentsData
 
 But it's more concise to create a 'type function', which takes in the type of data and returns the new data shape.
 
-```typescript
+```ts twoslash
 // Our new type function!
 type DataShape<TData> = {
   data: TData;
@@ -160,7 +159,7 @@ We can name TData anything, it's just like an argument to a function.
 
 This is a generic type.
 
-```typescript
+```ts twoslash
 // Generic type
 type DataShape<TData> = {
   data: TData;
@@ -191,7 +190,7 @@ But, y'know, I've got to keep this thread moving.
 
 What if I told you that it wasn't just _types_ that you could pass types to?
 
-```typescript
+```ts twoslash
 const createSet = <T>() => {
   return new Set<T>();
 };
@@ -211,7 +210,7 @@ In this example, we add a <T> before the parentheses when we declare createSet.
 
 We then pass that <T> manually into Set(), which itself lets you pass a type argument.
 
-```typescript
+```ts twoslash
 const createSet = <T>() => {
   return new Set<T>();
 };
@@ -223,7 +222,7 @@ That means that when we call it, we can pass a type argument of <string> to crea
 
 And we end up with a Set that we can only pass strings to.
 
-```typescript
+```ts twoslash
 const stringSet = createSet<string>();
 
 // Error!
@@ -236,7 +235,7 @@ This is the second thing that people mean when they talk about generics - manual
 
 You'll have seen this if you use React, and you've needed to pass a type argument to useState.
 
-```typescript
+```ts twoslash
 const [index, setIndex] = useState<number>(0);
 //     ^?
 ```
@@ -247,7 +246,7 @@ But, you'll also have noticed another behavior in React.
 
 Which is that in some cases, you don't need to pass the type argument for it to be inferred...
 
-```typescript
+```ts twoslash
 const [index, setIndex] = useState(0);
 //     ^?
 
@@ -260,7 +259,7 @@ Let's look at our createSet function again.
 
 You'll notice that it takes in no _actual_ arguments - only type arguments.
 
-```typescript
+```ts twoslash
 const createSet = <T>() => {
   return new Set<T>();
 };
@@ -270,7 +269,7 @@ const createSet = <T>() => {
 
 This means that when we call it without any type arguments (which we can do without TS yelling at us), our set will be a Set<unknown>.
 
-```typescript
+```ts twoslash
 const set = createSet();
 //    ^?
 ```
@@ -281,7 +280,7 @@ But what if we change our function so that it accepts an initial value for the s
 
 We know that the initial value needs to be the same type as the Set, so let's type it as T.
 
-```typescript
+```ts twoslash
 const createSet = <T>(initial: T) => {
   return new Set<T>([initial]);
 };
@@ -291,7 +290,7 @@ const createSet = <T>(initial: T) => {
 
 Now, when we call it, we'll need to pass in an initial, and that'll need to be the same type as the type argument we pass to createSet.
 
-```typescript
+```ts twoslash
 const stringSet = createSet<string>("matt");
 //    ^?
 
@@ -305,7 +304,7 @@ But here's the magical thing. TypeScript can infer the type of 'T' from 'initial
 
 In other words, the type argument will be inferred from the runtime argument.
 
-```typescript
+```ts twoslash
 const stringSet = createSet("matt");
 //    ^?
 
@@ -319,7 +318,7 @@ You can examine this by hovering over one of the createSet calls.
 
 You'll see that <string> is being inferred when we pass it a string.
 
-```typescript
+```ts twoslash
 const stringSet = createSet("matt");
 //    ^?
 
@@ -329,7 +328,7 @@ const numberSet = createSet(123);
 
 The same is true in useState:
 
-```typescript
+```ts twoslash
 const [index, setIndex] = useState(0);
 //     ^?
 ```
@@ -343,7 +342,7 @@ This one has some extra goodness, too:
 - We constrain T to be an object so it can be passed to Object.keys (which only accepts objects)
 - We force the return type of Object.keys to be Array<keyof T>
 
-```typescript
+```ts twoslash
 const objKeys = <T extends object>(obj: T) => {
   return Object.keys(obj) as Array<keyof T>;
 };

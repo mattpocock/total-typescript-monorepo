@@ -2,6 +2,10 @@
 
 But really, there are only a few configuration options you need to care about. Let's figure them out, and cheatsheet them.
 
+## The Package
+
+This article is so popular that I've bundled its recommendations into a library! It's called `@total/typescript/tsconfig`, and you can check it out [here](https://github.com/total-typescript/tsconfig).
+
 ## Quickstart
 
 Want just the code? Here you go:
