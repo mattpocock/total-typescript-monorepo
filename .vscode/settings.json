@@ -3,5 +3,9 @@
     "*.md": "${capture}.source.ts, ${capture}.source.tsx, ${capture}.meta.json, ${capture}.narration.ogg, ${capture}.narration.mkv",
     "package.json": "*"
   },
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.preferences.autoImportFileExcludePatterns": [
+    // "**/*.d.ts",
+    // "**/*.ts"
+  ]
 }
