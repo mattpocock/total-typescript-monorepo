@@ -19,7 +19,7 @@ importers:
         version: 1.0.4
       '@types/node':
         specifier: ^20.12.10
-        version: 20.14.14
+        version: 20.14.15
       prettier:
         specifier: ^3.2.5
         version: 3.3.3
@@ -34,7 +34,7 @@ importers:
         version: 5.6.0-dev.20240809
       vitest:
         specifier: ^2.0.0
-        version: 2.0.5(@types/node@20.14.14)(terser@5.31.3)
+        version: 2.0.5(@types/node@20.14.15)(terser@5.31.3)
 
   apps/_example-app:
     dependencies:
@@ -71,7 +71,7 @@ importers:
     devDependencies:
       '@remix-run/dev':
         specifier: ^2.9.1
-        version: 2.11.1(@remix-run/react@2.11.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240809))(@remix-run/serve@2.11.1(typescript@5.6.0-dev.20240809))(@types/node@22.1.0)(terser@5.31.3)(typescript@5.6.0-dev.20240809)(vite@5.3.4(@types/node@22.1.0)(terser@5.31.3))
+        version: 2.11.1(@remix-run/react@2.11.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240809))(@remix-run/serve@2.11.1(typescript@5.6.0-dev.20240809))(@types/node@22.2.0)(terser@5.31.3)(typescript@5.6.0-dev.20240809)(vite@5.3.4(@types/node@22.2.0)(terser@5.31.3))
       '@types/react':
         specifier: ^18.2.20
         version: 18.3.3
@@ -80,10 +80,10 @@ importers:
         version: 18.3.0
       vite:
         specifier: ^5.1.0
-        version: 5.3.4(@types/node@22.1.0)(terser@5.31.3)
+        version: 5.3.4(@types/node@22.2.0)(terser@5.31.3)
       vite-tsconfig-paths:
         specifier: ^4.2.1
-        version: 4.3.2(typescript@5.6.0-dev.20240809)(vite@5.3.4(@types/node@22.1.0)(terser@5.31.3))
+        version: 4.3.2(typescript@5.6.0-dev.20240809)(vite@5.3.4(@types/node@22.2.0)(terser@5.31.3))
 
   apps/internal-cli:
     dependencies:
@@ -145,7 +145,7 @@ importers:
     devDependencies:
       '@remix-run/dev':
         specifier: 2.11.1
-        version: 2.11.1(@remix-run/react@2.11.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240809))(@remix-run/serve@2.11.1(typescript@5.6.0-dev.20240809))(@types/node@22.1.0)(terser@5.31.3)(typescript@5.6.0-dev.20240809)(vite@5.3.4(@types/node@22.1.0)(terser@5.31.3))
+        version: 2.11.1(@remix-run/react@2.11.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240809))(@remix-run/serve@2.11.1(typescript@5.6.0-dev.20240809))(@types/node@22.2.0)(terser@5.31.3)(typescript@5.6.0-dev.20240809)(vite@5.3.4(@types/node@22.2.0)(terser@5.31.3))
       '@total-typescript/ffmpeg':
         specifier: workspace:*
         version: link:../../packages/ffmpeg
@@ -172,10 +172,10 @@ importers:
         version: 3.4.9
       vite:
         specifier: ^5.1.0
-        version: 5.3.4(@types/node@22.1.0)(terser@5.31.3)
+        version: 5.3.4(@types/node@22.2.0)(terser@5.31.3)
       vite-tsconfig-paths:
         specifier: ^4.2.1
-        version: 4.3.2(typescript@5.6.0-dev.20240809)(vite@5.3.4(@types/node@22.1.0)(terser@5.31.3))
+        version: 4.3.2(typescript@5.6.0-dev.20240809)(vite@5.3.4(@types/node@22.2.0)(terser@5.31.3))
 
   apps/remotion-code-hike:
     dependencies:
@@ -309,7 +309,7 @@ importers:
     devDependencies:
       '@remix-run/dev':
         specifier: 2.11.1
-        version: 2.11.1(@remix-run/react@2.11.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240809))(@remix-run/serve@2.11.1(typescript@5.6.0-dev.20240809))(@types/node@22.1.0)(terser@5.31.3)(typescript@5.6.0-dev.20240809)(vite@5.3.4(@types/node@22.1.0)(terser@5.31.3))
+        version: 2.11.1(@remix-run/react@2.11.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240809))(@remix-run/serve@2.11.1(typescript@5.6.0-dev.20240809))(@types/node@22.2.0)(terser@5.31.3)(typescript@5.6.0-dev.20240809)(vite@5.3.4(@types/node@22.2.0)(terser@5.31.3))
       '@total-typescript/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -336,10 +336,10 @@ importers:
         version: 3.4.9
       vite:
         specifier: ^5.1.0
-        version: 5.3.4(@types/node@22.1.0)(terser@5.31.3)
+        version: 5.3.4(@types/node@22.2.0)(terser@5.31.3)
       vite-tsconfig-paths:
         specifier: ^4.2.1
-        version: 4.3.2(typescript@5.6.0-dev.20240809)(vite@5.3.4(@types/node@22.1.0)(terser@5.31.3))
+        version: 4.3.2(typescript@5.6.0-dev.20240809)(vite@5.3.4(@types/node@22.2.0)(terser@5.31.3))
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -421,8 +421,8 @@ importers:
   apps/written-content:
     dependencies:
       '@sinclair/typebox':
-        specifier: ^0.32.34
-        version: 0.32.34
+        specifier: ^0.33.0
+        version: 0.33.3
       ajv:
         specifier: ^8.17.1
         version: 8.17.1
@@ -444,7 +444,7 @@ importers:
         version: 0.0.1
       '@types/node':
         specifier: ^20.10.6
-        version: 20.14.14
+        version: 20.14.15
       '@types/react':
         specifier: ^18.2.11
         version: 18.3.3
@@ -462,10 +462,10 @@ importers:
         version: link:../twoslash-preview
       vite:
         specifier: ^5.0.10
-        version: 5.3.4(@types/node@20.14.14)(terser@5.31.3)
+        version: 5.3.4(@types/node@20.14.15)(terser@5.31.3)
       vitest:
         specifier: ^2.0.3
-        version: 2.0.5(@types/node@20.14.14)(terser@5.31.3)
+        version: 2.0.5(@types/node@20.14.15)(terser@5.31.3)
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -496,7 +496,7 @@ importers:
     devDependencies:
       '@remix-run/dev':
         specifier: 2.11.1
-        version: 2.11.1(@remix-run/react@2.11.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240809))(@remix-run/serve@2.11.1(typescript@5.6.0-dev.20240809))(@types/node@22.1.0)(terser@5.31.3)(typescript@5.6.0-dev.20240809)(vite@5.3.4(@types/node@22.1.0)(terser@5.31.3))
+        version: 2.11.1(@remix-run/react@2.11.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240809))(@remix-run/serve@2.11.1(typescript@5.6.0-dev.20240809))(@types/node@22.2.0)(terser@5.31.3)(typescript@5.6.0-dev.20240809)(vite@5.3.4(@types/node@22.2.0)(terser@5.31.3))
       '@total-typescript/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -526,10 +526,10 @@ importers:
         version: 4.16.5
       vite:
         specifier: ^5.1.0
-        version: 5.3.4(@types/node@22.1.0)(terser@5.31.3)
+        version: 5.3.4(@types/node@22.2.0)(terser@5.31.3)
       vite-tsconfig-paths:
         specifier: ^4.2.1
-        version: 4.3.2(typescript@5.6.0-dev.20240809)(vite@5.3.4(@types/node@22.1.0)(terser@5.31.3))
+        version: 4.3.2(typescript@5.6.0-dev.20240809)(vite@5.3.4(@types/node@22.2.0)(terser@5.31.3))
 
   packages/_example-package: {}
 
@@ -1885,8 +1885,8 @@ packages:
   '@sideway/pinpoint@2.0.0':
     resolution: {integrity: sha512-RNiOoTPkptFtSVzQevY/yWtZwf/RxyVnPy/OcA9HBM3MlGDnBEYL5B41H0MTn0Uec8Hi+2qUtTfG2WWZBmMejQ==}
 
-  '@sinclair/typebox@0.32.34':
-    resolution: {integrity: sha512-a3Z3ytYl6R/+7ldxx04PO1semkwWlX/8pTqxsPw4quIcIXDFPZhOc1Wx8azWmkU26ccK3mHwcWenn0avNgAKQg==}
+  '@sinclair/typebox@0.33.3':
+    resolution: {integrity: sha512-2MputLKNw0OxPGWF8KWkLt8B/csTZUkK2tCtiZwJT3NtVOfYPVi6ZEchZAHEHre/qJ4skcS9fL7TuHG36Dk3WQ==}
 
   '@tanstack/query-core@5.51.21':
     resolution: {integrity: sha512-POQxm42IUp6n89kKWF4IZi18v3fxQWFRolvBA6phNVmA8psdfB1MvDnGacCJdS+EOX12w/CyHM62z//rHmYmvw==}
@@ -1962,14 +1962,11 @@ packages:
   '@types/node@20.14.13':
     resolution: {integrity: sha512-+bHoGiZb8UiQ0+WEtmph2IWQCjIqg8MDZMAV+ppRRhUZnquF5mQkP/9vpSwJClEiSM/C7fZZExPzfU0vJTyp8w==}
 
-  '@types/node@20.14.14':
-    resolution: {integrity: sha512-d64f00982fS9YoOgJkAMolK7MN8Iq3TDdVjchbYHdEmjth/DHowx82GnoA+tVUAN+7vxfYUgAzi+JXbKNd2SDQ==}
+  '@types/node@20.14.15':
+    resolution: {integrity: sha512-Fz1xDMCF/B00/tYSVMlmK7hVeLh7jE5f3B7X1/hmV0MJBwE27KlS7EvD/Yp+z1lm8mVhwV5w+n8jOZG8AfTlKw==}
 
-  '@types/node@22.0.3':
-    resolution: {integrity: sha512-/e0NZtK2gs6Vk2DoyrXSZZ4AlamqTkx0CcKx1Aq8/P4ITlRgU9OtVf5fl+LXkWWJce1M89pkSlH6lJJEnK7bQA==}
-
-  '@types/node@22.1.0':
-    resolution: {integrity: sha512-AOmuRF0R2/5j1knA3c6G3HOk523Ga+l+ZXltX8SF1+5oqcXijjfTd8fY3XRZqSihEu9XhtQnKYLmkFaoxgsJHw==}
+  '@types/node@22.2.0':
+    resolution: {integrity: sha512-bm6EG6/pCpkxDf/0gDNDdtDILMOHgaQBVOJGdwsqClnxA3xL6jtMv76rLBc006RVMWbmaf0xbmom4Z/5o2nRkQ==}
 
   '@types/prompts@2.4.9':
     resolution: {integrity: sha512-qTxFi6Buiu8+50/+3DGIWLHM6QuWsEKugJnnP6iv2Mc4ncxE4A/OJkjuVOA+5X0X1S/nq5VJRa8Lu+nwcvbrKA==}
@@ -5444,9 +5441,6 @@ packages:
   undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
 
-  undici-types@6.11.1:
-    resolution: {integrity: sha512-mIDEX2ek50x0OlRgxryxsenE5XaQD4on5U2inY7RApK3SOJpofyw7uW2AyfMKkhAxXIceo2DeWGVGwyvng1GNQ==}
-
   undici-types@6.13.0:
     resolution: {integrity: sha512-xtFJHudx8S2DSoujjMd1WeWvn7KKWFRESZTMeL1RptAYERu29D6jphMjjY+vn96jvN3kVPDNxU/E13VTaXj6jg==}
 
@@ -6924,7 +6918,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@remix-run/dev@2.11.1(@remix-run/react@2.11.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240809))(@remix-run/serve@2.11.1(typescript@5.6.0-dev.20240809))(@types/node@22.1.0)(terser@5.31.3)(typescript@5.6.0-dev.20240809)(vite@5.3.4(@types/node@22.1.0)(terser@5.31.3))':
+  '@remix-run/dev@2.11.1(@remix-run/react@2.11.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.6.0-dev.20240809))(@remix-run/serve@2.11.1(typescript@5.6.0-dev.20240809))(@types/node@22.2.0)(terser@5.31.3)(typescript@5.6.0-dev.20240809)(vite@5.3.4(@types/node@22.2.0)(terser@5.31.3))':
     dependencies:
       '@babel/core': 7.25.2
       '@babel/generator': 7.25.0
@@ -6941,7 +6935,7 @@ snapshots:
       '@remix-run/router': 1.19.0
       '@remix-run/server-runtime': 2.11.1(typescript@5.6.0-dev.20240809)
       '@types/mdx': 2.0.13
-      '@vanilla-extract/integration': 6.5.0(@types/node@22.1.0)(terser@5.31.3)
+      '@vanilla-extract/integration': 6.5.0(@types/node@22.2.0)(terser@5.31.3)
       arg: 5.0.2
       cacache: 17.1.4
       chalk: 4.1.2
@@ -6983,7 +6977,7 @@ snapshots:
     optionalDependencies:
       '@remix-run/serve': 2.11.1(typescript@5.6.0-dev.20240809)
       typescript: 5.6.0-dev.20240809
-      vite: 5.3.4(@types/node@22.1.0)(terser@5.31.3)
+      vite: 5.3.4(@types/node@22.2.0)(terser@5.31.3)
     transitivePeerDependencies:
       - '@types/node'
       - babel-plugin-macros
@@ -7344,7 +7338,7 @@ snapshots:
 
   '@sideway/pinpoint@2.0.0': {}
 
-  '@sinclair/typebox@0.32.34': {}
+  '@sinclair/typebox@0.33.3': {}
 
   '@tanstack/query-core@5.51.21': {}
 
@@ -7367,7 +7361,7 @@ snapshots:
 
   '@types/better-sqlite3@7.6.11':
     dependencies:
-      '@types/node': 22.0.3
+      '@types/node': 22.2.0
 
   '@types/cookie@0.6.0': {}
 
@@ -7423,15 +7417,11 @@ snapshots:
     dependencies:
       undici-types: 5.26.5
 
-  '@types/node@20.14.14':
+  '@types/node@20.14.15':
     dependencies:
       undici-types: 5.26.5
 
-  '@types/node@22.0.3':
-    dependencies:
-      undici-types: 6.11.1
-
-  '@types/node@22.1.0':
+  '@types/node@22.2.0':
     dependencies:
       undici-types: 6.13.0
 
@@ -7463,7 +7453,7 @@ snapshots:
 
   '@types/yauzl@2.10.3':
     dependencies:
-      '@types/node': 20.14.14
+      '@types/node': 22.2.0
     optional: true
 
   '@typescript/vfs@1.5.0':
@@ -7496,7 +7486,7 @@ snapshots:
     transitivePeerDependencies:
       - babel-plugin-macros
 
-  '@vanilla-extract/integration@6.5.0(@types/node@22.1.0)(terser@5.31.3)':
+  '@vanilla-extract/integration@6.5.0(@types/node@22.2.0)(terser@5.31.3)':
     dependencies:
       '@babel/core': 7.25.2
       '@babel/plugin-syntax-typescript': 7.24.7(@babel/core@7.25.2)
@@ -7509,8 +7499,8 @@ snapshots:
       lodash: 4.17.21
       mlly: 1.7.1
       outdent: 0.8.0
-      vite: 5.3.4(@types/node@22.1.0)(terser@5.31.3)
-      vite-node: 1.6.0(@types/node@22.1.0)(terser@5.31.3)
+      vite: 5.3.4(@types/node@22.2.0)(terser@5.31.3)
+      vite-node: 1.6.0(@types/node@22.2.0)(terser@5.31.3)
     transitivePeerDependencies:
       - '@types/node'
       - babel-plugin-macros
@@ -8539,7 +8529,7 @@ snapshots:
 
   eval@0.1.8:
     dependencies:
-      '@types/node': 22.1.0
+      '@types/node': 22.2.0
       require-like: 0.1.2
 
   event-target-shim@5.0.1: {}
@@ -9256,7 +9246,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 20.14.14
+      '@types/node': 22.2.0
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -11695,8 +11685,6 @@ snapshots:
 
   undici-types@5.26.5: {}
 
-  undici-types@6.11.1: {}
-
   undici-types@6.13.0: {}
 
   undici@6.19.5: {}
@@ -11916,13 +11904,13 @@ snapshots:
       unist-util-stringify-position: 4.0.0
       vfile-message: 4.0.2
 
-  vite-node@1.6.0(@types/node@22.1.0)(terser@5.31.3):
+  vite-node@1.6.0(@types/node@22.2.0)(terser@5.31.3):
     dependencies:
       cac: 6.7.14
       debug: 4.3.6
       pathe: 1.1.2
       picocolors: 1.0.1
-      vite: 5.3.4(@types/node@22.1.0)(terser@5.31.3)
+      vite: 5.3.4(@types/node@22.2.0)(terser@5.31.3)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -11933,13 +11921,13 @@ snapshots:
       - supports-color
       - terser
 
-  vite-node@2.0.5(@types/node@20.14.14)(terser@5.31.3):
+  vite-node@2.0.5(@types/node@20.14.15)(terser@5.31.3):
     dependencies:
       cac: 6.7.14
       debug: 4.3.6
       pathe: 1.1.2
       tinyrainbow: 1.2.0
-      vite: 5.3.4(@types/node@20.14.14)(terser@5.31.3)
+      vite: 5.3.4(@types/node@20.14.15)(terser@5.31.3)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -11950,38 +11938,38 @@ snapshots:
       - supports-color
       - terser
 
-  vite-tsconfig-paths@4.3.2(typescript@5.6.0-dev.20240809)(vite@5.3.4(@types/node@22.1.0)(terser@5.31.3)):
+  vite-tsconfig-paths@4.3.2(typescript@5.6.0-dev.20240809)(vite@5.3.4(@types/node@22.2.0)(terser@5.31.3)):
     dependencies:
       debug: 4.3.5
       globrex: 0.1.2
       tsconfck: 3.1.1(typescript@5.6.0-dev.20240809)
     optionalDependencies:
-      vite: 5.3.4(@types/node@22.1.0)(terser@5.31.3)
+      vite: 5.3.4(@types/node@22.2.0)(terser@5.31.3)
     transitivePeerDependencies:
       - supports-color
       - typescript
 
-  vite@5.3.4(@types/node@20.14.14)(terser@5.31.3):
+  vite@5.3.4(@types/node@20.14.15)(terser@5.31.3):
     dependencies:
       esbuild: 0.21.5
       postcss: 8.4.40
       rollup: 4.18.1
     optionalDependencies:
-      '@types/node': 20.14.14
+      '@types/node': 20.14.15
       fsevents: 2.3.3
       terser: 5.31.3
 
-  vite@5.3.4(@types/node@22.1.0)(terser@5.31.3):
+  vite@5.3.4(@types/node@22.2.0)(terser@5.31.3):
     dependencies:
       esbuild: 0.21.5
       postcss: 8.4.40
       rollup: 4.18.1
     optionalDependencies:
-      '@types/node': 22.1.0
+      '@types/node': 22.2.0
       fsevents: 2.3.3
       terser: 5.31.3
 
-  vitest@2.0.5(@types/node@20.14.14)(terser@5.31.3):
+  vitest@2.0.5(@types/node@20.14.15)(terser@5.31.3):
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@vitest/expect': 2.0.5
@@ -11999,11 +11987,11 @@ snapshots:
       tinybench: 2.8.0
       tinypool: 1.0.0
       tinyrainbow: 1.2.0
-      vite: 5.3.4(@types/node@20.14.14)(terser@5.31.3)
-      vite-node: 2.0.5(@types/node@20.14.14)(terser@5.31.3)
+      vite: 5.3.4(@types/node@20.14.15)(terser@5.31.3)
+      vite-node: 2.0.5(@types/node@20.14.15)(terser@5.31.3)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 20.14.14
+      '@types/node': 20.14.15
     transitivePeerDependencies:
       - less
       - lightningcss
