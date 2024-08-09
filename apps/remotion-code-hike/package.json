@@ -14,7 +14,7 @@
     "codehike": "1.0.0-beta.8",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "remotion": "4.0.193",
+    "remotion": "4.0.194",
     "twoslash-cdn": "^0.2.8",
     "zod": "3.23.8",
     "clsx": "^2.1.1",
