@@ -169,7 +169,7 @@ importers:
         version: 8.4.41
       tailwindcss:
         specifier: ^3.4.4
-        version: 3.4.8
+        version: 3.4.9
       vite:
         specifier: ^5.1.0
         version: 5.3.4(@types/node@22.0.3)(terser@5.31.3)
@@ -233,7 +233,7 @@ importers:
         version: 6.2.0(webpack@5.83.1)
       tailwindcss:
         specifier: ^3.4.4
-        version: 3.4.8
+        version: 3.4.9
 
   apps/scriptkit-sync:
     dependencies:
@@ -333,7 +333,7 @@ importers:
         version: 8.4.41
       tailwindcss:
         specifier: ^3.4.4
-        version: 3.4.8
+        version: 3.4.9
       vite:
         specifier: ^5.1.0
         version: 5.3.4(@types/node@22.0.3)(terser@5.31.3)
@@ -520,7 +520,7 @@ importers:
         version: 8.4.41
       tailwindcss:
         specifier: ^3.4.4
-        version: 3.4.8
+        version: 3.4.9
       tsx:
         specifier: ^4.16.2
         version: 4.16.5
@@ -5223,8 +5223,8 @@ packages:
     resolution: {integrity: sha512-w2sfv80nrAh2VCbqR5AK27wswXhqcck2AhfnNW76beQXskGZ1V12GwS//yYVa3d3fcvAip2OUnbDAjW2k3v9fA==}
     engines: {node: '>=10.0.0'}
 
-  tailwindcss@3.4.8:
-    resolution: {integrity: sha512-GkP17r9GQkxgZ9FKHJQEnjJuKBcbFhMFzKu5slmN6NjlCuFnYJMQ8N4AZ6VrUyiRXlDtPKHkesuQ/MS913Nvdg==}
+  tailwindcss@3.4.9:
+    resolution: {integrity: sha512-1SEOvRr6sSdV5IDf9iC+NU4dhwdqzF4zKKq3sAbasUWHEM6lsMhX+eNN5gkPx1BvLFEnZQEUFbXnGj8Qlp83Pg==}
     engines: {node: '>=14.0.0'}
     hasBin: true
 
@@ -7251,7 +7251,7 @@ snapshots:
       postcss-loader: 7.3.4(postcss@8.4.41)(typescript@5.6.0-dev.20240807)(webpack@5.83.1)
       postcss-preset-env: 8.5.1(postcss@8.4.41)
       style-loader: 2.0.0(webpack@5.83.1(esbuild@0.18.6))
-      tailwindcss: 3.4.8
+      tailwindcss: 3.4.9
     transitivePeerDependencies:
       - ts-node
       - typescript
@@ -11486,7 +11486,7 @@ snapshots:
       string-width: 4.2.3
       strip-ansi: 6.0.1
 
-  tailwindcss@3.4.8:
+  tailwindcss@3.4.9:
     dependencies:
       '@alloc/quick-lru': 5.2.0
       arg: 5.0.2
