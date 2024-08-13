@@ -17,8 +17,8 @@
     "make-video": "turbo watch dev --filter=remotion-code-hike --filter=sync-current-markdown-file-to-remotion --filter=source-to-code-samples --filter=record-narration",
     "new": "(cd apps/written-content && pnpm run new)",
     "scratch": "(cd apps/written-content && pnpm run scratch)",
-    "twoslash-preview": "pnpm turbo watch dev --filter twoslash-preview --filter=@total-typescript/twoslash-preview-server",
-    "manage": "pnpm turbo watch dev --filter=written-content-manager"
+    "twoslash-preview": "turbo watch dev --filter twoslash-preview --filter=@total-typescript/twoslash-preview-server",
+    "manage": "turbo watch dev --filter=written-content-manager"
   },
   "keywords": [],
   "author": "Matt Pocock",
@@ -30,10 +30,10 @@
     "prettier": "^3.2.5",
     "tsx": "^4.16.2",
     "turbo": "^2.0.1",
-    "typescript": "^5.5.4",
+    "typescript": "5.5.4",
     "vitest": "^2.0.0"
   },
   "resolutions": {
-    "typescript": "^5.5.4"
+    "typescript": "5.5.4"
   }
 }
