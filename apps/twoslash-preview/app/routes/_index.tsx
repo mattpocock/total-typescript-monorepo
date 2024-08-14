@@ -66,7 +66,6 @@ export default function Index() {
       },
       {
         preventScrollReset: true,
-        replace: true,
       },
     );
   });
@@ -92,7 +91,6 @@ export default function Index() {
             },
             {
               preventScrollReset: true,
-              replace: true,
             },
           );
         }}
