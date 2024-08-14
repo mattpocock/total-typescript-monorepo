@@ -59,9 +59,6 @@ importers:
       '@total-typescript/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      isbot:
-        specifier: ^5.0.0
-        version: 5.1.14
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -130,9 +127,6 @@ importers:
       '@xstate/react':
         specifier: ^4.1.1
         version: 4.1.1(@types/react@18.3.3)(react@18.3.1)(xstate@5.17.1)
-      isbot:
-        specifier: ^5.0.0
-        version: 5.1.14
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -294,9 +288,6 @@ importers:
       '@remix-run/serve':
         specifier: 2.11.1
         version: 2.11.1(typescript@5.5.4)
-      isbot:
-        specifier: ^5.0.0
-        version: 5.1.14
       puppeteer:
         specifier: ^23.0.0
         version: 23.0.2(typescript@5.5.4)
@@ -484,9 +475,6 @@ importers:
       better-sqlite3:
         specifier: ^11.1.2
         version: 11.1.2
-      isbot:
-        specifier: ^5.0.0
-        version: 5.1.14
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -6160,11 +6148,6 @@ packages:
   /isarray@1.0.0:
     resolution: {integrity: sha512-VLghIWNM6ELQzo7zwmcg0NmTVyWKYjvIeM83yjp0wRDTmUnrM678fQbcKBo6n2CJEF0szoG//ytg+TKla89ALQ==}
     dev: true
-
-  /isbot@5.1.14:
-    resolution: {integrity: sha512-4X8KZHyaIqXOqEv1qfZOqshMX3r7Q/VtMEMzuGPZljDMEIGpX7bcGODR9gZztXdcPBEJpNioQXXBJun+xi2G5g==}
-    engines: {node: '>=18'}
-    dev: false
 
   /isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
