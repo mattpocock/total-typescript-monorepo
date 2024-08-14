@@ -1,12 +1,41 @@
-# Why I Don't Like Enums
+TypeScript's enums. I don't like them.
+
+Let's talk about why 🧵
+
+```ts twoslash
+// @errors: 2322
+// 1. Lets you mix string, number and
+// inferred values
+enum PackStatus {
+  Draft = "Draft",
+  Approved = 2,
+  Shipped, // 3
+}
+
+// 2. Strange behavior with Object.keys
+console.log(Object.keys(PackStatus).length); // 5
+
+// 3. JS is structural. Enums are nominal 🤔
+enum PackStatus2 {
+  Draft = PackStatus.Draft,
+}
+
+const example: PackStatus = PackStatus2.Draft;
+```
+
+---
 
 Let's start with a bit of context. I like enums. I like them a lot. I would really like JavaScript to have them.
 
 But TypeScript's implementation of them is weird enough for me not to recommend them.
 
-## Types Of Enums
+Here's the section on them in my book:
 
-You can declare three different types of values for your enums. Numeric, string and inferred:
+https://www.totaltypescript.com/books/total-typescript-essentials/typescript-only-features#enums
+
+---
+
+Let's start with the fact that you can declare three different types of values for your enums. Numeric, string and inferred:
 
 ```ts twoslash
 // Numeric
@@ -31,7 +60,7 @@ enum PackStatus3 {
 }
 ```
 
-## Numeric vs String Enums
+---
 
 Numeric and string enums actually behave differently in a couple of ways.
 
@@ -44,6 +73,8 @@ enum PackStatus {
   Shipped = 2,
 }
 ```
+
+---
 
 The answer is 6. Why? Because TypeScript generates both a value-to-key and a key-to-value mapping for numeric enums.
 
@@ -69,6 +100,8 @@ enum PackStatus2 {
 console.log(Object.keys(PackStatus2));
 ```
 
+---
+
 They also behave differently when it comes to type-checking.
 
 In places where a string enum is expected, it forces you to pass the enum value:
@@ -91,6 +124,8 @@ logStatus(PackStatus.Draft);
 logStatus("Draft");
 ```
 
+---
+
 But with numeric enums, you can pass a raw number in places where the enum is expected. What?
 
 ```ts twoslash
@@ -110,6 +145,8 @@ logStatus(PackStatus.Draft);
 logStatus(0);
 ```
 
+---
+
 Hilariously, you can even mix and match numeric and string values in the same enum.
 
 Don't do this.
@@ -122,7 +159,7 @@ enum PackStatus {
 }
 ```
 
-## Nominal Typing
+---
 
 My final frustration with enums is fairly subjective.
 
@@ -150,6 +187,8 @@ const logStatus = (status: PackStatus) => {
 logStatus(PackStatus2.Draft);
 ```
 
+---
+
 EVEN if the second enum is just a reference to the first enum.
 
 ```ts twoslash
@@ -173,18 +212,30 @@ const logStatus = (status: PackStatus) => {
 logStatus(PackStatus2.Draft);
 ```
 
-There are currently [71 issues marked as bugs](https://github.com/microsoft/TypeScript/issues?q=is%3Aissue+is%3Aopen+enum+label%3Abug) related to enums in the TypeScript repo.
+---
+
+Finally, there are currently 71 issues marked as bugs related to enums in the TypeScript repo.
 
 I've heard hints from the TS team that many of these are uncloseable due to the way enums are implemented.
 
-## Conclusion
+https://github.com/microsoft/TypeScript/issues?q=is%3Aissue+is%3Aopen+enum+label%3Abug
+
+---
+
+Let me do a quick end-of-thread turnaround.
 
 If I saw an enum in a codebase, I'm unlikely to get rid of it. If it's using inferred values, I'll probably add them explicitly.
 
 But I wouldn't add an enum to a fresh codebase.
 
+---
+
 If you're desperate to use enums, I'd strongly recommend using string enums only.
 
 They're explicit, behave more like enums, and look more like their transpiled code.
 
-And if you want to see what I use instead of enums, check out [this section of my book](https://www.totaltypescript.com/books/total-typescript-essentials/deriving-types#using-as-const-for-javascript-style-enums).
+---
+
+And if you want to see what I use instead of enums, check out this section of my book:
+
+https://www.totaltypescript.com/books/total-typescript-essentials/deriving-types#using-as-const-for-javascript-style-enums
