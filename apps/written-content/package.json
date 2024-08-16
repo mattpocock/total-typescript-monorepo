@@ -18,7 +18,7 @@
     "react": "^18.2.0",
     "string-ts": "^2.0.0",
     "ts-toolbelt": "^9.6.0",
-    "twoslash-preview": "workspace:*",
+    "shot-slash": "workspace:*",
     "vite": "^5.0.10",
     "vitest": "^2.0.3",
     "zod": "^3.23.8",

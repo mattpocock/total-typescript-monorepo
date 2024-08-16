@@ -13,11 +13,10 @@
     "ci": "turbo build test lint",
     "build": "turbo build",
     "release": "pnpm run ci && changeset publish",
-    "write": "turbo watch build dev --filter=twoslash-preview --filter=@total-typescript/twoslash-preview-server --filter=written-content",
+    "write": "turbo watch dev --filter=shot-slash --filter=@total-typescript/twoslash-preview-server --filter=written-content",
     "make-video": "turbo watch dev --filter=remotion-code-hike --filter=sync-current-markdown-file-to-remotion --filter=source-to-code-samples --filter=record-narration",
     "new": "(cd apps/written-content && pnpm run new)",
     "scratch": "(cd apps/written-content && pnpm run scratch)",
-    "twoslash-preview": "turbo watch dev --filter twoslash-preview --filter=@total-typescript/twoslash-preview-server",
     "manage": "turbo watch dev --filter=written-content-manager"
   },
   "keywords": [],
