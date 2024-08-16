@@ -1,5 +1,3 @@
-# You Can Stop Hating `React.FC`
-
 ## Quick Breakdown
 
 As of TypeScript 5.1 and React 18, `React.FC` is now officially 'fine'.
@@ -14,6 +12,8 @@ I still recommend simply annotating props instead of using `React.FC`. But if yo
 `React.FC` is a type that ships with React's TypeScript types. It represents the type of a functional component, which is the building block of most modern React apps.
 
 ```tsx twoslash
+import React from "react";
+
 // Component without props
 const Component: React.FC = () => {
   return <div />;
@@ -57,18 +57,18 @@ This criticism was enough to get `React.FC` [removed from `create-react-app`](ht
 
 But since TypeScript 5.1, you'd get this error from exactly the same code:
 
-> Type '{ children: string; }' has no properties in common with type 'IntrinsicAttributes'.
+> `Type '{ children: string; }' has no properties in common with type 'IntrinsicAttributes'.`
 
 ```tsx twoslash
 // @errors: 2559
+import React from "react";
+
 // This component doesn't accept children
 const Component: React.FC = () => {
   return <div />;
 };
 
 // ---cut---
-
-// No error!
 <Component>123</Component>;
 ```
 
@@ -76,9 +76,11 @@ const Component: React.FC = () => {
 
 Previous iterations of `React.FC` returned [`React.ReactElement`](/jsx-element-vs-react-reactnode). This meant that perfectly valid components would fall prey to strange errors:
 
-> Type 'X' is not assignable to type 'ReactElement<any, string | JSXElementConstructor<any>>'.
+> `Type 'X' is not assignable to type 'ReactElement<any, string | JSXElementConstructor<any>>'.`
 
 ```tsx twoslash
+import React from "react";
+
 // @errors: 2322
 const Component = (): React.ReactElement => {
   return 123;
@@ -90,6 +92,8 @@ This is perfectly valid JavaScript, but TypeScript would complain because `123` 
 But since TypeScript 5.1 and the latest version of React's types, `React.FC` now returns `React.ReactNode`. This more permissive type - meaning the types now match up perfectly with the runtime values:
 
 ```tsx twoslash
+import React from "react";
+
 // No error!
 const Component: React.FC = () => {
   return 123;
@@ -105,6 +109,8 @@ I used to recommend _never_ using `React.FC` because of the problems listed abov
 But - I still **don't think it's the best way to annotate your types**. That accolade goes to annotating props directly:
 
 ```tsx twoslash
+import React from "react";
+
 const Component = (props: { name: string }) => {
   return <div>{props.name}</div>;
 };
