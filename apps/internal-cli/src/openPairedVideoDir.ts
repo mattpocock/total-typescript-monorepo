@@ -2,6 +2,7 @@ import {
   ExerciseNotFoundError,
   ExternalDriveNotFoundError,
   REPOS_FOLDER,
+  execAsync,
   exitProcessWithError,
   getActiveEditorFilePath,
   parseExercisePath,
@@ -10,33 +11,34 @@ import {
 import { execSync } from "child_process";
 import path from "path";
 import { EXTERNAL_DRIVE_MOVIES_ROOT, getExternalDrive } from "./constants.js";
+import { okAsync, safeTry } from "neverthrow";
+import { ok } from "assert";
 
 export const openPairedVideoDir = async () => {
-  const activeEditorFilePath = await getActiveEditorFilePath();
+  return safeTry(async function* () {
+    const activeEditorFilePath = yield* (
+      await getActiveEditorFilePath()
+    ).safeUnwrap();
 
-  if (!activeEditorFilePath) {
-    exitProcessWithError("No active editor file path found");
-  }
+    yield* getExternalDrive().safeUnwrap();
 
-  const externalDrive = await getExternalDrive();
+    const relativePath = path.relative(REPOS_FOLDER, activeEditorFilePath);
 
-  if (externalDrive instanceof ExternalDriveNotFoundError) {
-    exitProcessWithError(`External drive not found at ${externalDrive.path}`);
-  }
+    const targetPath = path.resolve(
+      EXTERNAL_DRIVE_MOVIES_ROOT,
+      relativePath,
+    ) as AbsolutePath;
 
-  const relativePath = path.relative(REPOS_FOLDER, activeEditorFilePath);
-  const targetPath = path.resolve(
-    EXTERNAL_DRIVE_MOVIES_ROOT,
-    relativePath,
-  ) as AbsolutePath;
+    const exercisePath = yield* parseExercisePath(targetPath).safeUnwrap();
 
-  const exercisePath = parseExercisePath(targetPath);
+    const { resolvedPath } = exercisePath;
 
-  if (exercisePath instanceof ExerciseNotFoundError) {
-    exitProcessWithError(`No exercise found in ${exercisePath.path}`);
-  }
+    yield* execAsync(`open "${path.dirname(resolvedPath)}"`).safeUnwrap();
 
-  const { resolvedPath } = exercisePath;
-
-  execSync(`open "${path.dirname(resolvedPath)}"`);
+    return okAsync(void 0);
+  }).then((result) => {
+    return result.mapErr((err) => {
+      exitProcessWithError(err.message);
+    });
+  });
 };

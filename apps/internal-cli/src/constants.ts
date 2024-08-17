@@ -4,16 +4,18 @@ import {
   pathExists,
   type AbsolutePath,
 } from "@total-typescript/shared";
+import { err, ok } from "neverthrow";
 import path from "path";
 
 export const EXTERNAL_DRIVE_ROOT = env.EXTERNAL_DRIVE_ROOT as AbsolutePath;
 
-export const getExternalDrive = async () => {
-  if (!(await pathExists(EXTERNAL_DRIVE_ROOT))) {
-    return new ExternalDriveNotFoundError(EXTERNAL_DRIVE_ROOT);
-  }
-
-  return EXTERNAL_DRIVE_ROOT;
+export const getExternalDrive = () => {
+  return pathExists(EXTERNAL_DRIVE_ROOT).andThen((exists) => {
+    if (exists) {
+      return ok(EXTERNAL_DRIVE_ROOT);
+    }
+    return err(new ExternalDriveNotFoundError(EXTERNAL_DRIVE_ROOT));
+  });
 };
 
 export const EXTERNAL_DRIVE_MOVIES_ROOT = path.join(
