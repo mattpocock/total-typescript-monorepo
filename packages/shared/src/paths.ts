@@ -1,16 +1,25 @@
-import { execSync } from "child_process";
+import { err, ok, Result } from "neverthrow";
 import type { AnyPath } from "./types.js";
 import { execAsync } from "./utils.js";
 
 export class ExerciseNotFoundError {
-  readonly _tag = "ExerciseNotFoundError";
-
-  constructor(public path: string) {}
+  message: string;
+  constructor(public path: string) {
+    this.message = `Path appears not to be an exercise: ${path}`;
+  }
 }
 
 const regex = /^\d{1,}/;
 
-export const parseExercisePath = <T extends AnyPath>(fullPathname: T) => {
+export const parseExercisePath = <T extends AnyPath>(
+  fullPathname: T,
+): Result<
+  {
+    resolvedPath: T;
+    num: string;
+  },
+  ExerciseNotFoundError
+> => {
   const splitPathname = fullPathname.split("/");
 
   const exerciseLabelIndex = splitPathname.findLastIndex((pathPart) => {
@@ -18,15 +27,15 @@ export const parseExercisePath = <T extends AnyPath>(fullPathname: T) => {
   });
 
   if (exerciseLabelIndex === -1) {
-    return new ExerciseNotFoundError(fullPathname);
+    return err(new ExerciseNotFoundError(fullPathname));
   }
 
-  return {
+  return ok({
     resolvedPath: splitPathname.slice(0, exerciseLabelIndex + 1).join("/") as T,
     num: splitPathname[exerciseLabelIndex]?.match(regex)?.[0] as string,
-  };
+  });
 };
 
-export const ensureDir = async (dir: string) => {
-  execAsync(`mkdir -p "${dir}"`);
+export const ensureDir = (dir: string) => {
+  return execAsync(`mkdir -p "${dir}"`);
 };

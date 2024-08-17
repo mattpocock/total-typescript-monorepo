@@ -25,6 +25,7 @@
     "commander": "^12.0.0",
     "zod": "^3.23.6",
     "prompts": "^2.4.2",
-    "fast-glob": "^3.3.2"
+    "fast-glob": "^3.3.2",
+    "neverthrow": "^7.0.1"
   }
 }

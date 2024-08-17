@@ -9,6 +9,7 @@
     ".": "./dist/index.js"
   },
   "dependencies": {
-    "@total-typescript/shared": "workspace:*"
+    "@total-typescript/shared": "workspace:*",
+    "neverthrow": "^7.0.1"
   }
 }
