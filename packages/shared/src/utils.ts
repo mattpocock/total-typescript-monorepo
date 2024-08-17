@@ -1,36 +1,49 @@
-import { exec, type ExecOptions } from "child_process";
+import { exec, type ExecException, type ExecOptions } from "child_process";
 import { stat } from "fs/promises";
+import { errAsync, ok, ResultAsync } from "neverthrow";
 import type { AbsolutePath } from "./types.js";
 
-export const pathExists = async (path: string): Promise<boolean> => {
-  try {
-    await stat(path);
-    return true;
-  } catch (e) {
-    return false;
-  }
+export const pathExists = (path: string) => {
+  return ResultAsync.fromPromise(stat(path), (e) => e)
+    .map(() => true)
+    .orElse(() => ok(false));
 };
 
-export const execAsync = async (command: string, opts?: ExecOptions) => {
-  return new Promise<{
+export const execAsync = (command: string, opts?: ExecOptions) => {
+  return ResultAsync.fromPromise(
+    new Promise<{
+      stdout: string;
+      stderr: string;
+    }>((resolve, reject) => {
+      exec(command, opts, (e, stdout, stderr) => {
+        if (e) {
+          reject(e);
+        }
+
+        resolve({ stdout: stdout.toString(), stderr: stderr.toString() });
+      });
+    }),
+    (e) => {
+      return e as ExecException;
+    },
+  );
+};
+
+export const revealInFileExplorer = (
+  file: AbsolutePath,
+): ResultAsync<
+  {
     stdout: string;
     stderr: string;
-  }>((resolve, reject) => {
-    exec(command, opts, (err, stdout, stderr) => {
-      if (err) {
-        reject(err);
-      }
-
-      resolve({ stdout: stdout.toString(), stderr: stderr.toString() });
-    });
-  });
-};
-
-export const revealInFileExplorer = async (file: AbsolutePath) => {
+  },
+  Error
+> => {
   if (process.platform === "win32") {
-    await execAsync(`explorer /select,${file}`);
+    return execAsync(`explorer /select,${file}`);
   } else if (process.platform === "darwin") {
-    await execAsync(`open -R "${file}"`);
+    return execAsync(`open -R "${file}"`);
+  } else {
+    return errAsync(new Error("Unsupported platform"));
   }
 };
 
@@ -41,8 +54,11 @@ export const exitProcessWithError = (message: string) => {
 
 export class ExternalDriveNotFoundError {
   readonly name = "ExternalDriveNotFoundError";
+  message: string;
 
-  constructor(public path: string) {}
+  constructor(public path: string) {
+    this.message = `External drive not found: ${path}`;
+  }
 }
 
 export const toDashCase = (str: string) => {

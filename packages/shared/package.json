@@ -13,6 +13,7 @@
     ".": "./dist/index.js"
   },
   "dependencies": {
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "neverthrow": "^7.0.1"
   }
 }
