@@ -69,7 +69,7 @@ export const ScreenshotSnippetWrapperWithBorder = (props: {
 export const CodeSnippet = (props: { html: string }) => {
   return (
     <div
-      className="bg-gray-900 rounded-xl px-0 shadow-2xl py-10"
+      className="bg-gray-900 rounded-xl px-0 shadow-2xl py-10 text-white"
       dangerouslySetInnerHTML={{
         __html: props.html,
       }}
