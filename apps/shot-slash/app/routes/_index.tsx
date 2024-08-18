@@ -83,7 +83,7 @@ export default function Index() {
 
   return (
     <Wrapper>
-      <div className="max-w-3xl mx-auto my-4 mb-8 px-8 space-y-8">
+      <div className="my-4 mb-8 space-y-8">
         <select
           value={renderType}
           onChange={(e) => {
@@ -162,7 +162,7 @@ const Wrapper = (props: { children: React.ReactNode }) => {
           Shot<span className="text-blue-500">Slash</span>
         </h1>
       </div>
-      {props.children}
+      <main className="max-w-3xl mx-auto px-8">{props.children}</main>
     </div>
   );
 };
