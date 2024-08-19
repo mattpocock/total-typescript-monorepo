@@ -7,6 +7,7 @@ import { FSWatcher, watch } from "chokidar";
 import { cpSync, readFileSync, rmSync, writeFileSync } from "fs";
 import path from "path";
 import fm from "front-matter";
+import { err, ok, safeTry } from "neverthrow";
 
 const CODE_HIKE_SRC = path.join(
   import.meta.dirname,
@@ -99,33 +100,51 @@ const createFileUpdater = (filePath: AbsolutePath) => () => {
 };
 
 const watchActiveFilePath = async () => {
-  const activeEditorFilePath = await getActiveEditorFilePath();
+  const result = await safeTry(async function* () {
+    const activeEditorFilePath = yield* getActiveEditorFilePath()
+      .mapErr(() => "active-editor-file-path-failed" as const)
+      .safeUnwrap();
 
-  if (!activeEditorFilePath) {
-    return;
-  }
+    if (!activeEditorFilePath.endsWith(".md")) {
+      return err("not-markdown-file" as const);
+    }
 
-  if (!activeEditorFilePath.endsWith(".md")) {
-    return;
-  }
+    if (activeEditorFilePath === CODE_HIKE_CONTENT_LOCATION) {
+      return ok(void 0);
+    }
 
-  if (activeEditorFilePath === CODE_HIKE_CONTENT_LOCATION) {
-    return;
-  }
-
-  const watchedFiles = Object.entries(fileWatcher?.getWatched() || {}).flatMap(
-    ([dir, paths]) => {
+    const watchedFiles = Object.entries(
+      fileWatcher?.getWatched() || {},
+    ).flatMap(([dir, paths]) => {
       return paths.map((p) => path.join(dir, p));
-    },
-  );
+    });
 
-  if (watchedFiles.includes(activeEditorFilePath)) {
-    return;
+    if (watchedFiles.includes(activeEditorFilePath)) {
+      return err("already-watching" as const);
+    }
+
+    console.log("Watching", activeEditorFilePath);
+
+    watchFile(activeEditorFilePath);
+
+    return ok(void 0);
+  });
+
+  if (result.isErr()) {
+    switch (result.error) {
+      case "not-markdown-file":
+        console.log("Not a markdown file");
+        break;
+      case "already-watching":
+        console.log("Already watching this file");
+        break;
+      case "active-editor-file-path-failed":
+        console.log("Could not get active editor file path");
+        break;
+      default:
+        result.error satisfies never;
+    }
   }
-
-  console.log("Watching", activeEditorFilePath);
-
-  watchFile(activeEditorFilePath);
 };
 
 await watchActiveFilePath();

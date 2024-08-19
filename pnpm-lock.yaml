@@ -279,6 +279,9 @@ importers:
       front-matter:
         specifier: ^4.0.2
         version: 4.0.2
+      neverthrow:
+        specifier: ^7.0.1
+        version: 7.0.1
 
   apps/twoslash-lint:
     dependencies:

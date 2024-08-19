@@ -83,13 +83,19 @@ const reportFilePath = (filePath: AbsolutePath) => {
 };
 
 export const runWebsocketServer = async () => {
-  const filePath = await getActiveEditorFilePath();
-
-  if (filePath?.startsWith(ROOT) && filePath.endsWith(".md")) {
-    reportFilePath(SHIKI_TEST_LOCATION as AbsolutePath);
-  } else {
-    reportFilePath(SHIKI_TEST_LOCATION as AbsolutePath);
-  }
+  await getActiveEditorFilePath().match(
+    (filePath) => {
+      if (filePath.startsWith(ROOT) && filePath.endsWith(".md")) {
+        reportFilePath(SHIKI_TEST_LOCATION as AbsolutePath);
+      } else {
+        reportFilePath(SHIKI_TEST_LOCATION as AbsolutePath);
+      }
+    },
+    (e) => {
+      console.error(e);
+      process.exit(1);
+    },
+  );
 
   chokidar
     .watch([CONTENT_PATH, SHIKI_TEST_LOCATION], {

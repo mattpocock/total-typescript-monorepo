@@ -18,10 +18,13 @@ import {
 import { err, ok, safeTry } from "neverthrow";
 import path from "path";
 import { EXTERNAL_DRIVE_MOVIES_ROOT, getExternalDrive } from "./constants.js";
+import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
 
 export const trimLatestOBSVideo = () => {
   return safeTry(async function* () {
     yield* getExternalDrive().safeUnwrap();
+
+    const latestOBSVideo = yield* getLatestOBSVideo().safeUnwrap();
 
     const activeEditorFilePath = yield* getActiveEditorFilePath().safeUnwrap();
 
@@ -66,7 +69,7 @@ export const trimLatestOBSVideo = () => {
     ) + ".un-encoded.mp4") as AbsolutePath;
 
     yield* trimVideo(
-      activeEditorFilePath,
+      latestOBSVideo,
       unNormalizedFilename,
       silence.startTime,
       silence.endTime,
