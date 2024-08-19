@@ -26,6 +26,11 @@ export const SCRIPTKIT_SCRIPTS_LOCATION = path.join(
 
 export const REPOS_FOLDER = path.join(os.homedir(), "repos") as AbsolutePath;
 
+export const TOTAL_TYPESCRIPT_REPOS_LOCATION = path.join(
+  REPOS_FOLDER,
+  "total-typescript",
+) as AbsolutePath;
+
 export const DAVINCI_RESOLVE_SCRIPTS_LOCATION = path.resolve(
   import.meta.dirname ?? "", // Added as a hack for now
   "..",

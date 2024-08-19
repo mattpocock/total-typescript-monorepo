@@ -42,6 +42,15 @@ importers:
         specifier: workspace:*
         version: link:../../packages/_example-package
 
+  apps/exercise-repo-upgrader:
+    dependencies:
+      '@total-typescript/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      neverthrow:
+        specifier: ^7.0.1
+        version: 7.0.1
+
   apps/internal-cli:
     dependencies:
       '@total-typescript/env':

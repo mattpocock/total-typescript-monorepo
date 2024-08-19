@@ -1,0 +1,7 @@
+{
+  "extends": "@total-typescript/tsconfig/tsc/no-dom/library-monorepo",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+  },
+}

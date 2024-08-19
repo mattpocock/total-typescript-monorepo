@@ -1,0 +1,21 @@
+{
+  "name": "exercise-repo-upgrader",
+  "version": "0.0.2",
+  "private": true,
+  "type": "module",
+  "files": [
+    "./dist/*"
+  ],
+  "scripts": {
+    "dev": "node --enable-source-maps --watch ./dist/index.js",
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "dependencies": {
+    "@total-typescript/shared": "workspace:*",
+    "neverthrow": "^7.0.1"
+  }
+}
