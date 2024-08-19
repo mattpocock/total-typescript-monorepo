@@ -59,6 +59,9 @@ importers:
       fast-glob:
         specifier: ^3.3.2
         version: 3.3.2
+      neverthrow:
+        specifier: ^7.0.1
+        version: 7.0.1
       prompts:
         specifier: ^2.4.2
         version: 2.4.2
@@ -276,6 +279,9 @@ importers:
       front-matter:
         specifier: ^4.0.2
         version: 4.0.2
+      neverthrow:
+        specifier: ^7.0.1
+        version: 7.0.1
 
   apps/twoslash-lint:
     dependencies:
@@ -498,11 +504,17 @@ importers:
       '@total-typescript/shared':
         specifier: workspace:*
         version: link:../shared
+      neverthrow:
+        specifier: ^7.0.1
+        version: 7.0.1
 
   packages/gonad: {}
 
   packages/shared:
     dependencies:
+      neverthrow:
+        specifier: ^7.0.1
+        version: 7.0.1
       zod:
         specifier: ^3.23.8
         version: 3.23.8

@@ -5,7 +5,6 @@
   },
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.preferences.autoImportFileExcludePatterns": [
-    // "**/*.d.ts",
-    // "**/*.ts"
+    "./node_modules/@types/node/assert.d.ts"
   ]
 }

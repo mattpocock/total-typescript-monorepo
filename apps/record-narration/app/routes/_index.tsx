@@ -88,7 +88,7 @@ export const action = async (args: ActionFunctionArgs) => {
 export const loader = async () => {
   const { copyFile, readFile } = await import("fs/promises");
   const { getActiveEditorFilePath } = await import("@total-typescript/shared");
-  const activeFilePath = await getActiveEditorFilePath();
+  const activeFilePath = (await getActiveEditorFilePath())._unsafeUnwrap();
 
   // const activeFilePath =
   //   "/Users/matt/repos/ts/total-typescript-monorepo/apps/written-content/confusions/let-vs-const-inference/video.md";

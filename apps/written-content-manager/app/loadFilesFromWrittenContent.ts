@@ -30,8 +30,12 @@ const getReactRelatedFiles = async (basePath: AbsolutePath) => {
     `grep -Rnwl '${basePath}' -e 'react' --exclude-dir=node_modules`,
   );
 
+  if (grepResult.isErr()) {
+    throw new Error(grepResult.error.message);
+  }
+
   return new Set(
-    grepResult.stdout.trim().split("\n").filter(Boolean),
+    grepResult.value.stdout.trim().split("\n").filter(Boolean),
   ) as Set<AbsolutePath>;
 };
 

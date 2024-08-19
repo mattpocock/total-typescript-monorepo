@@ -1,109 +1,84 @@
 import {
-  CouldNotFindEndTimeError,
-  CouldNotFindStartTimeError,
   PADDING,
   SILENCE_DURATION,
   THRESHOLD,
   findSilenceInVideo,
   getFPS,
-  normalizeAudio,
   trimVideo,
 } from "@total-typescript/ffmpeg";
 import {
-  ExerciseNotFoundError,
-  ExternalDriveNotFoundError,
   REPOS_FOLDER,
   ensureDir,
-  execAsync,
   exitProcessWithError,
   getActiveEditorFilePath,
   parseExercisePath,
   type AbsolutePath,
   type RelativePath,
 } from "@total-typescript/shared";
+import { err, ok, safeTry } from "neverthrow";
 import path from "path";
-import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
 import { EXTERNAL_DRIVE_MOVIES_ROOT, getExternalDrive } from "./constants.js";
-import { execSync } from "child_process";
+import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
 
-export const trimLatestOBSVideo = async () => {
-  const externalDrive = await getExternalDrive();
+export const trimLatestOBSVideo = () => {
+  return safeTry(async function* () {
+    yield* getExternalDrive().safeUnwrap();
 
-  if (externalDrive instanceof ExternalDriveNotFoundError) {
-    exitProcessWithError(`External drive not found: ${externalDrive.path}`);
-  }
+    const latestOBSVideo = yield* getLatestOBSVideo().safeUnwrap();
 
-  const latestOBSVideo = await getLatestOBSVideo();
+    const activeEditorFilePath = yield* getActiveEditorFilePath().safeUnwrap();
 
-  const activeEditorFilePath = await getActiveEditorFilePath();
+    const relativePathToReposFolder = path.relative(
+      REPOS_FOLDER,
+      activeEditorFilePath,
+    ) as RelativePath;
 
-  if (!activeEditorFilePath) {
-    exitProcessWithError("Active editor file path not found");
-  }
+    const absolutePathToTrimmedFootage = path.resolve(
+      EXTERNAL_DRIVE_MOVIES_ROOT,
+      relativePathToReposFolder,
+    ) as AbsolutePath;
 
-  const relativePathToReposFolder = path.relative(
-    REPOS_FOLDER,
-    activeEditorFilePath,
-  ) as RelativePath;
+    if (relativePathToReposFolder.startsWith("..")) {
+      return err(
+        new Error("Active editor file path is not in the repos folder"),
+      );
+    }
 
-  const absolutePathToTrimmedFootage = path.resolve(
-    EXTERNAL_DRIVE_MOVIES_ROOT,
-    relativePathToReposFolder,
-  ) as AbsolutePath;
+    const result = yield* parseExercisePath(
+      absolutePathToTrimmedFootage,
+    ).safeUnwrap();
 
-  if (relativePathToReposFolder.startsWith("..")) {
-    exitProcessWithError("Active editor file path is not in the repos folder");
-  }
+    const fps = yield* getFPS(activeEditorFilePath).safeUnwrap();
 
-  console.log("Getting FPS...");
+    const silence = yield* findSilenceInVideo(activeEditorFilePath, {
+      silenceDuration: SILENCE_DURATION,
+      padding: PADDING,
+      threshold: THRESHOLD,
+      fps,
+    }).safeUnwrap();
 
-  const fps = await getFPS(latestOBSVideo);
+    const outputFolder = path.dirname(result.resolvedPath) as AbsolutePath;
 
-  const result = parseExercisePath(absolutePathToTrimmedFootage);
+    yield* ensureDir(outputFolder).safeUnwrap();
 
-  if (result instanceof ExerciseNotFoundError) {
-    exitProcessWithError("Path appears not to be an exercise: " + result.path);
-  }
+    console.log("Trimming video...");
 
-  console.log("Finding silence...");
+    const unNormalizedFilename = (result.resolvedPath.replace(
+      /\.(ts|tsx)/g,
+      "",
+    ) + ".un-encoded.mp4") as AbsolutePath;
 
-  const silenceResult = await findSilenceInVideo(latestOBSVideo, {
-    silenceDuration: SILENCE_DURATION,
-    padding: PADDING,
-    threshold: THRESHOLD,
-    fps,
+    yield* trimVideo(
+      latestOBSVideo,
+      unNormalizedFilename,
+      silence.startTime,
+      silence.endTime,
+    ).safeUnwrap();
+
+    return ok(void 0);
+  }).then((r) => {
+    return r.mapErr((e) => {
+      exitProcessWithError(e.message);
+    });
   });
-
-  if (silenceResult instanceof CouldNotFindStartTimeError) {
-    exitProcessWithError("Could not find start time");
-  }
-
-  if (silenceResult instanceof CouldNotFindEndTimeError) {
-    exitProcessWithError("Could not find end time");
-  }
-
-  const outputFolder = path.dirname(result.resolvedPath) as AbsolutePath;
-
-  await ensureDir(outputFolder);
-
-  console.log("Trimming video...");
-
-  const unNormalizedFilename = (result.resolvedPath.replace(/\.(ts|tsx)/g, "") +
-    ".un-encoded.mp4") as AbsolutePath;
-
-  await trimVideo(
-    latestOBSVideo,
-    unNormalizedFilename,
-    silenceResult.startTime,
-    silenceResult.endTime,
-  );
-
-  // const finalOutputFilename = unNormalizedFilename.replace(
-  //   ".un-encoded.un-normalized.mp4",
-  //   ".un-encoded.mp4",
-  // ) as AbsolutePath;
-
-  // await normalizeAudio(unNormalizedFilename, finalOutputFilename);
-
-  // await execAsync(`rm ${unNormalizedFilename}`);
 };

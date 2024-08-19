@@ -2,6 +2,7 @@ import { resolve } from "path";
 import { DAVINCI_RESOLVE_SCRIPTS_LOCATION } from "./constants.js";
 import type { EmptyObject } from "./types.js";
 import { execAsync, exitProcessWithError } from "./utils.js";
+import { safeTry } from "neverthrow";
 
 type Scripts = {
   "clip-and-append.lua": {
@@ -15,30 +16,31 @@ type Scripts = {
   "add-subtitles.lua": EmptyObject;
 };
 
-export const runDavinciResolveScript = async <TScript extends keyof Scripts>(
+export const runDavinciResolveScript = <TScript extends keyof Scripts>(
   script: TScript,
   env: Scripts[TScript],
 ) => {
-  await checkFuscriptIsInstalled();
-  const scriptPath = resolve(DAVINCI_RESOLVE_SCRIPTS_LOCATION, script);
+  return safeTry(async function* () {
+    yield* checkFuscriptIsInstalled().safeUnwrap();
 
-  const envString = Object.entries(env)
-    .map(([key, value]) => {
-      return `${key}="${value}"`;
-    })
-    .join(" ");
+    const scriptPath = resolve(DAVINCI_RESOLVE_SCRIPTS_LOCATION, script);
 
-  const { stdout } = await execAsync(
-    `${envString} fuscript -q "${scriptPath}"`,
-  );
+    const envString = Object.entries(env)
+      .map(([key, value]) => {
+        return `${key}="${value}"`;
+      })
+      .join(" ");
 
-  return stdout;
+    return execAsync(`${envString} fuscript -q "${scriptPath}"`).map(
+      (r) => r.stdout,
+    );
+  });
 };
 
 const checkFuscriptIsInstalled = () => {
-  try {
-    execAsync("fuscript --version");
-  } catch (error) {
-    exitProcessWithError("fuscript is not installed");
-  }
+  return execAsync("fuscript --version").mapErr((e) => {
+    return new Error("fuscript is not installed", {
+      cause: e,
+    });
+  });
 };

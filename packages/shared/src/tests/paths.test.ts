@@ -21,7 +21,7 @@ it.each([
   (input, expectedResolvedPath, num) => {
     const result = parseExercisePath(input as AbsolutePath);
 
-    expect(result).toMatchObject({
+    expect(result._unsafeUnwrap()).toMatchObject({
       resolvedPath: expectedResolvedPath,
       num,
     });
