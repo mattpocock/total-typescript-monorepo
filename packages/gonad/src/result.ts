@@ -112,29 +112,3 @@ export function err<E>(error: E) {
 }
 export const ok = <T>(value: T): Ok<T, never> =>
   new Base({ type: "ok", value }) as Ok<T, never>;
-
-export function safeTry<T = never, E = never>(
-  generator: () => Generator<Result<T, E>, Ok<T, never>, void>,
-): Result<T, E>;
-// export function safeTry<T, E>(
-//   generator: () => AsyncGenerator<Err<T, E>, Ok<T>, void>,
-// ): Promise<Result<T, E>>;
-export function safeTry(
-  generator: () => Generator<Result<any, any>, Ok<any, any>, void>,
-): Result<any, any> {
-  const iterator = generator();
-
-  let result: IteratorResult<Err<any, any> | Ok<any, any>, Ok<any, any>>;
-
-  while (true) {
-    result = iterator.next();
-
-    if (result.done) {
-      return result.value;
-    }
-
-    if (result.value.isErr()) {
-      return result.value;
-    }
-  }
-}
