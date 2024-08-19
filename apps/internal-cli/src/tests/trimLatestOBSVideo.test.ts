@@ -2,38 +2,48 @@ import { expect, it, vi } from "vitest";
 import { trimLatestOBSVideo } from "../trimLatestOBSVideo.js";
 import * as ffmpeg from "@total-typescript/ffmpeg";
 import * as ttShared from "@total-typescript/shared";
+import { ok, Result, ResultAsync } from "neverthrow";
 
 vi.mock("@total-typescript/ffmpeg", () => ({
-  getFPS: async () => 60,
-  findSilenceInVideo: async () => ({
-    startTime: 0,
-    endTime: 10,
-  }),
+  getFPS: () => new ResultAsync(Promise.resolve(ok(60))),
+  findSilenceInVideo: () =>
+    new ResultAsync(
+      Promise.resolve(
+        ok({
+          startTime: 0,
+          endTime: 10,
+        }),
+      ),
+    ),
   SILENCE_DURATION: 10,
   PADDING: 10,
   THRESHOLD: 10,
   CouldNotFindEndTimeError: class {},
   CouldNotFindStartTimeError: class {},
-  trimVideo: async () => {},
+  trimVideo: () => {
+    return new ResultAsync(Promise.resolve(ok(undefined)));
+  },
   normalizeAudio: async () => {},
 }));
 
 vi.mock("@total-typescript/shared", async (importOriginal) => ({
   ...((await importOriginal()) as any),
-  getActiveEditorFilePath: async () => "/repos/01-video.problem.ts",
+  getActiveEditorFilePath: () =>
+    new ResultAsync(Promise.resolve(ok("/repos/01-video.problem.ts"))),
   ExternalDriveNotFoundError: class {},
   REPOS_FOLDER: "/repos",
-  ensureDir: () => {},
+  ensureDir: () => new ResultAsync(Promise.resolve(ok(undefined))),
   execAsync: () => {},
 }));
 
 vi.mock("../constants.js", () => ({
-  getExternalDrive: async () => "/Drive",
+  getExternalDrive: () => new ResultAsync(Promise.resolve(ok("/Drive"))),
   EXTERNAL_DRIVE_MOVIES_ROOT: "/Drive/output",
 }));
 
 vi.mock("../getLatestOBSVideo.js", () => ({
-  getLatestOBSVideo: async () => "/tmp/video.mp4",
+  getLatestOBSVideo: () =>
+    new ResultAsync(Promise.resolve(ok("/tmp/video.mp4"))),
 }));
 
 it("Should call trim on the video", async () => {
