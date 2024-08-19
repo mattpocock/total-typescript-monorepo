@@ -16,7 +16,7 @@ export type Command<TArgs extends readonly string[]> = {
   description: string;
   cliCommand: string;
   args?: [...TArgs];
-  run: (...args: TArgs) => Promise<void>;
+  run: (...args: TArgs) => any;
 };
 
 const createCommands = <TArgs extends string[][]>(args: {
