@@ -508,8 +508,6 @@ importers:
         specifier: ^7.0.1
         version: 7.0.1
 
-  packages/gonad: {}
-
   packages/shared:
     dependencies:
       neverthrow:
