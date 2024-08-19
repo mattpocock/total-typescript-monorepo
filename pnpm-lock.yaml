@@ -42,46 +42,6 @@ importers:
         specifier: workspace:*
         version: link:../../packages/_example-package
 
-  apps/ffmpeg-playground:
-    dependencies:
-      '@remix-run/node':
-        specifier: ^2.9.1
-        version: 2.11.1(typescript@5.5.4)
-      '@remix-run/react':
-        specifier: ^2.9.1
-        version: 2.11.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
-      '@remix-run/serve':
-        specifier: ^2.9.1
-        version: 2.11.1(typescript@5.5.4)
-      '@total-typescript/ffmpeg':
-        specifier: workspace:*
-        version: link:../../packages/ffmpeg
-      '@total-typescript/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
-      react:
-        specifier: ^18.2.0
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
-    devDependencies:
-      '@remix-run/dev':
-        specifier: ^2.9.1
-        version: 2.11.1(@remix-run/react@2.11.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4))(@remix-run/serve@2.11.1(typescript@5.5.4))(@types/node@22.3.0)(terser@5.31.5)(typescript@5.5.4)(vite@5.4.0(@types/node@22.3.0)(terser@5.31.5))
-      '@types/react':
-        specifier: ^18.2.20
-        version: 18.3.3
-      '@types/react-dom':
-        specifier: ^18.2.7
-        version: 18.3.0
-      vite:
-        specifier: ^5.1.0
-        version: 5.4.0(@types/node@22.3.0)(terser@5.31.5)
-      vite-tsconfig-paths:
-        specifier: ^5.0.0
-        version: 5.0.1(typescript@5.5.4)(vite@5.4.0(@types/node@22.3.0)(terser@5.31.5))
-
   apps/internal-cli:
     dependencies:
       '@total-typescript/env':
@@ -538,6 +498,8 @@ importers:
       '@total-typescript/shared':
         specifier: workspace:*
         version: link:../shared
+
+  packages/gonad: {}
 
   packages/shared:
     dependencies:
