@@ -134,7 +134,7 @@ export function CodeSnippetRenderer({ data }: { data: RendererData }) {
     case "error":
       return (
         <ScreenshotSnippetWrapper>
-          <div className="p-6 space-y-4 bg-gray-900 text-4xl">
+          <div className="p-6 space-y-4 bg-gray-900 text-4xl text-white">
             <pre className="leading-snug">{data.code}</pre>
             <h1 className="">{data.title}</h1>
             <p className="">{data.description}</p>
