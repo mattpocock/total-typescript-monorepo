@@ -3,6 +3,10 @@
     "prefix": "thread",
     "body": ["🧵"]
   },
+  "point-down": {
+    "prefix": "point-down",
+    "body": ["👇"]
+  },
   "fire": {
     "prefix": "fire",
     "body": ["🔥"]
