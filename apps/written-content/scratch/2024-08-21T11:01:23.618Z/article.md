@@ -1,4 +1,19 @@
-# How To Publish A Package To NPM
+In this guide, we'll go through every single step you need to take to publish a package to npm.
+
+This is not a minimal guide. We'll be setting up a fully production-ready package from an empty directory. This will include:
+
+- [Git](https://git-scm.com/) for version control
+- [TypeScript](https://www.typescriptlang.org/) for writing our code and keeping it type-safe
+- [Prettier](https://prettier.io/) for formatting our code
+- [@arethetypeswrong/cli](https://arethetypeswrong.github.io/) for checking our exports
+- [tsup](https://tsup.egoist.sh/) for compiling our TypeScript code into CJS and ESM
+- [Vitest](https://vitest.js.org/) for running our tests
+- [GitHub Actions](https://docs.github.com/en/actions) for running our CI process
+- [Changesets](https://github.com/changesets/changesets) for versioning and publishing our package
+
+If you want to see the finished product, check out this [demo repo](https://github.com/mattpocock/tt-package-demo).
+
+With that, let's get started!
 
 ## 1. Git
 
@@ -137,6 +152,8 @@ This will be shown on the npm registry when people view your package.
 
 ## 3: TypeScript
 
+In this section, we'll install TypeScript, set up a `tsconfig.json`, create a source file, create an index file, set up a `build` script, run our build, add `dist` to `.gitignore`, set up a `ci` script, and configure our `tsconfig.json` for the DOM.
+
 ### 3.1: Install TypeScript
 
 Run the following command to install TypeScript:
@@ -147,7 +164,7 @@ npm install --save-dev typescript
 
 We add `--save-dev` to install TypeScript as a development dependency. This means it won't be included when people install your package.
 
-### Set up a `tsconfig.json`
+### 3.2: Set up a `tsconfig.json`
 
 Create a `tsconfig.json` with the following values:
 
@@ -186,7 +203,7 @@ Create a `tsconfig.json` with the following values:
 
 These options are explained in detail in my [TSConfig Cheat Sheet](https://www.totaltypescript.com/tsconfig-cheat-sheet).
 
-### Configure your `tsconfig.json` for the DOM
+### 3.3: Configure your `tsconfig.json` for the DOM
 
 If your code runs in the DOM (i.e. requires access to `document`, `window`, or `localStorage` etc), skip this step.
 
@@ -205,7 +222,7 @@ This prevents the DOM typings from being available in your code.
 
 If you're not sure, skip this step.
 
-### Create A Source File
+### 3.4: Create A Source File
 
 Create a `src/utils.ts` file with the following content:
 
@@ -213,7 +230,7 @@ Create a `src/utils.ts` file with the following content:
 export const add = (a: number, b: number) => a + b;
 ```
 
-### Create An Index File
+### 3.5: Create An Index File
 
 Create a `src/index.ts` file with the following content:
 
@@ -223,7 +240,7 @@ export * from "./utils.js";
 
 The `.js` extension will look odd. [This article](https://www.totaltypescript.com/relative-import-paths-need-explicit-file-extensions-in-ecmascript-imports) explains more.
 
-### Set up a `build` script
+### 3.6: Set up a `build` script
 
 Add a `scripts` object to your `package.json` with the following content:
 
@@ -237,7 +254,7 @@ Add a `scripts` object to your `package.json` with the following content:
 
 This will compile your TypeScript code to JavaScript.
 
-### Running Your Build
+### 3.7: Running Your Build
 
 Run the following command to compile your TypeScript code:
 
@@ -247,7 +264,7 @@ npm run build
 
 This will create a `dist` folder with your compiled JavaScript code.
 
-### Add `dist` to `.gitignore`
+### 3.8: Add `dist` to `.gitignore`
 
 Add the `dist` folder to your `.gitignore` file:
 
@@ -257,7 +274,7 @@ dist
 
 This will prevent your compiled code from being included in your git repository.
 
-### Set up a `ci` script
+### 3.9: Set up a `ci` script
 
 Add a `ci` script to your `package.json` with the following content:
 
@@ -271,9 +288,13 @@ Add a `ci` script to your `package.json` with the following content:
 
 This gives us a quick shortcut for running all required operations on CI.
 
-## Prettier
+## 4: Prettier
 
-### Install Prettier
+In this section, we'll install Prettier, set up a `.prettierrc`, set up a `format` script, run the `format` script, set up a `check-format` script, add the `check-format` script to our `CI` script, and run the `CI` script.
+
+Prettier is a code formatter that automatically formats your code to a consistent style. This makes your code easier to read and maintain.
+
+### 4.1: Install Prettier
 
 Run the following command to install Prettier:
 
@@ -281,7 +302,7 @@ Run the following command to install Prettier:
 npm install --save-dev prettier
 ```
 
-### Set up a `.prettierrc.`
+### 4.2: Set up a `.prettierrc`
 
 Create a `.prettierrc` file with the following content:
 
@@ -297,7 +318,7 @@ Create a `.prettierrc` file with the following content:
 
 You can add more options to this file to customize Prettier's behavior. You can find a full list of options [here](https://prettier.io/docs/en/options.html).
 
-### Set up a `format` script
+### 4.3: Set up a `format` script
 
 Add a `format` script to your `package.json` with the following content:
 
@@ -311,7 +332,7 @@ Add a `format` script to your `package.json` with the following content:
 
 This will format all files in your project using Prettier.
 
-### Run the `format` script
+### 4.4: Run the `format` script
 
 Run the following command to format all files in your project:
 
@@ -326,7 +347,7 @@ git add .
 git commit -m "Format code with Prettier"
 ```
 
-### Set up a `check-format` script
+### 4.5: Set up a `check-format` script
 
 Add a `check-format` script to your `package.json` with the following content:
 
@@ -340,7 +361,7 @@ Add a `check-format` script to your `package.json` with the following content:
 
 This will check if all files in your project are formatted correctly.
 
-### Adding to our `CI` script
+### 4.6: Adding to our `CI` script
 
 Add the `check-format` script to your `ci` script in your `package.json`:
 
@@ -354,9 +375,13 @@ Add the `check-format` script to your `ci` script in your `package.json`:
 
 This will run the `check-format` script as part of your CI process.
 
-## `exports`, `main` and `@arethetypeswrong/cli`
+## 5: `exports`, `main` and `@arethetypeswrong/cli`
 
-### Install `@arethetypeswrong/cli`
+In this section, we'll install `@arethetypeswrong/cli`, set up a `check-exports` script, run the `check-exports` script, set up a `main` field, run the `check-exports` script again, set up a `ci` script, and run the `ci` script.
+
+`@arethetypeswrong/cli` is a tool that checks if your package exports are correct. This is important because these are easy to get wrong, and can cause issues for people using your package.
+
+### 5.1: Install `@arethetypeswrong/cli`
 
 Run the following command to install `@arethetypeswrong/cli`:
 
@@ -364,7 +389,7 @@ Run the following command to install `@arethetypeswrong/cli`:
 npm install --save-dev @arethetypeswrong/cli
 ```
 
-### Set up a `check-exports` script
+### 5.2: Set up a `check-exports` script
 
 Add a `check-exports` script to your `package.json` with the following content:
 
@@ -378,7 +403,7 @@ Add a `check-exports` script to your `package.json` with the following content:
 
 This will check if all exports from your package are correct.
 
-### Run the `check-exports` script
+### 5.3: Run the `check-exports` script
 
 Run the following command to check if all exports from your package are correct:
 
@@ -406,7 +431,7 @@ This indicates that no version of Node, or any bundler, can use our package.
 
 Let's fix this.
 
-### Setting `main`
+### 5.4: Setting `main`
 
 Add a `main` field to your `package.json` with the following content:
 
@@ -418,7 +443,7 @@ Add a `main` field to your `package.json` with the following content:
 
 This tells Node where to find the entry point of your package.
 
-### Try `check-exports` again
+### 5.5: Try `check-exports` again
 
 Run the following command to check if all exports from your package are correct:
 
@@ -446,7 +471,7 @@ This is telling us that our package is compatible with systems running ESM. Peop
 
 We can choose to fix this later if we wish.
 
-### Adding to our `CI` script
+### 5.6: Adding to our `CI` script
 
 Add the `check-exports` script to your `ci` script in your `package.json`:
 
@@ -458,9 +483,15 @@ Add the `check-exports` script to your `ci` script in your `package.json`:
 }
 ```
 
-## Using `tsup` to Dual Publish
+## 6: Using `tsup` to Dual Publish
 
-### Install `tsup`
+If you want to publish both CJS and ESM code, you can use `tsup`. This is a tool built on top of `esbuild` that compiles your TypeScript code into both formats.
+
+My personal recommendation would be to skip this step, and only ship ES Modules. This makes your setup significantly simpler, and avoids many of the pitfalls of dual publishing, like [Dual Package Hazard](https://github.com/GeoffreyBooth/dual-package-hazard).
+
+But if you want to, go ahead.
+
+### 6.1: Install `tsup`
 
 Run the following command to install `tsup`:
 
@@ -468,7 +499,7 @@ Run the following command to install `tsup`:
 npm install --save-dev tsup
 ```
 
-### Create a `tsup.config.ts` file
+### 6.2: Create a `tsup.config.ts` file
 
 Create a `tsup.config.ts` file with the following content:
 
@@ -490,7 +521,7 @@ export default defineConfig({
 - `outDir` is the output directory for the compiled code.
 - `clean` tells `tsup` to clean the output directory before building.
 
-### Change the `build` script
+### 6.3: Change the `build` script
 
 Change the `build` script in your `package.json` to the following:
 
@@ -504,7 +535,7 @@ Change the `build` script in your `package.json` to the following:
 
 We'll now be running `tsup` to compile our code instead of `tsc`.
 
-### Add an `exports` field
+### 6.4: Add an `exports` field
 
 Add an `exports` field to your `package.json` with the following content:
 
@@ -521,7 +552,7 @@ Add an `exports` field to your `package.json` with the following content:
 
 The `exports` field tells programs consuming your package how to find the CJS and ESM versions of your package. In this case, we're pointing folks using `import` to `dist/index.js` and folks using `require` to `dist/index.cjs`.
 
-### Try `check-exports` again
+### 6.5: Try `check-exports` again
 
 Run the following command to check if all exports from your package are correct:
 
@@ -545,7 +576,7 @@ Now, everything is green:
 └───────────────────┴───────────────────┘
 ```
 
-### Turn TypeScript into a linter
+### 6.6: Turn TypeScript into a linter
 
 We're no longer running `tsc` to compile our code. And `tsup` doesn't actually check our code for errors - it just turns it into JavaScript.
 
@@ -553,7 +584,7 @@ This means that our `ci` script won't error if we have TypeScript errors in our 
 
 Let's fix this.
 
-#### Add `noEmit` to `tsconfig.json`
+#### 6.6.1: Add `noEmit` to `tsconfig.json`
 
 Add a `noEmit` field to your `tsconfig.json`:
 
@@ -566,7 +597,7 @@ Add a `noEmit` field to your `tsconfig.json`:
 }
 ```
 
-#### Remove unused fields from `tsconfig.json`
+#### 6.6.2: Remove unused fields from `tsconfig.json`
 
 Remove the following fields from your `tsconfig.json`:
 
@@ -578,7 +609,7 @@ Remove the following fields from your `tsconfig.json`:
 
 They are no longer needed in our new 'linting' setup.
 
-#### Change `module` to `Preserve`
+#### 6.6.3: Change `module` to `Preserve`
 
 Optionally, you can now change `module` to `Preserve` in your `tsconfig.json`:
 
@@ -597,7 +628,7 @@ This means you'll no longer need to import your files with `.js` extensions. Thi
 export * from "./utils";
 ```
 
-#### Add a `lint` script
+#### 6.6.4: Add a `lint` script
 
 Add a `lint` script to your `package.json` with the following content:
 
@@ -611,7 +642,7 @@ Add a `lint` script to your `package.json` with the following content:
 
 This will run TypeScript as a linter.
 
-#### Add `lint` to your `ci` script
+#### 6.6.5: Add `lint` to your `ci` script
 
 Add the `lint` script to your `ci` script in your `package.json`:
 
@@ -625,9 +656,13 @@ Add the `lint` script to your `ci` script in your `package.json`:
 
 Now, we'll get TypeScript errors as part of our CI process.
 
-## Testing with Vitest
+## 7: Testing with Vitest
 
-### Install `vitest`
+In this section, we'll install `vitest`, create a test, set up a `test` script, run the `test` script, set up a `dev` script, and add the `test` script to our `CI` script.
+
+`vitest` is a modern test runner for ESM and TypeScript. It's like Jest, but better.
+
+### 7.1: Install `vitest`
 
 Run the following command to install `vitest`:
 
@@ -635,7 +670,7 @@ Run the following command to install `vitest`:
 npm install --save-dev vitest
 ```
 
-### Create a test
+### 7.2: Create a test
 
 Create a `src/utils.test.ts` file with the following content:
 
@@ -650,7 +685,7 @@ test("hello", () => {
 
 This is a simple test that checks if the `hello` function returns the correct value.
 
-### Set up `test` script
+### 7.3: Set up `test` script
 
 Add a `test` script to your `package.json` with the following content:
 
@@ -664,7 +699,7 @@ Add a `test` script to your `package.json` with the following content:
 
 `vitest run` runs all tests in your project once, without watching.
 
-### Run the `test` script
+### 7.4: Run the `test` script
 
 Run the following command to run your tests:
 
@@ -684,7 +719,7 @@ You should see the following output:
 
 This indicates that your test passed successfully.
 
-### Set up `dev` script
+### 7.5: Set up `dev` script
 
 A common workflow is to run your tests in watch mode while developing. Add a `dev` script to your `package.json` with the following content:
 
@@ -698,7 +733,7 @@ A common workflow is to run your tests in watch mode while developing. Add a `de
 
 This will run your tests in watch mode.
 
-### Adding to our `CI` script
+### 7.6: Adding to our `CI` script
 
 Add the `test` script to your `ci` script in your `package.json`:
 
@@ -710,9 +745,13 @@ Add the `test` script to your `ci` script in your `package.json`:
 }
 ```
 
-## Set up our CI with GitHub Actions
+## 8. Set up our CI with GitHub Actions
 
-### Creating our workflow
+In this section, we'll create a GitHub Actions workflow that runs our CI process on every commit and pull request.
+
+This is a crucial step in ensuring that our package is always in a working state.
+
+### 8.1: Creating our workflow
 
 Create a `.github/workflows/ci.yml` file with the following content:
 
@@ -761,15 +800,19 @@ This file is what GitHub uses as its instructions for running your CI process.
 
 If any part of our CI process fails, the workflow will fail and GitHub will let us know by showing a red cross next to our commit.
 
-### Testing our workflow
+### 8.2: Testing our workflow
 
 Push your changes to GitHub and check the Actions tab in your repository. You should see your workflow running.
 
 This will give us a warning on every commit made, and every PR made to the repository.
 
-## Publishing with Changesets
+## 9. Publishing with Changesets
 
-### Install `@changesets/cli`
+In this section, we'll install `@changesets/cli`, initialize Changesets, make changeset releases public, set `commit` to `true`, set up a `local-release` script, add a changeset, commit your changes, run the `local-release` script, and finally see your package on npm.
+
+Changesets is a tool that helps you version and publish your package. It's an incredible tool that I recommend to anyone publishing packages to npm.
+
+### 9.1: Install `@changesets/cli`
 
 Run the following command to initialise Changesets:
 
@@ -777,7 +820,7 @@ Run the following command to initialise Changesets:
 npm install --save-dev @changesets/cli
 ```
 
-### Initialize Changesets
+### 9.2: Initialize Changesets
 
 Run the following command to initialize Changesets:
 
@@ -787,7 +830,7 @@ npx changeset init
 
 This will create a `.changeset` folder in your project, containing a `config.json` file. This is also where your changesets will live.
 
-### Make changeset releases public
+### 9.3: Make changeset releases public
 
 In `.changeset/config.json`, change the `access` field to `public`:
 
@@ -800,7 +843,7 @@ In `.changeset/config.json`, change the `access` field to `public`:
 
 Without changing this field, `changesets` won't publish your package to npm.
 
-### Set `commit` to `true`:
+### 9.4: Set `commit` to `true`:
 
 In `.changeset/config.json`, change the `commit` field to `true`:
 
@@ -813,7 +856,7 @@ In `.changeset/config.json`, change the `commit` field to `true`:
 
 This will commit the changeset to your repository after versioning.
 
-### Set up a `local-release` script
+### 9.5: Set up a `local-release` script
 
 Add a `local-release` script to your `package.json` with the following content:
 
@@ -827,7 +870,7 @@ Add a `local-release` script to your `package.json` with the following content:
 
 This script will run your CI process and then publish your package to npm. This will be the command you run when you want to release a new version of your package from your local machine.
 
-### Add a changeset
+### 9.6: Add a changeset
 
 Run the following command to add a changeset:
 
@@ -841,7 +884,7 @@ Mark this release as a `patch` release, and give it a description like "Initial 
 
 This will create a new file in the `.changeset` folder with the changeset.
 
-### Commit your changes
+### 9.7: Commit your changes
 
 Commit your changes to your repository:
 
@@ -850,7 +893,7 @@ git add .
 git commit -m "Prepare for initial release"
 ```
 
-### Run the `local-release` script
+### 9.8: Run the `local-release` script
 
 Run the following command to release your package:
 
@@ -862,7 +905,7 @@ This will run your CI process, version your package, and publish it to npm.
 
 It will have created a `CHANGELOG.md` file in your repository, detailing the changes in this release. This will be updated each time you release.
 
-### See your package on npm
+### 9.9: See your package on npm
 
 Go to:
 
