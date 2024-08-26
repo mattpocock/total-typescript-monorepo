@@ -13,7 +13,11 @@ This is not a minimal guide. We'll be setting up a fully production-ready packag
 
 If you want to see the finished product, check out this [demo repo](https://github.com/mattpocock/tt-package-demo).
 
-With that, let's get started!
+## 0. Video
+
+If you prefer video content, I've created a video walkthrough of this guide:
+
+<MuxVideo playbackId="Bmjd89LR3Rbcns3esg00l5R8NB5YYDXY79td1w00Nw4hQ" />
 
 ## 1. Git
 
@@ -71,7 +75,7 @@ Create a `package.json` file with these values:
 ```json
 {
   "name": "tt-package-demo",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "A demo package for Total TypeScript",
   "keywords": ["demo", "typescript"],
   "homepage": "https://github.com/mattpocock/tt-package-demo",
@@ -143,7 +147,7 @@ Change the `[year]` and `[fullname]` placeholders to the current year and your n
 Create a `README.md` file with a description of your package. Here's an example:
 
 ```md
-# tt-package-demo
+**tt-package-demo**
 
 A demo package for Total TypeScript.
 ```
@@ -235,7 +239,7 @@ export const add = (a: number, b: number) => a + b;
 Create a `src/index.ts` file with the following content:
 
 ```ts
-export * from "./utils.js";
+export { add } from "./utils.js";
 ```
 
 The `.js` extension will look odd. [This article](https://www.totaltypescript.com/relative-import-paths-need-explicit-file-extensions-in-ecmascript-imports) explains more.
@@ -542,15 +546,18 @@ Add an `exports` field to your `package.json` with the following content:
 ```json
 {
   "exports": {
+    "./package.json": "./package.json",
     ".": {
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "default": "./dist/index.cjs"
     }
   }
 }
 ```
 
 The `exports` field tells programs consuming your package how to find the CJS and ESM versions of your package. In this case, we're pointing folks using `import` to `dist/index.js` and folks using `require` to `dist/index.cjs`.
+
+It's also recommended to add `./package.json` to the `exports` field. This is because certain tools need easy access to your `package.json` file.
 
 ### 6.5: Try `check-exports` again
 
@@ -863,14 +870,30 @@ Add a `local-release` script to your `package.json` with the following content:
 ```json
 {
   "scripts": {
-    "local-release": "npm run ci && changeset version && changeset publish"
+    "local-release": "changeset version && changeset publish"
   }
 }
 ```
 
 This script will run your CI process and then publish your package to npm. This will be the command you run when you want to release a new version of your package from your local machine.
 
-### 9.6: Add a changeset
+### 9.6 Run CI in `prepublishOnly`
+
+Add a `prepublishOnly` script to your `package.json` with the following content:
+
+```json
+{
+  "scripts": {
+    "prepublishOnly": "npm run ci"
+  }
+}
+```
+
+This will automatically run your CI process before publishing your package to npm.
+
+This is useful to separate from the `local-release` script in case a user accidentally runs `npm publish` without running `local-release`. Thanks to [Jordan Harband](https://x.com/ljharb) for the suggestion!
+
+### 9.7: Add a changeset
 
 Run the following command to add a changeset:
 
@@ -884,7 +907,7 @@ Mark this release as a `patch` release, and give it a description like "Initial 
 
 This will create a new file in the `.changeset` folder with the changeset.
 
-### 9.7: Commit your changes
+### 9.8: Commit your changes
 
 Commit your changes to your repository:
 
@@ -893,7 +916,7 @@ git add .
 git commit -m "Prepare for initial release"
 ```
 
-### 9.8: Run the `local-release` script
+### 9.9: Run the `local-release` script
 
 Run the following command to release your package:
 
@@ -905,7 +928,7 @@ This will run your CI process, version your package, and publish it to npm.
 
 It will have created a `CHANGELOG.md` file in your repository, detailing the changes in this release. This will be updated each time you release.
 
-### 9.9: See your package on npm
+### 9.10: See your package on npm
 
 Go to:
 
