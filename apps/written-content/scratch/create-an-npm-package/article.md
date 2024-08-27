@@ -6,7 +6,7 @@ This is not a minimal guide. We'll be setting up a fully production-ready packag
 - [TypeScript](https://www.typescriptlang.org/) for writing our code and keeping it type-safe
 - [Prettier](https://prettier.io/) for formatting our code
 - [@arethetypeswrong/cli](https://arethetypeswrong.github.io/) for checking our exports
-- [tsup](https://tsup.egoist.sh/) for compiling our TypeScript code into CJS and ESM
+- [tsup](https://tsup.egoist.dev/) for compiling our TypeScript code into CJS and ESM
 - [Vitest](https://vitest.js.org/) for running our tests
 - [GitHub Actions](https://docs.github.com/en/actions) for running our CI process
 - [Changesets](https://github.com/changesets/changesets) for versioning and publishing our package
@@ -682,11 +682,11 @@ npm install --save-dev vitest
 Create a `src/utils.test.ts` file with the following content:
 
 ```ts
-import { hello } from "./utils.js";
+import { add } from "./utils.js";
 import { test, expect } from "vitest";
 
-test("hello", () => {
-  expect(hello("world")).toBe("Hello, world!");
+test("add", () => {
+  expect(add(1, 2)).toBe(3);
 });
 ```
 

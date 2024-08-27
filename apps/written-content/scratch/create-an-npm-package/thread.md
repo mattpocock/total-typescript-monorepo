@@ -6,6 +6,25 @@ Want the important bits? I got you 👇 🧵
 
 ---
 
+It covers:
+
+- Setting up your package.json
+- Building with TypeScript
+- Prettier
+- Exports and main
+- Dual publishing vs ESM-only
+- `@arethetypeswrong/cli`
+- `tsup`
+- Vitest
+- GitHub Actions
+- Changesets
+
+Enjoy!
+
+https://www.totaltypescript.com/how-to-create-an-npm-package
+
+---
+
 Here are the basic fields you need in your package.json.
 
 They get parsed by npm, and get displayed on the site. If you miss one of these, someone is bound to complain.
@@ -13,7 +32,7 @@ They get parsed by npm, and get displayed on the site. If you miss one of these,
 ```json
 {
   "name": "tt-package-demo",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "A demo package for Total TypeScript",
   "keywords": ["demo", "typescript"],
   "homepage": "https://github.com/mattpocock/tt-package-demo",
@@ -209,16 +228,10 @@ Surprisingly few packages have prettier checking as part of their CI. It's a gre
 
 ---
 
-If you liked these tips, there is EVEN MORE in the full guide.
-
-It covers setting up CI with GitHub actions, releases with changesets, and testing with vitest.
-
-https://www.totaltypescript.com/how-to-create-an-npm-package
-
----
-
 Fun fact, I'm a massive football fan. One of my happiest early memories is Michael Owen's goal against Argentina in the 1998 World Cup.
 
 Want to feel similar levels of elation and excitement? Newsletter. Now.
+
+(god, I suck at CTA's)
 
 https://www.totaltypescript.com/newsletter
