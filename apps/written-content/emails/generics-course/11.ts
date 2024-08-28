@@ -1,11 +1,12 @@
-const camelCaseKeys = <T extends object>(obj: T): T => {
-  const newObj = {} as T;
+const uniqueArray = <T>(array: T[]): T[] => {
+  return Array.from(new Set(array));
+};
 
-  for (const key in obj) {
-    (newObj as any)[
-      key.replace(/-([a-z])/g, (g) => g[1]!.toUpperCase())
-    ] = obj[key];
+const logRows = <T>(
+  rows: T[],
+  renderRow: (row: T) => string,
+) => {
+  for (const row of rows) {
+    console.log(renderRow(row));
   }
-
-  return newObj;
 };
