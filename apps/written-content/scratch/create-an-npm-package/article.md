@@ -13,7 +13,7 @@ This is not a minimal guide. We'll be setting up a fully production-ready packag
 
 If you want to see the finished product, check out this [demo repo](https://github.com/mattpocock/tt-package-demo).
 
-## 0. Video
+## Video
 
 If you prefer video content, I've created a video walkthrough of this guide:
 
@@ -473,9 +473,37 @@ You should notice only one warning:
 
 This is telling us that our package is compatible with systems running ESM. People using CJS (often in legacy systems) will need to import it using a dynamic import.
 
-We can choose to fix this later if we wish.
+### 5.6 Fix The CJS Warning
 
-### 5.6: Adding to our `CI` script
+If you don't want to support CJS (which I recommend), change the check-exports script to:
+
+```json
+{
+  "scripts": {
+    "check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm"
+  }
+}
+```
+
+Now, running `check-exports` will show everything as green:
+
+```txt
+┌───────────────────┬───────────────────┐
+│                   │ "tt-package-demo" │
+├───────────────────┼───────────────────┤
+│ node10            │ 🟢                │
+├───────────────────┼───────────────────┤
+│ node16 (from CJS) │ 🟢 (ESM)          │
+├───────────────────┼───────────────────┤
+│ node16 (from ESM) │ 🟢 (ESM)          │
+├───────────────────┼───────────────────┤
+│ bundler           │ 🟢                │
+└───────────────────┴───────────────────┘
+```
+
+If you prefer to dual publish CJS and ESM, skip this step.
+
+### 5.7: Adding to our `CI` script
 
 Add the `check-exports` script to your `ci` script in your `package.json`:
 
