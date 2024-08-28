@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
 import { applyShikiToCode } from "./applyShikiToCode.js";
 
-it.skip("Should fail when a code sample has an unexpected error in it", async () => {
+it("Should fail when a code sample has an unexpected error in it", async () => {
   const code = `
     const a: string = 1;
     `;
@@ -20,7 +20,7 @@ it.skip("Should fail when a code sample has an unexpected error in it", async ()
   `);
 });
 
-it.skip("Should succeed when a code sample has a handled error in it", async () => {
+it("Should succeed when a code sample has a handled error in it", async () => {
   const code = `// @errors: 2322
     const a: string = 1;
     `;
