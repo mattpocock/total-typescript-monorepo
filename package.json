@@ -23,14 +23,14 @@
   "author": "Matt Pocock",
   "license": "ISC",
   "dependencies": {
-    "@changesets/cli": "^2.26.1",
-    "@total-typescript/tsconfig": "^1.0.3",
-    "@types/node": "^20.12.10",
-    "prettier": "^3.2.5",
-    "tsx": "^4.16.2",
-    "turbo": "^2.0.1",
+    "@changesets/cli": "^2.27.7",
+    "@total-typescript/tsconfig": "^1.0.4",
+    "@types/node": "^20.16.2",
+    "prettier": "^3.3.3",
+    "tsx": "^4.19.0",
+    "turbo": "^2.1.0",
     "typescript": "5.5.4",
-    "vitest": "^2.0.0"
+    "vitest": "^2.0.5"
   },
   "resolutions": {
     "typescript": "5.5.4"
