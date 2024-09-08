@@ -10,11 +10,11 @@ import path from "path";
 const SYNC_INDICATOR = "scriptkit-sync";
 
 const relativeScripts = (await readdir(
-  SCRIPTKIT_SCRIPTS_LOCATION,
+  SCRIPTKIT_SCRIPTS_LOCATION
 )) as RelativePath[];
 
 const absoluteScripts = relativeScripts.map((relativeScript) =>
-  path.join(SCRIPTKIT_SCRIPTS_LOCATION, relativeScript),
+  path.join(SCRIPTKIT_SCRIPTS_LOCATION, relativeScript)
 ) as AbsolutePath[];
 
 const scriptsNotControlledBySync: AbsolutePath[] = [];
@@ -44,7 +44,12 @@ for (const command of commands) {
 
   const scriptLocation = path.join(
     SCRIPTKIT_SCRIPTS_LOCATION,
-    `${command.fileName}.ts`,
+    `${command.fileName}.ts`
+  );
+
+  const internalCliBinLocation = path.join(
+    import.meta.dirname,
+    "../../internal-cli/dist/bin.js"
   );
 
   const args: string[] = command.args || [];
@@ -72,11 +77,11 @@ for (const command of commands) {
         })
         .join("\n"),
       "",
-      `await $\`tt ${command.cliCommand} ${argsParsed
+      `await $\`${internalCliBinLocation} ${command.cliCommand} ${argsParsed
         .map((parsedArg) => {
           return `"\${${parsedArg.name}}"`;
         })
         .join(" ")}\`;`,
-    ].join("\n"),
+    ].join("\n")
   );
 }

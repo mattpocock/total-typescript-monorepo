@@ -16,7 +16,7 @@ fs.mkdirSync(newPath, {
   recursive: true,
 });
 
-const articlePath = path.join(newPath, "article.md");
+const articlePath = path.join(newPath, "thread.md");
 
 fs.writeFileSync(articlePath, "");
 

@@ -25,12 +25,12 @@ export const execAsync = (command: string, opts?: ExecOptions) => {
     }),
     (e) => {
       return e as ExecException;
-    },
+    }
   );
 };
 
 export const revealInFileExplorer = (
-  file: AbsolutePath,
+  file: AbsolutePath
 ): ResultAsync<
   {
     stdout: string;
@@ -84,7 +84,7 @@ export type MarkdownSection =
   | NoHeadingContentSection;
 
 export const returnMarkdownHeadingsAndContents = (
-  markdown: string,
+  markdown: string
 ): MarkdownSection[] => {
   const sections: MarkdownSection[] = [];
   const lines = markdown.split("\n");

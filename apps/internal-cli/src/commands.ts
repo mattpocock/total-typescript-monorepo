@@ -3,7 +3,10 @@ import { encodeAllVideos } from "./encodeAllVideos.js";
 import { openPairedVideoDir } from "./openPairedVideoDir.js";
 import { selectLatestOBSVideo } from "./selectLatestOBSVideo.js";
 import { trimLatestOBSVideo } from "./trimLatestOBSVideo.js";
-import { SKILL_RECORDINGS_REPO_LOCATION } from "@total-typescript/shared";
+import {
+  execAsync,
+  SKILL_RECORDINGS_REPO_LOCATION,
+} from "@total-typescript/shared";
 import { appendVideoToTimeline } from "./appendVideoToTimeline.js";
 import { clearUnusedFootageFromDisk } from "./clearUnusedFootageFromDisk.js";
 import { getLatestMp4File } from "./getLatestOBSVideo.js";
@@ -65,7 +68,7 @@ export const commands = createCommands([
       execSync(
         `(cd "${SKILL_RECORDINGS_REPO_LOCATION}" && gh issue create --title "${
           "Article: " + title
-        }" --body "${sanityLink}")`,
+        }" --body "${sanityLink}")`
       );
     },
   },
@@ -90,11 +93,15 @@ export const commands = createCommands([
     description:
       "Select the latest DaVinci Resolve export from the external drive.",
     cliCommand: "select-latest-davinci-resolve-export",
-    run: async () => {
-      const latestExport = await getLatestMp4File(
-        DAVINCI_RESOLVE_EXPORTS_LOCATION,
-      );
-      execSync(`open -R "${latestExport}"`);
+    run: () => {
+      return getLatestMp4File(DAVINCI_RESOLVE_EXPORTS_LOCATION)
+        .andThen((r) => {
+          return execAsync(`open -R "${r}"`);
+        })
+        .mapErr((e) => {
+          console.error(e);
+          process.exit(1);
+        });
     },
   },
   {
