@@ -60,8 +60,8 @@ importers:
         specifier: ^3.3.2
         version: 3.3.2
       neverthrow:
-        specifier: ^7.0.1
-        version: 7.0.1
+        specifier: ^7.2.0
+        version: 7.2.0
       prompts:
         specifier: ^2.4.2
         version: 2.4.2
@@ -280,8 +280,8 @@ importers:
         specifier: ^4.0.2
         version: 4.0.2
       neverthrow:
-        specifier: ^7.0.1
-        version: 7.0.1
+        specifier: ^7.2.0
+        version: 7.2.0
 
   apps/twoslash-lint:
     dependencies:
@@ -390,8 +390,8 @@ importers:
         specifier: ^17.13.3
         version: 17.13.3
       neverthrow:
-        specifier: ^7.0.1
-        version: 7.0.1
+        specifier: ^7.2.0
+        version: 7.2.0
       valibot:
         specifier: ^0.37.0
         version: 0.37.0(typescript@5.5.4)
@@ -505,14 +505,14 @@ importers:
         specifier: workspace:*
         version: link:../shared
       neverthrow:
-        specifier: ^7.0.1
-        version: 7.0.1
+        specifier: ^7.2.0
+        version: 7.2.0
 
   packages/shared:
     dependencies:
       neverthrow:
-        specifier: ^7.0.1
-        version: 7.0.1
+        specifier: ^7.2.0
+        version: 7.2.0
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -4398,8 +4398,8 @@ packages:
     resolution: {integrity: sha512-dBpDMdxv9Irdq66304OLfEmQ9tbNRFnFTuZiLo+bD+r332bBmMJ8GBLXklIXXgxd3+v9+KUnZaUR5PJMa75Gsg==}
     engines: {node: '>= 0.4.0'}
 
-  neverthrow@7.0.1:
-    resolution: {integrity: sha512-NY1sD1wZn6dwwzV9/5KZ4wRIpH4xC7ARy3fGmnEi2Pi8CHDTWlp+WSF+if8cudrwuCWGrk2y2BE/dnGh070iuA==}
+  neverthrow@7.2.0:
+    resolution: {integrity: sha512-iGBUfFB7yPczHHtA8dksKTJ9E8TESNTAx1UQWW6TzMF280vo9jdPYpLUXrMN1BCkPdHFdNG3fxOt2CUad8KhAw==}
     engines: {node: '>=18'}
 
   node-abi@3.65.0:
@@ -10665,7 +10665,7 @@ snapshots:
 
   netmask@2.0.2: {}
 
-  neverthrow@7.0.1: {}
+  neverthrow@7.2.0: {}
 
   node-abi@3.65.0:
     dependencies:

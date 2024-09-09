@@ -13,7 +13,7 @@ export const encodeAllVideos = async () => {
   return safeTry(async function* () {
     for (const folder of POSSIBLE_UNENCODED_FOLDER_LOCATIONS) {
       const { stdout } = yield* execAsync(
-        `find ${folder} -type f -name "*.mp4"`,
+        `find ${folder} -type f -name "*.mp4"`
       ).safeUnwrap();
 
       const inputVideos = stdout
@@ -39,19 +39,19 @@ export const encodeAllVideos = async () => {
         videoCount++;
         const outputVideoPath = videoPath.replace(
           ".un-encoded.mp4",
-          ".mp4",
+          ".mp4"
         ) as AbsolutePath;
 
         console.log(
           `Encoding ${path.parse(outputVideoPath).name} (${videoCount}/${
             inputVideos.length
-          })`,
+          })`
         );
 
         yield* encodeVideo(videoPath, outputVideoPath).safeUnwrap();
 
         yield* ensureDir(
-          path.resolve(path.parse(outputVideoPath).dir, "un-encoded"),
+          path.resolve(path.parse(outputVideoPath).dir, "un-encoded")
         ).safeUnwrap();
 
         yield* ResultAsync.fromThrowable(rename, (e) => {
@@ -63,12 +63,15 @@ export const encodeAllVideos = async () => {
           path.resolve(
             path.parse(outputVideoPath).dir,
             "un-encoded",
-            path.parse(videoPath).base,
-          ),
+            path.parse(videoPath).base
+          )
         ).safeUnwrap();
       }
     }
 
     return okAsync(void 0);
+  }).mapErr((e) => {
+    console.error(e);
+    process.exit(1);
   });
 };

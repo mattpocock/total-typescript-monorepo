@@ -24,7 +24,7 @@ export const appendVideoToTimeline = async () => {
     }).safeUnwrap();
 
     const textFileOutput = path.resolve(
-      inputVideo.replace(".mp4", ".silence.txt"),
+      inputVideo.replace(".mp4", ".silence.txt")
     );
 
     writeFileSync(textFileOutput, silenceResult.rawStdout);
@@ -43,5 +43,8 @@ export const appendVideoToTimeline = async () => {
     });
 
     return okAsync(void 0);
+  }).mapErr((e) => {
+    console.error(e);
+    process.exit(1);
   });
 };
