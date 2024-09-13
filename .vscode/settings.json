@@ -4,7 +4,8 @@
     "package.json": "*"
   },
   "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.preferences.autoImportFileExcludePatterns": [
+  "typescript.preferences.autoIm": [
     "./node_modules/@types/node/assert.d.ts"
-  ]
+  ],
+  "typescript.preferences.includePackageJsonAutoImports": "on"
 }
