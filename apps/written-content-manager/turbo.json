@@ -1,0 +1,15 @@
+{
+  "extends": ["//"],
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
+  "tasks": {
+    "prisma:generate": {
+      "cache": false
+    },
+    "dev": {
+      "dependsOn": ["prisma:generate"],
+      "cache": false,
+      "persistent": true
+    }
+  }
+}

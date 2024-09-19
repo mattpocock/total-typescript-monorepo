@@ -1,0 +1,50 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CourseType {
+  WORKSHOP
+  TUTORIAL
+}
+
+model Course {
+  id        String     @id @default(uuid())
+  title     String
+  type      CourseType
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  sections Section[]
+}
+
+model Section {
+  id        String     @id @default(uuid())
+  title     String
+  order     Int
+  courseId  String
+  course    Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  exercises Exercise[]
+}
+
+model Exercise {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  sectionId String
+  section   Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
