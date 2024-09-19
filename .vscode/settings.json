@@ -4,8 +4,11 @@
     "package.json": "*"
   },
   "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.preferences.autoIm": [
-    "./node_modules/@types/node/assert.d.ts"
+  "typescript.preferences.autoImportSpecifierExcludeRegexes": [
+    "^assert$",
+    "^node:assert$",
+    "^lucide-react$",
+    "^@radix-ui"
   ],
   "typescript.preferences.includePackageJsonAutoImports": "on"
 }

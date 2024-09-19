@@ -6,6 +6,14 @@
     "prisma:generate": {
       "cache": false
     },
+    "db:dev": {
+      "dependsOn": ["migrate:dev"],
+      "cache": false,
+      "persistent": true
+    },
+    "migrate:dev": {
+      "cache": false
+    },
     "dev": {
       "dependsOn": ["prisma:generate"],
       "cache": false,

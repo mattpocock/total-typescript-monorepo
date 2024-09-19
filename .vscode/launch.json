@@ -2,17 +2,28 @@
   "version": "1.0.0",
   "configurations": [
     {
-      "name": "Run File",
+      "name": "tsx",
       "type": "node",
-      "runtimeVersion": "22",
       "request": "launch",
+      // Debug current file in VSCode
       "program": "${file}",
-      "cwd": "${workspaceRoot}",
-      "envFile": "${workspaceFolder}/.env",
-      "internalConsoleOptions": "openOnSessionStart",
+      /*
+       * Path to tsx binary
+       * Assuming locally installed
+       */
+      "runtimeExecutable": "tsx",
+      /*
+       * Open terminal when debugging starts (Optional)
+       * Useful to see console.logs
+       */
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      // Files to exclude from debugger (e.g. call stack)
       "skipFiles": [
+        // Node.js internal core modules
         "<node_internals>/**",
-        "node_modules/**"
+        // Ignore all dependencies (optional)
+        "${workspaceFolder}/node_modules/**",
       ],
     }
   ]

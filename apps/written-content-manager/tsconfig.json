@@ -10,6 +10,9 @@
     "**/.client/**/*.ts",
     "**/.client/**/*.tsx"
   ],
+  "exclude": [
+    "tests"
+  ],
   "compilerOptions": {
     "lib": [
       "DOM",
