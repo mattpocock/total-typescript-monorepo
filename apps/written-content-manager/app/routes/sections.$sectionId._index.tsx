@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { Form, Link, useFetcher, useLoaderData } from "@remix-run/react";
+import { Form, Link, useLoaderData } from "@remix-run/react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -12,15 +12,21 @@ import { Table, TableBody, TableCell, TableRow } from "~/components/ui/table";
 import { p } from "~/db";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
-  const { courseId } = params;
-  const course = await p.course.findUniqueOrThrow({
+  const { sectionId } = params;
+  const section = await p.section.findUniqueOrThrow({
     where: {
-      id: courseId,
+      id: sectionId,
     },
     select: {
       id: true,
       title: true,
-      sections: {
+      course: {
+        select: {
+          id: true,
+          title: true,
+        },
+      },
+      exercises: {
         select: {
           id: true,
           title: true,
@@ -32,11 +38,11 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     },
   });
 
-  return course;
+  return section;
 };
 
 export default function Course() {
-  const data = useLoaderData<typeof loader>();
+  const mainSection = useLoaderData<typeof loader>();
 
   return (
     <div className="space-y-6 flex-col">
@@ -46,30 +52,40 @@ export default function Course() {
             <BreadcrumbLink to="/">Courses</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>{data.title}</BreadcrumbItem>
+          <BreadcrumbItem>
+            <BreadcrumbLink to={`/courses/${mainSection.course.id}`}>
+              {mainSection.course.title}
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>{mainSection.title}</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <h1>{data.title}</h1>
+      <h1>{mainSection.title}</h1>
       <Table>
         <TableBody>
-          {data.sections.map((section) => (
-            <TableRow key={section.id}>
+          {mainSection.exercises.map((exercise) => (
+            <TableRow key={exercise.id}>
               <TableCell>
                 <Button asChild variant={"link"}>
-                  <Link to={`/sections/${section.id}`}>{section.title}</Link>
+                  <Link
+                    to={`/courses/${mainSection.id}/exercises/${exercise.id}`}
+                  >
+                    {exercise.title}
+                  </Link>
                 </Button>
               </TableCell>
               <TableCell>
                 <div className="flex items-center space-x-4">
                   <Button asChild variant="link">
                     <Link
-                      to={`/sections/${section.id}/edit?redirectTo=${`/courses/${data.id}`}`}
+                      to={`/exercises/${exercise.id}/edit?redirectTo=${`/sections/${mainSection.id}`}`}
                     >
                       Edit
                     </Link>
                   </Button>
                   <Form
-                    action={`/sections/${section.id}/delete?redirectTo=${`/courses/${data.id}`}`}
+                    action={`/exercises/${exercise.id}/delete?redirectTo=${`/sections/${mainSection.id}`}`}
                     method="delete"
                   >
                     <Button variant="destructive">Delete</Button>
@@ -82,9 +98,9 @@ export default function Course() {
       </Table>
       <Button asChild>
         <Link
-          to={`/courses/${data.id}/sections/add?redirectTo=${`/courses/${data.id}`}`}
+          to={`/sections/${mainSection.id}/exercises/add?redirectTo=${`/sections/${mainSection.id}`}`}
         >
-          Add Section
+          Add Exercise
         </Link>
       </Button>
     </div>

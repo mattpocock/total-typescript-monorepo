@@ -1,5 +1,6 @@
+import type { CourseType } from "@prisma/client";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { Form, redirect, useLoaderData } from "@remix-run/react";
+import { Form, redirect } from "@remix-run/react";
 import { FormButtons, FormContent } from "~/components";
 import {
   Breadcrumb,
@@ -12,66 +13,46 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { p } from "~/db";
 
-export const loader = async ({ params }: LoaderFunctionArgs) => {
-  const { sectionId } = params;
-  const section = await p.section.findUniqueOrThrow({
-    where: {
-      id: sectionId,
-    },
-    select: {
-      id: true,
-      title: true,
-    },
-  });
-
-  return section;
-};
-
-export const action = async ({ request, params }: ActionFunctionArgs) => {
-  const { sectionId } = params;
+export const action = async ({ request }: ActionFunctionArgs) => {
   const body = await request.formData();
 
   const title = body.get("title") as string;
 
-  await p.section.update({
-    where: {
-      id: sectionId,
-    },
+  const course = await p.course.create({
     data: {
       title,
+      type: body.get("type") as CourseType,
     },
   });
 
   const redirectTo = new URL(request.url).searchParams.get("redirectTo");
 
-  return redirect(redirectTo ?? `/sections/${sectionId}`);
+  return redirect(redirectTo ?? `/courses/${course.id}`);
 };
 
-export default function Section() {
-  const data = useLoaderData<typeof loader>();
-
+export default function AddCourse() {
   return (
     <div className="space-y-6 flex-col">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink to="/">Sections</BreadcrumbLink>
+            <BreadcrumbLink to="/">Courses</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink to={`/sections/${data.id}`}>
-              {data.title}
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbItem>Edit</BreadcrumbItem>
+            <BreadcrumbItem>Add Course</BreadcrumbItem>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <Form method="POST">
         <FormContent>
-          <Input name="title" defaultValue={data.title} required autoFocus />
+          <Input name="title" placeholder="Title" required autoFocus />
+          <Input
+            name="type"
+            placeholder="type"
+            defaultValue={"WORKSHOP"}
+            required
+          />
           <FormButtons>
             <Button type="submit">Save</Button>
           </FormButtons>

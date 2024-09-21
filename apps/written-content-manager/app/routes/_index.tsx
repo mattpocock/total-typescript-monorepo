@@ -5,6 +5,7 @@ import {
   BreadcrumbLink,
   BreadcrumbList,
 } from "~/components/ui/breadcrumb";
+import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import {
   Table,
@@ -57,6 +58,9 @@ const Page = () => {
           ))}
         </TableBody>
       </Table>
+      <Button asChild>
+        <Link to={`/courses/add?redirectTo=${`/`}`}>Add Course</Link>
+      </Button>
     </div>
   );
 };

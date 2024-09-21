@@ -13,29 +13,41 @@ import { Input } from "~/components/ui/input";
 import { p } from "~/db";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
-  const { sectionId } = params;
-  const section = await p.section.findUniqueOrThrow({
+  const { exerciseId } = params;
+  const exercise = await p.exercise.findUniqueOrThrow({
     where: {
-      id: sectionId,
+      id: exerciseId,
     },
     select: {
+      section: {
+        select: {
+          id: true,
+          title: true,
+          course: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+        },
+      },
       id: true,
       title: true,
     },
   });
 
-  return section;
+  return exercise;
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
-  const { sectionId } = params;
+  const { exerciseId } = params;
   const body = await request.formData();
 
   const title = body.get("title") as string;
 
   await p.section.update({
     where: {
-      id: sectionId,
+      id: exerciseId,
     },
     data: {
       title,
@@ -44,23 +56,35 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
   const redirectTo = new URL(request.url).searchParams.get("redirectTo");
 
-  return redirect(redirectTo ?? `/sections/${sectionId}`);
+  return redirect(redirectTo ?? `/exercises/${exerciseId}`);
 };
 
 export default function Section() {
-  const data = useLoaderData<typeof loader>();
+  const exercise = useLoaderData<typeof loader>();
 
   return (
     <div className="space-y-6 flex-col">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink to="/">Sections</BreadcrumbLink>
+            <BreadcrumbLink to="/">Courses</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink to={`/sections/${data.id}`}>
-              {data.title}
+            <BreadcrumbLink to={`/courses/${exercise.section.course.id}`}>
+              {exercise.section.course.title}
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink to={`/sections/${exercise.section.id}`}>
+              {exercise.section.title}
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink to={`/exercises/${exercise.id}`}>
+              {exercise.title}
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
@@ -69,9 +93,14 @@ export default function Section() {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <Form method="POST">
+      <Form method="POST" className="space-y-6">
         <FormContent>
-          <Input name="title" defaultValue={data.title} required autoFocus />
+          <Input
+            name="title"
+            defaultValue={exercise.title}
+            required
+            autoFocus
+          />
           <FormButtons>
             <Button type="submit">Save</Button>
           </FormButtons>
