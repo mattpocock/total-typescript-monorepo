@@ -45,7 +45,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
   const title = body.get("title") as string;
 
-  await p.section.update({
+  await p.exercise.update({
     where: {
       id: exerciseId,
     },
@@ -59,7 +59,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   return redirect(redirectTo ?? `/exercises/${exerciseId}`);
 };
 
-export default function Section() {
+export default function Exercise() {
   const exercise = useLoaderData<typeof loader>();
 
   return (
