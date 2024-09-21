@@ -3,15 +3,15 @@ import { beforeEach } from "vitest";
 
 declare global {
   var testPrismaClient: PrismaClient;
-  var tpc: PrismaClient;
+  var p: PrismaClient;
 }
 
 globalThis.testPrismaClient = new PrismaClient({
   datasourceUrl: "postgresql://postgres@localhost:5432/postgres",
 });
 
-globalThis.tpc = testPrismaClient;
+globalThis.p = testPrismaClient;
 
 beforeEach(async () => {
-  await tpc.$transaction([tpc.course.deleteMany()]);
+  await p.$transaction([p.course.deleteMany(), p.section.deleteMany()]);
 });

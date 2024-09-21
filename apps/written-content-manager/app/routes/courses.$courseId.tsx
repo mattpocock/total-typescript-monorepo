@@ -24,6 +24,9 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
           id: true,
           title: true,
         },
+        orderBy: {
+          order: "asc",
+        },
       },
     },
   });
@@ -33,6 +36,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 
 export default function Course() {
   const data = useLoaderData<typeof loader>();
+
   return (
     <div className="space-y-6 flex-col">
       <Breadcrumb>
@@ -41,11 +45,7 @@ export default function Course() {
             <BreadcrumbLink to="/">Courses</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink to={`/courses/${data.id}`}>
-              {data.title}
-            </BreadcrumbLink>
-          </BreadcrumbItem>
+          <BreadcrumbItem>{data.title}</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <h1>{data.title}</h1>
@@ -56,6 +56,13 @@ export default function Course() {
               <TableCell>
                 <Link to={`/courses/${data.id}/sections/${section.id}`}>
                   {section.title}
+                </Link>
+              </TableCell>
+              <TableCell>
+                <Link
+                  to={`/sections/${section.id}/edit?redirectTo=${`/courses/${data.id}`}`}
+                >
+                  Edit
                 </Link>
               </TableCell>
             </TableRow>

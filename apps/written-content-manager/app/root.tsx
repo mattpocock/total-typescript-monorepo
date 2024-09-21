@@ -16,10 +16,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body className="p-6">
-        {children}
-        <Scripts />
-        <ScrollRestoration />
+      <body className="">
+        <div className="p-6">
+          {children}
+          <Scripts />
+          <ScrollRestoration />
+        </div>
       </body>
     </html>
   );

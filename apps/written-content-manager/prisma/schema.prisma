@@ -44,6 +44,7 @@ model Exercise {
   title     String
   content   String
   sectionId String
+  order     Int
   section   Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
