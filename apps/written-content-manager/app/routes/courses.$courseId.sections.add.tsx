@@ -73,8 +73,8 @@ export default function Section() {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <Form method="POST">
-        <Input name="title" placeholder="Title" required />
+      <Form method="POST" className="space-y-6">
+        <Input name="title" placeholder="Title" required autoFocus />
         <Button type="submit">Save</Button>
       </Form>
     </div>
