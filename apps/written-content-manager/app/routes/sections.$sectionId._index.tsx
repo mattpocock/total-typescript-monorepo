@@ -53,6 +53,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
         select: {
           id: true,
           title: true,
+          learningGoal: true,
         },
         orderBy: {
           order: "asc",
@@ -93,11 +94,10 @@ export default function Section() {
           {section.exercises.map((exercise) => (
             <TableRow key={exercise.id}>
               <TableCell>
-                <Button asChild variant={"link"}>
-                  <Link to={editExerciseUrl(exercise.id)}>
-                    {exercise.title}
-                  </Link>
-                </Button>
+                <Link to={editExerciseUrl(exercise.id)} className="text-base">
+                  {exercise.title}
+                </Link>
+                <p className="text-sm text-gray-500">{exercise.learningGoal}</p>
               </TableCell>
               <TableCell>
                 <div className="flex items-center space-x-4">
@@ -133,10 +133,7 @@ export default function Section() {
         <DialogContent>
           <DialogHeader>Add Exercise</DialogHeader>
           <DialogDescription>
-            <Form
-              method="POST"
-              action={addExerciseUrl(section.id, sectionUrl(section.id))}
-            >
+            <Form method="POST" action={addExerciseUrl(section.id)}>
               <FormContent>
                 <Input name="title" required autoFocus placeholder="Title" />
                 <FormButtons>

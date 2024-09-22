@@ -42,8 +42,9 @@ export const addExerciseDialogUrl = (sectionId: string) => {
   return `/sections/${sectionId}?add`;
 };
 
-export const addExerciseUrl = (sectionId: string, redirectTo: string) => {
-  return `/sections/${sectionId}/exercises/add?${new URLSearchParams({ redirectTo })}`;
+export const addExerciseUrl = (sectionId: string, redirectTo?: string) => {
+  const params = redirectTo ? `?${new URLSearchParams({ redirectTo })}` : "";
+  return `/sections/${sectionId}/exercises/add${params}`;
 };
 
 export const deleteExerciseUrl = (exerciseId: string, redirectTo: string) => {
