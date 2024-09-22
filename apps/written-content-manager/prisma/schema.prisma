@@ -40,16 +40,22 @@ model Section {
   exercises Exercise[]
 }
 
+enum ExerciseType {
+  EXPLAINER
+  PROBLEM_SOLUTION
+}
+
 model Exercise {
-  id           String   @id @default(uuid())
+  id           String       @id @default(uuid())
   title        String
   content      String?
   learningGoal String?
   notes        String?
   description  String?
+  type         ExerciseType @default(EXPLAINER)
   sectionId    String
   order        Int
-  section      Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  section      Section      @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 }

@@ -1,0 +1,2 @@
+-- CreateEnum
+CREATE TYPE "ExerciseType" AS ENUM ('EXPLAINER', 'PROBLEM_SOLUTION');

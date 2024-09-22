@@ -1,3 +1,4 @@
+import type { ExerciseType } from "@prisma/client";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { useFetcher, useLoaderData, type MetaFunction } from "@remix-run/react";
 import { useRef } from "react";
@@ -10,6 +11,7 @@ import {
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
+import { Combobox } from "~/components/ui/combobox";
 import { Input } from "~/components/ui/input";
 import { p } from "~/db";
 import { LazyLoadedEditor } from "~/monaco-editor/lazy-loaded-editor";
@@ -44,6 +46,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
       description: true,
       learningGoal: true,
       notes: true,
+      type: true,
     },
   });
 
@@ -68,6 +71,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       description,
       learningGoal,
       notes,
+      type: body.get("type") as ExerciseType,
     },
   });
 
@@ -124,6 +128,21 @@ export default function Exercise() {
             defaultValue={exercise.title}
             required
             autoFocus
+            onChange={handleChange}
+          />
+          <Combobox
+            defaultValue={exercise.type}
+            name="type"
+            options={[
+              {
+                value: "EXPLAINER",
+                label: "Explainer",
+              },
+              {
+                value: "PROBLEM_SOLUTION",
+                label: "Problem/Solution",
+              },
+            ]}
             onChange={handleChange}
           />
           <Input
