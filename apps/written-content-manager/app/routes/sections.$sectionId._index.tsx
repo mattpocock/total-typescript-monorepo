@@ -1,5 +1,6 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { Form, Link, useLoaderData } from "@remix-run/react";
+import { Form, Link, useLoaderData, useSearchParams } from "@remix-run/react";
+import { FormButtons, FormContent } from "~/components";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,6 +9,13 @@ import {
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+} from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
 import { Table, TableBody, TableCell, TableRow } from "~/components/ui/table";
 import { p } from "~/db";
 
@@ -44,6 +52,8 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 export default function Course() {
   const mainSection = useLoaderData<typeof loader>();
 
+  const [search, setSearch] = useSearchParams();
+
   return (
     <div className="space-y-6 flex-col">
       <Breadcrumb>
@@ -61,7 +71,7 @@ export default function Course() {
           <BreadcrumbItem>{mainSection.title}</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <h1>{mainSection.title}</h1>
+      <h1>{mainSection.title} Exercises</h1>
       <Table>
         <TableBody>
           {mainSection.exercises.map((exercise) => (
@@ -97,12 +107,33 @@ export default function Course() {
         </TableBody>
       </Table>
       <Button asChild>
-        <Link
-          to={`/sections/${mainSection.id}/exercises/add?redirectTo=${`/sections/${mainSection.id}`}`}
-        >
-          Add Exercise
-        </Link>
+        <Link to={"?add"}>Add Exercise</Link>
       </Button>
+      <Dialog
+        open={search.has("add")}
+        onOpenChange={(o) => {
+          if (!o) {
+            setSearch({});
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>Add Exercise</DialogHeader>
+          <DialogDescription>
+            <Form
+              method="POST"
+              action={`/sections/${mainSection.id}/exercises/add?redirectTo=${`/sections/${mainSection.id}`}`}
+            >
+              <FormContent>
+                <Input name="title" required autoFocus placeholder="Title" />
+                <FormButtons>
+                  <Button type="submit">Save</Button>
+                </FormButtons>
+              </FormContent>
+            </Form>
+          </DialogDescription>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

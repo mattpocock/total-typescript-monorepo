@@ -49,7 +49,7 @@ export default function Course() {
           <BreadcrumbItem>{data.title}</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <h1>{data.title}</h1>
+      <h1>{data.title} Sections</h1>
       <Table>
         <TableBody>
           {data.sections.map((section) => (
