@@ -11,6 +11,7 @@ import {
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { p } from "~/db";
+import { coursesUrl, courseUrl, exerciseUrl, sectionUrl } from "~/routes";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const { exerciseId } = params;
@@ -56,7 +57,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
   const redirectTo = new URL(request.url).searchParams.get("redirectTo");
 
-  return redirect(redirectTo ?? `/exercises/${exerciseId}`);
+  return redirect(redirectTo ?? exerciseUrl(exerciseId as string));
 };
 
 export default function Exercise() {
@@ -67,23 +68,23 @@ export default function Exercise() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink to="/">Courses</BreadcrumbLink>
+            <BreadcrumbLink to={coursesUrl()}>Courses</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink to={`/courses/${exercise.section.course.id}`}>
+            <BreadcrumbLink to={courseUrl(exercise.section.course.id)}>
               {exercise.section.course.title}
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink to={`/sections/${exercise.section.id}`}>
+            <BreadcrumbLink to={sectionUrl(exercise.section.id)}>
               {exercise.section.title}
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink to={`/exercises/${exercise.id}`}>
+            <BreadcrumbLink to={exerciseUrl(exercise.id)}>
               {exercise.title}
             </BreadcrumbLink>
           </BreadcrumbItem>

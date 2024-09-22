@@ -16,6 +16,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { p } from "~/db";
+import { addCourseUrl, coursesUrl, courseUrl } from "~/routes";
 
 export const loader = () => {
   return p.course.findMany({
@@ -37,7 +38,7 @@ const Page = () => {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink to="/">Courses</BreadcrumbLink>
+            <BreadcrumbLink to={coursesUrl()}>Courses</BreadcrumbLink>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -52,14 +53,14 @@ const Page = () => {
           {data.map((course) => (
             <TableRow key={course.id}>
               <TableCell>
-                <Link to={`/courses/${course.id}`}>{course.title}</Link>
+                <Link to={courseUrl(course.id)}>{course.title}</Link>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
       <Button asChild>
-        <Link to={`/courses/add?redirectTo=${`/`}`}>Add Course</Link>
+        <Link to={addCourseUrl(coursesUrl())}>Add Course</Link>
       </Button>
     </div>
   );

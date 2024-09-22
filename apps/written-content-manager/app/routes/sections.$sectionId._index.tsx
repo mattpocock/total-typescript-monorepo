@@ -1,5 +1,11 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { Form, Link, useLoaderData, useSearchParams } from "@remix-run/react";
+import {
+  Form,
+  Link,
+  useLoaderData,
+  useNavigate,
+  useSearchParams,
+} from "@remix-run/react";
 import { FormButtons, FormContent } from "~/components";
 import {
   Breadcrumb,
@@ -18,6 +24,16 @@ import {
 import { Input } from "~/components/ui/input";
 import { Table, TableBody, TableCell, TableRow } from "~/components/ui/table";
 import { p } from "~/db";
+import {
+  addExerciseDialogUrl,
+  addExerciseUrl,
+  coursesUrl,
+  courseUrl,
+  deleteExerciseUrl,
+  editExerciseUrl,
+  exerciseUrl,
+  sectionUrl,
+} from "~/routes";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const { sectionId } = params;
@@ -49,8 +65,9 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
   return section;
 };
 
-export default function Course() {
-  const mainSection = useLoaderData<typeof loader>();
+export default function Section() {
+  const section = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
 
   const [search, setSearch] = useSearchParams();
 
@@ -59,43 +76,42 @@ export default function Course() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink to="/">Courses</BreadcrumbLink>
+            <BreadcrumbLink to={coursesUrl()}>Courses</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink to={`/courses/${mainSection.course.id}`}>
-              {mainSection.course.title}
+            <BreadcrumbLink to={courseUrl(section.course.id)}>
+              {section.course.title}
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>{mainSection.title}</BreadcrumbItem>
+          <BreadcrumbItem>{section.title}</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <h1>{mainSection.title} Exercises</h1>
+      <h1>{section.title} Exercises</h1>
       <Table>
         <TableBody>
-          {mainSection.exercises.map((exercise) => (
+          {section.exercises.map((exercise) => (
             <TableRow key={exercise.id}>
               <TableCell>
                 <Button asChild variant={"link"}>
-                  <Link
-                    to={`/courses/${mainSection.id}/exercises/${exercise.id}`}
-                  >
-                    {exercise.title}
-                  </Link>
+                  <Link to={exerciseUrl(exercise.id)}>{exercise.title}</Link>
                 </Button>
               </TableCell>
               <TableCell>
                 <div className="flex items-center space-x-4">
                   <Button asChild variant="link">
                     <Link
-                      to={`/exercises/${exercise.id}/edit?redirectTo=${`/sections/${mainSection.id}`}`}
+                      to={editExerciseUrl(exercise.id, sectionUrl(section.id))}
                     >
                       Edit
                     </Link>
                   </Button>
                   <Form
-                    action={`/exercises/${exercise.id}/delete?redirectTo=${`/sections/${mainSection.id}`}`}
+                    action={deleteExerciseUrl(
+                      exercise.id,
+                      sectionUrl(section.id)
+                    )}
                     method="delete"
                   >
                     <Button variant="destructive">Delete</Button>
@@ -107,13 +123,13 @@ export default function Course() {
         </TableBody>
       </Table>
       <Button asChild>
-        <Link to={"?add"}>Add Exercise</Link>
+        <Link to={addExerciseDialogUrl(section.id)}>Add Exercise</Link>
       </Button>
       <Dialog
         open={search.has("add")}
         onOpenChange={(o) => {
           if (!o) {
-            setSearch({});
+            navigate(sectionUrl(section.id));
           }
         }}
       >
@@ -122,10 +138,11 @@ export default function Course() {
           <DialogDescription>
             <Form
               method="POST"
-              action={`/sections/${mainSection.id}/exercises/add?redirectTo=${`/sections/${mainSection.id}`}`}
+              action={addExerciseUrl(section.id, sectionUrl(section.id))}
             >
               <FormContent>
                 <Input name="title" required autoFocus placeholder="Title" />
+                <Input name="content" required placeholder="Content" />
                 <FormButtons>
                   <Button type="submit">Save</Button>
                 </FormButtons>

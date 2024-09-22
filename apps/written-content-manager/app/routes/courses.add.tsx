@@ -12,6 +12,7 @@ import {
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { p } from "~/db";
+import { coursesUrl, courseUrl } from "~/routes";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const body = await request.formData();
@@ -27,7 +28,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   const redirectTo = new URL(request.url).searchParams.get("redirectTo");
 
-  return redirect(redirectTo ?? `/courses/${course.id}`);
+  return redirect(redirectTo ?? courseUrl(course.id));
 };
 
 export default function AddCourse() {
@@ -36,7 +37,7 @@ export default function AddCourse() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink to="/">Courses</BreadcrumbLink>
+            <BreadcrumbLink to={coursesUrl()}>Courses</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>

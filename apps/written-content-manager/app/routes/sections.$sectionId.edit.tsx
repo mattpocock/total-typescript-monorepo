@@ -11,6 +11,7 @@ import {
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { p } from "~/db";
+import { coursesUrl, courseUrl, sectionUrl } from "~/routes";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const { sectionId } = params;
@@ -21,6 +22,12 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     select: {
       id: true,
       title: true,
+      course: {
+        select: {
+          id: true,
+          title: true,
+        },
+      },
     },
   });
 
@@ -44,23 +51,29 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
   const redirectTo = new URL(request.url).searchParams.get("redirectTo");
 
-  return redirect(redirectTo ?? `/sections/${sectionId}`);
+  return redirect(redirectTo ?? sectionUrl(sectionId as string));
 };
 
 export default function Section() {
-  const data = useLoaderData<typeof loader>();
+  const section = useLoaderData<typeof loader>();
 
   return (
     <div className="space-y-6 flex-col">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink to="/">Sections</BreadcrumbLink>
+            <BreadcrumbLink to={coursesUrl()}>Courses</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink to={`/sections/${data.id}`}>
-              {data.title}
+            <BreadcrumbLink to={courseUrl(section.course.id)}>
+              {section.course.title}
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink to={sectionUrl(section.id)}>
+              {section.title}
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
@@ -71,7 +84,7 @@ export default function Section() {
       </Breadcrumb>
       <Form method="POST">
         <FormContent>
-          <Input name="title" defaultValue={data.title} required autoFocus />
+          <Input name="title" defaultValue={section.title} required autoFocus />
           <FormButtons>
             <Button type="submit">Save</Button>
           </FormButtons>

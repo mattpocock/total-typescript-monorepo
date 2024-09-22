@@ -10,6 +10,14 @@ import {
 import { Button } from "~/components/ui/button";
 import { Table, TableBody, TableCell, TableRow } from "~/components/ui/table";
 import { p } from "~/db";
+import {
+  addSectionUrl,
+  coursesUrl,
+  courseUrl,
+  deleteSectionUrl,
+  editSectionUrl,
+  sectionUrl,
+} from "~/routes";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const { courseId } = params;
@@ -36,40 +44,38 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 };
 
 export default function Course() {
-  const data = useLoaderData<typeof loader>();
+  const course = useLoaderData<typeof loader>();
 
   return (
     <div className="space-y-6 flex-col">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink to="/">Courses</BreadcrumbLink>
+            <BreadcrumbLink to={coursesUrl()}>Courses</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>{data.title}</BreadcrumbItem>
+          <BreadcrumbItem>{course.title}</BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <h1>{data.title} Sections</h1>
+      <h1>{course.title} Sections</h1>
       <Table>
         <TableBody>
-          {data.sections.map((section) => (
+          {course.sections.map((section) => (
             <TableRow key={section.id}>
               <TableCell>
                 <Button asChild variant={"link"}>
-                  <Link to={`/sections/${section.id}`}>{section.title}</Link>
+                  <Link to={sectionUrl(section.id)}>{section.title}</Link>
                 </Button>
               </TableCell>
               <TableCell>
                 <div className="flex items-center space-x-4">
                   <Button asChild variant="link">
-                    <Link
-                      to={`/sections/${section.id}/edit?redirectTo=${`/courses/${data.id}`}`}
-                    >
+                    <Link to={editSectionUrl(section.id, courseUrl(course.id))}>
                       Edit
                     </Link>
                   </Button>
                   <Form
-                    action={`/sections/${section.id}/delete?redirectTo=${`/courses/${data.id}`}`}
+                    action={deleteSectionUrl(section.id, courseUrl(course.id))}
                     method="delete"
                   >
                     <Button variant="destructive">Delete</Button>
@@ -81,9 +87,7 @@ export default function Course() {
         </TableBody>
       </Table>
       <Button asChild>
-        <Link
-          to={`/courses/${data.id}/sections/add?redirectTo=${`/courses/${data.id}`}`}
-        >
+        <Link to={addSectionUrl(course.id, courseUrl(course.id))}>
           Add Section
         </Link>
       </Button>

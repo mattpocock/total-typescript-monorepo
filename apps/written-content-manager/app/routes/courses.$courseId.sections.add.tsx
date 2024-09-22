@@ -1,5 +1,6 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Form, redirect, useLoaderData } from "@remix-run/react";
+import { FormButtons, FormContent } from "~/components";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,6 +11,7 @@ import {
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { p } from "~/db";
+import { coursesUrl, courseUrl, sectionUrl } from "~/routes";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const { courseId } = params;
@@ -49,7 +51,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
   const redirectTo = new URL(request.url).searchParams.get("redirectTo");
 
-  return redirect(redirectTo ?? `/sections/${section.id}`);
+  return redirect(redirectTo ?? sectionUrl(section.id));
 };
 
 export default function Section() {
@@ -59,11 +61,11 @@ export default function Section() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink to="/">Courses</BreadcrumbLink>
+            <BreadcrumbLink to={coursesUrl()}>Courses</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink to={`/courses/${course.id}`}>
+            <BreadcrumbLink to={courseUrl(course.id)}>
               {course.title}
             </BreadcrumbLink>
           </BreadcrumbItem>
@@ -74,8 +76,12 @@ export default function Section() {
         </BreadcrumbList>
       </Breadcrumb>
       <Form method="POST" className="space-y-6">
-        <Input name="title" placeholder="Title" required autoFocus />
-        <Button type="submit">Save</Button>
+        <FormContent>
+          <Input name="title" placeholder="Title" required autoFocus />
+          <FormButtons>
+            <Button type="submit">Save</Button>
+          </FormButtons>
+        </FormContent>
       </Form>
     </div>
   );
