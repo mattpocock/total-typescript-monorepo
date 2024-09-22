@@ -1,6 +1,6 @@
 import type { CourseType } from "@prisma/client";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { Form, redirect } from "@remix-run/react";
+import { Form, redirect, useLoaderData } from "@remix-run/react";
 import { FormButtons, FormContent } from "~/components";
 import {
   Breadcrumb,
@@ -14,10 +14,13 @@ import { Input } from "~/components/ui/input";
 import { p } from "~/db";
 import { coursesUrl, courseUrl } from "~/routes";
 
-export const action = async ({ request }: ActionFunctionArgs) => {
+export const action = async ({ request, params }: ActionFunctionArgs) => {
   const body = await request.formData();
 
-  const course = await p.course.create({
+  const course = await p.course.update({
+    where: {
+      id: params.courseId!,
+    },
     data: {
       title: body.get("title") as string,
       type: body.get("type") as CourseType,
@@ -30,7 +33,18 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   return redirect(redirectTo ?? courseUrl(course.id));
 };
 
+export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+  const course = await p.course.findUniqueOrThrow({
+    where: {
+      id: params.courseId!,
+    },
+  });
+
+  return course;
+};
+
 export default function AddCourse() {
+  const course = useLoaderData<typeof loader>();
   return (
     <div className="space-y-6 flex-col">
       <Breadcrumb>
@@ -40,23 +54,29 @@ export default function AddCourse() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbItem>Add Course</BreadcrumbItem>
+            <BreadcrumbItem>Edit</BreadcrumbItem>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <Form method="POST">
         <FormContent>
-          <Input name="title" placeholder="Title" required autoFocus />
+          <Input
+            name="title"
+            placeholder="Title"
+            required
+            defaultValue={course.title}
+            autoFocus
+          />
           <Input
             name="repoSlug"
             placeholder="slug"
-            defaultValue={""}
+            defaultValue={course.repoSlug ?? ""}
             required
           />
           <Input
             name="type"
             placeholder="type"
-            defaultValue={"WORKSHOP"}
+            defaultValue={course.type ?? "WORKSHOP"}
             required
           />
           <FormButtons>

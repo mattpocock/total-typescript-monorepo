@@ -15,18 +15,42 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { p } from "~/db";
-import { addCourseUrl, coursesUrl, courseUrl } from "~/routes";
+import { pathExists } from "@total-typescript/shared";
+import { addCourseUrl, coursesUrl, courseUrl, editCourseUrl } from "~/routes";
+import type { Course } from "@prisma/client";
 
-export const loader = () => {
-  return p.course.findMany({
-    select: {
-      title: true,
-      id: true,
-    },
+export const loader = async () => {
+  const path = await import("path");
+  const os = await import("os");
+
+  const REPOS_PATH = path.join(os.homedir(), "repos", "total-typescript");
+
+  const courses = await p.course.findMany({
     orderBy: {
       updatedAt: "desc",
     },
   });
+
+  const checkedCourses: ((typeof courses)[number] & {
+    foundOnDisk: boolean;
+  })[] = [];
+
+  for (const course of courses) {
+    if (!course.repoSlug) {
+      checkedCourses.push({ ...course, foundOnDisk: false });
+    } else {
+      const result = await pathExists(
+        path.join(REPOS_PATH, course.repoSlug ?? "")
+      );
+
+      checkedCourses.push({
+        ...course,
+        foundOnDisk: result.isOk() && result.value,
+      });
+    }
+  }
+
+  return checkedCourses;
 };
 
 const Page = () => {
@@ -50,8 +74,33 @@ const Page = () => {
         <TableBody>
           {data.map((course) => (
             <TableRow key={course.id}>
+              <TableCell className="space-y-1">
+                <Link className="text-base" to={courseUrl(course.id)}>
+                  {course.title}
+                </Link>
+                <p className="font-mono text-gray-500 text-xs">
+                  {course.repoSlug}
+                </p>
+              </TableCell>
+              <TableCell className="space-y-1">
+                {course.foundOnDisk ? (
+                  <span className="bg-green-100 text-green-800 text-xs p-2 px-3 rounded-lg uppercase font-semibold">
+                    On Disk
+                  </span>
+                ) : (
+                  <span className="bg-gray-100 text-gray-800 text-xs p-2 px-3 rounded-lg uppercase font-semibold">
+                    Not Found
+                  </span>
+                )}
+              </TableCell>
               <TableCell>
-                <Link to={courseUrl(course.id)}>{course.title}</Link>
+                <div className="flex items-center space-x-4">
+                  <Button asChild variant="link">
+                    <Link to={editCourseUrl(course.id, coursesUrl())}>
+                      Edit
+                    </Link>
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))}
