@@ -6,7 +6,6 @@ import {
   useLoaderData,
   useNavigate,
   useSearchParams,
-  useSubmit,
 } from "@remix-run/react";
 import { FormButtons, FormContent } from "~/components";
 import {
@@ -74,9 +73,15 @@ export default function Section() {
   const section = useLoaderData<typeof loader>();
   const navigate = useNavigate();
 
-  const submit = useSubmit();
+  const reorderFetcher = useFetcher();
 
   const [search, setSearch] = useSearchParams();
+
+  const exercises = reorderFetcher.json
+    ? (reorderFetcher.json as { id: string }[]).map(({ id }) => {
+        return section.exercises.find((exercise) => exercise.id === id)!;
+      })
+    : section.exercises;
 
   return (
     <div className="space-y-6 flex-col">
@@ -98,7 +103,7 @@ export default function Section() {
       <h1>{section.title} Exercises</h1>
       <Table>
         <TableBody>
-          {section.exercises.map((exercise) => (
+          {exercises.map((exercise) => (
             <TableRow key={exercise.id}>
               <TableCell>
                 <Link to={editExerciseUrl(exercise.id)} className="text-base">
@@ -116,7 +121,7 @@ export default function Section() {
                       variant="outline"
                       className="rounded-r-none border-r-0"
                       onClick={() => {
-                        submit(
+                        reorderFetcher.submit(
                           moveElementBack(
                             section.exercises,
                             exercise.id
@@ -137,7 +142,7 @@ export default function Section() {
                       variant="outline"
                       className="rounded-l-none border-l-0"
                       onClick={() => {
-                        submit(
+                        reorderFetcher.submit(
                           moveElementForward(
                             section.exercises,
                             exercise.id

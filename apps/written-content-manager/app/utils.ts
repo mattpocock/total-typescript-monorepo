@@ -1,7 +1,7 @@
-export const moveElementBack = (
-  arr: { id: string }[],
+export const moveElementBack = <T extends { id: string }>(
+  arr: T[],
   id: string
-): { id: string }[] => {
+): T[] => {
   const index = arr.findIndex((el) => el.id === id);
   if (index === 0) return arr;
   const newArr = [...arr];
@@ -9,10 +9,10 @@ export const moveElementBack = (
   return newArr;
 };
 
-export const moveElementForward = (
-  arr: { id: string }[],
+export const moveElementForward = <T extends { id: string }>(
+  arr: T[],
   id: string
-): { id: string }[] => {
+): T[] => {
   const index = arr.findIndex((el) => el.id === id);
   if (index === arr.length - 1) return arr;
   const newArr = [...arr];
