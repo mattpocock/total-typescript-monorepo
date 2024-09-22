@@ -1,4 +1,4 @@
-import type { LoaderFunctionArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import {
   Form,
   Link,
@@ -36,6 +36,10 @@ import {
   sectionUrl,
 } from "~/routes";
 import { moveElementBack, moveElementForward } from "~/utils";
+
+export const meta: MetaFunction<typeof loader> = (args) => {
+  return [{ title: `${args.data?.title} | WCM` }];
+};
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const { sectionId } = params;

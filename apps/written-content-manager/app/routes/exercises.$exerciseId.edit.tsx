@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { Form, redirect, useFetcher, useLoaderData } from "@remix-run/react";
+import { useFetcher, useLoaderData, type MetaFunction } from "@remix-run/react";
 import { useRef } from "react";
 import { FormButtons, FormContent } from "~/components";
 import {
@@ -15,6 +15,10 @@ import { p } from "~/db";
 import { LazyLoadedEditor } from "~/monaco-editor/lazy-loaded-editor";
 import { coursesUrl, courseUrl, editExerciseUrl, sectionUrl } from "~/routes";
 import { useDebounceFetcher } from "~/use-debounced-fetcher";
+
+export const meta: MetaFunction<typeof loader> = (args) => {
+  return [{ title: `${args.data?.title} | WCM` }];
+};
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const { exerciseId } = params;
