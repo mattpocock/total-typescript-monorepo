@@ -54,3 +54,7 @@ export const deleteExerciseUrl = (exerciseId: string, redirectTo: string) => {
 export const editExerciseUrl = (exerciseId: string) => {
   return `/exercises/${exerciseId}/edit`;
 };
+
+export const reorderExercisesUrl = (sectionId: string) => {
+  return `/sections/${sectionId}/reorder`;
+};

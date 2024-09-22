@@ -2,9 +2,11 @@ import type { LoaderFunctionArgs } from "@remix-run/node";
 import {
   Form,
   Link,
+  useFetcher,
   useLoaderData,
   useNavigate,
   useSearchParams,
+  useSubmit,
 } from "@remix-run/react";
 import { FormButtons, FormContent } from "~/components";
 import {
@@ -31,8 +33,10 @@ import {
   courseUrl,
   deleteExerciseUrl,
   editExerciseUrl,
+  reorderExercisesUrl,
   sectionUrl,
 } from "~/routes";
+import { moveElementBack, moveElementForward } from "~/utils";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const { sectionId } = params;
@@ -54,6 +58,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
           id: true,
           title: true,
           learningGoal: true,
+          order: true,
         },
         orderBy: {
           order: "asc",
@@ -68,6 +73,8 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 export default function Section() {
   const section = useLoaderData<typeof loader>();
   const navigate = useNavigate();
+
+  const submit = useSubmit();
 
   const [search, setSearch] = useSearchParams();
 
@@ -101,9 +108,54 @@ export default function Section() {
               </TableCell>
               <TableCell>
                 <div className="flex items-center space-x-4">
-                  <Button asChild variant="link">
+                  <Button asChild variant="default">
                     <Link to={editExerciseUrl(exercise.id)}>Edit</Link>
                   </Button>
+                  <div>
+                    <Button
+                      variant="outline"
+                      className="rounded-r-none border-r-0"
+                      onClick={() => {
+                        submit(
+                          moveElementBack(
+                            section.exercises,
+                            exercise.id
+                          ) satisfies {
+                            id: string;
+                          }[],
+                          {
+                            method: "post",
+                            action: reorderExercisesUrl(section.id),
+                            encType: "application/json",
+                          }
+                        );
+                      }}
+                    >
+                      Up
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="rounded-l-none border-l-0"
+                      onClick={() => {
+                        submit(
+                          moveElementForward(
+                            section.exercises,
+                            exercise.id
+                          ) satisfies {
+                            id: string;
+                          }[],
+                          {
+                            method: "post",
+                            action: reorderExercisesUrl(section.id),
+                            encType: "application/json",
+                          }
+                        );
+                      }}
+                    >
+                      Down
+                    </Button>
+                  </div>
+
                   <Form
                     action={deleteExerciseUrl(
                       exercise.id,
