@@ -31,7 +31,6 @@ import {
   courseUrl,
   deleteExerciseUrl,
   editExerciseUrl,
-  exerciseUrl,
   sectionUrl,
 } from "~/routes";
 
@@ -95,17 +94,15 @@ export default function Section() {
             <TableRow key={exercise.id}>
               <TableCell>
                 <Button asChild variant={"link"}>
-                  <Link to={exerciseUrl(exercise.id)}>{exercise.title}</Link>
+                  <Link to={editExerciseUrl(exercise.id)}>
+                    {exercise.title}
+                  </Link>
                 </Button>
               </TableCell>
               <TableCell>
                 <div className="flex items-center space-x-4">
                   <Button asChild variant="link">
-                    <Link
-                      to={editExerciseUrl(exercise.id, sectionUrl(section.id))}
-                    >
-                      Edit
-                    </Link>
+                    <Link to={editExerciseUrl(exercise.id)}>Edit</Link>
                   </Button>
                   <Form
                     action={deleteExerciseUrl(

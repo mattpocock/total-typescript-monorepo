@@ -1,5 +1,5 @@
 import Editor from "@monaco-editor/react";
-import { type ComponentProps, useRef, useState } from "react";
+import { type ChangeEvent, type ComponentProps, useRef, useState } from "react";
 import { prettierLoader } from "./prettier-loader";
 import clsx from "clsx";
 
@@ -38,6 +38,8 @@ const EDITOR_THEME = {
 
 export type CodeEditorProps = {
   name: string;
+  label: string;
+  onChange?: (value: string | undefined) => void;
   language: Language;
   defaultValue: string | null | undefined;
   className?: string;
@@ -67,93 +69,105 @@ export const EagerlyLoadedEditor = (props: CodeEditorProps) => {
   );
 
   return (
-    <div className={clsx("border-gray-200 border-2", props.className)}>
+    <div className={props.className}>
+      <label className="mb-2 block text-sm">{props.label}</label>
       <input type="hidden" name={props.name} value={value} />
-      <Editor
-        path={path}
-        loading={<div>Loading Code Editor...</div>}
-        height={"300px"}
-        value={value}
-        onChange={setValue}
-        language={resolveLanguage(props.language)}
-        theme="vs"
-        options={{
-          minimap: { enabled: false, showSlider: "mouseover" },
-          fontSize: props.fontSize ?? 16,
-          glyphMargin: false,
-          tabSize: 2,
-          lineNumbers: "off",
-          scrollbar: {
-            vertical: "hidden",
-            horizontal: "auto",
-          },
-          padding: { top: 24, bottom: 24 },
-          automaticLayout: true,
-          readOnly: props.readonly,
-          scrollBeyondLastLine: true,
-        }}
-        onMount={(editor, monaco) => {
-          monacoRef.current = monaco;
-          editorRef.current = editor;
+      <div className={clsx("border-gray-200 border-2")}>
+        <Editor
+          path={path}
+          loading={<div>Loading Code Editor...</div>}
+          height={"300px"}
+          value={value}
+          onChange={(value) => {
+            setValue(value);
+            props.onChange?.(value);
+          }}
+          language={resolveLanguage(props.language)}
+          theme="vs"
+          options={{
+            minimap: { enabled: false, showSlider: "mouseover" },
+            fontSize: props.fontSize ?? 16,
+            glyphMargin: false,
+            tabSize: 2,
+            lineNumbers: "off",
+            scrollbar: {
+              vertical: "hidden",
+              horizontal: "auto",
+            },
+            padding: { top: 24, bottom: 24 },
+            automaticLayout: true,
+            readOnly: props.readonly,
+            scrollBeyondLastLine: true,
+            wordWrap: "on",
+          }}
+          onMount={(editor, monaco) => {
+            monacoRef.current = monaco;
+            editorRef.current = editor;
 
-          // Enable prettier
-          monaco.languages.registerDocumentFormattingEditProvider(
-            "typescript",
-            {
-              provideDocumentFormattingEdits: async (model) => {
-                try {
-                  return [
-                    {
-                      text: await prettierLoader.formatTypeScript(
-                        model.getValue()
-                      ),
-                      range: model.getFullModelRange(),
-                    },
-                  ];
-                } catch (err) {
-                  console.error(err);
-                }
-              },
-            }
-          );
-
-          monaco.languages.registerDocumentFormattingEditProvider("markdown", {
-            provideDocumentFormattingEdits: async (model) => {
-              try {
-                return [
-                  {
-                    text: await prettierLoader.formatMarkdown(model.getValue()),
-                    range: model.getFullModelRange(),
-                  },
-                ];
-              } catch (err) {
-                console.error(err);
+            // Enable prettier
+            monaco.languages.registerDocumentFormattingEditProvider(
+              "typescript",
+              {
+                provideDocumentFormattingEdits: async (model) => {
+                  try {
+                    return [
+                      {
+                        text: await prettierLoader.formatTypeScript(
+                          model.getValue()
+                        ),
+                        range: model.getFullModelRange(),
+                      },
+                    ];
+                  } catch (err) {
+                    console.error(err);
+                  }
+                },
               }
-            },
-          });
+            );
 
-          // Adjust the compiler options
-          monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
-            ...monaco.languages.typescript.typescriptDefaults.getCompilerOptions(),
-            module: monaco.languages.typescript.ModuleKind.ESNext,
-            moduleResolution:
-              monaco.languages.typescript.ModuleResolutionKind.NodeJs,
-            strict: true,
-          });
+            monaco.languages.registerDocumentFormattingEditProvider(
+              "markdown",
+              {
+                provideDocumentFormattingEdits: async (model) => {
+                  try {
+                    return [
+                      {
+                        text: await prettierLoader.formatMarkdown(
+                          model.getValue()
+                        ),
+                        range: model.getFullModelRange(),
+                      },
+                    ];
+                  } catch (err) {
+                    console.error(err);
+                  }
+                },
+              }
+            );
 
-          // Enable auto formatting on save
-          editor.addAction({
-            id: "save",
-            label: "Save",
-            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS],
-            run: () => {
-              console.log("SAVING");
+            // Adjust the compiler options
+            monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+              ...monaco.languages.typescript.typescriptDefaults.getCompilerOptions(),
+              module: monaco.languages.typescript.ModuleKind.ESNext,
+              moduleResolution:
+                monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+              strict: true,
+            });
 
-              editor.getAction("editor.action.formatDocument")?.run(path);
-            },
-          });
-        }}
-      />
+            // Enable auto formatting on save
+            editor.addAction({
+              id: "save",
+              label: "Save",
+              keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS],
+              run: () => {
+                console.log("SAVING");
+
+                editor.getAction("editor.action.formatDocument")?.run(path);
+              },
+            });
+          }}
+        />
+      </div>
     </div>
   );
 };

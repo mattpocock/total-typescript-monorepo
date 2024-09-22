@@ -34,9 +34,9 @@ export const editSectionUrl = (sectionId: string, redirectTo: string) => {
   return `/sections/${sectionId}/edit?${new URLSearchParams({ redirectTo })}`;
 };
 
-export const exerciseUrl = (exerciseId: string) => {
-  return `/exercises/${exerciseId}`;
-};
+// export const exerciseUrl = (exerciseId: string) => {
+//   return `/exercises/${exerciseId}`;
+// };
 
 export const addExerciseDialogUrl = (sectionId: string) => {
   return `/sections/${sectionId}?add`;
@@ -50,6 +50,6 @@ export const deleteExerciseUrl = (exerciseId: string, redirectTo: string) => {
   return `/exercises/${exerciseId}/delete?${new URLSearchParams({ redirectTo })}`;
 };
 
-export const editExerciseUrl = (exerciseId: string, redirectTo: string) => {
-  return `/exercises/${exerciseId}/edit?${new URLSearchParams({ redirectTo })}`;
+export const editExerciseUrl = (exerciseId: string) => {
+  return `/exercises/${exerciseId}/edit`;
 };

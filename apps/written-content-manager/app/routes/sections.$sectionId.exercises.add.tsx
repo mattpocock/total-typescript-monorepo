@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/react";
 import { p } from "~/db";
-import { exerciseUrl } from "~/routes";
+import { editExerciseUrl } from "~/routes";
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
   const formData = await request.formData();
@@ -25,5 +25,5 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
   const redirectTo = new URL(request.url).searchParams.get("redirectTo");
 
-  return redirect(redirectTo ?? exerciseUrl(exercise.id));
+  return redirect(redirectTo ?? editExerciseUrl(exercise.id));
 };

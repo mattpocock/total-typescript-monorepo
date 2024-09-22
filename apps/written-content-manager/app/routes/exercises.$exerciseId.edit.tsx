@@ -1,5 +1,6 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { Form, redirect, useLoaderData } from "@remix-run/react";
+import { Form, redirect, useFetcher, useLoaderData } from "@remix-run/react";
+import { useRef } from "react";
 import { FormButtons, FormContent } from "~/components";
 import {
   Breadcrumb,
@@ -12,7 +13,8 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { p } from "~/db";
 import { LazyLoadedEditor } from "~/monaco-editor/lazy-loaded-editor";
-import { coursesUrl, courseUrl, exerciseUrl, sectionUrl } from "~/routes";
+import { coursesUrl, courseUrl, editExerciseUrl, sectionUrl } from "~/routes";
+import { useDebounceFetcher } from "~/use-debounced-fetcher";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const { exerciseId } = params;
@@ -36,7 +38,8 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
       id: true,
       title: true,
       description: true,
-      content: true,
+      learningGoal: true,
+      notes: true,
     },
   });
 
@@ -49,7 +52,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
   const title = body.get("title") as string;
   const description = body.get("description") as string;
-  const content = body.get("content") as string;
+  const learningGoal = body.get("learningGoal") as string;
+  const notes = body.get("notes") as string;
 
   await p.exercise.update({
     where: {
@@ -58,17 +62,29 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     data: {
       title,
       description,
-      content,
+      learningGoal,
+      notes,
     },
   });
 
-  const redirectTo = new URL(request.url).searchParams.get("redirectTo");
-
-  return redirect(redirectTo ?? exerciseUrl(exerciseId as string));
+  return null;
 };
 
 export default function Exercise() {
   const exercise = useLoaderData<typeof loader>();
+
+  const debouncedFetcher = useDebounceFetcher();
+
+  const fetcher = useFetcher();
+
+  const formRef = useRef<HTMLFormElement | null>(null);
+
+  const handleChange = () => {
+    debouncedFetcher.debounceSubmit(formRef.current, {
+      replace: true,
+      debounceTimeout: 200,
+    });
+  };
 
   return (
     <div className="space-y-6 flex-col">
@@ -91,41 +107,49 @@ export default function Exercise() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink to={exerciseUrl(exercise.id)}>
+            <BreadcrumbLink to={editExerciseUrl(exercise.id)}>
               {exercise.title}
             </BreadcrumbLink>
           </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbItem>Edit</BreadcrumbItem>
-          </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <Form method="POST" className="space-y-6">
+      <fetcher.Form method="POST" className="space-y-6" ref={formRef}>
         <FormContent>
           <Input
             name="title"
             defaultValue={exercise.title}
             required
             autoFocus
+            onChange={handleChange}
           />
+          <Input
+            className="col-span-full"
+            defaultValue={exercise.learningGoal ?? ""}
+            name="learningGoal"
+            placeholder="Learning Goal"
+            onChange={handleChange}
+          ></Input>
           <LazyLoadedEditor
+            label="Notes"
+            className="col-span-full"
+            defaultValue={exercise.notes}
+            name="notes"
+            language="md"
+            onChange={handleChange}
+          ></LazyLoadedEditor>
+          <LazyLoadedEditor
+            label="Description"
             className="col-span-full"
             defaultValue={exercise.description}
             name="description"
             language="md"
-          ></LazyLoadedEditor>
-          <LazyLoadedEditor
-            className="col-span-full"
-            defaultValue={exercise.content}
-            name="content"
-            language="ts"
+            onChange={handleChange}
           ></LazyLoadedEditor>
           <FormButtons>
             <Button type="submit">Save</Button>
           </FormButtons>
         </FormContent>
-      </Form>
+      </fetcher.Form>
     </div>
   );
 }

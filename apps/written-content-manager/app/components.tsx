@@ -1,6 +1,8 @@
 export const FormContent = (props: { children?: React.ReactNode }) => {
   return (
-    <div className="grid gap-4 max-w-3xl md:grid-cols-2">{props.children}</div>
+    <div className="grid gap-4 max-w-3xl w-full md:grid-cols-2">
+      {props.children}
+    </div>
   );
 };
 
