@@ -40,12 +40,13 @@ model Section {
 }
 
 model Exercise {
-  id        String   @id @default(uuid())
-  title     String
-  content   String
-  sectionId String
-  order     Int
-  section   Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(uuid())
+  title       String
+  content     String?
+  description String?
+  sectionId   String
+  order       Int
+  section     Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

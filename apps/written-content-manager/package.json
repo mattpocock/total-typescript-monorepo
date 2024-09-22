@@ -11,7 +11,8 @@
     "prisma:generate": "prisma generate",
     "db:dev": "vitest",
     "migrate:dev": "DATABASE_URL=\"postgresql://postgres@localhost:5432/postgres\" prisma migrate dev --name migration",
-    "migrate:prod": "prisma migrate deploy"
+    "migrate:prod": "prisma migrate deploy",
+    "migrate:unsafe": "pnpm run migrate:dev && pnpm run migrate:prod"
   },
   "dependencies": {
     "@prisma/client": "5.19.1",
@@ -29,7 +30,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwind-merge": "^2.5.2",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "@monaco-editor/react": "^4.6.0"
   },
   "devDependencies": {
     "@remix-run/dev": "2.11.1",

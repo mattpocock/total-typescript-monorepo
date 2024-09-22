@@ -142,7 +142,6 @@ export default function Section() {
             >
               <FormContent>
                 <Input name="title" required autoFocus placeholder="Title" />
-                <Input name="content" required placeholder="Content" />
                 <FormButtons>
                   <Button type="submit">Save</Button>
                 </FormButtons>

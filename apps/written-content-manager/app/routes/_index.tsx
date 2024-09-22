@@ -6,7 +6,6 @@ import {
   BreadcrumbList,
 } from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
-import { Separator } from "~/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -34,7 +33,7 @@ const Page = () => {
   const data = useLoaderData<typeof loader>();
 
   return (
-    <div>
+    <div className="space-y-6">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -42,7 +41,6 @@ const Page = () => {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <Separator className="my-6" />
       <Table>
         <TableHeader>
           <TableRow>

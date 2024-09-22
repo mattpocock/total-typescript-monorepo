@@ -11,6 +11,7 @@ import {
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { p } from "~/db";
+import { LazyLoadedEditor } from "~/monaco-editor/lazy-loaded-editor";
 import { coursesUrl, courseUrl, exerciseUrl, sectionUrl } from "~/routes";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
@@ -34,6 +35,8 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
       },
       id: true,
       title: true,
+      description: true,
+      content: true,
     },
   });
 
@@ -45,6 +48,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   const body = await request.formData();
 
   const title = body.get("title") as string;
+  const description = body.get("description") as string;
+  const content = body.get("content") as string;
 
   await p.exercise.update({
     where: {
@@ -52,6 +57,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     },
     data: {
       title,
+      description,
+      content,
     },
   });
 
@@ -102,6 +109,18 @@ export default function Exercise() {
             required
             autoFocus
           />
+          <LazyLoadedEditor
+            className="col-span-full"
+            defaultValue={exercise.description}
+            name="description"
+            language="md"
+          ></LazyLoadedEditor>
+          <LazyLoadedEditor
+            className="col-span-full"
+            defaultValue={exercise.content}
+            name="content"
+            language="ts"
+          ></LazyLoadedEditor>
           <FormButtons>
             <Button type="submit">Save</Button>
           </FormButtons>

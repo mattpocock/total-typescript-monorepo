@@ -7,7 +7,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   const formData = await request.formData();
 
   const title = formData.get("title") as string;
-  const content = formData.get("content") as string;
 
   const order = await p.exercise.count({
     where: {
@@ -20,7 +19,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       title,
       sectionId: params.sectionId!,
       order: order + 1,
-      content,
+      content: "",
     },
   });
 
