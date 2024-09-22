@@ -23,7 +23,7 @@ export const editCourseUrl = (courseId: string, redirectTo: string) => {
 };
 
 export const sectionUrl = (sectionId: string) => {
-  return `/sections/${sectionId}`;
+  return `/courses/sections/${sectionId}`;
 };
 
 export const addSectionUrl = (courseId: string, redirectTo: string) => {
@@ -31,34 +31,34 @@ export const addSectionUrl = (courseId: string, redirectTo: string) => {
 };
 
 export const deleteSectionUrl = (sectionId: string, redirectTo: string) => {
-  return `/sections/${sectionId}/delete?${new URLSearchParams({ redirectTo })}`;
+  return `/courses/sections/${sectionId}/delete?${new URLSearchParams({ redirectTo })}`;
 };
 
 export const editSectionUrl = (sectionId: string, redirectTo: string) => {
-  return `/sections/${sectionId}/edit?${new URLSearchParams({ redirectTo })}`;
+  return `/courses/sections/${sectionId}/edit?${new URLSearchParams({ redirectTo })}`;
 };
 
 // export const exerciseUrl = (exerciseId: string) => {
-//   return `/exercises/${exerciseId}`;
+//   return `/courses/exercises/${exerciseId}`;
 // };
 
 export const addExerciseDialogUrl = (sectionId: string) => {
-  return `/sections/${sectionId}?add`;
+  return `/courses/sections/${sectionId}?add`;
 };
 
 export const addExerciseUrl = (sectionId: string, redirectTo?: string) => {
   const params = redirectTo ? `?${new URLSearchParams({ redirectTo })}` : "";
-  return `/sections/${sectionId}/exercises/add${params}`;
+  return `/courses/sections/${sectionId}/exercises/add${params}`;
 };
 
 export const deleteExerciseUrl = (exerciseId: string, redirectTo: string) => {
-  return `/exercises/${exerciseId}/delete?${new URLSearchParams({ redirectTo })}`;
+  return `/courses/exercises/${exerciseId}/delete?${new URLSearchParams({ redirectTo })}`;
 };
 
 export const editExerciseUrl = (exerciseId: string) => {
-  return `/exercises/${exerciseId}/edit`;
+  return `/courses/exercises/${exerciseId}/edit`;
 };
 
 export const reorderExercisesUrl = (sectionId: string) => {
-  return `/sections/${sectionId}/reorder`;
+  return `/courses/sections/${sectionId}/reorder`;
 };
