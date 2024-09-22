@@ -1,5 +1,9 @@
-export const coursesUrl = () => {
+export const homeUrl = () => {
   return `/`;
+};
+
+export const coursesUrl = () => {
+  return `/courses`;
 };
 
 export const courseUrl = (courseId: string) => {

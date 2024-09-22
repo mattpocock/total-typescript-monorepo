@@ -136,6 +136,7 @@ export default function Section() {
                             method: "post",
                             action: reorderExercisesUrl(section.id),
                             encType: "application/json",
+                            preventScrollReset: true,
                           }
                         );
                       }}
@@ -157,6 +158,7 @@ export default function Section() {
                             method: "post",
                             action: reorderExercisesUrl(section.id),
                             encType: "application/json",
+                            preventScrollReset: true,
                           }
                         );
                       }}
