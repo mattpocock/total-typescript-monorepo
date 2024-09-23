@@ -58,6 +58,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
       },
       id: true,
       title: true,
+      deleted: true,
       description: true,
       learningGoal: true,
       readyForRecording: true,
@@ -147,6 +148,11 @@ export default function Exercise() {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
+      {exercise.deleted && (
+        <div className="bg-red-100 text-red-800 p-4 rounded-md">
+          This exercise has been deleted.
+        </div>
+      )}
       <Form method="POST" className="space-y-6" ref={formRef}>
         <FormContent>
           <Input
@@ -205,6 +211,21 @@ export default function Exercise() {
               Ready for Recording
             </label>
           </div>
+          {exercise.files.map((file) => {
+            return (
+              <div className="col-span-full">
+                <a
+                  href={`vscode://file${file.fullPath}`}
+                  className="font-mono text-sm mb-2 block"
+                >
+                  {file.path}
+                </a>
+                <pre className="p-6 text-xs border-2 border-gray-200">
+                  {file.content}
+                </pre>
+              </div>
+            );
+          })}
           <LazyLoadedEditor
             label="Notes"
             className="col-span-full"
@@ -221,21 +242,7 @@ export default function Exercise() {
             language="md"
             onChange={handleChange}
           ></LazyLoadedEditor>
-          {exercise.files.map((file) => {
-            return (
-              <div className="col-span-full">
-                <a
-                  href={`vscode://file${file.fullPath}`}
-                  className="font-mono text-sm mb-2 block"
-                >
-                  {file.path}
-                </a>
-                <pre className="p-6 text-xs border-2 border-gray-200">
-                  {file.content}
-                </pre>
-              </div>
-            );
-          })}
+
           <FormButtons>
             <Button type="submit">Save</Button>
           </FormButtons>

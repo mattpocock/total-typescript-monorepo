@@ -5,9 +5,12 @@ import { p } from "~/db";
 export const action = async ({ request, params }: ActionFunctionArgs) => {
   const { exerciseId } = params;
 
-  await p.exercise.delete({
+  await p.exercise.update({
     where: {
       id: exerciseId,
+    },
+    data: {
+      deleted: true,
     },
   });
 

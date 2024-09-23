@@ -11,6 +11,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   const order = await p.exercise.count({
     where: {
       sectionId: params.sectionId!,
+      deleted: false,
     },
   });
 

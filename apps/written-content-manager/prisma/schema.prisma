@@ -59,4 +59,5 @@ model Exercise {
   section           Section      @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
+  deleted           Boolean      @default(false)
 }

@@ -35,7 +35,12 @@ import {
   reorderExercisesUrl,
   sectionUrl,
 } from "~/routes";
-import { moveElementBack, moveElementForward } from "~/utils";
+import {
+  getHumanReadableStatusFromExercise,
+  getStatusFromExercise,
+  moveElementBack,
+  moveElementForward,
+} from "~/utils";
 
 export const meta: MetaFunction<typeof loader> = (args) => {
   return [{ title: `${args.data?.title} | WCM` }];
@@ -62,9 +67,13 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
           title: true,
           learningGoal: true,
           order: true,
+          readyForRecording: true,
         },
         orderBy: {
           order: "asc",
+        },
+        where: {
+          deleted: false,
         },
       },
     },
@@ -107,91 +116,109 @@ export default function Section() {
       <h1>{section.title} Exercises</h1>
       <Table>
         <TableBody>
-          {exercises.map((exercise, index) => (
-            <TableRow key={exercise.id}>
-              <TableCell>
-                <div className="flex items-center space-x-4">
-                  <div className="rounded-full size-9 flex justify-center items-center border-2 border-gray-200 ">
-                    {(index + 1).toString().padStart(2, "0")}
+          {exercises.map((exercise, index) => {
+            const status = getHumanReadableStatusFromExercise(exercise);
+            return (
+              <TableRow key={exercise.id}>
+                <TableCell>
+                  <div className="flex items-center space-x-4">
+                    <div className="rounded-full size-9 flex justify-center items-center border-2 border-gray-200 ">
+                      {(index + 1).toString().padStart(2, "0")}
+                    </div>
+                    <div>
+                      <Link
+                        to={editExerciseUrl(exercise.id)}
+                        className="text-base"
+                      >
+                        {exercise.title}
+                      </Link>
+                      <p className="text-sm text-gray-500">
+                        {exercise.learningGoal}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <Link
-                      to={editExerciseUrl(exercise.id)}
-                      className="text-base"
+                </TableCell>
+                <TableCell>
+                  <div className="flex justify-start">
+                    <div
+                      className={`px-3 py-1 text-xs uppercase rounded-lg flex justify-center items-center ${
+                        status.value === "needs-learning-goal"
+                          ? "bg-red-100 text-red-800"
+                          : status.value === "ready-for-recording"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-yellow-100 text-yellow-800"
+                      }`}
                     >
-                      {exercise.title}
-                    </Link>
-                    <p className="text-sm text-gray-500">
-                      {exercise.learningGoal}
-                    </p>
+                      {status.label}
+                    </div>
                   </div>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center space-x-4">
-                  <Button asChild variant="default">
-                    <Link to={editExerciseUrl(exercise.id)}>Edit</Link>
-                  </Button>
-                  <div>
-                    <Button
-                      variant="outline"
-                      className="rounded-r-none border-r-0"
-                      onClick={() => {
-                        reorderFetcher.submit(
-                          moveElementBack(
-                            section.exercises,
-                            exercise.id
-                          ) satisfies {
-                            id: string;
-                          }[],
-                          {
-                            method: "post",
-                            action: reorderExercisesUrl(section.id),
-                            encType: "application/json",
-                            preventScrollReset: true,
-                          }
-                        );
-                      }}
-                    >
-                      Up
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center space-x-4">
+                    <Button asChild variant="default">
+                      <Link to={editExerciseUrl(exercise.id)}>Edit</Link>
                     </Button>
-                    <Button
-                      variant="outline"
-                      className="rounded-l-none border-l-0"
-                      onClick={() => {
-                        reorderFetcher.submit(
-                          moveElementForward(
-                            section.exercises,
-                            exercise.id
-                          ) satisfies {
-                            id: string;
-                          }[],
-                          {
-                            method: "post",
-                            action: reorderExercisesUrl(section.id),
-                            encType: "application/json",
-                            preventScrollReset: true,
-                          }
-                        );
-                      }}
-                    >
-                      Down
-                    </Button>
-                  </div>
+                    <div>
+                      <Button
+                        variant="outline"
+                        className="rounded-r-none border-r-0"
+                        onClick={() => {
+                          reorderFetcher.submit(
+                            moveElementBack(
+                              section.exercises,
+                              exercise.id
+                            ) satisfies {
+                              id: string;
+                            }[],
+                            {
+                              method: "post",
+                              action: reorderExercisesUrl(section.id),
+                              encType: "application/json",
+                              preventScrollReset: true,
+                            }
+                          );
+                        }}
+                      >
+                        Up
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="rounded-l-none border-l-0"
+                        onClick={() => {
+                          reorderFetcher.submit(
+                            moveElementForward(
+                              section.exercises,
+                              exercise.id
+                            ) satisfies {
+                              id: string;
+                            }[],
+                            {
+                              method: "post",
+                              action: reorderExercisesUrl(section.id),
+                              encType: "application/json",
+                              preventScrollReset: true,
+                            }
+                          );
+                        }}
+                      >
+                        Down
+                      </Button>
+                    </div>
 
-                  <Form
-                    action={deleteExerciseUrl(
-                      exercise.id,
-                      sectionUrl(section.id)
-                    )}
-                    method="delete"
-                  >
-                    <Button variant="destructive">Delete</Button>
-                  </Form>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
+                    <Form
+                      action={deleteExerciseUrl(
+                        exercise.id,
+                        sectionUrl(section.id)
+                      )}
+                      method="delete"
+                    >
+                      <Button variant="destructive">Delete</Button>
+                    </Form>
+                  </div>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
       <Button asChild>
