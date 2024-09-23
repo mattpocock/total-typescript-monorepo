@@ -19,3 +19,14 @@ export const moveElementForward = <T extends { id: string }>(
   newArr.splice(index + 1, 0, newArr.splice(index, 1)[0]!);
   return newArr;
 };
+
+export const createVSCodeFilename = (str: string) => {
+  return (
+    str
+      // replace punctuation with spaces
+      .replace(/[\?.,\/#!$%\^&\*;:{}=\-_`~()]/g, " ")
+      .trim()
+      .replace(/\s+/g, "-")
+      .toLowerCase()
+  );
+};

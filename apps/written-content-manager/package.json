@@ -33,7 +33,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwind-merge": "^2.5.2",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "fast-glob": "^3.3.2"
   },
   "devDependencies": {
     "@remix-run/dev": "2.11.1",

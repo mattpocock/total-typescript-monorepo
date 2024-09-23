@@ -107,13 +107,25 @@ export default function Section() {
       <h1>{section.title} Exercises</h1>
       <Table>
         <TableBody>
-          {exercises.map((exercise) => (
+          {exercises.map((exercise, index) => (
             <TableRow key={exercise.id}>
               <TableCell>
-                <Link to={editExerciseUrl(exercise.id)} className="text-base">
-                  {exercise.title}
-                </Link>
-                <p className="text-sm text-gray-500">{exercise.learningGoal}</p>
+                <div className="flex items-center space-x-4">
+                  <div className="rounded-full size-9 flex justify-center items-center border-2 border-gray-200 ">
+                    {(index + 1).toString().padStart(2, "0")}
+                  </div>
+                  <div>
+                    <Link
+                      to={editExerciseUrl(exercise.id)}
+                      className="text-base"
+                    >
+                      {exercise.title}
+                    </Link>
+                    <p className="text-sm text-gray-500">
+                      {exercise.learningGoal}
+                    </p>
+                  </div>
+                </div>
               </TableCell>
               <TableCell>
                 <div className="flex items-center space-x-4">

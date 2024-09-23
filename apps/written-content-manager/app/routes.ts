@@ -42,6 +42,10 @@ export const editSectionUrl = (sectionId: string, redirectTo: string) => {
 //   return `/courses/exercises/${exerciseId}`;
 // };
 
+export const viewExerciseInVSCodeUrl = (exerciseId: string) => {
+  return `/courses/exercises/${exerciseId}/view-vscode`;
+};
+
 export const addExerciseDialogUrl = (sectionId: string) => {
   return `/courses/sections/${sectionId}?add`;
 };

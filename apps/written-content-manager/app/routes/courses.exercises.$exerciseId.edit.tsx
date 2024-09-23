@@ -1,6 +1,13 @@
 import type { ExerciseType } from "@prisma/client";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { useFetcher, useLoaderData, type MetaFunction } from "@remix-run/react";
+import {
+  Form,
+  useFetcher,
+  useLoaderData,
+  type MetaFunction,
+} from "@remix-run/react";
+import { readFileSync } from "fs";
+import path from "path";
 import { useRef } from "react";
 import { FormButtons, FormContent } from "~/components";
 import {
@@ -15,8 +22,15 @@ import { Combobox } from "~/components/ui/combobox";
 import { Input } from "~/components/ui/input";
 import { p } from "~/db";
 import { LazyLoadedEditor } from "~/monaco-editor/lazy-loaded-editor";
-import { coursesUrl, courseUrl, editExerciseUrl, sectionUrl } from "~/routes";
+import {
+  coursesUrl,
+  courseUrl,
+  editExerciseUrl,
+  sectionUrl,
+  viewExerciseInVSCodeUrl,
+} from "~/routes";
 import { useDebounceFetcher } from "~/use-debounced-fetcher";
+import { getVSCodeFiles } from "~/vscode-utils";
 
 export const meta: MetaFunction<typeof loader> = (args) => {
   return [{ title: `${args.data?.title} | WCM` }];
@@ -50,7 +64,15 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     },
   });
 
-  return exercise;
+  const files = await getVSCodeFiles(exerciseId!);
+
+  return {
+    ...exercise,
+    files: files.map((file) => ({
+      path: path.basename(file),
+      content: readFileSync(file, "utf-8"),
+    })),
+  };
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
@@ -71,7 +93,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       description,
       learningGoal,
       notes,
-      type: body.get("type") as ExerciseType,
+      type: (body.get("type") ?? "EXPLAINER") as ExerciseType,
     },
   });
 
@@ -83,9 +105,9 @@ export default function Exercise() {
 
   const debouncedFetcher = useDebounceFetcher();
 
-  const fetcher = useFetcher();
-
   const formRef = useRef<HTMLFormElement | null>(null);
+
+  const openInVSCodeFetcher = useFetcher();
 
   const handleChange = () => {
     debouncedFetcher.debounceSubmit(formRef.current, {
@@ -121,7 +143,7 @@ export default function Exercise() {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <fetcher.Form method="POST" className="space-y-6" ref={formRef}>
+      <Form method="POST" className="space-y-6" ref={formRef}>
         <FormContent>
           <Input
             name="title"
@@ -152,6 +174,23 @@ export default function Exercise() {
             placeholder="Learning Goal"
             onChange={handleChange}
           ></Input>
+          <Button
+            type="button"
+            className="col-span-full"
+            onClick={(e) => {
+              e.preventDefault();
+              openInVSCodeFetcher.submit(
+                {},
+                {
+                  action: viewExerciseInVSCodeUrl(exercise.id),
+                  method: "POST",
+                  preventScrollReset: true,
+                }
+              );
+            }}
+          >
+            Open In VSCode
+          </Button>
           <LazyLoadedEditor
             label="Notes"
             className="col-span-full"
@@ -168,11 +207,21 @@ export default function Exercise() {
             language="md"
             onChange={handleChange}
           ></LazyLoadedEditor>
+          {exercise.files.map((file) => {
+            return (
+              <div className="col-span-full">
+                <h2 className="font-mono text-sm mb-2">{file.path}</h2>
+                <pre className="p-6 text-xs border-2 border-gray-200">
+                  {file.content}
+                </pre>
+              </div>
+            );
+          })}
           <FormButtons>
             <Button type="submit">Save</Button>
           </FormButtons>
         </FormContent>
-      </fetcher.Form>
+      </Form>
     </div>
   );
 }
