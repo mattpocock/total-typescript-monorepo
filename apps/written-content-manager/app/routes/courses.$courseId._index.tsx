@@ -32,6 +32,15 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
         select: {
           id: true,
           title: true,
+          _count: {
+            select: {
+              exercises: {
+                where: {
+                  deleted: false,
+                },
+              },
+            },
+          },
         },
         orderBy: {
           order: "asc",
@@ -67,6 +76,7 @@ export default function Course() {
                   <Link to={sectionUrl(section.id)}>{section.title}</Link>
                 </Button>
               </TableCell>
+              <TableCell>{section._count.exercises} Exercises</TableCell>
               <TableCell>
                 <div className="flex items-center space-x-4">
                   <Button asChild variant="link">
