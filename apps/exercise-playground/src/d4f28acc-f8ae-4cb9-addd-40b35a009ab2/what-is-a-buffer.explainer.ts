@@ -16,3 +16,8 @@ buffer.filter;
 // Except for the ones that mutate the array:
 // buffers can't be mutated
 buffer.push;
+
+// You can iterate over a buffer!
+for (const byte of buffer) {
+  console.log(byte);
+}
