@@ -94,14 +94,13 @@ export default function Section() {
   const navigate = useNavigate();
 
   const reorderFetcher = useFetcher();
-
-  const [search, setSearch] = useSearchParams();
-
   const exercises = reorderFetcher.json
     ? (reorderFetcher.json as { id: string }[]).map(({ id }) => {
         return section.exercises.find((exercise) => exercise.id === id)!;
       })
     : section.exercises;
+
+  const [search, setSearch] = useSearchParams();
 
   return (
     <div className="space-y-6 flex-col">

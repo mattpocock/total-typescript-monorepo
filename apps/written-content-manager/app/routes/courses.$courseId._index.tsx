@@ -1,6 +1,12 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Form, Link, useFetcher, useLoaderData } from "@remix-run/react";
-import { DeleteIcon, EditIcon, PlusIcon } from "lucide-react";
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  DeleteIcon,
+  EditIcon,
+  PlusIcon,
+} from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -17,8 +23,10 @@ import {
   courseUrl,
   deleteSectionUrl,
   editSectionUrl,
+  reorderSectionsUrl,
   sectionUrl,
 } from "~/routes";
+import { moveElementBack, moveElementForward } from "~/utils";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const { courseId } = params;
@@ -56,6 +64,13 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 export default function Course() {
   const course = useLoaderData<typeof loader>();
 
+  const reorderFetcher = useFetcher();
+  const sections = reorderFetcher.json
+    ? (reorderFetcher.json as { id: string }[]).map(({ id }) => {
+        return course.sections.find((s) => s.id === id)!;
+      })
+    : course.sections;
+
   return (
     <div className="space-y-6 flex-col">
       <Breadcrumb>
@@ -84,6 +99,47 @@ export default function Course() {
                     <Link to={editSectionUrl(section.id, courseUrl(course.id))}>
                       <EditIcon />
                     </Link>
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    className="rounded-none border-r-0"
+                    onClick={() => {
+                      reorderFetcher.submit(
+                        moveElementBack(course.sections, section.id) satisfies {
+                          id: string;
+                        }[],
+                        {
+                          method: "post",
+                          action: reorderSectionsUrl(course.id),
+                          encType: "application/json",
+                          preventScrollReset: true,
+                        }
+                      );
+                    }}
+                  >
+                    <ArrowUpIcon />
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    className="rounded-none border-l-0"
+                    onClick={() => {
+                      reorderFetcher.submit(
+                        moveElementForward(
+                          course.sections,
+                          section.id
+                        ) satisfies {
+                          id: string;
+                        }[],
+                        {
+                          method: "post",
+                          action: reorderSectionsUrl(course.id),
+                          encType: "application/json",
+                          preventScrollReset: true,
+                        }
+                      );
+                    }}
+                  >
+                    <ArrowDownIcon />
                   </Button>
                   <Form
                     action={deleteSectionUrl(section.id, courseUrl(course.id))}
