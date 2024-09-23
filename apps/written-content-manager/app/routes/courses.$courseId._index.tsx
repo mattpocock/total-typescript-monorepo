@@ -1,5 +1,6 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { Form, Link, useFetcher, useLoaderData } from "@remix-run/react";
+import { DeleteIcon, EditIcon, PlusIcon } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -78,17 +79,19 @@ export default function Course() {
               </TableCell>
               <TableCell>{section._count.exercises} Exercises</TableCell>
               <TableCell>
-                <div className="flex items-center space-x-4">
-                  <Button asChild variant="link">
+                <div className="flex items-center">
+                  <Button asChild className="rounded-r-none">
                     <Link to={editSectionUrl(section.id, courseUrl(course.id))}>
-                      Edit
+                      <EditIcon />
                     </Link>
                   </Button>
                   <Form
                     action={deleteSectionUrl(section.id, courseUrl(course.id))}
                     method="delete"
                   >
-                    <Button variant="destructive">Delete</Button>
+                    <Button variant="secondary" className="rounded-l-none">
+                      <DeleteIcon />
+                    </Button>
                   </Form>
                 </div>
               </TableCell>
@@ -98,7 +101,7 @@ export default function Course() {
       </Table>
       <Button asChild>
         <Link to={addSectionUrl(course.id, courseUrl(course.id))}>
-          Add Section
+          <PlusIcon />
         </Link>
       </Button>
     </div>

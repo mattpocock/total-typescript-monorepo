@@ -7,8 +7,8 @@ import { EXERCISE_PLAYGROUND_ROOT_PATH, getVSCodeFiles } from "~/vscode-utils";
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
   const { exerciseId } = params;
-  const path = await import("path");
-  const fs = await import("fs/promises");
+  const path = await import("node:path");
+  const fs = await import("node:fs/promises");
 
   const files = await getVSCodeFiles(exerciseId!);
 

@@ -7,8 +7,8 @@
   "typescript.preferences.autoImportSpecifierExcludeRegexes": [
     "^assert$",
     "^node:assert$",
-    "^lucide-react$",
-    "^@radix-ui"
+    "^@radix-ui",
+    "^cmdk$"
   ],
   "typescript.preferences.includePackageJsonAutoImports": "on"
 }

@@ -7,6 +7,13 @@ import {
   useNavigate,
   useSearchParams,
 } from "@remix-run/react";
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  DeleteIcon,
+  EditIcon,
+  PlusIcon,
+} from "lucide-react";
 import { FormButtons, FormContent } from "~/components";
 import {
   Breadcrumb,
@@ -122,7 +129,7 @@ export default function Section() {
               <TableRow key={exercise.id}>
                 <TableCell>
                   <div className="flex items-center space-x-4">
-                    <div className="rounded-full size-9 flex justify-center items-center border-2 border-gray-200 ">
+                    <div className="rounded-full size-9 flex justify-center items-center border-2 border-gray-200 flex-shrink-0">
                       {(index + 1).toString().padStart(2, "0")}
                     </div>
                     <div>
@@ -141,7 +148,7 @@ export default function Section() {
                 <TableCell>
                   <div className="flex justify-start">
                     <div
-                      className={`px-3 py-1 text-xs uppercase rounded-lg flex justify-center items-center ${
+                      className={`px-3 py-1 text-xs uppercase rounded-lg flex justify-center items-center flex-shrink-0 ${
                         status.value === "needs-learning-goal"
                           ? "bg-red-100 text-red-800"
                           : status.value === "ready-for-recording"
@@ -154,56 +161,60 @@ export default function Section() {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center space-x-4">
-                    <Button asChild variant="default">
-                      <Link to={editExerciseUrl(exercise.id)}>Edit</Link>
+                  <div className="flex items-center">
+                    <Button
+                      asChild
+                      variant="default"
+                      className="rounded-r-none"
+                    >
+                      <Link to={editExerciseUrl(exercise.id)}>
+                        <EditIcon />
+                      </Link>
                     </Button>
-                    <div>
-                      <Button
-                        variant="outline"
-                        className="rounded-r-none border-r-0"
-                        onClick={() => {
-                          reorderFetcher.submit(
-                            moveElementBack(
-                              section.exercises,
-                              exercise.id
-                            ) satisfies {
-                              id: string;
-                            }[],
-                            {
-                              method: "post",
-                              action: reorderExercisesUrl(section.id),
-                              encType: "application/json",
-                              preventScrollReset: true,
-                            }
-                          );
-                        }}
-                      >
-                        Up
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="rounded-l-none border-l-0"
-                        onClick={() => {
-                          reorderFetcher.submit(
-                            moveElementForward(
-                              section.exercises,
-                              exercise.id
-                            ) satisfies {
-                              id: string;
-                            }[],
-                            {
-                              method: "post",
-                              action: reorderExercisesUrl(section.id),
-                              encType: "application/json",
-                              preventScrollReset: true,
-                            }
-                          );
-                        }}
-                      >
-                        Down
-                      </Button>
-                    </div>
+                    <Button
+                      variant="secondary"
+                      className="rounded-none border-r-0"
+                      onClick={() => {
+                        reorderFetcher.submit(
+                          moveElementBack(
+                            section.exercises,
+                            exercise.id
+                          ) satisfies {
+                            id: string;
+                          }[],
+                          {
+                            method: "post",
+                            action: reorderExercisesUrl(section.id),
+                            encType: "application/json",
+                            preventScrollReset: true,
+                          }
+                        );
+                      }}
+                    >
+                      <ArrowUpIcon />
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      className="rounded-none border-l-0"
+                      onClick={() => {
+                        reorderFetcher.submit(
+                          moveElementForward(
+                            section.exercises,
+                            exercise.id
+                          ) satisfies {
+                            id: string;
+                          }[],
+                          {
+                            method: "post",
+                            action: reorderExercisesUrl(section.id),
+                            encType: "application/json",
+                            preventScrollReset: true,
+                          }
+                        );
+                      }}
+                    >
+                      <ArrowDownIcon />
+                    </Button>
 
                     <Form
                       action={deleteExerciseUrl(
@@ -212,7 +223,9 @@ export default function Section() {
                       )}
                       method="delete"
                     >
-                      <Button variant="destructive">Delete</Button>
+                      <Button variant="secondary" className="rounded-l-none">
+                        <DeleteIcon />
+                      </Button>
                     </Form>
                   </div>
                 </TableCell>
@@ -222,7 +235,9 @@ export default function Section() {
         </TableBody>
       </Table>
       <Button asChild>
-        <Link to={addExerciseDialogUrl(section.id)}>Add Exercise</Link>
+        <Link to={addExerciseDialogUrl(section.id)}>
+          <PlusIcon />
+        </Link>
       </Button>
       <Dialog
         open={search.has("add")}
@@ -235,9 +250,17 @@ export default function Section() {
         <DialogContent>
           <DialogHeader>Add Exercise</DialogHeader>
           <DialogDescription>
-            <Form method="POST" action={addExerciseUrl(section.id)}>
+            <Form
+              method="POST"
+              action={addExerciseUrl(section.id, sectionUrl(section.id))}
+            >
               <FormContent>
                 <Input name="title" required autoFocus placeholder="Title" />
+                <Input
+                  name="learningGoal"
+                  placeholder="Learning Goal"
+                  className="col-span-full"
+                />
                 <FormButtons>
                   <Button type="submit">Save</Button>
                 </FormButtons>

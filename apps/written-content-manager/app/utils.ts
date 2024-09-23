@@ -56,10 +56,10 @@ export const getHumanReadableStatusFromExercise = (exercise: {
 
   switch (status) {
     case "needs-learning-goal":
-      return { value: "needs-learning-goal", label: "Needs Learning Goal" };
+      return { value: "needs-learning-goal", label: "Learning Goal" };
     case "ready-for-recording":
-      return { value: "ready-for-recording", label: "Ready for Recording" };
+      return { value: "ready-for-recording", label: "Recordable" };
     case "needs-content":
-      return { value: "needs-content", label: "Needs Content" };
+      return { value: "needs-content", label: "Content" };
   }
 };

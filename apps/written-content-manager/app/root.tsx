@@ -1,4 +1,5 @@
 import {
+  defer,
   Link,
   Links,
   Meta,
@@ -6,10 +7,13 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from "@remix-run/react";
-import "./tailwind.css";
-import { coursesUrl, homeUrl } from "./routes";
 import clsx from "clsx";
+import { CommandPalette } from "./command-palette";
+import { p } from "./db";
+import { coursesUrl, homeUrl } from "./routes";
+import "./tailwind.css";
 
 const MyNavLink = ({
   to,
@@ -58,6 +62,43 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+export const loader = () => {
+  const courses = p.course
+    .findMany({
+      select: {
+        id: true,
+        title: true,
+      },
+    })
+    .then((c) => c);
+
+  const sections = p.section
+    .findMany({
+      select: {
+        id: true,
+        title: true,
+        course: {
+          select: {
+            title: true,
+          },
+        },
+      },
+    })
+    .then((s) => s);
+
+  return defer({
+    courses,
+    sections,
+  });
+};
+
 export default function App() {
-  return <Outlet />;
+  const data = useLoaderData<typeof loader>();
+
+  return (
+    <>
+      <Outlet />
+      <CommandPalette courses={data.courses} sections={data.sections} />
+    </>
+  );
 }

@@ -6,8 +6,6 @@ import { editExerciseUrl } from "~/routes";
 export const action = async ({ request, params }: ActionFunctionArgs) => {
   const formData = await request.formData();
 
-  const title = formData.get("title") as string;
-
   const order = await p.exercise.count({
     where: {
       sectionId: params.sectionId!,
@@ -17,7 +15,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
   const exercise = await p.exercise.create({
     data: {
-      title,
+      title: formData.get("title") as string,
+      learningGoal: formData.get("learningGoal") as string,
       sectionId: params.sectionId!,
       order: order + 1,
       content: "",
