@@ -18,6 +18,7 @@ import {
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
 import { Combobox } from "~/components/ui/combobox";
 import { Input } from "~/components/ui/input";
 import { p } from "~/db";
@@ -59,6 +60,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
       title: true,
       description: true,
       learningGoal: true,
+      readyForRecording: true,
       notes: true,
       type: true,
     },
@@ -70,6 +72,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     ...exercise,
     files: files.map((file) => ({
       path: path.basename(file),
+      fullPath: file,
       content: readFileSync(file, "utf-8"),
     })),
   };
@@ -93,6 +96,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       description,
       learningGoal,
       notes,
+      readyForRecording: body.get("readyForRecording") === "on",
       type: (body.get("type") ?? "EXPLAINER") as ExerciseType,
     },
   });
@@ -176,7 +180,6 @@ export default function Exercise() {
           ></Input>
           <Button
             type="button"
-            className="col-span-full"
             onClick={(e) => {
               e.preventDefault();
               openInVSCodeFetcher.submit(
@@ -191,6 +194,17 @@ export default function Exercise() {
           >
             Open In VSCode
           </Button>
+          <div className="items-center flex justify-center space-x-2">
+            <Checkbox
+              id="readyForRecording"
+              name="readyForRecording"
+              onClick={handleChange}
+              defaultChecked={exercise.readyForRecording}
+            />
+            <label htmlFor="readyForRecording" className="text-sm">
+              Ready for Recording
+            </label>
+          </div>
           <LazyLoadedEditor
             label="Notes"
             className="col-span-full"
@@ -210,7 +224,12 @@ export default function Exercise() {
           {exercise.files.map((file) => {
             return (
               <div className="col-span-full">
-                <h2 className="font-mono text-sm mb-2">{file.path}</h2>
+                <a
+                  href={`vscode://file${file.fullPath}`}
+                  className="font-mono text-sm mb-2 block"
+                >
+                  {file.path}
+                </a>
                 <pre className="p-6 text-xs border-2 border-gray-200">
                   {file.content}
                 </pre>
