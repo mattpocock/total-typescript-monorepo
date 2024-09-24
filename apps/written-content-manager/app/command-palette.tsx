@@ -1,4 +1,4 @@
-import { Await, useNavigate } from "@remix-run/react";
+import { Await, useBeforeUnload, useNavigate } from "@remix-run/react";
 import { Suspense, useEffect, useState } from "react";
 import {
   CommandDialog,
@@ -8,7 +8,7 @@ import {
   CommandItem,
   CommandList,
 } from "./components/ui/command";
-import { courseUrl, sectionUrl } from "./routes";
+import { coursesUrl, courseUrl, dashboardUrl, sectionUrl } from "./routes";
 
 export function CommandPalette(props: {
   courses: Promise<{ id: string; title: string }[]>;
@@ -28,11 +28,32 @@ export function CommandPalette(props: {
     return () => document.removeEventListener("keydown", down);
   }, []);
 
+  const goToPage = (url: string) => {
+    navigate(url);
+    setOpen(false);
+  };
+
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
       <CommandInput placeholder="Type a command or search..." />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
+        <CommandGroup heading="Go To Page">
+          <CommandItem
+            onSelect={() => {
+              goToPage(dashboardUrl());
+            }}
+          >
+            Dashboard
+          </CommandItem>
+          <CommandItem
+            onSelect={() => {
+              goToPage(coursesUrl());
+            }}
+          >
+            Courses
+          </CommandItem>
+        </CommandGroup>
         <Suspense fallback={null}>
           <Await resolve={props.courses}>
             {(courses) => {
@@ -42,8 +63,7 @@ export function CommandPalette(props: {
                     <CommandItem
                       key={course.id}
                       onSelect={() => {
-                        navigate(courseUrl(course.id));
-                        setOpen(false);
+                        goToPage(courseUrl(course.id));
                       }}
                     >
                       Open {course.title} Course
@@ -63,8 +83,7 @@ export function CommandPalette(props: {
                     <CommandItem
                       key={section.id}
                       onSelect={() => {
-                        navigate(sectionUrl(section.id));
-                        setOpen(false);
+                        goToPage(sectionUrl(section.id));
                       }}
                     >
                       Open {section.title} | {section.course.title}
