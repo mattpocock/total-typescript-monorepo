@@ -5,6 +5,7 @@ describe("createVSCodeFilename", () => {
   it.each([
     ["Input", "input"],
     ["abcWow", "abcwow"],
+    ["The 'node:' Prefix", "the-node-prefix"],
     ["What Is A Buffer?", "what-is-a-buffer"],
     [
       "Uint16Arrays, Uint32Arrays and Uint64Arrays",

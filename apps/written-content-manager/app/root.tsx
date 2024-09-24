@@ -1,4 +1,5 @@
 import {
+  Await,
   defer,
   Link,
   Links,
@@ -10,57 +11,11 @@ import {
   useLoaderData,
 } from "@remix-run/react";
 import clsx from "clsx";
+import { MicIcon, PlusIcon, VideoIcon } from "lucide-react";
 import { CommandPalette } from "./command-palette";
 import { p } from "./db";
-import { coursesUrl, homeUrl } from "./routes";
+import { coursesUrl, dashboardUrl, homeUrl } from "./routes";
 import "./tailwind.css";
-
-const MyNavLink = ({
-  to,
-  children,
-}: {
-  to: string;
-  className?: string;
-  children: React.ReactNode;
-}) => {
-  return (
-    <NavLink
-      className={({ isActive }) =>
-        clsx(
-          "mr-4 px-3 py-2 rounded-lg",
-          isActive ? "text-gray-800 bg-white" : "text-white"
-        )
-      }
-      to={to}
-    >
-      {children}
-    </NavLink>
-  );
-};
-
-export function Layout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <Meta />
-        <Links />
-      </head>
-      <body className="">
-        <header className="bg-gray-800 text-white p-6 py-4 font-semibold flex items-center text-sm">
-          <Link to={homeUrl()} className="font-mono mr-24 text-xl">
-            WCM
-          </Link>
-          <MyNavLink to={coursesUrl()}>Courses</MyNavLink>
-        </header>
-        <main className="p-6">{children}</main>
-        <Scripts />
-        <ScrollRestoration />
-      </body>
-    </html>
-  );
-}
 
 export const loader = () => {
   const courses = p.course
@@ -86,11 +41,133 @@ export const loader = () => {
     })
     .then((s) => s);
 
+  const todayAtMidnight = new Date();
+  todayAtMidnight.setHours(0, 0, 0, 0);
+
+  const analyticsData = p
+    .$transaction([
+      p.analyticsEvent.count({
+        where: {
+          createdAt: {
+            gte: todayAtMidnight,
+          },
+          type: "EXERCISE_CREATED",
+        },
+      }),
+      p.analyticsEvent.count({
+        where: {
+          createdAt: {
+            gte: todayAtMidnight,
+          },
+          type: "EXERCISE_DELETED",
+        },
+      }),
+      p.analyticsEvent.count({
+        where: {
+          createdAt: {
+            gte: todayAtMidnight,
+          },
+          type: "EXERCISE_MARKED_READY_FOR_RECORDING",
+        },
+      }),
+    ])
+    .then((d) => {
+      return {
+        exercisesCreatedToday: d[0] - d[1],
+        exercisesMarkedReadyForRecordingToday: d[2],
+      };
+    });
+
   return defer({
     courses,
     sections,
+    analyticsData,
   });
 };
+
+const MyNavLink = ({
+  to,
+  children,
+}: {
+  to: string;
+  className?: string;
+  children: React.ReactNode;
+}) => {
+  return (
+    <NavLink
+      className={({ isActive }) =>
+        clsx(
+          "mr-4 px-3 py-2 rounded-lg",
+          isActive ? "text-gray-800 bg-white" : "text-white"
+        )
+      }
+      to={to}
+    >
+      {children}
+    </NavLink>
+  );
+};
+
+export function Layout({ children }: { children: React.ReactNode }) {
+  const data = useLoaderData<typeof loader>();
+
+  console.log(data);
+  return (
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <Meta />
+        <Links />
+      </head>
+      <body className="">
+        <header className="bg-gray-800 text-white p-6 py-4 font-semibold flex items-center text-sm justify-between">
+          <div>
+            <Link to={homeUrl()} className="font-mono mr-24 text-xl">
+              WCM
+            </Link>
+            <MyNavLink to={coursesUrl()}>Courses</MyNavLink>
+          </div>
+          <div>
+            <Await resolve={data.analyticsData}>
+              {(analyticsData) => {
+                return (
+                  <Link
+                    className="flex items-center space-x-6"
+                    to={dashboardUrl()}
+                  >
+                    <div className="flex items-center">
+                      <PlusIcon className="size-[22px] mr-2" />
+                      <span className="text-lg font-mono font-medium text-gray-100">
+                        {analyticsData.exercisesCreatedToday}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center">
+                      <MicIcon className="size-[18px] mr-[11px]" />
+                      <span className="text-lg font-mono font-medium text-gray-100">
+                        {analyticsData.exercisesMarkedReadyForRecordingToday}
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <VideoIcon className="size-[19px] mr-[13px]" />
+                      <span className="text-lg font-mono font-medium text-gray-100">
+                        {0}
+                      </span>
+                    </div>
+                  </Link>
+                );
+              }}
+            </Await>
+          </div>
+        </header>
+        <main className="p-6">{children}</main>
+        <Scripts />
+        <ScrollRestoration />
+      </body>
+    </html>
+  );
+}
 
 export default function App() {
   const data = useLoaderData<typeof loader>();

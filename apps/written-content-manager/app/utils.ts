@@ -26,7 +26,7 @@ export const createVSCodeFilename = (str: string) => {
   return (
     str
       // replace punctuation with spaces
-      .replace(/[\?.,\/#!$%\^&\*;:{}=\-_`~()]/g, " ")
+      .replace(/[\'\?.,\/#!$%\^&\*;:{}=\-_`~()]/g, " ")
       .trim()
       .replace(/\s+/g, "-")
       .toLowerCase()

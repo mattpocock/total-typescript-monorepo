@@ -1,4 +1,4 @@
-import { Await, useLoaderData } from "@remix-run/react";
+import { Await, defer, useLoaderData } from "@remix-run/react";
 import { Suspense } from "react";
 import { p } from "~/db";
 
@@ -77,14 +77,16 @@ export const loader = async () => {
       };
     });
 
-  return data;
+  return defer({
+    data,
+  });
 };
 
 export default function Dashboard() {
   const promise = useLoaderData<typeof loader>();
   return (
     <Suspense fallback={null}>
-      <Await resolve={promise}>
+      <Await resolve={promise.data}>
         {(data) => {
           return (
             <div className="grid grid-cols-4 gap-6">
