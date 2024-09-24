@@ -49,6 +49,15 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     },
   });
 
+  await p.analyticsEvent.create({
+    data: {
+      payload: {
+        sectionId: section.id,
+      },
+      type: "SECTION_CREATED",
+    },
+  });
+
   const redirectTo = new URL(request.url).searchParams.get("redirectTo");
 
   return redirect(redirectTo ?? sectionUrl(section.id));

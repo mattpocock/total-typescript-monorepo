@@ -25,6 +25,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     },
   });
 
+  await p.analyticsEvent.create({
+    data: {
+      payload: {
+        courseId: course.id,
+      },
+      type: "COURSE_CREATED",
+    },
+  });
+
   const redirectTo = new URL(request.url).searchParams.get("redirectTo");
 
   return redirect(redirectTo ?? courseUrl(course.id));

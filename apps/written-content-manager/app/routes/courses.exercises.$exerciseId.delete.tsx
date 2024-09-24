@@ -14,6 +14,15 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     },
   });
 
+  await p.analyticsEvent.create({
+    data: {
+      payload: {
+        exerciseId,
+      },
+      type: "EXERCISE_DELETED",
+    },
+  });
+
   const redirectTo = new URL(request.url).searchParams.get("redirectTo");
 
   if (redirectTo) {

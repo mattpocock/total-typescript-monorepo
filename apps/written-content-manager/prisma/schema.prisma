@@ -18,6 +18,24 @@ enum CourseType {
   TUTORIAL
 }
 
+enum AnalyticsEventType {
+  COURSE_CREATED
+  COURSE_DELETED
+  SECTION_CREATED
+  SECTION_DELETED
+  EXERCISE_CREATED
+  EXERCISE_DELETED
+  EXERCISE_MARKED_READY_FOR_RECORDING
+}
+
+model AnalyticsEvent {
+  id        String             @id @default(uuid())
+  type      AnalyticsEventType
+  payload   Json
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+}
+
 model Course {
   id        String     @id @default(uuid())
   title     String

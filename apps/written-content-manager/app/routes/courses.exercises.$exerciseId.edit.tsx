@@ -87,6 +87,16 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
   const description = body.get("description") as string;
   const learningGoal = body.get("learningGoal") as string;
   const notes = body.get("notes") as string;
+  const readyForRecording = body.get("readyForRecording") === "on";
+
+  const initialExercise = await p.exercise.findUniqueOrThrow({
+    where: {
+      id: exerciseId,
+    },
+    select: {
+      readyForRecording: true,
+    },
+  });
 
   await p.exercise.update({
     where: {
@@ -97,10 +107,24 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       description,
       learningGoal,
       notes,
-      readyForRecording: body.get("readyForRecording") === "on",
+      readyForRecording,
       type: (body.get("type") ?? "EXPLAINER") as ExerciseType,
     },
   });
+
+  if (
+    initialExercise.readyForRecording !== readyForRecording &&
+    readyForRecording
+  ) {
+    await p.analyticsEvent.create({
+      data: {
+        payload: {
+          exerciseId,
+        },
+        type: "EXERCISE_MARKED_READY_FOR_RECORDING",
+      },
+    });
+  }
 
   return null;
 };

@@ -23,6 +23,15 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     },
   });
 
+  await p.analyticsEvent.create({
+    data: {
+      payload: {
+        exerciseId: exercise.id,
+      },
+      type: "EXERCISE_CREATED",
+    },
+  });
+
   const redirectTo = new URL(request.url).searchParams.get("redirectTo");
 
   return redirect(redirectTo ?? editExerciseUrl(exercise.id));

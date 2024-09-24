@@ -11,6 +11,15 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     },
   });
 
+  await p.analyticsEvent.create({
+    data: {
+      payload: {
+        sectionId,
+      },
+      type: "SECTION_DELETED",
+    },
+  });
+
   const redirectTo = new URL(request.url).searchParams.get("redirectTo");
 
   if (redirectTo) {
