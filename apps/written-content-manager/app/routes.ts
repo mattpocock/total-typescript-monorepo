@@ -2,6 +2,10 @@ export const homeUrl = () => {
   return `/`;
 };
 
+export const dashboardUrl = () => {
+  return `/`;
+};
+
 export const coursesUrl = () => {
   return `/courses`;
 };
