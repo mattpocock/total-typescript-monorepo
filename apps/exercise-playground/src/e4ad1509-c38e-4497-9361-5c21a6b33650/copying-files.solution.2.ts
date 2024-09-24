@@ -2,12 +2,14 @@
 
 import { expect, it } from "vitest";
 
+import fs from "node:fs/promises";
+
 const copyFile = async (source: string, destination: string) => {
-  // TODO: Copy the file from the source to the destination
+  await fs.copyFile(source, destination);
 };
 
 const copyDirectory = async (source: string, destination: string) => {
-  // TODO: Copy the directory from the source to the destination
+  await fs.cp(source, destination, { recursive: true });
 };
 
 it("Should copy a file", async () => {
