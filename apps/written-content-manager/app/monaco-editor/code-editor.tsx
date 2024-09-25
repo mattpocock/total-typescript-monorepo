@@ -1,7 +1,7 @@
 import Editor from "@monaco-editor/react";
-import { type ChangeEvent, type ComponentProps, useRef, useState } from "react";
-import { prettierLoader } from "./prettier-loader";
 import clsx from "clsx";
+import { type ComponentProps, useRef, useState } from "react";
+import { prettierLoader } from "./prettier-loader";
 
 type Editor = Parameters<
   NonNullable<ComponentProps<typeof Editor>["onMount"]>
@@ -28,13 +28,6 @@ const resolveLanguage = (language: Language): string => {
 export type Language = "ts" | "tsx" | "md" | "json" | "js";
 
 const THEME_NAME = "total-typescript";
-
-const EDITOR_THEME = {
-  base: "vs" as const,
-  inherit: true,
-  rules: [],
-  name: THEME_NAME,
-};
 
 export type CodeEditorProps = {
   name: string;
@@ -67,6 +60,8 @@ export const EagerlyLoadedEditor = (props: CodeEditorProps) => {
   const [value, setValue] = useState<string | undefined>(
     props.defaultValue ?? ""
   );
+
+  if (typeof window === "undefined") return null;
 
   return (
     <div className={props.className}>

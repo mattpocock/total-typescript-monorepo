@@ -1,5 +1,4 @@
 import {
-  json,
   unstable_composeUploadHandlers,
   unstable_createMemoryUploadHandler,
   unstable_parseMultipartFormData,
@@ -9,10 +8,7 @@ import { createFileUploadHandler } from "@remix-run/node/dist/upload/fileUploadH
 import { normalizeAudio } from "@total-typescript/ffmpeg";
 import { type AbsolutePath } from "@total-typescript/shared";
 import { p } from "~/db";
-import {
-  getAudioPathForExercise,
-  getDoesAudioExistForExercise,
-} from "~/vscode-utils";
+import { getAudioPathForExercise } from "~/vscode-utils";
 
 export const action = async (args: ActionFunctionArgs) => {
   const { exerciseId } = args.params;
@@ -46,5 +42,7 @@ export const action = async (args: ActionFunctionArgs) => {
     getAudioPathForExercise(exerciseId!)
   );
 
-  return {};
+  return {
+    success: true,
+  };
 };

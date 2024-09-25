@@ -2,6 +2,7 @@ import { ensureDir, type AbsolutePath } from "@total-typescript/shared";
 import path from "path";
 import glob from "fast-glob";
 import { existsSync } from "fs";
+import { access } from "fs/promises";
 
 export const EXERCISE_PLAYGROUND_ROOT_PATH = path.join(
   import.meta.dirname,
@@ -12,7 +13,7 @@ export const EXERCISE_PLAYGROUND_ROOT_PATH = path.join(
 );
 
 export const getExerciseDir = (exerciseId: string) => {
-  return path.join(EXERCISE_PLAYGROUND_ROOT_PATH, exerciseId!) as AbsolutePath;
+  return path.join(EXERCISE_PLAYGROUND_ROOT_PATH, exerciseId) as AbsolutePath;
 };
 
 export const AUDIO_FILE_NAME = "audio.mkv";
@@ -22,9 +23,11 @@ export const getAudioPathForExercise = (exerciseId: string) => {
 };
 
 export const getDoesAudioExistForExercise = async (exerciseId: string) => {
-  const exists = existsSync(getAudioPathForExercise(exerciseId));
-
-  return exists;
+  console.log(getAudioPathForExercise(exerciseId));
+  return access(getAudioPathForExercise(exerciseId)).then(
+    () => true,
+    () => false
+  );
 };
 
 export const getVSCodeFiles = async (exerciseId: string) => {

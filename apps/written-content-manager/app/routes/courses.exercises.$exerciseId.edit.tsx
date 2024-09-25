@@ -1,15 +1,15 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
   Form,
-  Link,
   useFetcher,
   useLoaderData,
   type MetaFunction,
 } from "@remix-run/react";
 import clsx from "clsx";
 import { readFileSync } from "fs";
+import { DeleteIcon, PlayIcon, SquareIcon } from "lucide-react";
 import path from "path";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AudioRecorder } from "~/audio-recorder";
 import { FormButtons, FormContent } from "~/components";
 import {
@@ -29,6 +29,7 @@ import {
   courseUrl,
   editExerciseUrl,
   exerciseAudioUrl,
+  exerciseDeleteAudioUrl,
   exerciseUploadAudioUrl,
   sectionUrl,
 } from "~/routes";
@@ -151,16 +152,47 @@ export default function Exercise() {
 
   const uploadAudioFetcher = useFetcher();
 
-  const uploadAudio = async (file: File) => {
+  const uploadAudio = (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
 
-    await uploadAudioFetcher.submit(formData, {
+    uploadAudioFetcher.submit(formData, {
       method: "POST",
       action: exerciseUploadAudioUrl(exercise.id),
       encType: "multipart/form-data",
+      preventScrollReset: true,
     });
   };
+
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    const abortController = new AbortController();
+    if (!audioRef.current) return;
+
+    if (isAudioPlaying) {
+      audioRef.current.play();
+
+      audioRef.current.addEventListener(
+        "ended",
+        () => {
+          setIsAudioPlaying(false);
+        },
+        { signal: abortController.signal }
+      );
+    } else {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+
+    return () => {
+      abortController.abort();
+    };
+  }, [isAudioPlaying]);
+
+  const deleteAudioFetcher = useFetcher();
 
   return (
     <div className="space-y-6 flex-col">
@@ -231,36 +263,60 @@ export default function Exercise() {
               Ready for Recording
             </label>
           </div>
-          <div className="grid grid-cols-2">
-            {exercise.audioExists && (
-              <Button
-                asChild
-                className="rounded-r-none font-mono w-full"
-                variant="secondary"
-                type="button"
-              >
-                <Link
-                  reloadDocument
-                  to={exerciseAudioUrl(exercise.id)}
-                  target="_blank"
+          <div className="grid grid-flow-col">
+            {exercise.audioExists ? (
+              <>
+                <audio
+                  src={exerciseAudioUrl(exercise.id)}
+                  ref={audioRef}
+                  className="hidden"
+                ></audio>
+                <Button
+                  onClick={() => {
+                    setIsAudioPlaying(!isAudioPlaying);
+                  }}
+                  className="flex items-center space-x-3 rounded-r-none"
                 >
-                  audio.mkv
-                </Link>
-              </Button>
+                  {isAudioPlaying ? (
+                    <SquareIcon className="size-5" fill="white" />
+                  ) : (
+                    <PlayIcon className="size-5" fill="white" />
+                  )}
+                  <span className="font-mono">audio.mkv</span>
+                </Button>
+                <Button
+                  className="rounded-none"
+                  variant={"secondary"}
+                  type="button"
+                  onClick={() => {
+                    deleteAudioFetcher.submit(null, {
+                      method: "POST",
+                      action: exerciseDeleteAudioUrl(exercise.id),
+                    });
+                  }}
+                >
+                  <DeleteIcon />
+                </Button>
+              </>
+            ) : (
+              <>
+                <div
+                  className={buttonVariants({
+                    variant: "secondary",
+                    className: clsx("rounded-r-none w-full"),
+                  })}
+                >
+                  No Audio
+                </div>
+                <Button asChild className="rounded-l-none" type="button">
+                  {uploadAudioFetcher.state === "submitting" ? (
+                    <button>Uploading...</button>
+                  ) : (
+                    <AudioRecorder onComplete={uploadAudio} />
+                  )}
+                </Button>
+              </>
             )}
-            {!exercise.audioExists && (
-              <div
-                className={buttonVariants({
-                  variant: "secondary",
-                  className: clsx("rounded-r-none w-full"),
-                })}
-              >
-                No Audio
-              </div>
-            )}
-            <Button asChild className="rounded-l-none" type="button">
-              <AudioRecorder onComplete={uploadAudio} />
-            </Button>
           </div>
           {exercise.files.map((file) => {
             return (

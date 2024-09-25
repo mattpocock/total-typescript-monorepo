@@ -57,6 +57,11 @@ export const viewExerciseInVSCodeUrl = (exerciseId: string) => {
 export const exerciseUploadAudioUrl = (exerciseId: string) => {
   return `/courses/exercises/${exerciseId}/upload-audio`;
 };
+
+export const exerciseDeleteAudioUrl = (exerciseId: string) => {
+  return `/courses/exercises/${exerciseId}/delete-audio`;
+};
+
 export const exerciseAudioUrl = (exerciseId: string) => {
   return `/courses/exercises/${exerciseId}/audio.mkv`;
 };

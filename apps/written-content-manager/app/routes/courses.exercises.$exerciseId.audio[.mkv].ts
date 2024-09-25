@@ -27,7 +27,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
   return new Response(audio, {
     headers: {
       "Content-Type": "audio/mkv",
-      "Content-Disposition": 'inline; filename="audio.mkv"',
+      "Content-Disposition": "inline",
     },
   });
 };
