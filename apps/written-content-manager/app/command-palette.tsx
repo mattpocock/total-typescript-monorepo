@@ -8,11 +8,20 @@ import {
   CommandItem,
   CommandList,
 } from "./components/ui/command";
-import { coursesUrl, courseUrl, dashboardUrl, sectionUrl } from "./routes";
+import {
+  coursesUrl,
+  courseUrl,
+  dashboardUrl,
+  editExerciseUrl,
+  sectionUrl,
+} from "./routes";
 
 export function CommandPalette(props: {
   courses: Promise<{ id: string; title: string }[]>;
   sections: Promise<{ id: string; title: string; course: { title: string } }[]>;
+  exercises: Promise<
+    { id: string; title: string; section: { title: string } }[]
+  >;
 }) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
@@ -29,7 +38,10 @@ export function CommandPalette(props: {
   }, []);
 
   const goToPage = (url: string) => {
-    navigate(url);
+    navigate(url, {
+      replace: true,
+      unstable_flushSync: true,
+    });
     setOpen(false);
   };
 
@@ -87,6 +99,26 @@ export function CommandPalette(props: {
                       }}
                     >
                       Open {section.title} | {section.course.title}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              );
+            }}
+          </Await>
+        </Suspense>
+        <Suspense fallback={null}>
+          <Await resolve={props.exercises}>
+            {(exercises) => {
+              return (
+                <CommandGroup heading="Open Exercise">
+                  {exercises.map((exercise) => (
+                    <CommandItem
+                      key={exercise.id}
+                      onSelect={() => {
+                        goToPage(editExerciseUrl(exercise.id));
+                      }}
+                    >
+                      Open {exercise.title} | {exercise.section.title}
                     </CommandItem>
                   ))}
                 </CommandGroup>

@@ -41,6 +41,20 @@ export const loader = () => {
     })
     .then((s) => s);
 
+  const exercises = p.exercise
+    .findMany({
+      select: {
+        id: true,
+        title: true,
+        section: {
+          select: {
+            title: true,
+          },
+        },
+      },
+    })
+    .then((e) => e);
+
   const todayAtMidnight = new Date();
   todayAtMidnight.setHours(0, 0, 0, 0);
 
@@ -81,6 +95,7 @@ export const loader = () => {
   return defer({
     courses,
     sections,
+    exercises,
     analyticsData,
   });
 };
@@ -111,7 +126,6 @@ const MyNavLink = ({
 export function Layout({ children }: { children: React.ReactNode }) {
   const data = useLoaderData<typeof loader>();
 
-  console.log(data);
   return (
     <html lang="en">
       <head>
@@ -175,7 +189,11 @@ export default function App() {
   return (
     <>
       <Outlet />
-      <CommandPalette courses={data.courses} sections={data.sections} />
+      <CommandPalette
+        courses={data.courses}
+        sections={data.sections}
+        exercises={data.exercises}
+      />
     </>
   );
 }
