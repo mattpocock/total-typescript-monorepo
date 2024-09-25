@@ -29,6 +29,7 @@ import {
   viewExerciseInVSCodeUrl,
 } from "~/routes";
 import { useDebounceFetcher } from "~/use-debounced-fetcher";
+import { useOpenInVSCode } from "~/use-open-in-vscode";
 import { getVSCodeFiles } from "~/vscode-utils";
 
 export const meta: MetaFunction<typeof loader> = (args) => {
@@ -132,7 +133,7 @@ export default function Exercise() {
 
   const formRef = useRef<HTMLFormElement | null>(null);
 
-  const openInVSCodeFetcher = useFetcher();
+  const openInVSCode = useOpenInVSCode();
 
   const handleChange = () => {
     debouncedFetcher.debounceSubmit(formRef.current, {
@@ -194,14 +195,7 @@ export default function Exercise() {
             type="button"
             onClick={(e) => {
               e.preventDefault();
-              openInVSCodeFetcher.submit(
-                {},
-                {
-                  action: viewExerciseInVSCodeUrl(exercise.id),
-                  method: "POST",
-                  preventScrollReset: true,
-                }
-              );
+              openInVSCode(exercise.id);
             }}
           >
             Open In VSCode

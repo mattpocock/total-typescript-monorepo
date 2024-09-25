@@ -5,7 +5,7 @@ import { editExerciseUrl } from "~/routes";
 import { createVSCodeFilename } from "~/utils";
 import { EXERCISE_PLAYGROUND_ROOT_PATH, getVSCodeFiles } from "~/vscode-utils";
 
-export const action = async ({ request, params }: ActionFunctionArgs) => {
+export const action = async ({ params }: ActionFunctionArgs) => {
   const { exerciseId } = params;
   const path = await import("node:path");
   const fs = await import("node:fs/promises");

@@ -42,6 +42,7 @@ import {
   reorderExercisesUrl,
   sectionUrl,
 } from "~/routes";
+import { useOpenInVSCode } from "~/use-open-in-vscode";
 import {
   getHumanReadableStatusFromExercise,
   getStatusFromExercise,
@@ -102,6 +103,8 @@ export default function Section() {
 
   const [search, setSearch] = useSearchParams();
 
+  const openInVSCode = useOpenInVSCode();
+
   return (
     <div className="space-y-6 flex-col">
       <Breadcrumb>
@@ -136,11 +139,11 @@ export default function Section() {
                         to={editExerciseUrl(exercise.id)}
                         className="text-base"
                       >
-                        {exercise.title}
+                        <h2>{exercise.title}</h2>
+                        <p className="text-sm text-gray-500">
+                          {exercise.learningGoal}
+                        </p>
                       </Link>
-                      <p className="text-sm text-gray-500">
-                        {exercise.learningGoal}
-                      </p>
                     </div>
                   </div>
                 </TableCell>
@@ -162,13 +165,13 @@ export default function Section() {
                 <TableCell>
                   <div className="flex items-center">
                     <Button
-                      asChild
                       variant="default"
                       className="rounded-r-none"
+                      onClick={() => {
+                        openInVSCode(exercise.id);
+                      }}
                     >
-                      <Link to={editExerciseUrl(exercise.id)}>
-                        <EditIcon />
-                      </Link>
+                      <img src="/vscode-alt.svg" className="size-5" />
                     </Button>
                     <Button
                       variant="secondary"
