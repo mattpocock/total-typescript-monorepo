@@ -1,13 +1,16 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import {
   Form,
+  Link,
   useFetcher,
   useLoaderData,
   type MetaFunction,
 } from "@remix-run/react";
+import clsx from "clsx";
 import { readFileSync } from "fs";
 import path from "path";
 import { useRef } from "react";
+import { AudioRecorder } from "~/audio-recorder";
 import { FormButtons, FormContent } from "~/components";
 import {
   Breadcrumb,
@@ -16,7 +19,7 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
-import { Button } from "~/components/ui/button";
+import { Button, buttonVariants } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
 import { p } from "~/db";
@@ -25,12 +28,13 @@ import {
   coursesUrl,
   courseUrl,
   editExerciseUrl,
+  exerciseAudioUrl,
+  exerciseUploadAudioUrl,
   sectionUrl,
-  viewExerciseInVSCodeUrl,
 } from "~/routes";
 import { useDebounceFetcher } from "~/use-debounced-fetcher";
 import { useOpenInVSCode } from "~/use-open-in-vscode";
-import { getVSCodeFiles } from "~/vscode-utils";
+import { getDoesAudioExistForExercise, getVSCodeFiles } from "~/vscode-utils";
 
 export const meta: MetaFunction<typeof loader> = (args) => {
   return [{ title: `${args.data?.title} | WCM` }];
@@ -67,6 +71,8 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 
   const files = await getVSCodeFiles(exerciseId!);
 
+  const audioExists = await getDoesAudioExistForExercise(exerciseId!);
+
   return {
     ...exercise,
     files: files.map((file) => ({
@@ -74,6 +80,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
       fullPath: file,
       content: readFileSync(file, "utf-8"),
     })),
+    audioExists,
   };
 };
 
@@ -139,6 +146,19 @@ export default function Exercise() {
     debouncedFetcher.debounceSubmit(formRef.current, {
       replace: true,
       debounceTimeout: 200,
+    });
+  };
+
+  const uploadAudioFetcher = useFetcher();
+
+  const uploadAudio = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    await uploadAudioFetcher.submit(formData, {
+      method: "POST",
+      action: exerciseUploadAudioUrl(exercise.id),
+      encType: "multipart/form-data",
     });
   };
 
@@ -210,6 +230,37 @@ export default function Exercise() {
             <label htmlFor="readyForRecording" className="text-sm">
               Ready for Recording
             </label>
+          </div>
+          <div className="grid grid-cols-2">
+            {exercise.audioExists && (
+              <Button
+                asChild
+                className="rounded-r-none font-mono w-full"
+                variant="secondary"
+                type="button"
+              >
+                <Link
+                  reloadDocument
+                  to={exerciseAudioUrl(exercise.id)}
+                  target="_blank"
+                >
+                  audio.mkv
+                </Link>
+              </Button>
+            )}
+            {!exercise.audioExists && (
+              <div
+                className={buttonVariants({
+                  variant: "secondary",
+                  className: clsx("rounded-r-none w-full"),
+                })}
+              >
+                No Audio
+              </div>
+            )}
+            <Button asChild className="rounded-l-none" type="button">
+              <AudioRecorder onComplete={uploadAudio} />
+            </Button>
           </div>
           {exercise.files.map((file) => {
             return (

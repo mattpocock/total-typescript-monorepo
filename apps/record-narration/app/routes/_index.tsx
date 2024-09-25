@@ -34,11 +34,11 @@ export const action = async (args: ActionFunctionArgs) => {
       directory: "public/uploads",
       maxPartSize: Infinity,
     }),
-    unstable_createMemoryUploadHandler(),
+    unstable_createMemoryUploadHandler()
   );
   const formData = await unstable_parseMultipartFormData(
     args.request,
-    uploadHandler,
+    uploadHandler
   );
   const markdownFilepath = formData.get("filepath") as AbsolutePath;
   const uploadedFile = formData.get("file") as unknown as {
@@ -47,7 +47,7 @@ export const action = async (args: ActionFunctionArgs) => {
 
   const mkvFilepath = uploadedFile.filepath.replace(
     ".ogg",
-    ".mkv",
+    ".mkv"
   ) as AbsolutePath;
 
   await normalizeAudio(uploadedFile.filepath, mkvFilepath);
@@ -86,7 +86,7 @@ export const action = async (args: ActionFunctionArgs) => {
 };
 
 export const loader = async () => {
-  const { copyFile, readFile } = await import("fs/promises");
+  const { readFile } = await import("fs/promises");
   const { getActiveEditorFilePath } = await import("@total-typescript/shared");
   const activeFilePath = (await getActiveEditorFilePath())._unsafeUnwrap();
 
@@ -132,7 +132,7 @@ export const loader = async () => {
             shikiResult.title,
             shikiResult.description,
             shikiResult.recommendation,
-          ].join("\n"),
+          ].join("\n")
         );
       }
     }
@@ -249,7 +249,7 @@ export default function Index() {
   const nextSnippet = data.codeSnippets[state.context.currentSnippetIndex + 1];
 
   const percentComplete = Math.ceil(
-    (state.context.currentSnippetIndex / (data.codeSnippets.length - 1)) * 100,
+    (state.context.currentSnippetIndex / (data.codeSnippets.length - 1)) * 100
   );
 
   return (

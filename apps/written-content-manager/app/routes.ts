@@ -54,6 +54,13 @@ export const viewExerciseInVSCodeUrl = (exerciseId: string) => {
   return `/courses/exercises/${exerciseId}/view-vscode`;
 };
 
+export const exerciseUploadAudioUrl = (exerciseId: string) => {
+  return `/courses/exercises/${exerciseId}/upload-audio`;
+};
+export const exerciseAudioUrl = (exerciseId: string) => {
+  return `/courses/exercises/${exerciseId}/audio.mkv`;
+};
+
 export const addExerciseDialogUrl = (sectionId: string) => {
   return `/courses/sections/${sectionId}?add`;
 };
