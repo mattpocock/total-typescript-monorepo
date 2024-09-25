@@ -17,5 +17,14 @@ export const action = async (args: ActionFunctionArgs) => {
     force: true,
   });
 
+  await p.exercise.update({
+    where: {
+      id: exerciseId,
+    },
+    data: {
+      audioRecordingCreated: false,
+    },
+  });
+
   return {};
 };

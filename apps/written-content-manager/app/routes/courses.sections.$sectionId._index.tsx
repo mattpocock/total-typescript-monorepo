@@ -11,7 +11,7 @@ import {
   ArrowDownIcon,
   ArrowUpIcon,
   DeleteIcon,
-  EditIcon,
+  MicIcon,
   PlusIcon,
 } from "lucide-react";
 import { FormButtons, FormContent } from "~/components";
@@ -45,7 +45,6 @@ import {
 import { useOpenInVSCode } from "~/use-open-in-vscode";
 import {
   getHumanReadableStatusFromExercise,
-  getStatusFromExercise,
   moveElementBack,
   moveElementForward,
 } from "~/utils";
@@ -76,6 +75,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
           learningGoal: true,
           order: true,
           readyForRecording: true,
+          audioRecordingCreated: true,
         },
         orderBy: {
           order: "asc",
@@ -146,6 +146,9 @@ export default function Section() {
                       </Link>
                     </div>
                   </div>
+                </TableCell>
+                <TableCell>
+                  {exercise.audioRecordingCreated ? <MicIcon /> : null}
                 </TableCell>
                 <TableCell>
                   <div className="flex justify-start">

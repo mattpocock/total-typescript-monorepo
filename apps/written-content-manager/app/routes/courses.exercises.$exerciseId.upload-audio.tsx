@@ -42,6 +42,15 @@ export const action = async (args: ActionFunctionArgs) => {
     getAudioPathForExercise(exerciseId!)
   );
 
+  await p.exercise.update({
+    where: {
+      id: exerciseId,
+    },
+    data: {
+      audioRecordingCreated: true,
+    },
+  });
+
   return {
     success: true,
   };
