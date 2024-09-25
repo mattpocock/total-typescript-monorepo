@@ -3,6 +3,7 @@ import {
   Form,
   useFetcher,
   useLoaderData,
+  useNavigate,
   type MetaFunction,
 } from "@remix-run/react";
 import clsx from "clsx";
@@ -150,17 +151,23 @@ export default function Exercise() {
     });
   };
 
-  const uploadAudioFetcher = useFetcher();
+  const navigate = useNavigate();
 
   const uploadAudio = (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
 
-    uploadAudioFetcher.submit(formData, {
-      method: "POST",
-      action: exerciseUploadAudioUrl(exercise.id),
-      encType: "multipart/form-data",
-      preventScrollReset: true,
+    fetch(exerciseUploadAudioUrl(exercise.id), {
+      method: "post",
+      body: formData,
+    }).then((res) => {
+      if (res.ok) {
+        navigate(window.location.pathname, {
+          replace: true,
+        });
+      } else {
+        alert("Upload failed!");
+      }
     });
   };
 
@@ -309,11 +316,11 @@ export default function Exercise() {
                   No Audio
                 </div>
                 <Button asChild className="rounded-l-none" type="button">
-                  {uploadAudioFetcher.state === "submitting" ? (
+                  {/* {uploadAudioFetcher.state === "submitting" ? (
                     <button>Uploading...</button>
-                  ) : (
-                    <AudioRecorder onComplete={uploadAudio} />
-                  )}
+                  ) : ( */}
+                  <AudioRecorder onComplete={uploadAudio} />
+                  {/* )} */}
                 </Button>
               </>
             )}
