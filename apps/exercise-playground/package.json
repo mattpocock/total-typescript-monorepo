@@ -9,5 +9,8 @@
   "scripts": {},
   "exports": {
     ".": "./dist/index.js"
+  },
+  "dependencies": {
+    "@trpc/server": "^10.45.2"
   }
 }

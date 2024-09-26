@@ -42,7 +42,11 @@ importers:
         specifier: workspace:*
         version: link:../../packages/_example-package
 
-  apps/exercise-playground: {}
+  apps/exercise-playground:
+    dependencies:
+      '@trpc/server':
+        specifier: ^10.45.2
+        version: 10.45.2
 
   apps/internal-cli:
     dependencies:
@@ -2702,6 +2706,9 @@ packages:
 
   '@total-typescript/tsconfig@1.0.4':
     resolution: {integrity: sha512-fO4ctMPGz1kOFOQ4RCPBRBfMy3gDn+pegUfrGyUFRMv/Rd0ZM3/SHH3hFCYG4u6bPLG8OlmOGcBLDexvyr3A5w==}
+
+  '@trpc/server@10.45.2':
+    resolution: {integrity: sha512-wOrSThNNE4HUnuhJG6PfDRp4L2009KDVxsd+2VYH8ro6o/7/jwYZ8Uu5j+VaW+mOmc8EHerHzGcdbGNQSAUPgg==}
 
   '@types/acorn@4.0.6':
     resolution: {integrity: sha512-veQTnWP+1D/xbxVrPC3zHnCZRjSrKfhbMUlEA43iMZLu7EsnTtkJklIuwrCPbOi8YkvDQAiW05VQQFvvz9oieQ==}
@@ -8903,6 +8910,8 @@ snapshots:
   '@total-typescript/ts-reset@0.5.1': {}
 
   '@total-typescript/tsconfig@1.0.4': {}
+
+  '@trpc/server@10.45.2': {}
 
   '@types/acorn@4.0.6':
     dependencies:
