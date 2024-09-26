@@ -169,12 +169,15 @@ export default function Section() {
                   <div className="flex items-center">
                     <Button
                       variant="default"
-                      className="rounded-r-none"
+                      className="rounded-r-none flex items-center justify-center"
                       onClick={() => {
                         openInVSCode(exercise.id);
                       }}
                     >
-                      <img src="/vscode-alt.svg" className="size-5" />
+                      <img
+                        src="/vscode-alt.svg"
+                        className="size-5 flex-shrink-0"
+                      />
                     </Button>
                     <Button
                       variant="secondary"
@@ -260,7 +263,13 @@ export default function Section() {
               action={addExerciseUrl(section.id, sectionUrl(section.id))}
             >
               <FormContent>
-                <Input name="title" required autoFocus placeholder="Title" />
+                <Input
+                  name="title"
+                  required
+                  autoFocus
+                  placeholder="Title"
+                  className="col-span-full"
+                />
                 <Input
                   name="learningGoal"
                   placeholder="Learning Goal"

@@ -30,6 +30,19 @@ export const loader = async () => {
     },
   });
 
+  const exerciseCounts = await p.$transaction(
+    courses.map((c) => {
+      return p.exercise.count({
+        where: {
+          section: {
+            courseId: c.id,
+          },
+          deleted: false,
+        },
+      });
+    })
+  );
+
   const checkedCourses: ((typeof courses)[number] & {
     foundOnDisk: boolean;
   })[] = [];
@@ -49,7 +62,10 @@ export const loader = async () => {
     }
   }
 
-  return checkedCourses;
+  return checkedCourses.map((c, index) => ({
+    ...c,
+    exerciseCount: exerciseCounts[index]!,
+  }));
 };
 
 const Page = () => {
@@ -81,7 +97,8 @@ const Page = () => {
                   {course.repoSlug}
                 </p>
               </TableCell>
-              <TableCell className="space-y-1">
+              <TableCell>{course.exerciseCount} Exercises</TableCell>
+              <TableCell>
                 {course.foundOnDisk ? (
                   <span className="bg-green-100 text-green-800 text-xs p-2 px-3 rounded-lg uppercase font-semibold">
                     On Disk
