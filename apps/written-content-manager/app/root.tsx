@@ -81,14 +81,22 @@ export const loader = () => {
           createdAt: {
             gte: todayAtMidnight,
           },
-          type: "EXERCISE_MARKED_READY_FOR_RECORDING",
+          type: "EXERCISE_AUDIO_RECORDING_CREATED",
+        },
+      }),
+      p.analyticsEvent.count({
+        where: {
+          createdAt: {
+            gte: todayAtMidnight,
+          },
+          type: "EXERCISE_AUDIO_RECORDING_DELETED",
         },
       }),
     ])
     .then((d) => {
       return {
         exercisesCreatedToday: d[0] - d[1],
-        exercisesMarkedReadyForRecordingToday: d[2],
+        exercisesMarkedReadyForRecordingToday: d[2] - d[3],
       };
     });
 

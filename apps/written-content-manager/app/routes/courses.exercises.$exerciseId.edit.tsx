@@ -66,6 +66,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
       deleted: true,
       description: true,
       learningGoal: true,
+      audioTranscript: true,
       readyForRecording: true,
       notes: true,
     },
@@ -325,6 +326,11 @@ export default function Exercise() {
               </>
             )}
           </div>
+          {exercise.audioTranscript && (
+            <div className="col-span-full">
+              <pre>{exercise.audioTranscript}</pre>
+            </div>
+          )}
           {exercise.files.map((file) => {
             return (
               <div className="col-span-full">

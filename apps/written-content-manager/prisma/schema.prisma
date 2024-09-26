@@ -26,6 +26,8 @@ enum AnalyticsEventType {
   EXERCISE_CREATED
   EXERCISE_DELETED
   EXERCISE_MARKED_READY_FOR_RECORDING
+  EXERCISE_AUDIO_RECORDING_CREATED
+  EXERCISE_AUDIO_RECORDING_DELETED
 }
 
 model AnalyticsEvent {
@@ -67,6 +69,7 @@ model Exercise {
   description           String?
   readyForRecording     Boolean  @default(false)
   audioRecordingCreated Boolean  @default(false)
+  audioTranscript       String?
   sectionId             String
   order                 Int
   section               Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)

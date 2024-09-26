@@ -61,6 +61,22 @@ export const loader = async () => {
           createdAt: {
             gte: todayAtMidnight,
           },
+          type: "EXERCISE_AUDIO_RECORDING_CREATED",
+        },
+      }),
+      p.analyticsEvent.count({
+        where: {
+          createdAt: {
+            gte: todayAtMidnight,
+          },
+          type: "EXERCISE_AUDIO_RECORDING_DELETED",
+        },
+      }),
+      p.analyticsEvent.count({
+        where: {
+          createdAt: {
+            gte: todayAtMidnight,
+          },
           type: "EXERCISE_MARKED_READY_FOR_RECORDING",
         },
       }),
@@ -73,7 +89,9 @@ export const loader = async () => {
         coursesDeletedToday: d[3],
         sectionsDeletedToday: d[4],
         exercisesDeletedToday: d[5],
-        exercisesMarkedReadyForRecordingToday: d[6],
+        audioRecordingsCreatedToday: d[6],
+        audioRecordingsDeletedToday: d[7],
+        exercisesMarkedReadyForRecordingToday: d[8],
       };
     });
 
@@ -116,10 +134,19 @@ export default function Dashboard() {
               </div>
               <div className="p-6 rounded-lg border-2 border-gray-200 flex flex-col items-center">
                 <h2 className="text-xl font-semibold tracking-tight">
-                  Exercises Ready for Recording
+                  Exercises Ready for Recording Today
                 </h2>
                 <span className="rounded-full size-36 flex items-center justify-center border-gray-200 border-4 text-5xl text-gray-800 font-mono mt-4">
                   {data.exercisesMarkedReadyForRecordingToday}
+                </span>
+              </div>
+              <div className="p-6 rounded-lg border-2 border-gray-200 flex flex-col items-center">
+                <h2 className="text-xl font-semibold tracking-tight">
+                  Audio Recordings Created Today
+                </h2>
+                <span className="rounded-full size-36 flex items-center justify-center border-gray-200 border-4 text-5xl text-gray-800 font-mono mt-4">
+                  {data.audioRecordingsCreatedToday -
+                    data.audioRecordingsDeletedToday}
                 </span>
               </div>
             </div>

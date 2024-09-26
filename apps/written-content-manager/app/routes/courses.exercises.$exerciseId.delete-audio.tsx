@@ -23,6 +23,16 @@ export const action = async (args: ActionFunctionArgs) => {
     },
     data: {
       audioRecordingCreated: false,
+      audioTranscript: null,
+    },
+  });
+
+  await p.analyticsEvent.create({
+    data: {
+      type: "EXERCISE_AUDIO_RECORDING_DELETED",
+      payload: {
+        exerciseId,
+      },
     },
   });
 
