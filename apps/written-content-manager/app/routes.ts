@@ -54,6 +54,18 @@ export const viewExerciseInVSCodeUrl = (exerciseId: string) => {
   return `/courses/exercises/${exerciseId}/view-vscode`;
 };
 
+export const createExerciseExplainerUrl = (exerciseId: string) => {
+  return `/courses/exercises/${exerciseId}/create-explainer`;
+};
+
+export const createExerciseProblemSolutionUrl = (exerciseId: string) => {
+  return `/courses/exercises/${exerciseId}/create-problem-solution`;
+};
+
+export const copyPreviousExerciseFilesUrl = (exerciseId: string) => {
+  return `/courses/exercises/${exerciseId}/copy-previous-exercise-files`;
+};
+
 export const exerciseUploadAudioUrl = (exerciseId: string) => {
   return `/courses/exercises/${exerciseId}/upload-audio`;
 };

@@ -3,6 +3,7 @@ import path from "path";
 import glob from "fast-glob";
 import { existsSync } from "fs";
 import { access } from "fs/promises";
+import { editExerciseUrl } from "./routes";
 
 export const EXERCISE_PLAYGROUND_ROOT_PATH = path.join(
   import.meta.dirname,
@@ -46,5 +47,18 @@ export const getVSCodeFiles = async (exerciseId: string) => {
     absolute: true,
   });
 
-  return files;
+  return files as AbsolutePath[];
+};
+
+export const modifyLinkingComment = (
+  fileContents: string,
+  newExerciseId: string
+) => {
+  const lines = fileContents.split("\n");
+
+  if (lines[0]?.startsWith("// http://localhost:3004")) {
+    lines[0] = `// http://localhost:3004${editExerciseUrl(newExerciseId)}`;
+  }
+
+  return lines.join("\n");
 };

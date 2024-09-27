@@ -1,17 +1,37 @@
 import { useFetcher } from "@remix-run/react";
-import { viewExerciseInVSCodeUrl } from "./routes";
+import {
+  copyPreviousExerciseFilesUrl,
+  createExerciseExplainerUrl,
+  createExerciseProblemSolutionUrl,
+  viewExerciseInVSCodeUrl,
+} from "./routes";
 
-export const useOpenInVSCode = () => {
-  const openInVSCodeFetcher = useFetcher();
+export const useVSCode = () => {
+  const vsCodeFetcher = useFetcher();
 
-  return (exerciseId: string) => {
-    openInVSCodeFetcher.submit(
+  const submit = (url: string) => {
+    vsCodeFetcher.submit(
       {},
       {
-        action: viewExerciseInVSCodeUrl(exerciseId),
+        action: url,
         method: "POST",
         preventScrollReset: true,
       }
     );
+  };
+
+  return {
+    open: (exerciseId: string) => {
+      submit(viewExerciseInVSCodeUrl(exerciseId));
+    },
+    copyPreviousExerciseFiles: (exerciseId: string) => {
+      submit(copyPreviousExerciseFilesUrl(exerciseId));
+    },
+    createExplainer: (exerciseId: string) => {
+      submit(createExerciseExplainerUrl(exerciseId));
+    },
+    createProblemSolution: (exerciseId: string) => {
+      submit(createExerciseProblemSolutionUrl(exerciseId));
+    },
   };
 };

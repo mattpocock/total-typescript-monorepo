@@ -42,7 +42,7 @@ import {
   reorderExercisesUrl,
   sectionUrl,
 } from "~/routes";
-import { useOpenInVSCode } from "~/use-open-in-vscode";
+import { useVSCode } from "~/use-open-in-vscode";
 import {
   getHumanReadableStatusFromExercise,
   moveElementBack,
@@ -103,7 +103,7 @@ export default function Section() {
 
   const [search, setSearch] = useSearchParams();
 
-  const openInVSCode = useOpenInVSCode();
+  const vscode = useVSCode();
 
   return (
     <div className="space-y-6 flex-col">
@@ -171,7 +171,7 @@ export default function Section() {
                       variant="default"
                       className="rounded-r-none flex items-center justify-center"
                       onClick={() => {
-                        openInVSCode(exercise.id);
+                        vscode.open(exercise.id);
                       }}
                     >
                       <img

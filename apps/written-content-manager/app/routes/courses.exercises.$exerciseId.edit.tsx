@@ -35,7 +35,7 @@ import {
   sectionUrl,
 } from "~/routes";
 import { useDebounceFetcher } from "~/use-debounced-fetcher";
-import { useOpenInVSCode } from "~/use-open-in-vscode";
+import { useVSCode } from "~/use-open-in-vscode";
 import { getDoesAudioExistForExercise, getVSCodeFiles } from "~/vscode-utils";
 
 export const meta: MetaFunction<typeof loader> = (args) => {
@@ -143,7 +143,7 @@ export default function Exercise() {
 
   const formRef = useRef<HTMLFormElement | null>(null);
 
-  const openInVSCode = useOpenInVSCode();
+  const vscode = useVSCode();
 
   const handleChange = () => {
     debouncedFetcher.debounceSubmit(formRef.current, {
@@ -251,15 +251,51 @@ export default function Exercise() {
             placeholder="Learning Goal"
             onChange={handleChange}
           ></Input>
-          <Button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              openInVSCode(exercise.id);
-            }}
-          >
-            Open In VSCode
-          </Button>
+          {exercise.files.length > 0 && (
+            <Button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                vscode.open(exercise.id);
+              }}
+            >
+              Open In VSCode
+            </Button>
+          )}
+          {exercise.files.length === 0 && (
+            <div className="grid grid-cols-2 col-span-full gap-4">
+              <Button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  vscode.createProblemSolution(exercise.id);
+                }}
+              >
+                <img src="/vscode-alt.svg" className="size-5 mr-3" />
+                Create Problem/Solution Files
+              </Button>
+              <Button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  vscode.createExplainer(exercise.id);
+                }}
+              >
+                <img src="/vscode-alt.svg" className="size-5 mr-3" />
+                Create Explainer File
+              </Button>
+              <Button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  vscode.copyPreviousExerciseFiles(exercise.id);
+                }}
+              >
+                <img src="/vscode-alt.svg" className="size-5 mr-3" />
+                Copy Previous Exercise
+              </Button>
+            </div>
+          )}
           <div className="items-center flex justify-center space-x-2">
             <Checkbox
               id="readyForRecording"
