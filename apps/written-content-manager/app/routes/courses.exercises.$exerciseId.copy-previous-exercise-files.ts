@@ -43,6 +43,7 @@ export const action = async ({ params }: ActionFunctionArgs) => {
       order: {
         lt: exercise.order,
       },
+      deleted: false,
     },
     orderBy: {
       order: "desc",
@@ -60,7 +61,9 @@ export const action = async ({ params }: ActionFunctionArgs) => {
   const prevFiles = await getVSCodeFiles(prevExercise.id);
 
   if (prevFiles.length === 0) {
-    throw new Response("No files found for previous exercise", { status: 400 });
+    throw new Response(`No files found for exercise ${prevExercise.id}`, {
+      status: 400,
+    });
   }
 
   const prevFilesDir = getExerciseDir(prevExercise.id);
