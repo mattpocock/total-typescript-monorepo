@@ -102,16 +102,31 @@ export default function Course() {
           <div className="flex items-center space-x-2">
             <PlusIcon className="size-4" />
             <span>
-              {allExercises.length - allExercisesReadyForRecording.length}
+              {allExercises.length > 0
+                ? `${(
+                    ((allExercises.length -
+                      allExercisesReadyForRecording.length) /
+                      allExercises.length) *
+                    100
+                  ).toFixed(0)}%`
+                : "0%"}
             </span>
           </div>
           <div className="flex items-center space-x-2">
             <MicIcon className="size-4" />
-            <span>{allExercisesReadyForRecording.length}</span>
+            <span>
+              {allExercises.length > 0
+                ? `${(
+                    (allExercisesReadyForRecording.length /
+                      allExercises.length) *
+                    100
+                  ).toFixed(0)}%`
+                : "0%"}
+            </span>
           </div>
           <div className="flex items-center space-x-2">
             <VideoIcon className="size-4" />
-            <span>{0}</span>
+            <span>0%</span>
           </div>
         </div>
       </div>
