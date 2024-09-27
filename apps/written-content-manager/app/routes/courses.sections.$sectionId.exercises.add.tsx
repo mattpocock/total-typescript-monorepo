@@ -6,10 +6,16 @@ import { editExerciseUrl } from "~/routes";
 export const action = async ({ request, params }: ActionFunctionArgs) => {
   const formData = await request.formData();
 
-  const order = await p.exercise.count({
+  const exerciseWithLargestOrder = await p.exercise.findFirst({
     where: {
-      sectionId: params.sectionId!,
+      sectionId: params.sectionId,
       deleted: false,
+    },
+    orderBy: {
+      order: "desc",
+    },
+    select: {
+      order: true,
     },
   });
 
@@ -18,7 +24,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       title: formData.get("title") as string,
       learningGoal: formData.get("learningGoal") as string,
       sectionId: params.sectionId!,
-      order: order + 1,
+      order: exerciseWithLargestOrder ? exerciseWithLargestOrder.order + 1 : 0,
       content: "",
     },
   });
