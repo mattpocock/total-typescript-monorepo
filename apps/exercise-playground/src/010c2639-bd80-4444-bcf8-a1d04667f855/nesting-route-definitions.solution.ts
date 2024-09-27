@@ -8,16 +8,16 @@ const t = initTRPC.create();
 const publicProcedure = t.procedure;
 
 const appRouter = t.router({
-  user: t.router({
+  user: {
     create: publicProcedure.mutation(() => "create user"),
     update: publicProcedure.mutation(() => "update user"),
     delete: publicProcedure.mutation(() => "delete user"),
-  }),
-  organization: t.router({
+  },
+  organization: {
     create: publicProcedure.mutation(() => "create organization"),
     update: publicProcedure.mutation(() => "update organization"),
     delete: publicProcedure.mutation(() => "delete organization"),
-  }),
+  },
 });
 
 it("Should let you call user.create", async () => {

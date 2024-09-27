@@ -11,8 +11,8 @@
     ".": "./dist/index.js"
   },
   "dependencies": {
-    "@trpc/server": "^10.45.2",
-    "@trpc/client": "^10.45.2",
+    "@trpc/server": "11.0.0-rc.544",
+    "@trpc/client": "11.0.0-rc.544",
     "zod": "^3.23.8",
     "@total-typescript/helpers": "0.0.1"
   }
