@@ -1,7 +1,7 @@
 // http://localhost:3004/courses/exercises/96b929af-dfa9-49bb-ae57-99aa1f02cf45/edit
 
 import { createTRPCProxyClient, httpBatchLink } from "@trpc/client";
-import type { AppRouter } from "./creating-the-client.explainer.server";
+import type { AppRouter } from "./queries.explainer.server";
 
 const trpcClient = createTRPCProxyClient<AppRouter>({
   links: [
