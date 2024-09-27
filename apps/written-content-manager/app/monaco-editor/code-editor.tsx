@@ -27,8 +27,6 @@ const resolveLanguage = (language: Language): string => {
 
 export type Language = "ts" | "tsx" | "md" | "json" | "js";
 
-const THEME_NAME = "total-typescript";
-
 export type CodeEditorProps = {
   name: string;
   label: string;

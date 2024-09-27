@@ -326,11 +326,6 @@ export default function Exercise() {
               </>
             )}
           </div>
-          {exercise.audioTranscript && (
-            <div className="col-span-full">
-              <pre>{exercise.audioTranscript}</pre>
-            </div>
-          )}
           {exercise.files.map((file) => {
             return (
               <div className="col-span-full">
@@ -346,6 +341,13 @@ export default function Exercise() {
               </div>
             );
           })}
+          {exercise.audioTranscript && (
+            <div className="col-span-full text-sm leading-6">
+              {exercise.audioTranscript.split("\n").map((para) => {
+                return <p key={para}>{para}</p>;
+              })}
+            </div>
+          )}
           <LazyLoadedEditor
             label="Notes"
             className="col-span-full"

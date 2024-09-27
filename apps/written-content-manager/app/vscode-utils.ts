@@ -35,9 +35,9 @@ export const getVSCodeFiles = async (exerciseId: string) => {
   await ensureDir(exercisePath);
 
   const possiblePaths = [
-    "*.problem.*{ts,tsx}",
-    "*.solution.*{ts,tsx}",
-    "*.explainer.*{ts,tsx}",
+    "**/*.problem.*{ts,tsx}",
+    "**/*.solution.*{ts,tsx}",
+    "**/*.explainer.*{ts,tsx}",
   ];
 
   const files = await glob(possiblePaths, {
