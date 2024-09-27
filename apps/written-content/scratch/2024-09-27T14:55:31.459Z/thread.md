@@ -6,5 +6,7 @@ declare const exerciseThatMayNotExist:
 
 // ---cut---
 // Fixed!
-const example = (exerciseThatMayNotExist?.order ?? 0) + 1;
+const example = exerciseThatMayNotExist
+  ? exerciseThatMayNotExist.order + 1
+  : 0;
 ```
