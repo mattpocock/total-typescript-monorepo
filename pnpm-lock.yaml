@@ -44,6 +44,9 @@ importers:
 
   apps/exercise-playground:
     dependencies:
+      '@total-typescript/helpers':
+        specifier: 0.0.1
+        version: 0.0.1
       '@trpc/client':
         specifier: ^10.45.2
         version: 10.45.2(@trpc/server@10.45.2)

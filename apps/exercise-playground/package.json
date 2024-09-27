@@ -13,6 +13,7 @@
   "dependencies": {
     "@trpc/server": "^10.45.2",
     "@trpc/client": "^10.45.2",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "@total-typescript/helpers": "0.0.1"
   }
 }

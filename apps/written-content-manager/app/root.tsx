@@ -1,6 +1,7 @@
 import {
   Await,
   defer,
+  isRouteErrorResponse,
   Link,
   Links,
   Meta,
@@ -9,6 +10,8 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useRouteError,
+  useRouteLoaderData,
 } from "@remix-run/react";
 import clsx from "clsx";
 import { MicIcon, PlusIcon, VideoIcon } from "lucide-react";
@@ -132,7 +135,7 @@ const MyNavLink = ({
 };
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const data = useLoaderData<typeof loader>();
+  const data = useRouteLoaderData<typeof loader>("root");
 
   return (
     <html lang="en">
@@ -150,38 +153,40 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </Link>
             <MyNavLink to={coursesUrl()}>Courses</MyNavLink>
           </div>
-          <div>
-            <Await resolve={data.analyticsData}>
-              {(analyticsData) => {
-                return (
-                  <Link
-                    className="flex items-center space-x-6"
-                    to={dashboardUrl()}
-                  >
-                    <div className="flex items-center">
-                      <PlusIcon className="size-[22px] mr-2" />
-                      <span className="text-lg font-mono font-medium text-gray-100">
-                        {analyticsData.exercisesCreatedToday}
-                      </span>
-                    </div>
+          {data?.analyticsData && (
+            <div>
+              <Await resolve={data.analyticsData}>
+                {(analyticsData) => {
+                  return (
+                    <Link
+                      className="flex items-center space-x-6"
+                      to={dashboardUrl()}
+                    >
+                      <div className="flex items-center">
+                        <PlusIcon className="size-[22px] mr-2" />
+                        <span className="text-lg font-mono font-medium text-gray-100">
+                          {analyticsData.exercisesCreatedToday}
+                        </span>
+                      </div>
 
-                    <div className="flex items-center">
-                      <MicIcon className="size-[18px] mr-[11px]" />
-                      <span className="text-lg font-mono font-medium text-gray-100">
-                        {analyticsData.exercisesMarkedReadyForRecordingToday}
-                      </span>
-                    </div>
-                    <div className="flex items-center">
-                      <VideoIcon className="size-[19px] mr-[13px]" />
-                      <span className="text-lg font-mono font-medium text-gray-100">
-                        {0}
-                      </span>
-                    </div>
-                  </Link>
-                );
-              }}
-            </Await>
-          </div>
+                      <div className="flex items-center">
+                        <MicIcon className="size-[18px] mr-[11px]" />
+                        <span className="text-lg font-mono font-medium text-gray-100">
+                          {analyticsData.exercisesMarkedReadyForRecordingToday}
+                        </span>
+                      </div>
+                      <div className="flex items-center">
+                        <VideoIcon className="size-[19px] mr-[13px]" />
+                        <span className="text-lg font-mono font-medium text-gray-100">
+                          {0}
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                }}
+              </Await>
+            </div>
+          )}
         </header>
         <main className="p-6">{children}</main>
         <Scripts />
@@ -189,6 +194,32 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </body>
     </html>
   );
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return (
+      <div>
+        <h1>
+          {error.status} {error.statusText}
+        </h1>
+        <p>{error.data}</p>
+      </div>
+    );
+  } else if (error instanceof Error) {
+    return (
+      <div>
+        <h1>Error</h1>
+        <p>{error.message}</p>
+        <p>The stack trace is:</p>
+        <pre>{error.stack}</pre>
+      </div>
+    );
+  } else {
+    return <h1>Unknown Error</h1>;
+  }
 }
 
 export default function App() {

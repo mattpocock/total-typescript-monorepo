@@ -1,38 +1,28 @@
 // http://localhost:3004/courses/exercises/a0780b14-c56f-4791-be68-e6ca8efe9348/edit
 
 import { initTRPC } from "@trpc/server";
-import { z } from "zod";
+import { createHTTPServer } from "@trpc/server/adapters/standalone";
 
-const t = initTRPC.create();
+const t = initTRPC
+  // 1. Provide some context to the server
+  .context<{
+    loggedInUserName: string;
+  }>()
+  .create();
 
 const publicProcedure = t.procedure;
 
-// 1. We can define reusable procedures that can be used across multiple routes
-const loggedProcedure = publicProcedure.use(async (opts) => {
-  // Logs the start time of the request
-  const start = Date.now();
-
-  // Runs the request
-  const result = await opts.next();
-
-  // Logs the duration of the request
-  const durationMs = Date.now() - start;
-  // Prepares meta ready for logging
-  const meta = { path: opts.path, type: opts.type, durationMs };
-
-  // Logs the result of the request, using console.log for OK requests
-  // and console.error for non-OK requests
-  result.ok
-    ? console.log("OK request timing:", meta)
-    : console.error("Non-OK request timing", meta);
-
-  return result;
+export const router = t.router({
+  // 2. We can access the context in our query
+  myFirstQuery: publicProcedure.query(({ ctx }) => {
+    return `Hello, ${ctx.loggedInUserName}!`;
+  }),
 });
 
-export const router = t.router({
-  // 2. myFirstQuery now inherits from loggedProcedure, meaning
-  // that it will be logged when it is called
-  myFirstQuery: loggedProcedure.input(z.string()).query(({ input }) => {
-    return `Hello, ${input}!`;
+const server = createHTTPServer({
+  router: router,
+  createContext: () => ({
+    // 3. We can provide the context when creating the server
+    loggedInUserName: "Alice",
   }),
 });
