@@ -6,9 +6,12 @@ import type { AppRouter } from "./creating-your-server.explainer.server";
 const trpcClient = createTRPCProxyClient<AppRouter>({
   links: [
     httpBatchLink({
-      url: "http://localhost:3000/my-trpc-endpoint",
+      url: "http://localhost:3000",
     }),
   ],
 });
 
 const result = await trpcClient.myFirstMutation.mutate("world");
+
+// 4. Let's console.log the result to see if it worked!
+console.log(result);

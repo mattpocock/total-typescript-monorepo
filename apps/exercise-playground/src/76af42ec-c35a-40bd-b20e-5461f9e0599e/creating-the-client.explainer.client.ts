@@ -9,7 +9,7 @@ const trpcClient = createTRPCProxyClient<AppRouter>({
     // 2. Create a new httpBatchLink, pointing at your
     // desired URL (we'll explain this later)
     httpBatchLink({
-      url: "http://localhost:3000/my-trpc-endpoint",
+      url: "http://localhost:3000",
     }),
   ],
 });

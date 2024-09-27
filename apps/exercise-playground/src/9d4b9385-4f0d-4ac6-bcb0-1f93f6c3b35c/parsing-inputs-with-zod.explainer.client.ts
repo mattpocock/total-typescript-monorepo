@@ -6,7 +6,7 @@ import type { AppRouter } from "./parsing-inputs-with-zod.explainer.server";
 const trpcClient = createTRPCProxyClient<AppRouter>({
   links: [
     httpBatchLink({
-      url: "http://localhost:3000/my-trpc-endpoint",
+      url: "http://localhost:3000",
     }),
   ],
 });

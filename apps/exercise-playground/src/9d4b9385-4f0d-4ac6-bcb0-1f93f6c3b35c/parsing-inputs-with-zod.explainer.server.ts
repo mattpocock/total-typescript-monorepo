@@ -14,8 +14,8 @@ const appRouter = t.router({
     // for the query
     .input(z.string())
     // 3. Update the query to accept the input
-    .query((name) => {
-      return `Hello, ${name}!`;
+    .query(({ input }) => {
+      return `Hello, ${input}!`;
     }),
 });
 
