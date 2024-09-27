@@ -11,7 +11,4 @@ const trpcClient = createTRPCProxyClient<AppRouter>({
   ],
 });
 
-// 2. Change the call so we're calling the mutation instead
 const result = await trpcClient.myFirstMutation.mutate("world");
-
-console.log(result);

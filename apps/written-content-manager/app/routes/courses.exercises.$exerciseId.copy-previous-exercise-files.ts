@@ -5,6 +5,7 @@ import {
   type AbsolutePath,
 } from "@total-typescript/shared";
 import { p } from "~/db";
+import { sanitizeForVSCodeFilename } from "~/utils";
 import {
   getExerciseDir,
   getVSCodeFiles,
@@ -48,6 +49,7 @@ export const action = async ({ params }: ActionFunctionArgs) => {
     },
     select: {
       id: true,
+      title: true,
     },
   });
 
@@ -63,23 +65,36 @@ export const action = async ({ params }: ActionFunctionArgs) => {
 
   const prevFilesDir = getExerciseDir(prevExercise.id);
 
+  const prevExerciseTitleAsVSCodeFilename = sanitizeForVSCodeFilename(
+    prevExercise.title
+  );
+
+  const newExerciseTitleAsVSCodeFilename = sanitizeForVSCodeFilename(
+    exercise.title
+  );
+
   let fileToOpen: string = "";
 
   for (const prevFile of prevFiles) {
     const relativePath = path.relative(prevFilesDir, prevFile);
 
-    const newFile = path.resolve(exercisePath, relativePath) as AbsolutePath;
+    const newFilePath = path
+      .resolve(exercisePath, relativePath)
+      .replaceAll(
+        prevExerciseTitleAsVSCodeFilename,
+        newExerciseTitleAsVSCodeFilename
+      ) as AbsolutePath;
 
     if (!fileToOpen) {
-      fileToOpen = newFile;
+      fileToOpen = newFilePath;
     }
 
-    await ensureDir(path.dirname(newFile));
+    await ensureDir(path.dirname(newFilePath));
 
     const fileContents = await fs.readFile(prevFile, "utf-8");
 
     await fs.writeFile(
-      newFile,
+      newFilePath,
       modifyLinkingComment(fileContents, exerciseId!)
     );
   }

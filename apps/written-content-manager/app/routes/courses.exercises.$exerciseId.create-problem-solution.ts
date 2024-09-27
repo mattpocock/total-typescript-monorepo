@@ -2,7 +2,7 @@ import type { ActionFunctionArgs } from "@remix-run/node";
 import { execAsync, type AbsolutePath } from "@total-typescript/shared";
 import { p } from "~/db";
 import { editExerciseUrl } from "~/routes";
-import { createVSCodeFilename } from "~/utils";
+import { sanitizeForVSCodeFilename } from "~/utils";
 import { getExerciseDir, getVSCodeFiles } from "~/vscode-utils";
 
 export const action = async ({ params }: ActionFunctionArgs) => {
@@ -30,12 +30,12 @@ export const action = async ({ params }: ActionFunctionArgs) => {
 
   const newProblemFile = path.join(
     exercisePath,
-    `${createVSCodeFilename(exercise.title)}.problem.ts`
+    `${sanitizeForVSCodeFilename(exercise.title)}.problem.ts`
   ) as AbsolutePath;
 
   const newSolutionFile = path.join(
     exercisePath,
-    `${createVSCodeFilename(exercise.title)}.solution.ts`
+    `${sanitizeForVSCodeFilename(exercise.title)}.solution.ts`
   ) as AbsolutePath;
 
   const firstLine = `// http://localhost:3004${editExerciseUrl(exerciseId!)}`;

@@ -11,10 +11,11 @@ const appRouter = t.router({
   myFirstQuery: publicProcedure.input(z.string()).query((name) => {
     return `Hello, ${name}!`;
   }),
-  // 1. Create a mutation with the same input schema
   myFirstMutation: publicProcedure.input(z.string()).mutation((name) => {
     return `Hello, ${name}!`;
   }),
 });
 
 export type AppRouter = typeof appRouter;
+
+const server = t.

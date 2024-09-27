@@ -22,7 +22,7 @@ export const moveElementForward = <T extends { id: string }>(
   return newArr;
 };
 
-export const createVSCodeFilename = (str: string) => {
+export const sanitizeForVSCodeFilename = (str: string) => {
   return (
     str
       // replace punctuation with spaces

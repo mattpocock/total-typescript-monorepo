@@ -259,7 +259,8 @@ export default function Exercise() {
                 vscode.open(exercise.id);
               }}
             >
-              Open In VSCode
+              <img src="/vscode-alt.svg" className="size-5 mr-3" />
+              Open
             </Button>
           )}
           {exercise.files.length === 0 && (
