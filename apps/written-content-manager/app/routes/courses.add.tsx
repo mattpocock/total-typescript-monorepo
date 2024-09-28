@@ -54,17 +54,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 export default function AddCourse() {
   return (
     <div className="space-y-6 flex-col">
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink to={coursesUrl()}>Courses</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbItem>Add Course</BreadcrumbItem>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
       <Form method="POST">
         <FormContent>
           <Input name="title" placeholder="Title" required autoFocus />

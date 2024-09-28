@@ -4,7 +4,13 @@ import type {
   MetaFunction,
 } from "@remix-run/node";
 import { Form, redirect, useLoaderData } from "@remix-run/react";
-import { FormButtons, FormContent } from "~/components";
+import {
+  FormButtons,
+  FormContent,
+  PageContent,
+  PageTitle,
+  TitleArea,
+} from "~/components";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -70,30 +76,31 @@ export default function Section() {
   const section = useLoaderData<typeof loader>();
 
   return (
-    <div className="space-y-6 flex-col">
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink to={coursesUrl()}>Courses</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink to={courseUrl(section.course.id)}>
-              {section.course.title}
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink to={sectionUrl(section.id)}>
-              {section.title}
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbItem>Edit</BreadcrumbItem>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+    <PageContent>
+      <TitleArea
+        title="Edit Section"
+        breadcrumbs={
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink to={courseUrl(section.course.id)}>
+                  {section.course.title}
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink to={sectionUrl(section.id)}>
+                  {section.title}
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbItem>Edit</BreadcrumbItem>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        }
+      />
       <Form method="POST">
         <FormContent>
           <Input name="title" defaultValue={section.title} required autoFocus />
@@ -102,6 +109,6 @@ export default function Section() {
           </FormButtons>
         </FormContent>
       </Form>
-    </div>
+    </PageContent>
   );
 }

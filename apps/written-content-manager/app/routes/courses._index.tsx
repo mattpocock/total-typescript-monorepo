@@ -82,13 +82,6 @@ const Page = () => {
 
   return (
     <div className="space-y-6">
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink to={coursesUrl()}>Courses</BreadcrumbLink>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
       <Table>
         <TableHeader>
           <TableRow>

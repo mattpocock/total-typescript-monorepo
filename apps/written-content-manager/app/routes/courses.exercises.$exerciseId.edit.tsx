@@ -12,7 +12,7 @@ import { DeleteIcon, PlayIcon, SquareIcon } from "lucide-react";
 import path from "path";
 import { useEffect, useRef, useState } from "react";
 import { AudioRecorder } from "~/audio-recorder";
-import { FormButtons, FormContent } from "~/components";
+import { FormButtons, FormContent, PageContent, TitleArea } from "~/components";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -203,38 +203,39 @@ export default function Exercise() {
   const deleteAudioFetcher = useFetcher();
 
   return (
-    <div className="space-y-6 flex-col">
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink to={coursesUrl()}>Courses</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink to={courseUrl(exercise.section.course.id)}>
-              {exercise.section.course.title}
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink to={sectionUrl(exercise.section.id)}>
-              {exercise.section.title}
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink to={editExerciseUrl(exercise.id)}>
-              {exercise.title}
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+    <PageContent>
+      <TitleArea
+        title={exercise.title}
+        breadcrumbs={
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink to={courseUrl(exercise.section.course.id)}>
+                  {exercise.section.course.title}
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink to={sectionUrl(exercise.section.id)}>
+                  {exercise.section.title}
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink to={editExerciseUrl(exercise.id)}>
+                  {exercise.title}
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        }
+      />
       {exercise.deleted && (
         <div className="bg-red-100 text-red-800 p-4 rounded-md">
           This exercise has been deleted.
         </div>
       )}
-      <Form method="POST" className="space-y-6" ref={formRef}>
+      <Form method="POST" ref={formRef}>
         <FormContent>
           <Input
             name="title"
@@ -407,6 +408,6 @@ export default function Exercise() {
           </FormButtons>
         </FormContent>
       </Form>
-    </div>
+    </PageContent>
   );
 }

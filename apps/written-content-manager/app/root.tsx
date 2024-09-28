@@ -19,6 +19,7 @@ import { CommandPalette } from "./command-palette";
 import { p } from "./db";
 import { coursesUrl, dashboardUrl, homeUrl } from "./routes";
 import "./tailwind.css";
+import "./fonts.css";
 
 export const loader = () => {
   const courses = p.course

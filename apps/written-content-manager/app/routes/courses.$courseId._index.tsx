@@ -9,19 +9,12 @@ import {
   PlusIcon,
   VideoIcon,
 } from "lucide-react";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "~/components/ui/breadcrumb";
+import { PageContent, TitleArea } from "~/components";
 import { Button } from "~/components/ui/button";
 import { Table, TableBody, TableCell, TableRow } from "~/components/ui/table";
 import { p } from "~/db";
 import {
   addSectionUrl,
-  coursesUrl,
   courseUrl,
   deleteSectionUrl,
   editSectionUrl,
@@ -94,50 +87,43 @@ export default function Course() {
   );
 
   return (
-    <div className="space-y-6 flex-col">
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink to={coursesUrl()}>Courses</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>{course.title}</BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-      <div className=" space-y-2">
-        <h1>{course.title} Sections</h1>
-        <div className="flex items-center space-x-5 text-gray-600 text-sm">
-          <div className="flex items-center space-x-2">
-            <PlusIcon className="size-4" />
-            <span>
-              {allExercises.length > 0
-                ? `${(
-                    ((allExercises.length -
-                      allExercisesReadyForRecording.length) /
-                      allExercises.length) *
-                    100
-                  ).toFixed(0)}%`
-                : "0%"}
-            </span>
+    <PageContent>
+      <TitleArea
+        title={`${course.title} Sections`}
+        underTitle={
+          <div className="flex items-center space-x-5 text-gray-600 text-sm">
+            <div className="flex items-center space-x-2">
+              <PlusIcon className="size-4" />
+              <span>
+                {allExercises.length > 0
+                  ? `${(
+                      ((allExercises.length -
+                        allExercisesReadyForRecording.length) /
+                        allExercises.length) *
+                      100
+                    ).toFixed(0)}%`
+                  : "0%"}
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <MicIcon className="size-4" />
+              <span>
+                {allExercises.length > 0
+                  ? `${(
+                      (allExercisesReadyForRecording.length /
+                        allExercises.length) *
+                      100
+                    ).toFixed(0)}%`
+                  : "0%"}
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <VideoIcon className="size-4" />
+              <span>0%</span>
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <MicIcon className="size-4" />
-            <span>
-              {allExercises.length > 0
-                ? `${(
-                    (allExercisesReadyForRecording.length /
-                      allExercises.length) *
-                    100
-                  ).toFixed(0)}%`
-                : "0%"}
-            </span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <VideoIcon className="size-4" />
-            <span>0%</span>
-          </div>
-        </div>
-      </div>
+        }
+      ></TitleArea>
       <Table>
         <TableBody>
           {sections.map((section) => {
@@ -249,6 +235,6 @@ export default function Course() {
           <PlusIcon />
         </Link>
       </Button>
-    </div>
+    </PageContent>
   );
 }

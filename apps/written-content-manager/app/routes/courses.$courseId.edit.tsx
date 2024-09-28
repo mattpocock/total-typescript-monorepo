@@ -59,17 +59,6 @@ export default function AddCourse() {
   const course = useLoaderData<typeof loader>();
   return (
     <div className="space-y-6 flex-col">
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink to={coursesUrl()}>Courses</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbItem>Edit</BreadcrumbItem>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
       <Form method="POST">
         <FormContent>
           <Input

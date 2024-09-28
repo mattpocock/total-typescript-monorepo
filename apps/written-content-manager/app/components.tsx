@@ -9,3 +9,29 @@ export const FormContent = (props: { children?: React.ReactNode }) => {
 export const FormButtons = (props: { children?: React.ReactNode }) => {
   return <div className="md:col-span-full">{props.children}</div>;
 };
+
+export const PageTitle = (props: { children?: React.ReactNode }) => {
+  return (
+    <h1 className="text-2xl font-semibold tracking-tight">{props.children}</h1>
+  );
+};
+
+export const TitleArea = (props: {
+  title: string;
+  breadcrumbs?: React.ReactNode;
+  underTitle?: React.ReactNode;
+}) => {
+  return (
+    <div className="space-y-4">
+      {props.breadcrumbs}
+      <div className="space-y-2">
+        <PageTitle>{props.title}</PageTitle>
+        {props.underTitle}
+      </div>
+    </div>
+  );
+};
+
+export const PageContent = (props: { children?: React.ReactNode }) => {
+  return <div className="space-y-8">{props.children}</div>;
+};

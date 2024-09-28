@@ -14,7 +14,7 @@ import {
   MicIcon,
   PlusIcon,
 } from "lucide-react";
-import { FormButtons, FormContent } from "~/components";
+import { FormButtons, FormContent, PageTitle, TitleArea } from "~/components";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -106,23 +106,23 @@ export default function Section() {
   const vscode = useVSCode();
 
   return (
-    <div className="space-y-6 flex-col">
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink to={coursesUrl()}>Courses</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink to={courseUrl(section.course.id)}>
-              {section.course.title}
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>{section.title}</BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-      <h1>{section.title} Exercises</h1>
+    <div className="space-y-8 flex-col">
+      <TitleArea
+        title={section.title}
+        breadcrumbs={
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink to={courseUrl(section.course.id)}>
+                  {section.course.title}
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>{section.title}</BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        }
+      />
       <Table>
         <TableBody>
           {exercises.map((exercise, index) => {

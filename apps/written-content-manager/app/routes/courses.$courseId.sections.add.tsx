@@ -82,10 +82,6 @@ export default function Section() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink to={coursesUrl()}>Courses</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
             <BreadcrumbLink to={courseUrl(course.id)}>
               {course.title}
             </BreadcrumbLink>
