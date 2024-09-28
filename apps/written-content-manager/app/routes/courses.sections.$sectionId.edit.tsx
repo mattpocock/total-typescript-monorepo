@@ -1,4 +1,8 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  MetaFunction,
+} from "@remix-run/node";
 import { Form, redirect, useLoaderData } from "@remix-run/react";
 import { FormButtons, FormContent } from "~/components";
 import {
@@ -12,6 +16,14 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { p } from "~/db";
 import { coursesUrl, courseUrl, sectionUrl } from "~/routes";
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  return [
+    {
+      title: `Edit ${data?.title} | WCM`,
+    },
+  ];
+};
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const { sectionId } = params;

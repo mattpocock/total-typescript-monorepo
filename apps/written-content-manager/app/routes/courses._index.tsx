@@ -17,6 +17,15 @@ import {
 import { p } from "~/db";
 import { pathExists } from "@total-typescript/shared";
 import { addCourseUrl, coursesUrl, courseUrl, editCourseUrl } from "~/routes";
+import type { MetaFunction } from "@remix-run/node";
+
+export const meta: MetaFunction = () => {
+  return [
+    {
+      title: "Courses | WCM",
+    },
+  ];
+};
 
 export const loader = async () => {
   const path = await import("path");
