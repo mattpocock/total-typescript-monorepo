@@ -77,3 +77,13 @@ model Exercise {
   updatedAt             DateTime @updatedAt
   deleted               Boolean  @default(false)
 }
+
+model SocialPost {
+  id           String    @id @default(uuid())
+  title        String
+  learningGoal String?
+  content      String?
+  postedAt     DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
