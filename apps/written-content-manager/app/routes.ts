@@ -98,3 +98,23 @@ export const editExerciseUrl = (exerciseId: string) => {
 export const reorderExercisesUrl = (sectionId: string) => {
   return `/courses/sections/${sectionId}/reorder`;
 };
+
+export const postsUrl = () => {
+  return `/posts`;
+};
+
+export const postUrl = (postId: string) => {
+  return `/posts/${postId}`;
+};
+
+export const addPostUrl = (redirectTo: string) => {
+  return `/posts/add?${new URLSearchParams({ redirectTo })}`;
+};
+
+export const deletePostUrl = (postId: string, redirectTo: string) => {
+  return `/posts/${postId}/delete?${new URLSearchParams({ redirectTo })}`;
+};
+
+export const editPostUrl = (postId: string) => {
+  return `/posts/${postId}/edit`;
+};

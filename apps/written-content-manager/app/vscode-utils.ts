@@ -10,7 +10,8 @@ export const EXERCISE_PLAYGROUND_ROOT_PATH = path.join(
   "..",
   "..",
   "exercise-playground",
-  "src"
+  "src",
+  "exercises"
 );
 
 export const getExerciseDir = (exerciseId: string) => {

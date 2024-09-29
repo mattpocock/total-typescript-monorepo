@@ -17,7 +17,7 @@ import clsx from "clsx";
 import { MicIcon, PlusIcon, VideoIcon } from "lucide-react";
 import { CommandPalette } from "./command-palette";
 import { p } from "./db";
-import { coursesUrl, dashboardUrl, homeUrl } from "./routes";
+import { coursesUrl, dashboardUrl, homeUrl, postsUrl } from "./routes";
 import "./tailwind.css";
 import "./fonts.css";
 
@@ -153,6 +153,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               WCM
             </Link>
             <MyNavLink to={coursesUrl()}>Courses</MyNavLink>
+            <MyNavLink to={postsUrl()}>Posts</MyNavLink>
           </div>
           {data?.analyticsData && (
             <div>
