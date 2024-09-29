@@ -96,22 +96,17 @@ export const loader = async () => {
       };
     });
 
-  return defer({
-    data,
-  });
+  return data;
 };
 
 export default function Dashboard() {
-  const promise = useLoaderData<typeof loader>();
+  const data = useLoaderData<typeof loader>();
   return (
     <PageContent>
       <TitleArea title="Dashboard" />
-      <Suspense fallback={null}>
-        <Await resolve={promise.data}>
-          {(data) => {
-            return (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {/* <div className="p-6 rounded-lg border-2 border-gray-200 flex flex-col items-center">
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {/* <div className="p-6 rounded-lg border-2 border-gray-200 flex flex-col items-center">
                 <h2 className="text-xl font-semibold tracking-tight">
                   Courses Created Today
                 </h2>
@@ -127,36 +122,32 @@ export default function Dashboard() {
                   {data.sectionsCreatedToday - data.sectionsDeletedToday}
                 </span>
               </div> */}
-                <div className="p-6 rounded-lg border-2 border-gray-200 flex flex-col items-center">
-                  <h2 className="text-xl font-semibold tracking-tight">
-                    Exercises Created Today
-                  </h2>
-                  <span className="rounded-full size-36 flex items-center justify-center border-gray-200 border-4 text-5xl text-gray-800 font-mono mt-4">
-                    {data.exercisesCreatedToday - data.exercisesDeletedToday}
-                  </span>
-                </div>
-                <div className="p-6 rounded-lg border-2 border-gray-200 flex flex-col items-center">
-                  <h2 className="text-xl font-semibold tracking-tight">
-                    Exercises Ready for Recording Today
-                  </h2>
-                  <span className="rounded-full size-36 flex items-center justify-center border-gray-200 border-4 text-5xl text-gray-800 font-mono mt-4">
-                    {data.exercisesMarkedReadyForRecordingToday}
-                  </span>
-                </div>
-                <div className="p-6 rounded-lg border-2 border-gray-200 flex flex-col items-center">
-                  <h2 className="text-xl font-semibold tracking-tight">
-                    Audio Recordings Created Today
-                  </h2>
-                  <span className="rounded-full size-36 flex items-center justify-center border-gray-200 border-4 text-5xl text-gray-800 font-mono mt-4">
-                    {data.audioRecordingsCreatedToday -
-                      data.audioRecordingsDeletedToday}
-                  </span>
-                </div>
-              </div>
-            );
-          }}
-        </Await>
-      </Suspense>
+        <div className="p-6 rounded-lg border-2 border-gray-200 flex flex-col items-center">
+          <h2 className="text-xl font-semibold tracking-tight">
+            Exercises Created Today
+          </h2>
+          <span className="rounded-full size-36 flex items-center justify-center border-gray-200 border-4 text-5xl text-gray-800 font-mono mt-4">
+            {data.exercisesCreatedToday - data.exercisesDeletedToday}
+          </span>
+        </div>
+        <div className="p-6 rounded-lg border-2 border-gray-200 flex flex-col items-center">
+          <h2 className="text-xl font-semibold tracking-tight">
+            Exercises Ready for Recording Today
+          </h2>
+          <span className="rounded-full size-36 flex items-center justify-center border-gray-200 border-4 text-5xl text-gray-800 font-mono mt-4">
+            {data.exercisesMarkedReadyForRecordingToday}
+          </span>
+        </div>
+        <div className="p-6 rounded-lg border-2 border-gray-200 flex flex-col items-center">
+          <h2 className="text-xl font-semibold tracking-tight">
+            Audio Recordings Created Today
+          </h2>
+          <span className="rounded-full size-36 flex items-center justify-center border-gray-200 border-4 text-5xl text-gray-800 font-mono mt-4">
+            {data.audioRecordingsCreatedToday -
+              data.audioRecordingsDeletedToday}
+          </span>
+        </div>
+      </div>
     </PageContent>
   );
 }
