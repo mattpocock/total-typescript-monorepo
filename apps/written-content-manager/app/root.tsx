@@ -124,8 +124,8 @@ const MyNavLink = ({
     <NavLink
       className={({ isActive }) =>
         clsx(
-          "mr-4 px-3 py-2 rounded-lg",
-          isActive ? "text-gray-800 bg-white" : "text-white"
+          "mr-4 px-3 py-2 text-white font-normal",
+          isActive && "underline underline-offset-[3px] decoration-2"
         )
       }
       to={to}

@@ -18,6 +18,8 @@ import { p } from "~/db";
 import { pathExists } from "@total-typescript/shared";
 import { addCourseUrl, coursesUrl, courseUrl, editCourseUrl } from "~/routes";
 import type { MetaFunction } from "@remix-run/node";
+import { PageContent, TitleArea } from "~/components";
+import { PlusIcon } from "lucide-react";
 
 export const meta: MetaFunction = () => {
   return [
@@ -81,7 +83,8 @@ const Page = () => {
   const data = useLoaderData<typeof loader>();
 
   return (
-    <div className="space-y-6">
+    <PageContent>
+      <TitleArea title="Courses" />
       <Table>
         <TableHeader>
           <TableRow>
@@ -125,9 +128,11 @@ const Page = () => {
         </TableBody>
       </Table>
       <Button asChild>
-        <Link to={addCourseUrl(coursesUrl())}>Add Course</Link>
+        <Link to={addCourseUrl(coursesUrl())}>
+          <PlusIcon />
+        </Link>
       </Button>
-    </div>
+    </PageContent>
   );
 };
 
