@@ -1,5 +1,5 @@
 import type { MetaFunction } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import { Form, Link, useLoaderData } from "@remix-run/react";
 import { PlusIcon } from "lucide-react";
 import { PageContent, TitleArea } from "~/components";
 import { Button } from "~/components/ui/button";
@@ -64,11 +64,11 @@ const Page = () => {
           ))}
         </TableBody>
       </Table>
-      <Button asChild>
-        <Link to={addPostUrl(postsUrl())}>
+      <Form method="POST" action={addPostUrl()}>
+        <Button>
           <PlusIcon />
-        </Link>
-      </Button>
+        </Button>
+      </Form>
     </PageContent>
   );
 };

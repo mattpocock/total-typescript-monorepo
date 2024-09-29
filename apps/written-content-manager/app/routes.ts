@@ -107,8 +107,8 @@ export const postUrl = (postId: string) => {
   return `/posts/${postId}`;
 };
 
-export const addPostUrl = (redirectTo: string) => {
-  return `/posts/add?${new URLSearchParams({ redirectTo })}`;
+export const addPostUrl = () => {
+  return `/posts/add`;
 };
 
 export const deletePostUrl = (postId: string, redirectTo: string) => {
