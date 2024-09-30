@@ -1,10 +1,7 @@
+import type { MetaFunction } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-} from "~/components/ui/breadcrumb";
+import { PlusIcon } from "lucide-react";
+import { PageContent, TitleArea } from "~/components";
 import { Button } from "~/components/ui/button";
 import {
   Table,
@@ -15,9 +12,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { addCourseUrl, coursesUrl, courseUrl, editCourseUrl } from "~/routes";
-import type { MetaFunction } from "@remix-run/node";
-import { PageContent, TitleArea } from "~/components";
-import { PlusIcon } from "lucide-react";
+import { trpc } from "~/trpc/client";
 
 export const meta: MetaFunction = () => {
   return [
@@ -27,58 +22,12 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export const loader = async () => {
-  const path = await import("path");
-  const os = await import("os");
-
-  const REPOS_PATH = path.join(os.homedir(), "repos", "total-typescript");
-
-  const courses = await p.course.findMany({
-    orderBy: {
-      updatedAt: "desc",
-    },
-  });
-
-  const exerciseCounts = await p.$transaction(
-    courses.map((c) => {
-      return p.exercise.count({
-        where: {
-          section: {
-            courseId: c.id,
-          },
-          deleted: false,
-        },
-      });
-    })
-  );
-
-  const checkedCourses: ((typeof courses)[number] & {
-    foundOnDisk: boolean;
-  })[] = [];
-
-  for (const course of courses) {
-    if (!course.repoSlug) {
-      checkedCourses.push({ ...course, foundOnDisk: false });
-    } else {
-      const result = await pathExists(
-        path.join(REPOS_PATH, course.repoSlug ?? "")
-      );
-
-      checkedCourses.push({
-        ...course,
-        foundOnDisk: result.isOk() && result.value,
-      });
-    }
-  }
-
-  return checkedCourses.map((c, index) => ({
-    ...c,
-    exerciseCount: exerciseCounts[index]!,
-  }));
+export const clientLoader = async () => {
+  return trpc.courses.list.query();
 };
 
 const Page = () => {
-  const data = useLoaderData<typeof loader>();
+  const data = useLoaderData<typeof clientLoader>();
 
   return (
     <PageContent>

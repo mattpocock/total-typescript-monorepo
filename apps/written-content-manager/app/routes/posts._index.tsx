@@ -1,5 +1,11 @@
 import type { MetaFunction } from "@remix-run/node";
-import { Form, Link, useLoaderData } from "@remix-run/react";
+import {
+  Form,
+  Link,
+  redirect,
+  useLoaderData,
+  type ClientActionFunctionArgs,
+} from "@remix-run/react";
 import { PlusIcon } from "lucide-react";
 import { PageContent, TitleArea } from "~/components";
 import { Button } from "~/components/ui/button";
@@ -11,8 +17,9 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { p } from "~/db";
-import { addPostUrl, editPostUrl, postsUrl } from "~/routes";
+import { editPostUrl } from "~/routes";
+import { trpc } from "~/trpc/client";
+import { createJsonAction, requestToJson } from "~/utils";
 
 export const meta: MetaFunction = () => {
   return [
@@ -22,18 +29,18 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export const loader = async () => {
-  const posts = await p.socialPost.findMany({
-    orderBy: {
-      updatedAt: "desc",
-    },
-  });
-
-  return posts;
+export const clientLoader = async () => {
+  return trpc.posts.list.query();
 };
 
+export const clientAction = createJsonAction(async (json) => {
+  const post = await trpc.posts.create.mutate(json);
+
+  return redirect(editPostUrl(post.id));
+});
+
 const Page = () => {
-  const posts = useLoaderData<typeof loader>();
+  const posts = useLoaderData<typeof clientLoader>();
 
   return (
     <PageContent>
@@ -64,7 +71,8 @@ const Page = () => {
           ))}
         </TableBody>
       </Table>
-      <Form method="POST" action={addPostUrl()}>
+      <Form method="POST">
+        <input type="hidden" name="title" value="" />
         <Button>
           <PlusIcon />
         </Button>

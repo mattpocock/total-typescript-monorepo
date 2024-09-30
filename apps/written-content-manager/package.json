@@ -15,6 +15,8 @@
     "migrate:unsafe": "pnpm run migrate:dev && pnpm run migrate:prod"
   },
   "dependencies": {
+    "@trpc/server": "^10.45.2",
+    "@trpc/client": "^10.45.2",
     "remix-utils": "^7.7.0",
     "@monaco-editor/react": "^4.6.0",
     "@prisma/client": "5.19.1",
@@ -38,7 +40,8 @@
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "xstate": "^5.18.2",
-    "@xstate/react": "^4.1.3"
+    "@xstate/react": "^4.1.3",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@remix-run/dev": "2.11.1",

@@ -1,4 +1,5 @@
 import type { Exercise } from "@prisma/client";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 
 export const moveElementBack = <T extends { id: string }>(
   arr: T[],
@@ -63,3 +64,25 @@ export const getHumanReadableStatusFromExercise = (exercise: {
       return { value: "needs-content", label: "Content" };
   }
 };
+
+export const requestToJson = async (request: Request): Promise<any> => {
+  const formData = await request.formData();
+  const json = {};
+
+  for (const [key, value] of formData.entries()) {
+    (json as any)[key] = value;
+  }
+
+  return json;
+};
+
+export const createJsonLoader = <T>(
+  trpcFn: (args: LoaderFunctionArgs) => Promise<T>
+) => trpcFn;
+
+export const createJsonAction =
+  <T>(trpcFn: (json: any, args: ActionFunctionArgs) => Promise<T>) =>
+  async (args: ActionFunctionArgs) => {
+    const json = await requestToJson(args.request);
+    return trpcFn(json, args);
+  };
