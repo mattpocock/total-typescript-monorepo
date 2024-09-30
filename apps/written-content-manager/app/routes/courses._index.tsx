@@ -14,8 +14,6 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { p } from "~/db";
-import { pathExists } from "@total-typescript/shared";
 import { addCourseUrl, coursesUrl, courseUrl, editCourseUrl } from "~/routes";
 import type { MetaFunction } from "@remix-run/node";
 import { PageContent, TitleArea } from "~/components";
