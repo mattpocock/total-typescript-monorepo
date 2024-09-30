@@ -3,6 +3,7 @@ import {
   copyPreviousExerciseFilesUrl,
   createExerciseExplainerUrl,
   createExerciseProblemSolutionUrl,
+  openPostInVSCodeUrl,
   viewExerciseInVSCodeUrl,
 } from "./routes";
 
@@ -21,8 +22,11 @@ export const useVSCode = () => {
   };
 
   return {
-    open: (exerciseId: string) => {
+    openExercise: (exerciseId: string) => {
       submit(viewExerciseInVSCodeUrl(exerciseId));
+    },
+    openSocialPostPlayground: (postId: string) => {
+      submit(openPostInVSCodeUrl(postId));
     },
     copyPreviousExerciseFiles: (exerciseId: string) => {
       submit(copyPreviousExerciseFilesUrl(exerciseId));

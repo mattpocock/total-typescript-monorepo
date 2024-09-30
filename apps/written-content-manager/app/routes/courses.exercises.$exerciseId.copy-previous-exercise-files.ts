@@ -8,14 +8,14 @@ import { p } from "~/db";
 import { sanitizeForVSCodeFilename } from "~/utils";
 import {
   getExerciseDir,
-  getVSCodeFiles,
+  getVSCodeFilesForExercise,
   modifyLinkingComment,
 } from "~/vscode-utils";
 
 export const action = async ({ params }: ActionFunctionArgs) => {
   const { exerciseId } = params;
 
-  const files = await getVSCodeFiles(exerciseId!);
+  const files = await getVSCodeFilesForExercise(exerciseId!);
 
   if (files.length > 0) {
     throw new Response("Files already exist", { status: 400 });
@@ -58,7 +58,7 @@ export const action = async ({ params }: ActionFunctionArgs) => {
     throw new Response("No previous exercise found", { status: 400 });
   }
 
-  const prevFiles = await getVSCodeFiles(prevExercise.id);
+  const prevFiles = await getVSCodeFilesForExercise(prevExercise.id);
 
   if (prevFiles.length === 0) {
     throw new Response(`No files found for exercise ${prevExercise.id}`, {

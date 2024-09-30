@@ -8,15 +8,82 @@ const publicProcedure = t.procedure;
 
 export const appRouter = t.router({
   posts: t.router({
+    get: publicProcedure
+      .input(
+        z.object({
+          id: z.string(),
+        })
+      )
+      .query(async ({ input }) => {
+        return p.socialPost.findUniqueOrThrow({
+          where: {
+            id: input.id,
+          },
+        });
+      }),
     list: publicProcedure.query(async () => {
-      return p.socialPost.findMany();
+      return p.socialPost.findMany({
+        where: {
+          deleted: false,
+        },
+      });
     }),
     create: publicProcedure
       .input(z.object({ title: z.string() }))
       .mutation(async ({ input }) => {
-        return p.socialPost.create({
+        const post = await p.socialPost.create({
           data: {
             title: input.title,
+          },
+        });
+        await p.analyticsEvent.create({
+          data: {
+            type: "POST_CREATED",
+            payload: {
+              postId: post.id,
+            },
+          },
+        });
+        return post;
+      }),
+    update: publicProcedure
+      .input(
+        z.object({
+          id: z.string(),
+          title: z.string(),
+          learningGoal: z.string().optional(),
+          content: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return p.socialPost.update({
+          where: {
+            id: input.id,
+          },
+          data: {
+            title: input.title,
+            learningGoal: input.learningGoal,
+            content: input.content,
+          },
+        });
+      }),
+    delete: publicProcedure
+      .input(z.object({ id: z.string() }))
+      .mutation(async ({ input }) => {
+        await p.analyticsEvent.create({
+          data: {
+            type: "POST_DELETED",
+            payload: {
+              postId: input.id,
+            },
+          },
+        });
+        return await p.socialPost.update({
+          where: {
+            id: input.id,
+          },
+          data: {
+            deleted: true,
           },
         });
       }),

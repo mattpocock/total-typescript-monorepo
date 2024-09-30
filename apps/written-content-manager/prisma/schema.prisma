@@ -86,7 +86,9 @@ model SocialPost {
   title        String
   learningGoal String?
   content      String?
+  notes        String?
   postedAt     DateTime?
+  deleted      Boolean   @default(false)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 }

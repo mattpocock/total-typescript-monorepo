@@ -171,7 +171,7 @@ export default function Section() {
                       variant="default"
                       className="rounded-r-none flex items-center justify-center"
                       onClick={() => {
-                        vscode.open(exercise.id);
+                        vscode.openExercise(exercise.id);
                       }}
                     >
                       <img

@@ -36,7 +36,10 @@ import {
 } from "~/routes";
 import { useDebounceFetcher } from "~/use-debounced-fetcher";
 import { useVSCode } from "~/use-open-in-vscode";
-import { getDoesAudioExistForExercise, getVSCodeFiles } from "~/vscode-utils";
+import {
+  getDoesAudioExistForExercise,
+  getVSCodeFilesForExercise,
+} from "~/vscode-utils";
 
 export const meta: MetaFunction<typeof loader> = (args) => {
   return [{ title: `${args.data?.title} | WCM` }];
@@ -72,7 +75,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     },
   });
 
-  const files = await getVSCodeFiles(exerciseId!);
+  const files = await getVSCodeFilesForExercise(exerciseId!);
 
   const audioExists = await getDoesAudioExistForExercise(exerciseId!);
 
@@ -142,15 +145,14 @@ export default function Exercise() {
   const debouncedFetcher = useDebounceFetcher();
 
   const formRef = useRef<HTMLFormElement | null>(null);
-
-  const vscode = useVSCode();
-
   const handleChange = () => {
     debouncedFetcher.debounceSubmit(formRef.current, {
       replace: true,
       debounceTimeout: 200,
     });
   };
+
+  const vscode = useVSCode();
 
   const navigate = useNavigate();
 
@@ -257,7 +259,7 @@ export default function Exercise() {
               type="button"
               onClick={(e) => {
                 e.preventDefault();
-                vscode.open(exercise.id);
+                vscode.openExercise(exercise.id);
               }}
             >
               <img src="/vscode-alt.svg" className="size-5 mr-3" />

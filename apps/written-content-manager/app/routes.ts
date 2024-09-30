@@ -103,10 +103,6 @@ export const postsUrl = () => {
   return `/posts`;
 };
 
-export const postUrl = (postId: string) => {
-  return `/posts/${postId}`;
-};
-
 export const addPostUrl = () => {
   return `/posts/add`;
 };
@@ -117,4 +113,8 @@ export const deletePostUrl = (postId: string, redirectTo: string) => {
 
 export const editPostUrl = (postId: string) => {
   return `/posts/${postId}/edit`;
+};
+
+export const openPostInVSCodeUrl = (postId: string) => {
+  return `/posts/${postId}/view-vscode`;
 };

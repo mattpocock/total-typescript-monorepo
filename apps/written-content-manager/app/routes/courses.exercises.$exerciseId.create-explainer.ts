@@ -3,12 +3,12 @@ import { execAsync, type AbsolutePath } from "@total-typescript/shared";
 import { p } from "~/db";
 import { editExerciseUrl } from "~/routes";
 import { sanitizeForVSCodeFilename } from "~/utils";
-import { getExerciseDir, getVSCodeFiles } from "~/vscode-utils";
+import { getExerciseDir, getVSCodeFilesForExercise } from "~/vscode-utils";
 
 export const action = async ({ params }: ActionFunctionArgs) => {
   const { exerciseId } = params;
 
-  const files = await getVSCodeFiles(exerciseId!);
+  const files = await getVSCodeFilesForExercise(exerciseId!);
 
   if (files.length > 0) {
     throw new Response("Files already exist", { status: 400 });
