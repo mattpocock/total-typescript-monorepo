@@ -1,7 +1,10 @@
 import { pathExists } from "@total-typescript/shared";
 import { initTRPC } from "@trpc/server";
+import { readFileSync } from "fs";
+import path from "path";
 import { z } from "zod";
 import { p } from "~/db";
+import { getVSCodeFilesForPost } from "~/vscode-utils";
 
 const t = initTRPC.create();
 const publicProcedure = t.procedure;
@@ -15,11 +18,21 @@ export const appRouter = t.router({
         })
       )
       .query(async ({ input }) => {
-        return p.socialPost.findUniqueOrThrow({
+        const files = await getVSCodeFilesForPost(input.id);
+        const post = await p.socialPost.findUniqueOrThrow({
           where: {
             id: input.id,
           },
         });
+
+        return {
+          ...post,
+          files: files.map((file) => ({
+            path: path.basename(file),
+            fullPath: file,
+            content: readFileSync(file, "utf-8"),
+          })),
+        };
       }),
     list: publicProcedure.query(async () => {
       return p.socialPost.findMany({

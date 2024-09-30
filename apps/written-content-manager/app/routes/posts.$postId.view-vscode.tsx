@@ -17,6 +17,12 @@ export const action = async ({ params }: ActionFunctionArgs) => {
   if (files.length === 0) {
     const file = path.join(postsDir, "playground.ts");
     await writeFile(file, `// http://localhost:3004${editPostUrl(postId!)}`);
+
+    const file2 = path.join(postsDir, "notes.md");
+    await writeFile(
+      file2,
+      [`# Notes`, ``, `http://localhost:3004${editPostUrl(postId!)}`].join("\n")
+    );
     await execAsync(`code "${file}"`);
   } else {
     await execAsync(`code "${files[0]}"`);

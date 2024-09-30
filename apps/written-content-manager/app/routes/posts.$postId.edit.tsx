@@ -12,12 +12,13 @@ import { Input } from "~/components/ui/input";
 import { editPostUrl } from "~/routes";
 import { trpc } from "~/trpc/client";
 import { useDebounceFetcher } from "~/use-debounced-fetcher";
+import { useVSCode } from "~/use-open-in-vscode";
 import { createJsonAction } from "~/utils";
 
 export const meta: MetaFunction<typeof clientLoader> = ({ data }) => {
   return [
     {
-      title: "Add Post",
+      title: "Edit Post | WCM",
     },
   ];
 };
@@ -50,6 +51,8 @@ export default function EditPost() {
     });
   };
 
+  const vscode = useVSCode();
+
   return (
     <PageContent>
       <TitleArea title="Edit Post" />
@@ -72,6 +75,31 @@ export default function EditPost() {
             className="col-span-full"
             onChange={handleChange}
           />
+          <Button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              vscode.openSocialPostPlayground(post.id);
+            }}
+          >
+            <img src="/vscode-alt.svg" className="size-5 mr-3" />
+            Open
+          </Button>
+          {post.files.map((file) => {
+            return (
+              <div className="col-span-full">
+                <a
+                  href={`vscode://file${file.fullPath}`}
+                  className="font-mono text-sm mb-2 block"
+                >
+                  {file.path}
+                </a>
+                <pre className="p-6 text-xs border-2 border-gray-200">
+                  {file.content}
+                </pre>
+              </div>
+            );
+          })}
           <FormButtons>
             <Button type="submit">Save</Button>
           </FormButtons>
