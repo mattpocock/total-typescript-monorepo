@@ -58,6 +58,13 @@ const Page = () => {
                 </Link>
               </TableCell>
               <TableCell>
+                {post.postedAt && (
+                  <p>
+                    Posted {new Date(post.postedAt).toISOString().slice(0, 10)}
+                  </p>
+                )}
+              </TableCell>
+              <TableCell>
                 <div className="flex items-center">
                   <Button
                     variant="default"

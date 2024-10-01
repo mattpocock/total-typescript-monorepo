@@ -8,6 +8,8 @@ import {
 import { useRef } from "react";
 import { FormButtons, FormContent, PageContent, TitleArea } from "~/components";
 import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
+import { DatePicker } from "~/components/ui/datepicker";
 import { Input } from "~/components/ui/input";
 import { editPostUrl } from "~/routes";
 import { trpc } from "~/trpc/client";
@@ -85,6 +87,11 @@ export default function EditPost() {
             <img src="/vscode-alt.svg" className="size-5 mr-3" />
             Open
           </Button>
+          <DatePicker
+            name="postedAt"
+            onChange={handleChange}
+            defaultValue={post.postedAt}
+          />
           {post.files.map((file) => {
             return (
               <div className="col-span-full">

@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/react";
 import { p } from "~/db";
-import { postUrl } from "~/routes";
+import { editPostUrl } from "~/routes";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const post = await p.socialPost.create({
@@ -19,5 +19,5 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     },
   });
 
-  return redirect(postUrl(post.id));
+  return redirect(editPostUrl(post.id));
 };

@@ -26,7 +26,6 @@ import { Input } from "~/components/ui/input";
 import { p } from "~/db";
 import { LazyLoadedEditor } from "~/monaco-editor/lazy-loaded-editor";
 import {
-  coursesUrl,
   courseUrl,
   editExerciseUrl,
   exerciseAudioUrl,

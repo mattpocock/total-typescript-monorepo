@@ -4,6 +4,7 @@ import { readFileSync } from "fs";
 import path from "path";
 import { z } from "zod";
 import { p } from "~/db";
+import { Checkbox } from "~/schema";
 import { getVSCodeFilesForPost } from "~/vscode-utils";
 
 const t = initTRPC.create();
@@ -61,12 +62,18 @@ export const appRouter = t.router({
       }),
     update: publicProcedure
       .input(
-        z.object({
-          id: z.string(),
-          title: z.string(),
-          learningGoal: z.string().optional(),
-          content: z.string().optional(),
-        })
+        z
+          .object({
+            id: z.string(),
+            title: z.string(),
+            learningGoal: z.string().optional(),
+            content: z.string().optional(),
+            postedAt: z.union([
+              z.enum([""]).transform(() => null),
+              z.string().datetime().optional(),
+            ]),
+          })
+          .strict()
       )
       .mutation(async ({ input }) => {
         return p.socialPost.update({
@@ -77,6 +84,7 @@ export const appRouter = t.router({
             title: input.title,
             learningGoal: input.learningGoal,
             content: input.content,
+            postedAt: input.postedAt,
           },
         });
       }),

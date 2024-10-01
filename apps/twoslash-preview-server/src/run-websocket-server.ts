@@ -12,7 +12,7 @@ import { type WebSocket, WebSocketServer } from "ws";
 
 const SHIKI_TEST_LOCATION = path.resolve(
   import.meta.dirname,
-  "../shiki-test.md",
+  "../shiki-test.md"
 );
 
 const server = new WebSocketServer({ port: WEBSOCKET_PORT });
@@ -73,8 +73,11 @@ server.on("connection", (client) => {
   });
 });
 
-const CONTENT_PATH = path.resolve(process.cwd(), `../written-content/**/*.md`);
-const ROOT = path.resolve(process.cwd(), "../written-content");
+const CONTENT_PATH = path.resolve(
+  process.cwd(),
+  `../exercise-playground/**/*.md`
+);
+const ROOT = path.resolve(process.cwd(), "../exercise-playground");
 
 const reportFilePath = (filePath: AbsolutePath) => {
   console.log("File changed: " + path.relative(ROOT, filePath));
@@ -94,7 +97,7 @@ export const runWebsocketServer = async () => {
     (e) => {
       console.error(e);
       process.exit(1);
-    },
+    }
   );
 
   chokidar
