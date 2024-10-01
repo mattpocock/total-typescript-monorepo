@@ -1,4 +1,10 @@
-import { Await, useBeforeUnload, useNavigate } from "@remix-run/react";
+import {
+  Await,
+  useBeforeUnload,
+  useFetcher,
+  useNavigate,
+  useSubmit,
+} from "@remix-run/react";
 import { Suspense, useEffect, useState } from "react";
 import {
   CommandDialog,
@@ -9,6 +15,7 @@ import {
   CommandList,
 } from "./components/ui/command";
 import {
+  addPostUrl,
   coursesUrl,
   courseUrl,
   dashboardUrl,
@@ -45,12 +52,27 @@ export function CommandPalette(props: {
     setOpen(false);
   };
 
+  const submit = useSubmit();
+
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
       <CommandInput placeholder="Type a command or search..." />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandGroup heading="Go To Page">
+          <CommandItem
+            onSelect={() => {
+              setOpen(false);
+              submit(null, {
+                replace: true,
+                action: addPostUrl(),
+                method: "POST",
+                unstable_flushSync: true,
+              });
+            }}
+          >
+            Add New Post
+          </CommandItem>
           <CommandItem
             onSelect={() => {
               goToPage(dashboardUrl());

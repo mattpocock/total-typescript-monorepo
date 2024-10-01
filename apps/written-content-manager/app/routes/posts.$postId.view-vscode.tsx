@@ -15,15 +15,21 @@ export const action = async ({ params }: ActionFunctionArgs) => {
   const files = await getVSCodeFilesForPost(postId!);
 
   if (files.length === 0) {
-    const file = path.join(postsDir, "playground.ts");
-    await writeFile(file, `// http://localhost:3004${editPostUrl(postId!)}`);
-
-    const file2 = path.join(postsDir, "notes.md");
+    const playgroundFile = path.join(postsDir, "playground.ts");
     await writeFile(
-      file2,
+      playgroundFile,
+      `// http://localhost:3004${editPostUrl(postId!)}`
+    );
+
+    const notesFile = path.join(postsDir, "notes.md");
+    await writeFile(
+      notesFile,
       [`# Notes`, ``, `http://localhost:3004${editPostUrl(postId!)}`].join("\n")
     );
-    await execAsync(`code "${file}"`);
+
+    const threadFile = path.join(postsDir, "thread.md");
+    await writeFile(threadFile, ``);
+    await execAsync(`code "${threadFile}"`);
   } else {
     await execAsync(`code "${files[0]}"`);
   }

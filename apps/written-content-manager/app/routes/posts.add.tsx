@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
-import { redirect } from "@remix-run/react";
+import { redirectDocument } from "@remix-run/react";
 import { p } from "~/db";
 import { editPostUrl } from "~/routes";
 
@@ -19,5 +19,5 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     },
   });
 
-  return redirect(editPostUrl(post.id));
+  return redirectDocument(editPostUrl(post.id));
 };

@@ -38,7 +38,13 @@ export const appRouter = t.router({
     list: publicProcedure.query(async () => {
       return p.socialPost.findMany({
         where: {
+          title: {
+            not: "",
+          },
           deleted: false,
+        },
+        orderBy: {
+          updatedAt: "desc",
         },
       });
     }),
@@ -67,7 +73,7 @@ export const appRouter = t.router({
             id: z.string(),
             title: z.string(),
             learningGoal: z.string().optional(),
-            content: z.string().optional(),
+            notes: z.string().optional(),
             postedAt: z.union([
               z.enum([""]).transform(() => null),
               z.string().datetime().optional(),
@@ -83,7 +89,7 @@ export const appRouter = t.router({
           data: {
             title: input.title,
             learningGoal: input.learningGoal,
-            content: input.content,
+            notes: input.notes,
             postedAt: input.postedAt,
           },
         });

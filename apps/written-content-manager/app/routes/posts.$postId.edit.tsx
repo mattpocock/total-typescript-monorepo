@@ -11,6 +11,7 @@ import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { DatePicker } from "~/components/ui/datepicker";
 import { Input } from "~/components/ui/input";
+import { LazyLoadedEditor } from "~/monaco-editor/lazy-loaded-editor";
 import { editPostUrl } from "~/routes";
 import { trpc } from "~/trpc/client";
 import { useDebounceFetcher } from "~/use-debounced-fetcher";
@@ -48,7 +49,6 @@ export default function EditPost() {
   const formRef = useRef<HTMLFormElement | null>(null);
   const handleChange = () => {
     debouncedFetcher.debounceSubmit(formRef.current, {
-      replace: true,
       debounceTimeout: 200,
     });
   };
@@ -107,6 +107,14 @@ export default function EditPost() {
               </div>
             );
           })}
+          <LazyLoadedEditor
+            defaultValue={post.notes}
+            label="Notes"
+            name="notes"
+            language="md"
+            className="col-span-full"
+            onChange={handleChange}
+          />
           <FormButtons>
             <Button type="submit">Save</Button>
           </FormButtons>

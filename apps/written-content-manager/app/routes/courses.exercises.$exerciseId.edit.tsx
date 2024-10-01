@@ -146,7 +146,6 @@ export default function Exercise() {
   const formRef = useRef<HTMLFormElement | null>(null);
   const handleChange = () => {
     debouncedFetcher.debounceSubmit(formRef.current, {
-      replace: true,
       debounceTimeout: 200,
     });
   };
@@ -164,9 +163,7 @@ export default function Exercise() {
       body: formData,
     }).then((res) => {
       if (res.ok) {
-        navigate(window.location.pathname, {
-          replace: true,
-        });
+        navigate(window.location.pathname);
       } else {
         alert("Upload failed!");
       }
