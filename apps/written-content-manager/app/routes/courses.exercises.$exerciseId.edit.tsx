@@ -147,6 +147,7 @@ export default function Exercise() {
   const handleChange = () => {
     debouncedFetcher.debounceSubmit(formRef.current, {
       debounceTimeout: 200,
+      preventScrollReset: true,
     });
   };
 

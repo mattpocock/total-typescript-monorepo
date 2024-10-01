@@ -69,7 +69,9 @@ export const loader = () => {
           createdAt: {
             gte: todayAtMidnight,
           },
-          type: "EXERCISE_CREATED",
+          type: {
+            in: ["EXERCISE_CREATED", "POST_CREATED"],
+          },
         },
       }),
       p.analyticsEvent.count({
@@ -77,7 +79,9 @@ export const loader = () => {
           createdAt: {
             gte: todayAtMidnight,
           },
-          type: "EXERCISE_DELETED",
+          type: {
+            in: ["EXERCISE_DELETED", "POST_DELETED"],
+          },
         },
       }),
       p.analyticsEvent.count({
@@ -85,7 +89,12 @@ export const loader = () => {
           createdAt: {
             gte: todayAtMidnight,
           },
-          type: "EXERCISE_AUDIO_RECORDING_CREATED",
+          type: {
+            in: [
+              "EXERCISE_MARKED_READY_FOR_RECORDING",
+              "POST_MARKED_AS_POSTED",
+            ],
+          },
         },
       }),
       p.analyticsEvent.count({

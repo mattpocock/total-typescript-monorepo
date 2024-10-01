@@ -82,6 +82,25 @@ export const appRouter = t.router({
           .strict()
       )
       .mutation(async ({ input }) => {
+        const post = await p.socialPost.findUniqueOrThrow({
+          where: {
+            id: input.id,
+          },
+          select: {
+            postedAt: true,
+          },
+        });
+
+        if (post.postedAt === null && input.postedAt !== null) {
+          await p.analyticsEvent.create({
+            data: {
+              type: "POST_MARKED_AS_POSTED",
+              payload: {
+                postId: input.id,
+              },
+            },
+          });
+        }
         return p.socialPost.update({
           where: {
             id: input.id,

@@ -50,6 +50,7 @@ export default function EditPost() {
   const handleChange = () => {
     debouncedFetcher.debounceSubmit(formRef.current, {
       debounceTimeout: 200,
+      preventScrollReset: true,
     });
   };
 

@@ -81,6 +81,30 @@ export const loader = async () => {
           type: "EXERCISE_MARKED_READY_FOR_RECORDING",
         },
       }),
+      p.analyticsEvent.count({
+        where: {
+          createdAt: {
+            gte: todayAtMidnight,
+          },
+          type: "POST_CREATED",
+        },
+      }),
+      p.analyticsEvent.count({
+        where: {
+          createdAt: {
+            gte: todayAtMidnight,
+          },
+          type: "POST_DELETED",
+        },
+      }),
+      p.analyticsEvent.count({
+        where: {
+          createdAt: {
+            gte: todayAtMidnight,
+          },
+          type: "POST_MARKED_AS_POSTED",
+        },
+      }),
     ])
     .then((d) => {
       return {
@@ -93,6 +117,9 @@ export const loader = async () => {
         audioRecordingsCreatedToday: d[6],
         audioRecordingsDeletedToday: d[7],
         exercisesMarkedReadyForRecordingToday: d[8],
+        postsCreatedToday: d[9],
+        postsDeletedToday: d[10],
+        postsMarkedAsPostedToday: d[11],
       };
     });
 
@@ -145,6 +172,22 @@ export default function Dashboard() {
           <span className="rounded-full size-36 flex items-center justify-center border-gray-200 border-4 text-5xl text-gray-800 font-mono mt-4">
             {data.audioRecordingsCreatedToday -
               data.audioRecordingsDeletedToday}
+          </span>
+        </div>
+        <div className="p-6 rounded-lg border-2 border-gray-200 flex flex-col items-center">
+          <h2 className="text-xl font-semibold tracking-tight">
+            Posts Created Today
+          </h2>
+          <span className="rounded-full size-36 flex items-center justify-center border-gray-200 border-4 text-5xl text-gray-800 font-mono mt-4">
+            {data.postsCreatedToday - data.postsDeletedToday}
+          </span>
+        </div>
+        <div className="p-6 rounded-lg border-2 border-gray-200 flex flex-col items-center">
+          <h2 className="text-xl font-semibold tracking-tight">
+            Posts Marked as Posted Today
+          </h2>
+          <span className="rounded-full size-36 flex items-center justify-center border-gray-200 border-4 text-5xl text-gray-800 font-mono mt-4">
+            {data.postsMarkedAsPostedToday}
           </span>
         </div>
       </div>

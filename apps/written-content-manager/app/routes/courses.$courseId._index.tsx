@@ -126,7 +126,7 @@ export default function Course() {
       ></TitleArea>
       <Table>
         <TableBody>
-          {sections.map((section) => {
+          {sections.map((section, index) => {
             const exercisesByStatus = section.exercises.map(
               getStatusFromExercise
             );
@@ -136,9 +136,16 @@ export default function Course() {
             return (
               <TableRow key={section.id}>
                 <TableCell>
-                  <Button asChild variant={"link"}>
-                    <Link to={sectionUrl(section.id)}>{section.title}</Link>
-                  </Button>
+                  <div className="flex items-center space-x-4">
+                    <div className="rounded-full size-9 flex justify-center items-center border-2 border-gray-200 flex-shrink-0">
+                      {(index + 1).toString().padStart(2, "0")}
+                    </div>
+                    <div>
+                      <Link to={sectionUrl(section.id)} className="text-base">
+                        {section.title}
+                      </Link>
+                    </div>
+                  </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center space-x-5 text-gray-700">
