@@ -78,21 +78,34 @@ export default function EditPost() {
             className="col-span-full"
             onChange={handleChange}
           />
+
+          <DatePicker
+            name="postedAt"
+            onChange={handleChange}
+            defaultValue={post.postedAt}
+          />
+          <div className="items-center flex justify-center space-x-2">
+            <Checkbox
+              id="isViral"
+              name="isViral"
+              onClick={handleChange}
+              defaultChecked={post.isViral}
+            />
+            <label htmlFor="isViral" className="text-sm">
+              Did The Post Go Viral?
+            </label>
+          </div>
           <Button
             type="button"
             onClick={(e) => {
               e.preventDefault();
               vscode.openSocialPostPlayground(post.id);
             }}
+            className="col-span-full"
           >
             <img src="/vscode-alt.svg" className="size-5 mr-3" />
             Open
           </Button>
-          <DatePicker
-            name="postedAt"
-            onChange={handleChange}
-            defaultValue={post.postedAt}
-          />
           <LazyLoadedEditor
             defaultValue={post.notes}
             label="Notes"

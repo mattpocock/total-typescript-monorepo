@@ -78,6 +78,7 @@ export const appRouter = t.router({
               z.enum([""]).transform(() => null),
               z.string().datetime().optional(),
             ]),
+            isViral: Checkbox.optional(),
           })
           .strict()
       )
@@ -110,6 +111,7 @@ export const appRouter = t.router({
             learningGoal: input.learningGoal,
             notes: input.notes,
             postedAt: input.postedAt,
+            isViral: input.isViral,
           },
         });
       }),

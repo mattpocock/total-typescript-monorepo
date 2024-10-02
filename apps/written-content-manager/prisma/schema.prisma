@@ -87,6 +87,7 @@ model SocialPost {
   learningGoal String?
   content      String?
   notes        String?
+  isViral      Boolean   @default(false)
   postedAt     DateTime?
   deleted      Boolean   @default(false)
   createdAt    DateTime  @default(now())

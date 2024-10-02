@@ -1,6 +1,6 @@
 import type { MetaFunction } from "@remix-run/node";
 import { Form, Link, redirect, useLoaderData } from "@remix-run/react";
-import { DeleteIcon, PlusIcon } from "lucide-react";
+import { BoltIcon, DeleteIcon, PlusIcon, ZapIcon } from "lucide-react";
 import { PageContent, TitleArea } from "~/components";
 import { Button } from "~/components/ui/button";
 import {
@@ -53,6 +53,9 @@ const Page = () => {
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
+            <TableHead>Posted</TableHead>
+            <TableHead>Viral</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -64,12 +67,18 @@ const Page = () => {
                   <p className="text-sm text-gray-500">{post.learningGoal}</p>
                 </Link>
               </TableCell>
+
               <TableCell>
                 {post.postedAt && (
-                  <p>
-                    Posted {new Date(post.postedAt).toISOString().slice(0, 10)}
-                  </p>
+                  <p>{new Date(post.postedAt).toISOString().slice(0, 10)}</p>
                 )}
+              </TableCell>
+              <TableCell>
+                {post.isViral ? (
+                  <div className="size-8 flex justify-center items-center rounded-full bg-gray-100">
+                    <ZapIcon className="size-5" />
+                  </div>
+                ) : null}
               </TableCell>
               <TableCell>
                 <div className="flex items-center">
