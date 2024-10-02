@@ -41,7 +41,14 @@ const Page = () => {
 
   return (
     <PageContent>
-      <TitleArea title="Posts" />
+      <TitleArea
+        title="Posts"
+        underTitle={
+          <p className="text-gray-600">
+            Track your posts on social media and create new ones.
+          </p>
+        }
+      />
       <Table>
         <TableHeader>
           <TableRow>

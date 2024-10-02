@@ -31,7 +31,14 @@ const Page = () => {
 
   return (
     <PageContent>
-      <TitleArea title="Courses" />
+      <TitleArea
+        title="Courses"
+        underTitle={
+          <p className="text-gray-600">
+            Build awesome courses for your students.
+          </p>
+        }
+      />
       <Table>
         <TableHeader>
           <TableRow>

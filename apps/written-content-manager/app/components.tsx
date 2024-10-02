@@ -24,7 +24,7 @@ export const TitleArea = (props: {
   return (
     <div className="space-y-4">
       {props.breadcrumbs}
-      <div className="space-y-2">
+      <div className="space-y-1">
         <PageTitle>{props.title}</PageTitle>
         {props.underTitle}
       </div>

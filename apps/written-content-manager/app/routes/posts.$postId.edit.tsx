@@ -93,6 +93,14 @@ export default function EditPost() {
             onChange={handleChange}
             defaultValue={post.postedAt}
           />
+          <LazyLoadedEditor
+            defaultValue={post.notes}
+            label="Notes"
+            name="notes"
+            language="md"
+            className="col-span-full"
+            onChange={handleChange}
+          />
           {post.files.map((file) => {
             return (
               <div className="col-span-full">
@@ -108,14 +116,6 @@ export default function EditPost() {
               </div>
             );
           })}
-          <LazyLoadedEditor
-            defaultValue={post.notes}
-            label="Notes"
-            name="notes"
-            language="md"
-            className="col-span-full"
-            onChange={handleChange}
-          />
           <FormButtons>
             <Button type="submit">Save</Button>
           </FormButtons>
