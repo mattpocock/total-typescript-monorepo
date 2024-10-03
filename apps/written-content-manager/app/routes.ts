@@ -135,11 +135,11 @@ export const editCollectionUrl = (collectionId: string) => {
   return `/collections/${collectionId}/edit`;
 };
 
-export const addPostToCollection = (collectionId: string, postId: string) => {
-  return `/collections/${collectionId}/posts/${postId}/add`;
+export const addPostToCollectionUrl = (collectionId: string) => {
+  return `/collections/${collectionId}/add-post`;
 };
 
-export const removePostFromCollection = (
+export const removePostFromCollectionUrl = (
   collectionId: string,
   postId: string
 ) => {

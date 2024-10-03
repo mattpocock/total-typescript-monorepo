@@ -48,6 +48,24 @@ export const collectionsRouter = t.router({
         where: {
           id: input.id,
         },
+        select: {
+          id: true,
+          title: true,
+          notes: true,
+          posts: {
+            select: {
+              socialPost: {
+                select: {
+                  id: true,
+                  title: true,
+                },
+              },
+            },
+            orderBy: {
+              order: "asc",
+            },
+          },
+        },
       });
     }),
   create: publicProcedure
@@ -120,6 +138,27 @@ export const collectionsRouter = t.router({
           socialPostId_collectionId: {
             collectionId: input.collectionId,
             socialPostId: input.postId,
+          },
+        },
+      });
+    }),
+  postsNotInCollection: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      return p.socialPost.findMany({
+        where: {
+          collections: {
+            none: {
+              collectionId: input.id,
+            },
+          },
+          deleted: false,
+          title: {
+            not: "",
           },
         },
       });

@@ -24,6 +24,7 @@ export function Combobox(props: {
   name: string;
   defaultValue: string | undefined;
   onChange?: () => void;
+  autoFocus?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(props.defaultValue ?? "");
@@ -32,7 +33,7 @@ export function Combobox(props: {
     <>
       <input type="hidden" value={value} name={props.name} />
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
+        <PopoverTrigger asChild autoFocus={props.autoFocus}>
           <Button
             variant="outline"
             role="combobox"
@@ -54,9 +55,13 @@ export function Combobox(props: {
                 {props.options.map((opt) => (
                   <CommandItem
                     key={opt.value}
-                    value={opt.value}
-                    onSelect={(currentValue) => {
-                      setValue(currentValue === value ? "" : currentValue);
+                    value={opt.label}
+                    onSelect={(label) => {
+                      const resolvedValue = props.options.find(
+                        (o) => o.label === label
+                      )?.value;
+                      if (!resolvedValue) return;
+                      setValue(resolvedValue === value ? "" : resolvedValue);
                       setOpen(false);
                       props.onChange?.();
                     }}
