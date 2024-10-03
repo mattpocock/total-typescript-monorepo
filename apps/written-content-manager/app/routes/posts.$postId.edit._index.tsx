@@ -101,10 +101,17 @@ export default function EditPost() {
               e.preventDefault();
               vscode.openSocialPostPlayground(post.id);
             }}
-            className="col-span-full"
           >
             <img src="/vscode-alt.svg" className="size-5 mr-3" />
             Open
+          </Button>
+          <Button asChild type="button">
+            <a
+              href={`https://publish.buffer.com/post/new`}
+              target="buffer-page"
+            >
+              Open Buffer
+            </a>
           </Button>
           <LazyLoadedEditor
             defaultValue={post.notes}

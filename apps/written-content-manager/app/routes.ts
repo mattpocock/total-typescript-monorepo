@@ -118,3 +118,30 @@ export const editPostUrl = (postId: string) => {
 export const openPostInVSCodeUrl = (postId: string) => {
   return `/posts/${postId}/view-vscode`;
 };
+
+export const collectionsUrl = () => {
+  return `/collections`;
+};
+
+export const addCollectionUrl = () => {
+  return `/collections/add`;
+};
+
+export const deleteCollectionUrl = (collectionId: string) => {
+  return `/collections/${collectionId}/delete`;
+};
+
+export const editCollectionUrl = (collectionId: string) => {
+  return `/collections/${collectionId}/edit`;
+};
+
+export const addPostToCollection = (collectionId: string, postId: string) => {
+  return `/collections/${collectionId}/posts/${postId}/add`;
+};
+
+export const removePostFromCollection = (
+  collectionId: string,
+  postId: string
+) => {
+  return `/collections/${collectionId}/posts/${postId}/remove`;
+};

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { createVSCodeFilename } from "../app/utils";
+import { sanitizeForVSCodeFilename } from "../app/utils";
 
-describe("createVSCodeFilename", () => {
+describe("sanitizeForVSCodeFilename", () => {
   it.each([
     ["Input", "input"],
     ["abcWow", "abcwow"],
@@ -12,6 +12,6 @@ describe("createVSCodeFilename", () => {
       "uint16arrays-uint32arrays-and-uint64arrays",
     ],
   ])("Should work", (input: string, output: string) => {
-    expect(createVSCodeFilename(input)).toBe(output);
+    expect(sanitizeForVSCodeFilename(input)).toBe(output);
   });
 });

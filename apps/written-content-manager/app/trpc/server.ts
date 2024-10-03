@@ -1,16 +1,15 @@
 import { pathExists } from "@total-typescript/shared";
-import { initTRPC } from "@trpc/server";
 import { readFileSync } from "fs";
 import path from "path";
 import { z } from "zod";
 import { p } from "~/db";
 import { Checkbox } from "~/schema";
 import { getVSCodeFilesForPost } from "~/vscode-utils";
-
-const t = initTRPC.create();
-const publicProcedure = t.procedure;
+import { publicProcedure, t } from "./trpc";
+import { collectionsRouter } from "./collections";
 
 export const appRouter = t.router({
+  collections: collectionsRouter,
   posts: t.router({
     get: publicProcedure
       .input(

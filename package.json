@@ -18,7 +18,7 @@
     "make-video": "turbo watch dev --filter=remotion-code-hike --filter=sync-current-markdown-file-to-remotion --filter=source-to-code-samples --filter=record-narration",
     "new": "(cd apps/written-content && pnpm run new)",
     "scratch": "(cd apps/written-content && pnpm run scratch)",
-    "manage": "turbo watch lint dev --filter written-content-manager"
+    "manage": "turbo watch lint dev db:dev --filter written-content-manager"
   },
   "keywords": [],
   "author": "Matt Pocock",

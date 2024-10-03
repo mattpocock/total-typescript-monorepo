@@ -82,14 +82,35 @@ model Exercise {
 }
 
 model SocialPost {
-  id           String    @id @default(uuid())
+  id           String                             @id @default(uuid())
   title        String
   learningGoal String?
   content      String?
   notes        String?
-  isViral      Boolean   @default(false)
+  isViral      Boolean                            @default(false)
   postedAt     DateTime?
-  deleted      Boolean   @default(false)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  deleted      Boolean                            @default(false)
+  createdAt    DateTime                           @default(now())
+  updatedAt    DateTime                           @updatedAt
+  collections  SocialPostToSocialPostCollection[]
+}
+
+model SocialPostToSocialPostCollection {
+  order        Int
+  socialPostId String
+  socialPost   SocialPost           @relation(fields: [socialPostId], references: [id], onDelete: Cascade)
+  collectionId String
+  collection   SocialPostCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@unique([socialPostId, collectionId])
+}
+
+model SocialPostCollection {
+  id        String                             @id @default(uuid())
+  title     String
+  notes     String?
+  deleted   Boolean                            @default(false)
+  posts     SocialPostToSocialPostCollection[]
+  createdAt DateTime                           @default(now())
+  updatedAt DateTime                           @updatedAt
 }
