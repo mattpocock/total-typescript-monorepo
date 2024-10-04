@@ -55,6 +55,7 @@ const Page = () => {
             <TableHead>Name</TableHead>
             <TableHead>Posted</TableHead>
             <TableHead>Viral</TableHead>
+            <TableHead>Collections</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -80,6 +81,7 @@ const Page = () => {
                   </div>
                 ) : null}
               </TableCell>
+              <TableCell>{post.collections.length}</TableCell>
               <TableCell>
                 <div className="flex items-center">
                   <Button

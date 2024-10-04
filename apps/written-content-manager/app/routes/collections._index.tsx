@@ -29,9 +29,9 @@ export const clientLoader = async () => {
 };
 
 export const clientAction = createJsonAction(async (json) => {
-  const colleciton = await trpc.collections.create.mutate(json);
+  const collection = await trpc.collections.create.mutate(json);
 
-  return redirect(editCollectionUrl(colleciton.id));
+  return redirect(editCollectionUrl(collection.id));
 });
 
 const Page = () => {
@@ -51,8 +51,7 @@ const Page = () => {
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
-            {/* <TableHead>Posted</TableHead>
-            <TableHead>Viral</TableHead> */}
+            <TableHead>Posts</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -71,20 +70,7 @@ const Page = () => {
                 </Link>
               </TableCell>
 
-              {/* <TableCell>
-                {collection.postedAt && (
-                  <p>
-                    {new Date(collection.postedAt).toISOString().slice(0, 10)}
-                  </p>
-                )}
-              </TableCell>
-              <TableCell>
-                {collection.isViral ? (
-                  <div className="size-8 flex justify-center items-center rounded-full bg-gray-100">
-                    <ZapIcon className="size-5" />
-                  </div>
-                ) : null}
-              </TableCell> */}
+              <TableCell>{collection._count.posts}</TableCell>
               <TableCell>
                 <div className="flex items-center">
                   {/* <Button

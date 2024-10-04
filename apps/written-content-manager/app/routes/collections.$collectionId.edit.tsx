@@ -1,24 +1,16 @@
 import type { MetaFunction } from "@remix-run/node";
 import {
   Form,
-  Link,
   redirect,
+  useFetcher,
   useLoaderData,
-  useNavigate,
-  useSearchParams,
   type ClientLoaderFunctionArgs,
 } from "@remix-run/react";
-import { PlusIcon } from "lucide-react";
+import { DeleteIcon, PlusIcon } from "lucide-react";
 import { useRef } from "react";
-import { FormButtons, FormContent, PageContent, TitleArea } from "~/components";
+import { FormContent, PageContent, TitleArea } from "~/components";
 import { Button } from "~/components/ui/button";
 import { Combobox } from "~/components/ui/combobox";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-} from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import {
   Table,
@@ -84,9 +76,7 @@ export default function EditPost() {
     });
   };
 
-  const [search] = useSearchParams();
-
-  const navigate = useNavigate();
+  const fetcher = useFetcher();
 
   return (
     <PageContent>
@@ -157,7 +147,9 @@ export default function EditPost() {
                           post.socialPost.id
                         )}
                       >
-                        <Button type="submit">Remove</Button>
+                        <Button type="submit" variant={"secondary"}>
+                          <DeleteIcon />
+                        </Button>
                       </Form>
                     </TableCell>
                   </TableRow>
@@ -166,49 +158,32 @@ export default function EditPost() {
             </TableBody>
           </Table>
         </div>
-        <div>
-          <Button asChild>
-            <Link to={"?add"}>
-              <PlusIcon />
-            </Link>
+        <form
+          className="grid grid-flow-col"
+          onSubmit={(e) => {
+            e.preventDefault();
+            fetcher.submit(e.currentTarget, {
+              action: addPostToCollectionUrl(collection.id),
+              method: "POST",
+              preventScrollReset: true,
+            });
+            e.currentTarget.reset();
+          }}
+        >
+          <Combobox
+            defaultValue=""
+            name="postId"
+            options={postsToAdd.map((post) => ({
+              label: post.title,
+              value: post.id,
+            }))}
+            placeholder="Select Post..."
+          />
+          <Button type="submit" className="w-16">
+            <PlusIcon />
           </Button>
-        </div>
-        <FormButtons>
-          <Button type="submit" form="text-fields">
-            Save
-          </Button>
-        </FormButtons>
+        </form>
       </FormContent>
-      <Dialog
-        open={search.has("add")}
-        onOpenChange={(o) => {
-          if (!o) {
-            navigate(editCollectionUrl(collection.id));
-          }
-        }}
-      >
-        <DialogContent>
-          <DialogHeader>Add Post</DialogHeader>
-          <DialogDescription>
-            <Form method="POST" action={addPostToCollectionUrl(collection.id)}>
-              <FormContent>
-                <Combobox
-                  defaultValue=""
-                  name="postId"
-                  options={postsToAdd.map((post) => ({
-                    label: post.title,
-                    value: post.id,
-                  }))}
-                  autoFocus
-                />
-                <FormButtons>
-                  <Button type="submit">Save</Button>
-                </FormButtons>
-              </FormContent>
-            </Form>
-          </DialogDescription>
-        </DialogContent>
-      </Dialog>
     </PageContent>
   );
 }

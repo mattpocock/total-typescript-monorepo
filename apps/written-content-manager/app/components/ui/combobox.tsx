@@ -17,7 +17,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 export function Combobox(props: {
   options: { value: string; label: string }[];
@@ -25,9 +25,20 @@ export function Combobox(props: {
   defaultValue: string | undefined;
   onChange?: () => void;
   autoFocus?: boolean;
+  placeholder?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(props.defaultValue ?? "");
+  const valueToLabelMap = useMemo(
+    () =>
+      new Map<string, string>(
+        props.options.flatMap((o) => [
+          [o.value, o.label],
+          [o.label, o.value],
+        ])
+      ),
+    [props.options]
+  );
 
   return (
     <>
@@ -41,8 +52,8 @@ export function Combobox(props: {
             className="w-full justify-between"
           >
             {value
-              ? props.options.find((o) => o.value === value)?.label
-              : "Select..."}
+              ? valueToLabelMap.get(value)
+              : (props.placeholder ?? "Select...")}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -57,9 +68,7 @@ export function Combobox(props: {
                     key={opt.value}
                     value={opt.label}
                     onSelect={(label) => {
-                      const resolvedValue = props.options.find(
-                        (o) => o.label === label
-                      )?.value;
+                      const resolvedValue = valueToLabelMap.get(label);
                       if (!resolvedValue) return;
                       setValue(resolvedValue === value ? "" : resolvedValue);
                       setOpen(false);

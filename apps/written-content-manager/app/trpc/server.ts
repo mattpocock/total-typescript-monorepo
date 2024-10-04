@@ -45,6 +45,18 @@ export const appRouter = t.router({
         orderBy: {
           updatedAt: "desc",
         },
+        include: {
+          collections: {
+            where: {
+              collection: {
+                deleted: false,
+              },
+            },
+            select: {
+              collectionId: true,
+            },
+          },
+        },
       });
     }),
     create: publicProcedure

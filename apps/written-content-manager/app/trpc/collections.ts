@@ -35,6 +35,13 @@ export const collectionsRouter = t.router({
       where: {
         deleted: false,
       },
+      include: {
+        _count: {
+          select: {
+            posts: true,
+          },
+        },
+      },
     });
   }),
   get: publicProcedure
@@ -160,6 +167,9 @@ export const collectionsRouter = t.router({
           title: {
             not: "",
           },
+        },
+        orderBy: {
+          updatedAt: "desc",
         },
       });
     }),
