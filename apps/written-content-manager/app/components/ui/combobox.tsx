@@ -17,7 +17,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 
 export function Combobox(props: {
   options: { value: string; label: string }[];
@@ -40,9 +40,29 @@ export function Combobox(props: {
     [props.options]
   );
 
+  const ref = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const form = ref.current?.form;
+    if (form) {
+      const aborter = new AbortController();
+      form.addEventListener(
+        "reset",
+        () => {
+          setValue("");
+        },
+        {
+          signal: aborter.signal,
+        }
+      );
+
+      return () => aborter.abort();
+    }
+  }, [ref.current]);
+
   return (
     <>
-      <input type="hidden" value={value} name={props.name} />
+      <input type="hidden" value={value} name={props.name} ref={ref} />
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild autoFocus={props.autoFocus}>
           <Button
