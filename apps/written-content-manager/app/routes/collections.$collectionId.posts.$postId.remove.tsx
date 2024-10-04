@@ -1,5 +1,3 @@
-import { redirect } from "@remix-run/react";
-import { collectionsUrl, editCollectionUrl } from "~/routes";
 import { trpc } from "~/trpc/client";
 import { createJsonAction } from "~/utils";
 
@@ -9,5 +7,5 @@ export const clientAction = createJsonAction(async (json, args) => {
     postId: args.params.postId!,
   });
 
-  return redirect(editCollectionUrl(args.params.collectionId!));
+  return { success: true };
 });

@@ -140,17 +140,22 @@ export default function EditPost() {
                   <TableRow key={post.socialPost.id}>
                     <TableCell>{post.socialPost.title}</TableCell>
                     <TableCell>
-                      <Form
-                        method="post"
-                        action={removePostFromCollectionUrl(
-                          collection.id,
-                          post.socialPost.id
-                        )}
+                      <Button
+                        type="submit"
+                        variant={"secondary"}
+                        onClick={() => {
+                          fetcher.submit(null, {
+                            action: removePostFromCollectionUrl(
+                              collection.id,
+                              post.socialPost.id
+                            ),
+                            method: "POST",
+                            preventScrollReset: true,
+                          });
+                        }}
                       >
-                        <Button type="submit" variant={"secondary"}>
-                          <DeleteIcon />
-                        </Button>
-                      </Form>
+                        <DeleteIcon />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 );

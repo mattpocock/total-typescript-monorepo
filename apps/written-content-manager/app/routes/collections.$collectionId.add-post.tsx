@@ -8,6 +8,6 @@ export const clientAction = createJsonAction(async (json, args) => {
   });
 
   return {
-    hey: true,
+    success: true,
   };
 });
