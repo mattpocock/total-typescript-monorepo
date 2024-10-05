@@ -13,7 +13,7 @@ import {
   RENDER_TYPES,
 } from "@total-typescript/twoslash-shared";
 import { readFile } from "fs/promises";
-import { CodeSnippetRenderer } from "~/components";
+import { CodeSnippetRenderer } from "~/shot-slash-components";
 
 export const loader = async (args: LoaderFunctionArgs) => {
   const url = new URL(args.request.url);

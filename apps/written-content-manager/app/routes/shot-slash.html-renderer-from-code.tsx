@@ -10,10 +10,13 @@ import {
   applyShikiToCode,
   htmlRendererFromCodeSchema,
 } from "@total-typescript/twoslash-shared";
-import { CodeSnippetRenderer, type RendererData } from "~/components";
+import {
+  CodeSnippetRenderer,
+  type RendererData,
+} from "~/shot-slash-components";
 
 export const loader = async (
-  args: LoaderFunctionArgs,
+  args: LoaderFunctionArgs
 ): Promise<RendererData> => {
   const url = new URL(args.request.url);
 

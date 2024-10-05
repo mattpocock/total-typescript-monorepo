@@ -483,6 +483,9 @@ importers:
       '@remix-run/serve':
         specifier: 2.11.1
         version: 2.11.1(typescript@5.6.2)
+      '@total-typescript/twoslash-shared':
+        specifier: workspace:*
+        version: link:../../packages/twoslash-shared
       '@trpc/client':
         specifier: ^10.45.2
         version: 10.45.2(@trpc/server@10.45.2)

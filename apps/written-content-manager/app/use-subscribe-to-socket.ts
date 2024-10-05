@@ -1,9 +1,12 @@
-import type { WSEvent } from "@total-typescript/twoslash-shared";
+import {
+  WEBSOCKET_PORT,
+  type WSEvent,
+} from "@total-typescript/twoslash-shared";
 import { useEffect } from "react";
 
 export const useSubscribeToSocket = (onNewUri: (url: string) => void) => {
   useEffect(() => {
-    const socket = new WebSocket("ws://localhost:3001");
+    const socket = new WebSocket(`ws://localhost:${WEBSOCKET_PORT}`);
 
     socket.addEventListener("message", ({ data }) => {
       console.log("message received");

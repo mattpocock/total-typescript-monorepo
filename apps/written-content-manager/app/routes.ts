@@ -145,3 +145,15 @@ export const removePostFromCollectionUrl = (
 ) => {
   return `/collections/${collectionId}/posts/${postId}/remove`;
 };
+
+export const shotSlashUrl = () => {
+  return `/shot-slash`;
+};
+
+export const shotSlashHtmlRendererFromCodeUrl = () => {
+  return `/shot-slash/html-renderer-from-code`;
+};
+
+export const shotSlashHtmlRendererFromFileUrl = () => {
+  return `/shot-slash/html-renderer-from-file-uri`;
+};

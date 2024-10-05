@@ -1,12 +1,13 @@
 import {
-  FRONTEND_APP_PORT,
+  HTML_RENDERER_FROM_CODE_URL,
+  HTML_RENDERER_FROM_FILE_URL,
   htmlRendererFromCodeSchema,
   htmlRendererFromFileUrlSchema,
   IMAGE_SERVER_PORT,
 } from "@total-typescript/twoslash-shared";
 import fastq from "fastq";
 import { createServer } from "http";
-import { takeCodeImage } from "./takeCodeImage.js";
+import { takeCodeImage } from "./take-code-image.js";
 
 const CONCURRENCY = 2;
 
@@ -31,8 +32,8 @@ const server = createServer(async (req, res) => {
       return;
     }
 
-    const urlToTakeScreenshotOf = `http://localhost:${FRONTEND_APP_PORT}/html-renderer-from-file-uri?${new URLSearchParams(
-      params,
+    const urlToTakeScreenshotOf = `${HTML_RENDERER_FROM_FILE_URL}?${new URLSearchParams(
+      params
     )}`;
 
     const image = await screenshotQueue.push(urlToTakeScreenshotOf);
@@ -55,8 +56,8 @@ const server = createServer(async (req, res) => {
       return;
     }
 
-    const urlToTakeScreenshotOf = `http://localhost:${FRONTEND_APP_PORT}/html-renderer-from-code?${new URLSearchParams(
-      params,
+    const urlToTakeScreenshotOf = `${HTML_RENDERER_FROM_CODE_URL}?${new URLSearchParams(
+      params
     )}`;
 
     const image = await screenshotQueue.push(urlToTakeScreenshotOf);

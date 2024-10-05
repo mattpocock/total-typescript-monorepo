@@ -23,9 +23,11 @@ import {
   dashboardUrl,
   homeUrl,
   postsUrl,
+  shotSlashUrl,
 } from "./routes";
 import "./tailwind.css";
 import "./fonts.css";
+import "./shiki.css";
 
 export const loader = () => {
   const courses = p.course
@@ -170,6 +172,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <MyNavLink to={coursesUrl()}>Courses</MyNavLink>
             <MyNavLink to={postsUrl()}>Posts</MyNavLink>
             <MyNavLink to={collectionsUrl()}>Collections</MyNavLink>
+            <MyNavLink to={shotSlashUrl()}>ShotSlash</MyNavLink>
           </div>
           {data?.analyticsData && (
             <div>

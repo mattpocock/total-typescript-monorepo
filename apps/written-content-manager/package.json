@@ -15,6 +15,7 @@
     "migrate:unsafe": "pnpm run migrate:dev && pnpm run migrate:prod"
   },
   "dependencies": {
+    "@total-typescript/twoslash-shared": "workspace:*",
     "@monaco-editor/react": "^4.6.0",
     "@prisma/client": "5.19.1",
     "@radix-ui/react-checkbox": "^1.1.1",
