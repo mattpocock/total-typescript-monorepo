@@ -65,6 +65,8 @@ export const collectionsRouter = t.router({
                 select: {
                   id: true,
                   title: true,
+                  isViral: true,
+                  postedAt: true,
                 },
               },
             },

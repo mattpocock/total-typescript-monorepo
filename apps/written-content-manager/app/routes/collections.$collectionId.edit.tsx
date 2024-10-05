@@ -1,12 +1,13 @@
 import type { MetaFunction } from "@remix-run/node";
 import {
   Form,
+  Link,
   redirect,
   useFetcher,
   useLoaderData,
   type ClientLoaderFunctionArgs,
 } from "@remix-run/react";
-import { DeleteIcon, PlusIcon } from "lucide-react";
+import { DeleteIcon, PlusIcon, ZapIcon } from "lucide-react";
 import { useRef } from "react";
 import { FormContent, PageContent, TitleArea } from "~/components";
 import { Button } from "~/components/ui/button";
@@ -24,6 +25,7 @@ import { LazyLoadedEditor } from "~/monaco-editor/lazy-loaded-editor";
 import {
   addPostToCollectionUrl,
   editCollectionUrl,
+  editPostUrl,
   removePostFromCollectionUrl,
 } from "~/routes";
 import { trpc } from "~/trpc/client";
@@ -131,6 +133,8 @@ export default function EditPost() {
             <TableHeader>
               <TableRow>
                 <TableHead>Post</TableHead>
+                <TableHead>Posted At</TableHead>
+                <TableHead>Viral</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -138,7 +142,30 @@ export default function EditPost() {
               {collection.posts.map((post) => {
                 return (
                   <TableRow key={post.socialPost.id}>
-                    <TableCell>{post.socialPost.title}</TableCell>
+                    <TableCell>
+                      <Link
+                        to={editPostUrl(post.socialPost.id)}
+                        className="text-base"
+                      >
+                        {post.socialPost.title}
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      {post.socialPost.postedAt && (
+                        <p>
+                          {new Date(post.socialPost.postedAt)
+                            .toISOString()
+                            .slice(0, 10)}
+                        </p>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {post.socialPost.isViral ? (
+                        <div className="size-8 flex justify-center items-center rounded-full bg-gray-100">
+                          <ZapIcon className="size-5" />
+                        </div>
+                      ) : null}
+                    </TableCell>
                     <TableCell>
                       <Button
                         type="submit"
