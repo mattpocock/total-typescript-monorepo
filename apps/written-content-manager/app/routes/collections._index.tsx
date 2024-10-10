@@ -1,6 +1,14 @@
 import type { MetaFunction } from "@remix-run/node";
-import { Form, Link, redirect, useLoaderData } from "@remix-run/react";
+import {
+  Form,
+  Link,
+  redirect,
+  useLoaderData,
+  useSubmit,
+} from "@remix-run/react";
 import { DeleteIcon, PlusIcon } from "lucide-react";
+import { useMemo } from "react";
+import { useOnPageActions } from "~/command-palette";
 import { PageContent, TitleArea } from "~/components";
 import { Button } from "~/components/ui/button";
 import {
@@ -36,6 +44,24 @@ export const clientAction = createJsonAction(async (json) => {
 
 const Page = () => {
   const collections = useLoaderData<typeof clientLoader>();
+
+  const submit = useSubmit();
+
+  useOnPageActions(
+    useMemo(
+      () => [
+        {
+          label: "Add New Collection",
+          action: () => {
+            submit(null, {
+              method: "post",
+            });
+          },
+        },
+      ],
+      []
+    )
+  );
 
   return (
     <PageContent>
@@ -101,7 +127,6 @@ const Page = () => {
         </TableBody>
       </Table>
       <Form method="POST">
-        <input type="hidden" name="title" value="" />
         <Button>
           <PlusIcon />
         </Button>

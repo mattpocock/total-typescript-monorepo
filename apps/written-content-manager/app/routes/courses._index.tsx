@@ -1,6 +1,8 @@
 import type { MetaFunction } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData, useNavigate, useSubmit } from "@remix-run/react";
 import { PlusIcon } from "lucide-react";
+import { useMemo } from "react";
+import { useOnPageActions } from "~/command-palette";
 import { PageContent, TitleArea } from "~/components";
 import { Button } from "~/components/ui/button";
 import {
@@ -28,6 +30,22 @@ export const clientLoader = async () => {
 
 const Page = () => {
   const data = useLoaderData<typeof clientLoader>();
+
+  const navigate = useNavigate();
+
+  useOnPageActions(
+    useMemo(
+      () => [
+        {
+          action: () => {
+            navigate(addCourseUrl(coursesUrl()));
+          },
+          label: "Add New Course",
+        },
+      ],
+      []
+    )
+  );
 
   return (
     <PageContent>

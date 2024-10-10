@@ -1,11 +1,11 @@
+import { Await, useNavigate, useSubmit } from "@remix-run/react";
 import {
-  Await,
-  useBeforeUnload,
-  useFetcher,
-  useNavigate,
-  useSubmit,
-} from "@remix-run/react";
-import { Suspense, useEffect, useState } from "react";
+  createContext,
+  Suspense,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -23,6 +23,27 @@ import {
   sectionUrl,
 } from "./routes";
 
+export type ActionsType = { action: () => void; label: string }[];
+
+export const OnPageActionsContext = createContext<{
+  actions: ActionsType;
+  setActions: (actions: ActionsType) => void;
+} | null>(null);
+
+export const useOnPageActions = (actions: ActionsType) => {
+  const onPageActionsContext = useContext(OnPageActionsContext);
+
+  if (!onPageActionsContext) throw new Error("No OnPageActionsContext found");
+
+  useEffect(() => {
+    onPageActionsContext.setActions(actions);
+
+    return () => {
+      onPageActionsContext.setActions([]);
+    };
+  }, [actions]);
+};
+
 export function CommandPalette(props: {
   courses: Promise<{ id: string; title: string }[]>;
   sections: Promise<{ id: string; title: string; course: { title: string } }[]>;
@@ -32,6 +53,8 @@ export function CommandPalette(props: {
 }) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+
+  const onPageActions = useContext(OnPageActionsContext);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -59,6 +82,21 @@ export function CommandPalette(props: {
       <CommandInput placeholder="Type a command or search..." />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
+        {onPageActions && onPageActions.actions.length > 0 && (
+          <CommandGroup heading="On-Page Actions">
+            {onPageActions.actions.map((action) => (
+              <CommandItem
+                key={action.label}
+                onSelect={() => {
+                  setOpen(false);
+                  action.action();
+                }}
+              >
+                {action.label}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
         <CommandGroup heading="Go To Page">
           <CommandItem
             onSelect={() => {

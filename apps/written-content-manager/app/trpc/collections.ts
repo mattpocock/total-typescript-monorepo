@@ -35,10 +35,19 @@ export const collectionsRouter = t.router({
       where: {
         deleted: false,
       },
+      orderBy: {
+        updatedAt: "desc",
+      },
       include: {
         _count: {
           select: {
-            posts: true,
+            posts: {
+              where: {
+                socialPost: {
+                  deleted: false,
+                },
+              },
+            },
           },
         },
       },
@@ -83,15 +92,13 @@ export const collectionsRouter = t.router({
         },
       });
     }),
-  create: publicProcedure
-    .input(z.object({ title: z.string() }))
-    .mutation(async ({ input }) => {
-      return p.socialPostCollection.create({
-        data: {
-          title: input.title,
-        },
-      });
-    }),
+  create: publicProcedure.mutation(async ({}) => {
+    return p.socialPostCollection.create({
+      data: {
+        title: "",
+      },
+    });
+  }),
   update: publicProcedure
     .input(
       z.object({

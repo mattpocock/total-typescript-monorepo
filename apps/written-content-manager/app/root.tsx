@@ -15,7 +15,11 @@ import {
 } from "@remix-run/react";
 import clsx from "clsx";
 import { MicIcon, PlusIcon, VideoIcon } from "lucide-react";
-import { CommandPalette } from "./command-palette";
+import {
+  CommandPalette,
+  OnPageActionsContext,
+  type ActionsType,
+} from "./command-palette";
 import { p } from "./db";
 import {
   collectionsUrl,
@@ -28,6 +32,7 @@ import {
 import "./tailwind.css";
 import "./fonts.css";
 import "./shiki.css";
+import { useMemo, useState } from "react";
 
 export const loader = () => {
   const courses = p.course
@@ -246,14 +251,26 @@ export function ErrorBoundary() {
 export default function App() {
   const data = useLoaderData<typeof loader>();
 
+  const [onPageActions, setOnPageActions] = useState<ActionsType>([]);
+
+  const memoizedObj = useMemo(
+    () => ({
+      actions: onPageActions,
+      setActions: setOnPageActions,
+    }),
+    [onPageActions, setOnPageActions]
+  );
+
   return (
     <>
-      <Outlet />
-      <CommandPalette
-        courses={data.courses}
-        sections={data.sections}
-        exercises={data.exercises}
-      />
+      <OnPageActionsContext.Provider value={memoizedObj}>
+        <Outlet />
+        <CommandPalette
+          courses={data.courses}
+          sections={data.sections}
+          exercises={data.exercises}
+        />
+      </OnPageActionsContext.Provider>
     </>
   );
 }

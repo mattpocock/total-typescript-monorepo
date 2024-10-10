@@ -8,10 +8,12 @@ import {
   type ClientLoaderFunctionArgs,
 } from "@remix-run/react";
 import { DeleteIcon, PlusIcon, ZapIcon } from "lucide-react";
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
+import { useOnPageActions } from "~/command-palette";
 import { FormContent, PageContent, TitleArea } from "~/components";
 import { Button } from "~/components/ui/button";
 import { Combobox } from "~/components/ui/combobox";
+import { CommandItem } from "~/components/ui/command";
 import { Input } from "~/components/ui/input";
 import {
   Table,
@@ -80,6 +82,24 @@ export default function EditPost() {
   };
 
   const fetcher = useFetcher();
+
+  useOnPageActions(
+    useMemo(
+      () => [
+        {
+          action: () => {
+            fetcher.submit(null, {
+              action: addNewPostToCollectionUrl(collection.id),
+              method: "post",
+              unstable_flushSync: true,
+            });
+          },
+          label: `Add New Post To Collection`,
+        },
+      ],
+      []
+    )
+  );
 
   return (
     <PageContent>
