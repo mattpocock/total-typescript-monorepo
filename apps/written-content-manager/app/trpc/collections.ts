@@ -134,6 +134,24 @@ export const collectionsRouter = t.router({
         postId: input.postId,
       });
     }),
+  addNewPost: publicProcedure
+    .input(
+      z.object({
+        collectionId: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const post = await p.socialPost.create({
+        data: {
+          title: "",
+        },
+      });
+
+      return addPostToCollection({
+        collectionId: input.collectionId,
+        postId: post.id,
+      });
+    }),
   removePost: publicProcedure
     .input(
       z.object({

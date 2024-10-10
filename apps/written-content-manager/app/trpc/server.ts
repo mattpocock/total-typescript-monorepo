@@ -23,6 +23,18 @@ export const appRouter = t.router({
           where: {
             id: input.id,
           },
+          include: {
+            collections: {
+              select: {
+                collection: {
+                  select: {
+                    id: true,
+                    title: true,
+                  },
+                },
+              },
+            },
+          },
         });
 
         return {

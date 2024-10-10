@@ -1,18 +1,34 @@
 import type { MetaFunction } from "@remix-run/node";
 import {
   Form,
+  Link,
   redirect,
+  useFetcher,
   useLoaderData,
   type ClientLoaderFunctionArgs,
 } from "@remix-run/react";
+import { DeleteIcon } from "lucide-react";
 import { useRef } from "react";
 import { FormButtons, FormContent, PageContent, TitleArea } from "~/components";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { DatePicker } from "~/components/ui/datepicker";
 import { Input } from "~/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
 import { LazyLoadedEditor } from "~/monaco-editor/lazy-loaded-editor";
-import { editPostUrl } from "~/routes";
+import {
+  editCollectionUrl,
+  editPostUrl,
+  postsUrl,
+  removePostFromCollectionUrl,
+} from "~/routes";
 import { trpc } from "~/trpc/client";
 import { useDebounceFetcher } from "~/use-debounced-fetcher";
 import { useVSCode } from "~/use-open-in-vscode";
@@ -53,6 +69,8 @@ export default function EditPost() {
       preventScrollReset: true,
     });
   };
+
+  const fetcher = useFetcher();
 
   const vscode = useVSCode();
 
@@ -136,6 +154,50 @@ export default function EditPost() {
               </div>
             );
           })}
+          <Table className="">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Collection</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {post.collections
+                .map((c) => c.collection)
+                .map((collection) => {
+                  return (
+                    <TableRow key={collection.id}>
+                      <TableCell>
+                        <Link
+                          to={editCollectionUrl(collection.id)}
+                          className="text-base"
+                        >
+                          {collection.title}
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          type="submit"
+                          variant={"secondary"}
+                          onClick={() => {
+                            fetcher.submit(null, {
+                              action: removePostFromCollectionUrl(
+                                collection.id,
+                                post.id
+                              ),
+                              method: "POST",
+                              preventScrollReset: true,
+                            });
+                          }}
+                        >
+                          <DeleteIcon />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+            </TableBody>
+          </Table>
           <FormButtons>
             <Button type="submit">Save</Button>
           </FormButtons>

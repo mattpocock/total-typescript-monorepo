@@ -2,7 +2,7 @@
 
 import { Check, ChevronsUpDown } from "lucide-react";
 
-import { cn } from "~/lib/utils";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "~/components/ui/button";
 import {
   Command,
@@ -17,7 +17,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
-import { useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { cn } from "~/lib/utils";
 
 export function Combobox(props: {
   options: { value: string; label: string }[];
@@ -26,6 +26,8 @@ export function Combobox(props: {
   onChange?: () => void;
   autoFocus?: boolean;
   placeholder?: string;
+  emptyText: string;
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(props.defaultValue ?? "");
@@ -69,7 +71,7 @@ export function Combobox(props: {
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-full justify-between"
+            className={cn("w-full justify-between", props.className)}
           >
             {value
               ? valueToLabelMap.get(value)
@@ -81,7 +83,7 @@ export function Combobox(props: {
           <Command>
             <CommandInput placeholder="Search..." />
             <CommandList>
-              <CommandEmpty>No framework found.</CommandEmpty>
+              <CommandEmpty>{props.emptyText}</CommandEmpty>
               <CommandGroup>
                 {props.options.map((opt) => (
                   <CommandItem

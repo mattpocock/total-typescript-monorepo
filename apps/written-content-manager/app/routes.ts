@@ -139,6 +139,10 @@ export const addPostToCollectionUrl = (collectionId: string) => {
   return `/collections/${collectionId}/add-post`;
 };
 
+export const addNewPostToCollectionUrl = (collectionId: string) => {
+  return `/collections/${collectionId}/add-new-post`;
+};
+
 export const removePostFromCollectionUrl = (
   collectionId: string,
   postId: string

@@ -23,6 +23,7 @@ import {
 } from "~/components/ui/table";
 import { LazyLoadedEditor } from "~/monaco-editor/lazy-loaded-editor";
 import {
+  addNewPostToCollectionUrl,
   addPostToCollectionUrl,
   editCollectionUrl,
   editPostUrl,
@@ -190,31 +191,49 @@ export default function EditPost() {
             </TableBody>
           </Table>
         </div>
-        <form
-          className="grid grid-flow-col"
-          onSubmit={(e) => {
-            e.preventDefault();
-            fetcher.submit(e.currentTarget, {
-              action: addPostToCollectionUrl(collection.id),
-              method: "POST",
-              preventScrollReset: true,
-            });
-            e.currentTarget.reset();
-          }}
-        >
-          <Combobox
-            defaultValue=""
-            name="postId"
-            options={postsToAdd.map((post) => ({
-              label: post.title,
-              value: post.id,
-            }))}
-            placeholder="Select Post..."
-          />
-          <Button type="submit" className="w-16">
-            <PlusIcon />
-          </Button>
-        </form>
+        <div className="grid grid-flow-col gap-6">
+          <form
+            className="grid grid-flow-col"
+            onSubmit={(e) => {
+              e.preventDefault();
+              fetcher.submit(e.currentTarget, {
+                action: addPostToCollectionUrl(collection.id),
+                method: "POST",
+                preventScrollReset: true,
+              });
+              e.currentTarget.reset();
+            }}
+          >
+            <Combobox
+              defaultValue=""
+              name="postId"
+              options={postsToAdd.map((post) => ({
+                label: post.title,
+                value: post.id,
+              }))}
+              className="border-r-0 rounded-r-none min-w-64"
+              placeholder="Add Existing Post..."
+              emptyText="No posts found"
+            />
+            <Button
+              type="submit"
+              className="w-12 p-0  border-l-0 rounded-l-none"
+              variant={"outline"}
+            >
+              <PlusIcon className="text-gray-600" />
+            </Button>
+          </form>
+          <Form
+            className="contents"
+            action={addNewPostToCollectionUrl(collection.id)}
+            method="POST"
+          >
+            <Button className="flex items-center space-x-2">
+              <PlusIcon />
+              <span>Add New Post</span>
+            </Button>
+          </Form>
+        </div>
       </FormContent>
     </PageContent>
   );
