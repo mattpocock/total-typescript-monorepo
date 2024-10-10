@@ -148,7 +148,10 @@ export default function EditPost() {
                         to={editPostUrl(post.socialPost.id)}
                         className="text-base"
                       >
-                        {post.socialPost.title}
+                        <h2>{post.socialPost.title}</h2>
+                        <p className="text-sm text-gray-500">
+                          {post.socialPost.learningGoal}
+                        </p>
                       </Link>
                     </TableCell>
                     <TableCell>

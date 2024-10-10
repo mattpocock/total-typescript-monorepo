@@ -67,6 +67,7 @@ export const collectionsRouter = t.router({
                   title: true,
                   isViral: true,
                   postedAt: true,
+                  learningGoal: true,
                 },
               },
             },
