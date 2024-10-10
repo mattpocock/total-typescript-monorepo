@@ -23,7 +23,7 @@ export function Combobox(props: {
   options: { value: string; label: string }[];
   name: string;
   defaultValue: string | undefined;
-  onChange?: () => void;
+  onChange?: (ctx: { value: string; reset: () => void }) => void;
   autoFocus?: boolean;
   placeholder?: string;
   emptyText: string;
@@ -94,7 +94,10 @@ export function Combobox(props: {
                       if (!resolvedValue) return;
                       setValue(resolvedValue === value ? "" : resolvedValue);
                       setOpen(false);
-                      props.onChange?.();
+                      props.onChange?.({
+                        value: resolvedValue,
+                        reset: () => setValue(""),
+                      });
                     }}
                   >
                     <Check

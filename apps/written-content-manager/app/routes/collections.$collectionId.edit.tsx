@@ -13,7 +13,6 @@ import { useOnPageActions } from "~/command-palette";
 import { FormContent, PageContent, TitleArea } from "~/components";
 import { Button } from "~/components/ui/button";
 import { Combobox } from "~/components/ui/combobox";
-import { CommandItem } from "~/components/ui/command";
 import { Input } from "~/components/ui/input";
 import {
   Table,
@@ -215,37 +214,10 @@ export default function EditPost() {
           </Table>
         </div>
         <div className="grid grid-flow-col gap-6">
-          <form
-            className="grid grid-flow-col"
-            onSubmit={(e) => {
-              e.preventDefault();
-              fetcher.submit(e.currentTarget, {
-                action: addPostToCollectionUrl(collection.id),
-                method: "POST",
-                preventScrollReset: true,
-              });
-              e.currentTarget.reset();
-            }}
-          >
-            <Combobox
-              defaultValue=""
-              name="postId"
-              options={postsToAdd.map((post) => ({
-                label: post.title,
-                value: post.id,
-              }))}
-              className="border-r-0 rounded-r-none min-w-64"
-              placeholder="Add Existing Post..."
-              emptyText="No posts found"
-            />
-            <Button
-              type="submit"
-              className="w-12 p-0  border-l-0 rounded-l-none"
-              variant={"outline"}
-            >
-              <PlusIcon className="text-gray-600" />
-            </Button>
-          </form>
+          <AddPostToCollectionForm
+            posts={postsToAdd}
+            collectionId={collection.id}
+          />
           <Form
             className="contents"
             action={addNewPostToCollectionUrl(collection.id)}
@@ -261,3 +233,35 @@ export default function EditPost() {
     </PageContent>
   );
 }
+
+export const AddPostToCollectionForm = (props: {
+  collectionId: string;
+  posts: { title: string; id: string }[];
+}) => {
+  const fetcher = useFetcher();
+
+  return (
+    <Combobox
+      defaultValue=""
+      name="postId"
+      options={props.posts.map((post) => ({
+        label: post.title,
+        value: post.id,
+      }))}
+      className="border-r-0 rounded-r-none min-w-64"
+      placeholder="Add Existing Post..."
+      emptyText="No posts found"
+      onChange={({ value, reset }) => {
+        fetcher.submit(
+          { postId: value },
+          {
+            action: addPostToCollectionUrl(props.collectionId),
+            method: "POST",
+            preventScrollReset: true,
+          }
+        );
+        reset();
+      }}
+    />
+  );
+};
