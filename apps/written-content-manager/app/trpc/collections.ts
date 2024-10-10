@@ -70,6 +70,11 @@ export const collectionsRouter = t.router({
                 },
               },
             },
+            where: {
+              socialPost: {
+                deleted: false,
+              },
+            },
             orderBy: {
               order: "asc",
             },
