@@ -31,12 +31,11 @@ import {
   editPostUrl,
   removePostFromCollectionUrl,
 } from "~/routes";
-import { trpc } from "~/trpc/client";
 import { useDebounceFetcher } from "~/use-debounced-fetcher";
 import { createJsonAction } from "~/utils";
 
-export const clientAction = createJsonAction(async (json, args) => {
-  const collection = await trpc.collections.update.mutate({
+export const action = createJsonAction(async (json, args) => {
+  const collection = await serverFunctions.collections.update({
     ...json,
     id: args.params.collectionId!,
   });

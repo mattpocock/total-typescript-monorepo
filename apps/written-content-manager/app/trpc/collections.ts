@@ -37,25 +37,6 @@ export const collectionsRouter = t.router({
       },
     });
   }),
-  update: publicProcedure
-    .input(
-      z.object({
-        id: z.string(),
-        title: z.string(),
-        notes: z.string(),
-      })
-    )
-    .mutation(async ({ input }) => {
-      return p.socialPostCollection.update({
-        where: {
-          id: input.id,
-        },
-        data: {
-          title: input.title,
-          notes: input.notes,
-        },
-      });
-    }),
   delete: publicProcedure
     .input(
       z.object({

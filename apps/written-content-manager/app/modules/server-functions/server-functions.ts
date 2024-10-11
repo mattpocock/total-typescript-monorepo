@@ -107,5 +107,21 @@ export const serverFunctions = {
         });
       }
     ),
+
+    update: createServerFunction(
+      z.object({ id: z.string().uuid(), title: z.string(), notes: z.string() }),
+      async ({ input, p }) => {
+        return p.socialPostCollection.update({
+          where: {
+            id: input.id,
+            deleted: false,
+          },
+          data: {
+            title: input.title,
+            notes: input.notes,
+          },
+        });
+      }
+    ),
   },
 };

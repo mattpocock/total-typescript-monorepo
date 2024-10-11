@@ -118,6 +118,20 @@ describe("collections", () => {
 
       expect(foundCollection.title).toEqual(collection.title);
     });
+
+    it("Should retrieve collections with empty titles", async () => {
+      const collection = await p.socialPostCollection.create({
+        data: {
+          title: "",
+        },
+      });
+
+      const foundCollection = await serverFunctions.collections.get({
+        id: collection.id,
+      });
+
+      expect(foundCollection.title).toEqual(collection.title);
+    });
   });
 
   describe("postsNotInCollection", async () => {
@@ -194,6 +208,51 @@ describe("collections", () => {
       });
 
       expect(posts).toHaveLength(0);
+    });
+  });
+
+  describe("update", async () => {
+    it("Should update the collection", async () => {
+      const collection = await p.socialPostCollection.create({
+        data: {
+          title: "abc",
+        },
+      });
+
+      await serverFunctions.collections.update({
+        id: collection.id,
+        notes: "notes",
+        title: "title",
+      });
+
+      const collectionAfterUpdate = await p.socialPostCollection.findUnique({
+        where: {
+          id: collection.id,
+        },
+      });
+
+      expect(collectionAfterUpdate).toMatchObject({
+        id: collection.id,
+        notes: "notes",
+        title: "title",
+      });
+    });
+
+    it("Should error if the collection has been deleted", async () => {
+      const collection = await p.socialPostCollection.create({
+        data: {
+          title: "abc",
+          deleted: true,
+        },
+      });
+
+      await expect(() =>
+        serverFunctions.collections.update({
+          id: collection.id,
+          notes: "notes",
+          title: "title",
+        })
+      ).rejects.toThrowError("Invalid");
     });
   });
 });
