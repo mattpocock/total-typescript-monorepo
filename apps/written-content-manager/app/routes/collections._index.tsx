@@ -19,9 +19,9 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { serverFunctions } from "~/modules/server-functions/server-functions";
 import { deleteCollectionUrl, editCollectionUrl } from "~/routes";
 import { trpc } from "~/trpc/client";
-import { useVSCode } from "~/use-open-in-vscode";
 import { createJsonAction } from "~/utils";
 
 export const meta: MetaFunction = () => {
@@ -32,8 +32,8 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export const clientLoader = async () => {
-  return trpc.collections.list.query();
+export const loader = async () => {
+  return serverFunctions.collections.list();
 };
 
 export const clientAction = createJsonAction(async (json) => {
@@ -43,7 +43,7 @@ export const clientAction = createJsonAction(async (json) => {
 });
 
 const Page = () => {
-  const collections = useLoaderData<typeof clientLoader>();
+  const collections = useLoaderData<typeof loader>();
 
   const submit = useSubmit();
 

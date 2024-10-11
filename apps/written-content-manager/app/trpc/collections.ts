@@ -2,7 +2,7 @@ import { p } from "~/db";
 import { publicProcedure, t } from "./trpc";
 import { z } from "zod";
 
-const addPostToCollection = async (props: {
+export const addPostToCollection = async (props: {
   collectionId: string;
   postId: string;
 }) => {
@@ -30,68 +30,6 @@ const addPostToCollection = async (props: {
 };
 
 export const collectionsRouter = t.router({
-  list: publicProcedure.query(async () => {
-    return p.socialPostCollection.findMany({
-      where: {
-        deleted: false,
-      },
-      orderBy: {
-        updatedAt: "desc",
-      },
-      include: {
-        _count: {
-          select: {
-            posts: {
-              where: {
-                socialPost: {
-                  deleted: false,
-                },
-              },
-            },
-          },
-        },
-      },
-    });
-  }),
-  get: publicProcedure
-    .input(
-      z.object({
-        id: z.string(),
-      })
-    )
-    .query(async ({ input }) => {
-      return p.socialPostCollection.findUniqueOrThrow({
-        where: {
-          id: input.id,
-        },
-        select: {
-          id: true,
-          title: true,
-          notes: true,
-          posts: {
-            select: {
-              socialPost: {
-                select: {
-                  id: true,
-                  title: true,
-                  isViral: true,
-                  postedAt: true,
-                  learningGoal: true,
-                },
-              },
-            },
-            where: {
-              socialPost: {
-                deleted: false,
-              },
-            },
-            orderBy: {
-              order: "asc",
-            },
-          },
-        },
-      });
-    }),
   create: publicProcedure.mutation(async ({}) => {
     return p.socialPostCollection.create({
       data: {

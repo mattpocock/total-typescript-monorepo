@@ -22,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { serverFunctions } from "~/modules/server-functions/server-functions";
 import { LazyLoadedEditor } from "~/monaco-editor/lazy-loaded-editor";
 import {
   addNewPostToCollectionUrl,
@@ -43,12 +44,10 @@ export const clientAction = createJsonAction(async (json, args) => {
   return redirect(editCollectionUrl(collection.id));
 });
 
-export const clientLoader = async ({ params }: ClientLoaderFunctionArgs) => {
+export const loader = async ({ params }: ClientLoaderFunctionArgs) => {
   const [collection, postsToAdd] = await Promise.all([
-    await trpc.collections.get.query({
-      id: params.collectionId!,
-    }),
-    await trpc.collections.postsNotInCollection.query({
+    serverFunctions.collections.get({ id: params.collectionId! }),
+    serverFunctions.collections.postsNotInCollection({
       id: params.collectionId!,
     }),
   ]);
@@ -59,7 +58,7 @@ export const clientLoader = async ({ params }: ClientLoaderFunctionArgs) => {
   };
 };
 
-export const meta: MetaFunction<typeof clientLoader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
     {
       title: "Edit Collection | WCM",
@@ -68,7 +67,7 @@ export const meta: MetaFunction<typeof clientLoader> = ({ data }) => {
 };
 
 export default function EditPost() {
-  const { collection, postsToAdd } = useLoaderData<typeof clientLoader>();
+  const { collection, postsToAdd } = useLoaderData<typeof loader>();
 
   const debouncedFetcher = useDebounceFetcher();
 
