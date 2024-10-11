@@ -248,7 +248,7 @@ export const AddPostToCollectionForm = (props: {
         label: post.title,
         value: post.id,
       }))}
-      className="border-r-0 rounded-r-none min-w-64"
+      className="min-w-64"
       placeholder="Add Existing Post..."
       emptyText="No posts found"
       onChange={({ value, reset }) => {
