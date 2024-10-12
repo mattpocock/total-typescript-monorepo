@@ -150,8 +150,10 @@ export const removePostFromCollectionUrl = (
   return `/collections/${collectionId}/posts/${postId}/remove`;
 };
 
-export const shotSlashUrl = () => {
-  return `/shot-slash`;
+export const shotSlashUrl = (uri?: string) => {
+  if (!uri) return `/shot-slash`;
+
+  return `/shot-slash?${new URLSearchParams({ uri })}`;
 };
 
 export const shotSlashHtmlRendererFromCodeUrl = () => {

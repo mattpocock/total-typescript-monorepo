@@ -1,7 +1,8 @@
 "use client";
 
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { useLoaderData, useSearchParams } from "@remix-run/react";
+import { redirect, useLoaderData, useSearchParams } from "@remix-run/react";
+import { getActiveEditorFilePath } from "@total-typescript/shared";
 import {
   getCodeSamplesFromFile,
   IMAGE_SERVER_PORT,
@@ -11,6 +12,7 @@ import {
   type RenderType,
 } from "@total-typescript/twoslash-shared";
 import { PageContent, TitleArea } from "~/components";
+import { shotSlashUrl } from "~/routes";
 import { useSubscribeToSocket } from "~/use-subscribe-to-socket";
 
 export const meta: MetaFunction = () => {
@@ -23,12 +25,21 @@ export const loader = async (args: LoaderFunctionArgs) => {
 
   const url = new URL(args.request.url);
 
-  const uri = url.searchParams.get("uri");
+  let uri = url.searchParams.get("uri");
 
   if (!uri) {
-    return {
-      status: "waiting" as const,
-    };
+    const activeFilePath = (await getActiveEditorFilePath()).match(
+      (t) => t,
+      () => null
+    );
+
+    if (!activeFilePath) {
+      return {
+        status: "waiting" as const,
+      };
+    }
+
+    return redirect(shotSlashUrl(activeFilePath));
   }
 
   const fileContents = await readFile(uri, "utf-8");
