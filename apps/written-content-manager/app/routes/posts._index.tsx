@@ -1,6 +1,6 @@
 import type { MetaFunction } from "@remix-run/node";
 import { Form, Link, redirect, useLoaderData } from "@remix-run/react";
-import { BoltIcon, DeleteIcon, PlusIcon, ZapIcon } from "lucide-react";
+import { DeleteIcon, PlusIcon, ZapIcon } from "lucide-react";
 import { PageContent, TitleArea } from "~/components";
 import { Button } from "~/components/ui/button";
 import {
@@ -13,7 +13,6 @@ import {
 } from "~/components/ui/table";
 import { serverFunctions } from "~/modules/server-functions/server-functions";
 import { deletePostUrl, editPostUrl, postsUrl } from "~/routes";
-import { trpc } from "~/trpc/client";
 import { useVSCode } from "~/use-open-in-vscode";
 import { createJsonAction } from "~/utils";
 

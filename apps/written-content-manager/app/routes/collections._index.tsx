@@ -21,7 +21,6 @@ import {
 } from "~/components/ui/table";
 import { serverFunctions } from "~/modules/server-functions/server-functions";
 import { deleteCollectionUrl, editCollectionUrl } from "~/routes";
-import { trpc } from "~/trpc/client";
 import { createJsonAction } from "~/utils";
 
 export const meta: MetaFunction = () => {
