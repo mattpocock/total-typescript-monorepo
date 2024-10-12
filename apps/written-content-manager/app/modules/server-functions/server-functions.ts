@@ -193,5 +193,22 @@ export const serverFunctions = {
         });
       }
     ),
+
+    removePost: createServerFunction(
+      z.object({
+        collectionId: z.string().uuid(),
+        postId: z.string().uuid(),
+      }),
+      async ({ input, p }) => {
+        return p.socialPostToSocialPostCollection.delete({
+          where: {
+            socialPostId_collectionId: {
+              collectionId: input.collectionId,
+              socialPostId: input.postId,
+            },
+          },
+        });
+      }
+    ),
   },
 };

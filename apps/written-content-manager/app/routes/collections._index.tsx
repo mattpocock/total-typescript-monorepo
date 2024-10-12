@@ -36,8 +36,8 @@ export const loader = async () => {
   return serverFunctions.collections.list();
 };
 
-export const clientAction = createJsonAction(async (json) => {
-  const collection = await trpc.collections.create.mutate(json);
+export const action = createJsonAction(async () => {
+  const collection = await serverFunctions.collections.create();
 
   return redirect(editCollectionUrl(collection.id));
 });

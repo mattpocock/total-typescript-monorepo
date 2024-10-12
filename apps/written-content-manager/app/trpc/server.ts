@@ -6,10 +6,8 @@ import { p } from "~/db";
 import { Checkbox } from "~/schema";
 import { getVSCodeFilesForPost } from "~/vscode-utils";
 import { publicProcedure, t } from "./trpc";
-import { collectionsRouter } from "./collections";
 
 export const appRouter = t.router({
-  collections: collectionsRouter,
   posts: t.router({
     get: publicProcedure
       .input(

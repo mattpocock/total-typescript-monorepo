@@ -423,6 +423,9 @@ describe("collections", () => {
               include: {
                 socialPost: true,
               },
+              orderBy: {
+                order: "asc",
+              },
             },
           },
         })
@@ -534,6 +537,50 @@ describe("collections", () => {
             order: 1,
           },
         ],
+      });
+    });
+  });
+
+  describe("removePost", () => {
+    it("Should remove a post from a collection", async () => {
+      const post = await p.socialPost.create({
+        data: {
+          title: "abc",
+        },
+      });
+
+      const collection = await p.socialPostCollection.create({
+        data: {
+          title: "abc",
+          posts: {
+            create: {
+              order: 0,
+              socialPost: {
+                connect: {
+                  id: post.id,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      await serverFunctions.collections.removePost({
+        collectionId: collection.id,
+        postId: post.id,
+      });
+
+      expect(
+        await p.socialPostCollection.findUnique({
+          where: {
+            id: collection.id,
+          },
+          include: {
+            posts: true,
+          },
+        })
+      ).toMatchObject({
+        posts: [],
       });
     });
   });
