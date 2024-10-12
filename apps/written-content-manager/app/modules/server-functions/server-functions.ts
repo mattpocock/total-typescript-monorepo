@@ -1,53 +1,19 @@
-import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
+import { createServerFunction, linkExistingPostToCollection } from "./utils";
 
-const prisma = new PrismaClient();
-
-const createServerFunction =
-  <TSchema extends z.AnyZodObject, TResult>(
-    schema: TSchema,
-    fn: (ctx: { input: z.output<TSchema>; p: PrismaClient }) => Promise<TResult>
-  ) =>
-  (
-    ...args: {} extends z.output<TSchema>
-      ? []
-      : [unknownInput: z.output<TSchema>]
-  ) => {
-    const unknownInput: any = args[0];
-    const input = schema.parse(unknownInput ?? {});
-
-    return fn({ input, p: prisma });
-  };
-
-const linkExistingPostToCollection = createServerFunction(
-  z.object({
-    collectionId: z.string().uuid(),
-    postId: z.string().uuid(),
-  }),
-  async ({ input, p }) => {
-    const collectionWithHighestOrder =
-      await p.socialPostToSocialPostCollection.findFirst({
-        where: {
-          collectionId: input.collectionId,
-        },
-        orderBy: {
-          order: "desc",
-        },
-        select: {
-          order: true,
-        },
-      });
-    return p.socialPostToSocialPostCollection.create({
-      data: {
-        order: collectionWithHighestOrder
-          ? collectionWithHighestOrder.order + 1
-          : 0,
-        socialPostId: input.postId,
-        collectionId: input.collectionId,
-      },
-    });
-  }
-);
+/**
+ * The entrypoint for all server actions.
+ *
+ * All loaders/actions in Remix should be a thin wrapper around these, which are
+ * unit tested with 100% coverage turned on.
+ *
+ * Redirection logic should belong with Remix, but all db logic should live here.
+ *
+ * @example
+ *
+ * serverFunctions.collections.create();
+ * serverFunctions.collections.get({ id: collectionId });
+ */
 export const serverFunctions = {
   collections: {
     list: createServerFunction(z.object({}), async ({ input, p }) => {
