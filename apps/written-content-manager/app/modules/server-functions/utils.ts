@@ -8,9 +8,7 @@ export const createServerFunction =
     fn: (ctx: { input: z.output<TSchema>; p: PrismaClient }) => Promise<TResult>
   ) =>
   (
-    ...args: {} extends z.output<TSchema>
-      ? []
-      : [unknownInput: z.output<TSchema>]
+    ...args: {} extends z.input<TSchema> ? [] : [unknownInput: z.input<TSchema>]
   ) => {
     const unknownInput: any = args[0];
     const input = schema.parse(unknownInput ?? {});
