@@ -1,8 +1,7 @@
 import { ensureDir, type AbsolutePath } from "@total-typescript/shared";
-import path from "path";
 import glob from "fast-glob";
-import { existsSync } from "fs";
 import { access } from "fs/promises";
+import path from "path";
 import { editExerciseUrl } from "./routes";
 
 export const PLAYGROUND_ROOT_PATH = path.join(

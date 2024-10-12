@@ -17,6 +17,7 @@ export default defineConfig({
     open: true,
   },
   test: {
+    fileParallelism: false,
     setupFiles: ["./tests/setup-tests.ts"],
     coverage: {
       enabled: true,

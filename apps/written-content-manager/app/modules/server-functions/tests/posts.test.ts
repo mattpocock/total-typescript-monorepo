@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vitest } from "vitest";
 import { p } from "../../../db";
 import { serverFunctions } from "../server-functions";
 
@@ -94,6 +94,31 @@ describe("posts", () => {
         ],
       });
     });
+
+    it("Should return any associated files", async () => {
+      vitest.mock("fs", () => ({
+        readFileSync: () => "file contents",
+      }));
+
+      vitest.mock("fast-glob", () => ({
+        default: () => ["/first-file/notes.ts"],
+      }));
+      const post = await p.socialPost.create({
+        data: {
+          title: "abc",
+        },
+      });
+
+      expect(await serverFunctions.posts.get({ id: post.id })).toMatchObject({
+        files: [
+          {
+            content: "file contents",
+            fullPath: "/first-file/notes.ts",
+            path: "notes.ts",
+          },
+        ],
+      });
+    });
   });
 
   describe("create", () => {
@@ -143,8 +168,6 @@ describe("posts", () => {
       });
 
       const postedAt = new Date().toISOString();
-
-      console.log(postedAt);
 
       const updatedPost = await serverFunctions.posts.update({
         id: initialPost.id,
