@@ -4,18 +4,6 @@ import { serverFunctions } from "../server-functions";
 
 describe("collections", () => {
   describe("list", () => {
-    it("Should be able to list the collections", async () => {
-      await p.socialPostCollection.create({
-        data: {
-          title: "abc",
-        },
-      });
-
-      const results = await serverFunctions.collections.list();
-
-      expect(results).toHaveLength(1);
-    });
-
     it("Should not include deleted collections", async () => {
       await p.socialPostCollection.create({
         data: {
@@ -27,6 +15,18 @@ describe("collections", () => {
       const results = await serverFunctions.collections.list();
 
       expect(results).toHaveLength(0);
+    });
+
+    it("Should be able to list the collections", async () => {
+      await p.socialPostCollection.create({
+        data: {
+          title: "abc",
+        },
+      });
+
+      const results = await serverFunctions.collections.list();
+
+      expect(results).toHaveLength(1);
     });
 
     it("Should filter out collections with empty titles", async () => {
@@ -253,6 +253,288 @@ describe("collections", () => {
           title: "title",
         })
       ).rejects.toThrowError("Invalid");
+    });
+  });
+
+  describe("create", async () => {
+    it("Should create a new collection with an empty title", async () => {
+      const collection = await serverFunctions.collections.create();
+
+      expect(
+        await p.socialPostCollection.findUniqueOrThrow({
+          where: {
+            id: collection.id,
+          },
+        })
+      ).toMatchObject({
+        id: collection.id,
+        title: "",
+        deleted: false,
+      });
+    });
+  });
+
+  describe("delete", () => {
+    it("Should mark a collection as deleted", async () => {
+      const collection = await p.socialPostCollection.create({
+        data: {
+          title: "abc",
+        },
+      });
+
+      await serverFunctions.collections.delete({ id: collection.id });
+
+      expect(
+        await p.socialPostCollection.findUniqueOrThrow({
+          where: {
+            id: collection.id,
+          },
+        })
+      ).toMatchObject({
+        id: collection.id,
+        deleted: true,
+      });
+    });
+  });
+
+  describe("linkExistingPost", () => {
+    it("Should link an existing post to the collection", async () => {
+      const post = await p.socialPost.create({
+        data: {
+          title: "abc",
+        },
+      });
+
+      const collection = await p.socialPostCollection.create({
+        data: {
+          title: "abc",
+        },
+      });
+
+      await serverFunctions.collections.linkExistingPost({
+        collectionId: collection.id,
+        postId: post.id,
+      });
+
+      expect(
+        await p.socialPostCollection.findUnique({
+          where: {
+            id: collection.id,
+          },
+          include: {
+            posts: {
+              include: {
+                socialPost: true,
+              },
+            },
+          },
+        })
+      ).toMatchObject({
+        id: collection.id,
+        posts: [
+          {
+            socialPost: {
+              id: post.id,
+            },
+          },
+        ],
+      });
+    });
+
+    it("Should start the order at 0", async () => {
+      const post = await p.socialPost.create({
+        data: {
+          title: "abc",
+        },
+      });
+
+      const collection = await p.socialPostCollection.create({
+        data: {
+          title: "abc",
+        },
+      });
+
+      await serverFunctions.collections.linkExistingPost({
+        collectionId: collection.id,
+        postId: post.id,
+      });
+
+      expect(
+        await p.socialPostCollection.findUnique({
+          where: {
+            id: collection.id,
+          },
+          include: {
+            posts: {
+              include: {
+                socialPost: true,
+              },
+            },
+          },
+        })
+      ).toMatchObject({
+        id: collection.id,
+        posts: [
+          {
+            socialPost: {
+              id: post.id,
+            },
+            order: 0,
+          },
+        ],
+      });
+    });
+
+    it("Should increment the order of the created post", async () => {
+      const post = await p.socialPost.create({
+        data: {
+          title: "abc",
+        },
+      });
+
+      const collection = await p.socialPostCollection.create({
+        data: {
+          title: "abc",
+          posts: {
+            create: {
+              order: 0,
+              socialPost: {
+                create: {
+                  title: "abc",
+                },
+              },
+            },
+          },
+        },
+      });
+
+      await serverFunctions.collections.linkExistingPost({
+        collectionId: collection.id,
+        postId: post.id,
+      });
+
+      expect(
+        await p.socialPostCollection.findUnique({
+          where: {
+            id: collection.id,
+          },
+          include: {
+            posts: {
+              include: {
+                socialPost: true,
+              },
+            },
+          },
+        })
+      ).toMatchObject({
+        id: collection.id,
+        posts: [
+          {
+            order: 0,
+          },
+          {
+            socialPost: {
+              id: post.id,
+            },
+            order: 1,
+          },
+        ],
+      });
+    });
+  });
+
+  describe("addNewPost", async () => {
+    it("Should create a new post with an empty title and order = 0", async () => {
+      const collection = await p.socialPostCollection.create({
+        data: {
+          title: "abc",
+        },
+      });
+
+      const { socialPostId } = await serverFunctions.collections.addNewPost({
+        collectionId: collection.id,
+      });
+
+      expect(
+        await p.socialPost.findUniqueOrThrow({
+          where: {
+            id: socialPostId,
+          },
+          include: {
+            collections: true,
+          },
+        })
+      ).toMatchObject({
+        id: socialPostId,
+        title: "",
+        collections: [
+          {
+            order: 0,
+            collectionId: collection.id,
+          },
+        ],
+      });
+    });
+
+    it("Should increment the order of the created post", async () => {
+      const initialPost = await p.socialPost.create({
+        data: {
+          title: "abc",
+        },
+      });
+      const collection = await p.socialPostCollection.create({
+        data: {
+          title: "abc",
+          posts: {
+            create: {
+              order: 0,
+              socialPost: {
+                connect: {
+                  id: initialPost.id,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      await serverFunctions.collections.addNewPost({
+        collectionId: collection.id,
+      });
+
+      expect(
+        await p.socialPostCollection.findUnique({
+          where: {
+            id: collection.id,
+          },
+          include: {
+            posts: {
+              include: {
+                socialPost: true,
+              },
+              orderBy: {
+                order: "asc",
+              },
+            },
+          },
+        })
+      ).toMatchObject({
+        id: collection.id,
+        posts: [
+          {
+            order: 0,
+            socialPost: {
+              id: initialPost.id,
+            },
+          },
+          {
+            socialPost: {
+              title: "",
+            },
+            order: 1,
+          },
+        ],
+      });
     });
   });
 });

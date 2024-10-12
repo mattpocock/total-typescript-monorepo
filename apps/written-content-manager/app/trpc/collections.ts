@@ -2,7 +2,7 @@ import { p } from "~/db";
 import { publicProcedure, t } from "./trpc";
 import { z } from "zod";
 
-export const addPostToCollection = async (props: {
+const addPostToCollection = async (props: {
   collectionId: string;
   postId: string;
 }) => {
@@ -30,13 +30,6 @@ export const addPostToCollection = async (props: {
 };
 
 export const collectionsRouter = t.router({
-  create: publicProcedure.mutation(async ({}) => {
-    return p.socialPostCollection.create({
-      data: {
-        title: "",
-      },
-    });
-  }),
   delete: publicProcedure
     .input(
       z.object({

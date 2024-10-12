@@ -1,20 +1,9 @@
-import { PrismaClient } from "@prisma/client";
-import { beforeEach } from "vitest";
+import { beforeAll, beforeEach } from "vitest";
+import { p } from "../app/db";
 
 if (!process.env.DATABASE_URL?.includes("localhost")) {
   throw new Error("DATABASE_URL is not targeting localhost");
 }
-
-declare global {
-  var testPrismaClient: PrismaClient;
-  var p: PrismaClient;
-}
-
-globalThis.testPrismaClient = new PrismaClient({
-  datasourceUrl: "postgresql://postgres@localhost:5432/postgres",
-});
-
-globalThis.p = testPrismaClient;
 
 const allTables = [
   "exercise",
@@ -26,8 +15,15 @@ const allTables = [
   "socialPostCollection",
 ] as const;
 
-beforeEach(async () => {
+const clearAllTables = async () => {
   await p.$transaction(
     allTables.map((table) => (p[table] as any).deleteMany())
   );
+};
+
+beforeAll(async () => {
+  await p.$connect();
+  await clearAllTables();
 });
+
+beforeEach(async () => await clearAllTables());

@@ -19,6 +19,35 @@ const createServerFunction =
     return fn({ input, p: prisma });
   };
 
+const linkExistingPostToCollection = createServerFunction(
+  z.object({
+    collectionId: z.string().uuid(),
+    postId: z.string().uuid(),
+  }),
+  async ({ input, p }) => {
+    const collectionWithHighestOrder =
+      await p.socialPostToSocialPostCollection.findFirst({
+        where: {
+          collectionId: input.collectionId,
+        },
+        orderBy: {
+          order: "desc",
+        },
+        select: {
+          order: true,
+        },
+      });
+    return p.socialPostToSocialPostCollection.create({
+      data: {
+        order: collectionWithHighestOrder
+          ? collectionWithHighestOrder.order + 1
+          : 0,
+        socialPostId: input.postId,
+        collectionId: input.collectionId,
+      },
+    });
+  }
+);
 export const serverFunctions = {
   collections: {
     list: createServerFunction(z.object({}), async ({ input, p }) => {
@@ -120,6 +149,47 @@ export const serverFunctions = {
             title: input.title,
             notes: input.notes,
           },
+        });
+      }
+    ),
+
+    create: createServerFunction(z.object({}), async ({ input, p }) => {
+      return p.socialPostCollection.create({
+        data: {
+          title: "",
+        },
+      });
+    }),
+
+    delete: createServerFunction(
+      z.object({ id: z.string().uuid() }),
+      async ({ input, p }) => {
+        return p.socialPostCollection.update({
+          where: {
+            id: input.id,
+          },
+          data: {
+            deleted: true,
+          },
+        });
+      }
+    ),
+
+    linkExistingPost: linkExistingPostToCollection,
+
+    addNewPost: createServerFunction(
+      z.object({
+        collectionId: z.string().uuid(),
+      }),
+      async ({ input, p }) => {
+        const post = await p.socialPost.create({
+          data: {
+            title: "",
+          },
+        });
+        return await linkExistingPostToCollection({
+          collectionId: input.collectionId,
+          postId: post.id,
         });
       }
     ),
