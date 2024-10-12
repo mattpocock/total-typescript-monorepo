@@ -16,4 +16,15 @@ export default defineConfig({
   server: {
     open: true,
   },
+  test: {
+    setupFiles: ["./tests/setup-tests.ts"],
+    // Enable once I have WiFi
+    coverage: {
+      enabled: true,
+      include: ["app/modules/**/**"],
+      thresholds: {
+        "100": true,
+      },
+    },
+  },
 });
