@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { serverFunctions } from "~/modules/server-functions/server-functions";
 import { deletePostUrl, editPostUrl, postsUrl } from "~/routes";
 import { trpc } from "~/trpc/client";
 import { useVSCode } from "~/use-open-in-vscode";
@@ -24,18 +25,18 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export const clientLoader = async () => {
-  return trpc.posts.list.query();
+export const loader = async () => {
+  return serverFunctions.posts.list();
 };
 
-export const clientAction = createJsonAction(async (json) => {
-  const post = await trpc.posts.create.mutate(json);
+export const action = createJsonAction(async (json) => {
+  const post = await serverFunctions.posts.create(json);
 
   return redirect(editPostUrl(post.id));
 });
 
 const Page = () => {
-  const posts = useLoaderData<typeof clientLoader>();
+  const posts = useLoaderData<typeof loader>();
 
   const vscode = useVSCode();
 

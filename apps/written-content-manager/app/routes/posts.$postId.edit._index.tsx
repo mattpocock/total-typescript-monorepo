@@ -22,19 +22,18 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { serverFunctions } from "~/modules/server-functions/server-functions";
 import { LazyLoadedEditor } from "~/monaco-editor/lazy-loaded-editor";
 import {
   editCollectionUrl,
   editPostUrl,
-  postsUrl,
   removePostFromCollectionUrl,
 } from "~/routes";
-import { trpc } from "~/trpc/client";
 import { useDebounceFetcher } from "~/use-debounced-fetcher";
 import { useVSCode } from "~/use-open-in-vscode";
 import { createJsonAction } from "~/utils";
 
-export const meta: MetaFunction<typeof clientLoader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
     {
       title: "Edit Post | WCM",
@@ -42,14 +41,14 @@ export const meta: MetaFunction<typeof clientLoader> = ({ data }) => {
   ];
 };
 
-export const clientLoader = async (args: ClientLoaderFunctionArgs) => {
-  return trpc.posts.get.query({
+export const loader = async (args: ClientLoaderFunctionArgs) => {
+  return serverFunctions.posts.get({
     id: args.params.postId!,
   });
 };
 
-export const clientAction = createJsonAction(async (json, args) => {
-  const post = await trpc.posts.update.mutate({
+export const action = createJsonAction(async (json, args) => {
+  const post = await serverFunctions.posts.update({
     ...json,
     id: args.params.postId!,
   });
@@ -58,7 +57,7 @@ export const clientAction = createJsonAction(async (json, args) => {
 });
 
 export default function EditPost() {
-  const post = useLoaderData<typeof clientLoader>();
+  const post = useLoaderData<typeof loader>();
 
   const debouncedFetcher = useDebounceFetcher();
 

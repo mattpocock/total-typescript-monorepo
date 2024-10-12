@@ -14,7 +14,7 @@ import {
 } from "~/components/ui/popover";
 
 export function DatePicker(props: {
-  defaultValue?: string | null;
+  defaultValue?: string | Date | null;
   onChange?: () => void;
   name: string;
 }) {
