@@ -10,18 +10,11 @@
     "**/.client/**/*.ts",
     "**/.client/**/*.tsx"
   ],
-  "exclude": [
-    "tests"
-  ],
   "compilerOptions": {
     "lib": [
       "DOM",
       "DOM.Iterable",
       "ES2022"
-    ],
-    "types": [
-      "@remix-run/node",
-      "vite/client"
     ],
     "isolatedModules": true,
     "esModuleInterop": true,
@@ -34,7 +27,6 @@
     "allowJs": true,
     "skipLibCheck": true,
     "noUncheckedIndexedAccess": true,
-    "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
       "~/*": [

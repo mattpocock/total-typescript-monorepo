@@ -1,7 +1,6 @@
 import { useMachine } from "@xstate/react";
-import { recordingMachine } from "./recording-machine";
 import { useEffect, useMemo, type ButtonHTMLAttributes } from "react";
-import { Button } from "./components/ui/button";
+import { recordingMachine } from "./recording-machine";
 
 interface AudioRecorderProps
   extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onClick"> {
