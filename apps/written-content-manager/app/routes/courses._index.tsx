@@ -1,5 +1,5 @@
 import type { MetaFunction } from "@remix-run/node";
-import { Link, useLoaderData, useNavigate, useSubmit } from "@remix-run/react";
+import { Link, useLoaderData, useNavigate } from "@remix-run/react";
 import { PlusIcon } from "lucide-react";
 import { useMemo } from "react";
 import { useOnPageActions } from "~/command-palette";
@@ -13,8 +13,8 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { serverFunctions } from "~/modules/server-functions/server-functions";
 import { addCourseUrl, coursesUrl, courseUrl, editCourseUrl } from "~/routes";
-import { trpc } from "~/trpc/client";
 
 export const meta: MetaFunction = () => {
   return [
@@ -24,12 +24,12 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export const clientLoader = async () => {
-  return trpc.courses.list.query();
+export const loader = async () => {
+  return serverFunctions.courses.list();
 };
 
 const Page = () => {
-  const data = useLoaderData<typeof clientLoader>();
+  const data = useLoaderData<typeof loader>();
 
   const navigate = useNavigate();
 
@@ -75,17 +75,6 @@ const Page = () => {
                 </p>
               </TableCell>
               <TableCell>{course.exerciseCount} Exercises</TableCell>
-              <TableCell>
-                {course.foundOnDisk ? (
-                  <span className="bg-green-100 text-green-800 text-xs p-2 px-3 rounded-lg uppercase font-semibold">
-                    On Disk
-                  </span>
-                ) : (
-                  <span className="bg-gray-100 text-gray-800 text-xs p-2 px-3 rounded-lg uppercase font-semibold">
-                    Not Found
-                  </span>
-                )}
-              </TableCell>
               <TableCell>
                 <div className="flex items-center space-x-4">
                   <Button asChild variant="link">

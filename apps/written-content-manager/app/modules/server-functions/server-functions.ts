@@ -1,4 +1,5 @@
 import { collections } from "./collections";
+import { courses } from "./courses";
 import { posts } from "./posts";
 
 /**
@@ -17,4 +18,5 @@ import { posts } from "./posts";
 export const serverFunctions = {
   collections,
   posts,
+  courses,
 };
