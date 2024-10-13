@@ -1,9 +1,5 @@
 import { z } from "zod";
 import { createServerFunction } from "./utils";
-import { getVSCodeFilesForPost } from "~/vscode-utils";
-import path from "path";
-import { readFileSync } from "fs";
-import { Checkbox } from "~/schema";
 
 export const courses = {
   list: createServerFunction(z.object({}), async ({ input, p }) => {

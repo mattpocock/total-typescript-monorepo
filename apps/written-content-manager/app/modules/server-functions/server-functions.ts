@@ -1,6 +1,7 @@
 import { collections } from "./collections";
 import { courses } from "./courses";
 import { posts } from "./posts";
+import { sections } from "./sections";
 
 /**
  * The entrypoint for all server actions.
@@ -19,4 +20,5 @@ export const serverFunctions = {
   collections,
   posts,
   courses,
+  sections,
 };
