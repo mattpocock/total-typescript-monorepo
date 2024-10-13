@@ -1,4 +1,4 @@
-import { describe, expect, it, vitest } from "vitest";
+import { describe, expect, it } from "vitest";
 import { p } from "../../../db";
 import { serverFunctions } from "../server-functions";
 
