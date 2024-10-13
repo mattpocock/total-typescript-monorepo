@@ -3,7 +3,7 @@ import { p } from "../../../db";
 import { serverFunctions } from "../server-functions";
 
 describe("sections", () => {
-  describe("move", () => {
+  describe("reorder", () => {
     it("Should be able to move the section forward in the order", async () => {
       const course = await p.course.create({
         data: {
@@ -35,7 +35,7 @@ describe("sections", () => {
         },
       });
 
-      await serverFunctions.sections.move({
+      await serverFunctions.sections.reorder({
         id: section1.id,
         direction: "forward",
       });
@@ -93,7 +93,7 @@ describe("sections", () => {
         },
       });
 
-      await serverFunctions.sections.move({
+      await serverFunctions.sections.reorder({
         id: section3.id,
         direction: "back",
       });
@@ -135,7 +135,7 @@ describe("sections", () => {
         },
       });
 
-      await serverFunctions.sections.move({
+      await serverFunctions.sections.reorder({
         id: section1.id,
         direction: "forward",
       });
@@ -162,7 +162,7 @@ describe("sections", () => {
         },
       });
 
-      await serverFunctions.sections.move({
+      await serverFunctions.sections.reorder({
         id: section1.id,
         direction: "back",
       });

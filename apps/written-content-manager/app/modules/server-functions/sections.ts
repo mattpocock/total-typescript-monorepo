@@ -2,7 +2,7 @@ import { z } from "zod";
 import { createServerFunction } from "./utils";
 
 export const sections = {
-  move: createServerFunction(
+  reorder: createServerFunction(
     z.object({
       direction: z.enum(["forward", "back"]),
       id: z.string().uuid(),
