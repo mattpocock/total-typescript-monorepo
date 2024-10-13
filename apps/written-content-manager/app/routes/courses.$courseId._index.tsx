@@ -12,7 +12,7 @@ import {
 import { PageContent, TitleArea } from "~/components";
 import { Button } from "~/components/ui/button";
 import { Table, TableBody, TableCell, TableRow } from "~/components/ui/table";
-import { p } from "~/db";
+import { serverFunctions } from "~/modules/server-functions/server-functions";
 import {
   addSectionUrl,
   courseUrl,
@@ -36,36 +36,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 };
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
-  const { courseId } = params;
-  const course = await p.course.findUniqueOrThrow({
-    where: {
-      id: courseId,
-    },
-    select: {
-      id: true,
-      title: true,
-      sections: {
-        select: {
-          id: true,
-          title: true,
-          exercises: {
-            where: {
-              deleted: false,
-            },
-            select: {
-              readyForRecording: true,
-              learningGoal: true,
-            },
-          },
-        },
-        orderBy: {
-          order: "asc",
-        },
-      },
-    },
-  });
-
-  return course;
+  return serverFunctions.courses.get({ id: params.courseId! });
 };
 
 export default function Course() {

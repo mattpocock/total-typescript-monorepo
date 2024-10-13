@@ -57,6 +57,7 @@ model Section {
   title     String
   order     Int
   courseId  String
+  deleted   Boolean    @default(false)
   course    Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt

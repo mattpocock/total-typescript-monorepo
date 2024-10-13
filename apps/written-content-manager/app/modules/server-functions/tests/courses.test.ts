@@ -42,4 +42,98 @@ describe("courses", () => {
       ]);
     });
   });
+
+  describe("get", () => {
+    it("Should retrieve all sections and exercises", async () => {
+      const courseInDb = await p.course.create({
+        data: {
+          title: "abc",
+          type: "WORKSHOP",
+          sections: {
+            create: {
+              order: 0,
+              title: "My Section",
+              exercises: {
+                create: {
+                  order: 0,
+                  title: "My Exercise",
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const result = await serverFunctions.courses.get({ id: courseInDb.id });
+
+      expect(result).toMatchObject({
+        id: courseInDb.id,
+        title: "abc",
+        sections: [
+          {
+            title: "My Section",
+            exercises: [
+              // Should have one exercise, but
+              // we don't retrieve the title
+              {},
+            ],
+          },
+        ],
+      });
+    });
+
+    it("Should not retrieve deleted sections", async () => {
+      const courseInDb = await p.course.create({
+        data: {
+          title: "abc",
+          type: "WORKSHOP",
+          sections: {
+            create: {
+              order: 0,
+              title: "My Section",
+              deleted: true,
+            },
+          },
+        },
+      });
+
+      const result = await serverFunctions.courses.get({ id: courseInDb.id });
+
+      expect(result).toMatchObject({
+        sections: [],
+      });
+    });
+
+    it("Should not retrieve deleted exercises", async () => {
+      const courseInDb = await p.course.create({
+        data: {
+          title: "abc",
+          type: "WORKSHOP",
+          sections: {
+            create: {
+              order: 0,
+              title: "My Section",
+              exercises: {
+                create: {
+                  order: 0,
+                  title: "My Exercise",
+                  deleted: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const result = await serverFunctions.courses.get({ id: courseInDb.id });
+
+      expect(result).toMatchObject({
+        sections: [
+          {
+            exercises: [],
+          },
+        ],
+      });
+    });
+  });
 });

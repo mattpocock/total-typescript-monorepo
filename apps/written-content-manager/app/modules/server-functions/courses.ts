@@ -31,4 +31,39 @@ export const courses = {
       exerciseCount: exerciseCounts[index]!,
     }));
   }),
+  get: createServerFunction(
+    z.object({ id: z.string().uuid() }),
+    async ({ input, p }) => {
+      return await p.course.findUniqueOrThrow({
+        where: {
+          id: input.id,
+        },
+        select: {
+          id: true,
+          title: true,
+          sections: {
+            where: {
+              deleted: false,
+            },
+            select: {
+              id: true,
+              title: true,
+              exercises: {
+                where: {
+                  deleted: false,
+                },
+                select: {
+                  readyForRecording: true,
+                  learningGoal: true,
+                },
+              },
+            },
+            orderBy: {
+              order: "asc",
+            },
+          },
+        },
+      });
+    }
+  ),
 };
