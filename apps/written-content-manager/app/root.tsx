@@ -12,6 +12,7 @@ import {
   useLoaderData,
   useRouteError,
   useRouteLoaderData,
+  useFetchers,
 } from "@remix-run/react";
 import clsx from "clsx";
 import { MicIcon, PlusIcon, VideoIcon } from "lucide-react";
@@ -32,7 +33,10 @@ import {
 import "./tailwind.css";
 import "./fonts.css";
 import "./shiki.css";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import NProgress from "nprogress";
+import "./nprogress.css";
+import { useGlobalLoadingState } from "remix-utils/use-global-navigation-state";
 
 export const loader = () => {
   const courses = p.course
@@ -260,6 +264,13 @@ export default function App() {
     }),
     [onPageActions, setOnPageActions]
   );
+
+  let state = useGlobalLoadingState();
+
+  useEffect(() => {
+    if (state === "loading") NProgress.start();
+    if (state === "idle") NProgress.done();
+  }, [state]);
 
   return (
     <>
