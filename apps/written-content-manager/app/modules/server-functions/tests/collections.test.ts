@@ -539,6 +539,31 @@ describe("collections", () => {
         ],
       });
     });
+
+    it("Should create an analytics event", async () => {
+      const collection = await p.socialPostCollection.create({
+        data: {
+          title: "abc",
+        },
+      });
+
+      const { socialPostId } = await serverFunctions.collections.addNewPost({
+        collectionId: collection.id,
+      });
+
+      expect(
+        await p.analyticsEvent.findFirstOrThrow({
+          where: {
+            type: "POST_CREATED",
+          },
+        })
+      ).toMatchObject({
+        type: "POST_CREATED",
+        payload: {
+          postId: socialPostId,
+        },
+      });
+    });
   });
 
   describe("removePost", () => {

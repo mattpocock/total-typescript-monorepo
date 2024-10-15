@@ -139,6 +139,15 @@ export const collections = {
           title: "",
         },
       });
+
+      await p.analyticsEvent.create({
+        data: {
+          type: "POST_CREATED",
+          payload: {
+            postId: post.id,
+          },
+        },
+      });
       return await linkExistingPostToCollection({
         collectionId: input.collectionId,
         postId: post.id,
