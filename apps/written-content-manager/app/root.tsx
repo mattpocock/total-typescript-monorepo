@@ -160,7 +160,7 @@ const MyNavLink = ({
     <NavLink
       className={({ isActive }) =>
         cn(
-          "font-semibold flex items-center space-x-3 text-gray-600 rounded-md p-2 -m-2",
+          "font-semibold flex items-center justify-center md:justify-normal space-x-3 text-gray-600 rounded-md p-2 -m-2",
           isActive && "bg-blue-100 text-blue-700"
         )
       }
@@ -185,69 +185,71 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body className="">
         <div className="flex min-h-dvh">
           <header className="bg-gray-50 flex flex-col">
-            <div className="p-6 pr-8 font-semibold h-dvh flex flex-col">
+            <div className="p-6 md:pr-8 font-semibold h-dvh flex flex-col">
               <Link
                 to={homeUrl()}
-                className="text-lg mb-10 -ml-[4px] text-gray-700 flex items-center font-black tracking-tight"
+                className="text-lg mb-10 md:-ml-[4px] text-gray-700 flex items-center font-black tracking-tight"
               >
-                <WCMLogo className="size-8 mr-[7px]" />
-                <span>WCM</span>
+                <WCMLogo className="size-8 md:mr-[7px]" />
+                <span className="hidden md:block">WCM</span>
               </Link>
               <div className="mb-8 grid grid-cols-1 gap-6">
                 <MyNavLink to={coursesUrl()}>
                   <CoursesIcon />
-                  <span>Courses</span>
+                  <span className="hidden md:block">Courses</span>
                 </MyNavLink>
                 <MyNavLink to={postsUrl()}>
                   <PostsIcon />
-                  <span>Posts</span>
+                  <span className="hidden md:block">Posts</span>
                 </MyNavLink>
                 <MyNavLink to={collectionsUrl()}>
                   <CollectionsIcon />
-                  <span>Collections</span>
+                  <span className="hidden md:block">Collections</span>
                 </MyNavLink>
                 <MyNavLink to={shotSlashUrl()}>
                   <ShotSlashIcon />
-                  <span>ShotSlash</span>
+                  <span className="hidden md:block">ShotSlash</span>
                 </MyNavLink>
               </div>
-              {data?.analyticsData && (
-                <div className="text-gray-600 mt-auto">
-                  <Await resolve={data.analyticsData}>
-                    {(analyticsData) => {
-                      return (
-                        <Link
-                          className="flex items-center space-x-4"
-                          to={dashboardUrl()}
-                        >
-                          <div className="flex items-center">
-                            <PlusIcon className="size-[22px] mr-2" />
-                            <span className="text-lg font-mono font-medium">
-                              {analyticsData.exercisesCreatedToday}
-                            </span>
-                          </div>
+              <div className="mt-auto hidden md:block">
+                {data?.analyticsData && (
+                  <div className="text-gray-600">
+                    <Await resolve={data.analyticsData}>
+                      {(analyticsData) => {
+                        return (
+                          <Link
+                            className="flex items-center space-x-4"
+                            to={dashboardUrl()}
+                          >
+                            <div className="flex items-center">
+                              <PlusIcon className="size-[22px] mr-2" />
+                              <span className="text-lg font-mono font-medium">
+                                {analyticsData.exercisesCreatedToday}
+                              </span>
+                            </div>
 
-                          <div className="flex items-center">
-                            <MicIcon className="size-[18px] mr-[11px]" />
-                            <span className="text-lg font-mono font-medium">
-                              {
-                                analyticsData.exercisesMarkedReadyForRecordingToday
-                              }
-                            </span>
-                          </div>
-                          <div className="flex items-center">
-                            <VideoIcon className="size-[19px] mr-[13px]" />
-                            <span className="text-lg font-mono font-medium">
-                              {0}
-                            </span>
-                          </div>
-                        </Link>
-                      );
-                    }}
-                  </Await>
-                </div>
-              )}
-              <span className="text-gray-500 block mt-3">Matt Pocock</span>
+                            <div className="flex items-center">
+                              <MicIcon className="size-[18px] mr-[11px]" />
+                              <span className="text-lg font-mono font-medium">
+                                {
+                                  analyticsData.exercisesMarkedReadyForRecordingToday
+                                }
+                              </span>
+                            </div>
+                            <div className="flex items-center">
+                              <VideoIcon className="size-[19px] mr-[13px]" />
+                              <span className="text-lg font-mono font-medium">
+                                {0}
+                              </span>
+                            </div>
+                          </Link>
+                        );
+                      }}
+                    </Await>
+                  </div>
+                )}
+                <span className="text-gray-500 block mt-3">Matt Pocock</span>
+              </div>
             </div>
           </header>
           <main className="p-6 flex-grow text-gray-700 max-w-6xl">
