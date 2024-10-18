@@ -1,7 +1,13 @@
 "use client";
 
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { redirect, useLoaderData, useSearchParams } from "@remix-run/react";
+import {
+  useFetcher,
+  useLoaderData,
+  useNavigate,
+  useSearchParams,
+  useSubmit,
+} from "@remix-run/react";
 import { getActiveEditorFilePath } from "@total-typescript/shared";
 import {
   getCodeSamplesFromFile,
@@ -11,6 +17,7 @@ import {
   type HTMLRendererSearchParams,
   type RenderType,
 } from "@total-typescript/twoslash-shared";
+import path from "path";
 import { PageContent, TitleArea } from "~/components";
 import { shotSlashUrl } from "~/routes";
 import { useSubscribeToSocket } from "~/use-subscribe-to-socket";
@@ -39,7 +46,7 @@ export const loader = async (args: LoaderFunctionArgs) => {
       };
     }
 
-    return redirect(shotSlashUrl(activeFilePath));
+    uri = activeFilePath;
   }
 
   const fileContents = await readFile(uri, "utf-8");
@@ -55,31 +62,31 @@ export const loader = async (args: LoaderFunctionArgs) => {
 
   const fileContentsHash = createHash("md5").update(fileContents).digest("hex");
 
+  const relativeUri = path.relative(process.cwd(), uri);
+
   return {
     status: "ready" as const,
     snippetHashes,
     fileContentsHash,
     uri,
+    relativeUri,
   };
 };
 
 export default function Index() {
   const [params, setSearchParams] = useSearchParams();
 
-  useSubscribeToSocket((uri) => {
-    setSearchParams(
-      (prev) => {
-        prev.set("uri", uri);
-
-        return prev;
-      },
-      {
-        preventScrollReset: true,
-      }
-    );
-  });
-
   const data = useLoaderData<typeof loader>();
+
+  const submit = useSubmit();
+
+  useSubscribeToSocket(() => {
+    submit(null, {
+      replace: true,
+      method: "GET",
+      preventScrollReset: true,
+    });
+  });
 
   const renderType =
     (params.get("renderType") as RenderType) ?? RENDER_TYPES.simpleNoBorder;
@@ -104,6 +111,7 @@ export default function Index() {
                 return prev;
               },
               {
+                replace: false,
                 preventScrollReset: true,
               }
             );
@@ -160,6 +168,13 @@ export default function Index() {
           }
           return null;
         })()}
+        {data.snippetHashes.length === 0 && (
+          <div>
+            <span>No Snippets Found at</span>
+            <br />
+            <span className="font-mono text-sm">{data.relativeUri}</span>
+          </div>
+        )}
       </div>
     </Wrapper>
   );

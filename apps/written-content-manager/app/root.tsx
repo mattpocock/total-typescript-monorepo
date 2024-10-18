@@ -15,7 +15,16 @@ import {
   useFetchers,
 } from "@remix-run/react";
 import clsx from "clsx";
-import { MicIcon, PlusIcon, VideoIcon } from "lucide-react";
+import {
+  MicIcon,
+  PlusIcon,
+  VideoIcon,
+  BookIcon as CoursesIcon,
+  ActivityIcon as PostsIcon,
+  LibraryIcon as CollectionsIcon,
+  CameraIcon as ShotSlashIcon,
+  SeparatorVertical as WCMLogo,
+} from "lucide-react";
 import {
   CommandPalette,
   OnPageActionsContext,
@@ -37,6 +46,7 @@ import { useEffect, useMemo, useState } from "react";
 import NProgress from "nprogress";
 import "./nprogress.css";
 import { useGlobalLoadingState } from "remix-utils/use-global-navigation-state";
+import { cn } from "./lib/utils";
 
 export const loader = () => {
   const courses = p.course
@@ -149,9 +159,9 @@ const MyNavLink = ({
   return (
     <NavLink
       className={({ isActive }) =>
-        clsx(
-          "mr-4 px-3 py-2 text-white font-normal",
-          isActive && "underline underline-offset-[3px] decoration-2"
+        cn(
+          "font-semibold flex items-center space-x-3 text-gray-600 rounded-md p-2 -m-2",
+          isActive && "bg-blue-100 text-blue-700"
         )
       }
       to={to}
@@ -173,52 +183,77 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body className="">
-        <header className="bg-gray-800 text-white p-6 py-4 font-semibold flex items-center text-sm justify-between">
-          <div>
-            <Link to={homeUrl()} className="font-mono mr-24 text-xl">
-              WCM
-            </Link>
-            <MyNavLink to={coursesUrl()}>Courses</MyNavLink>
-            <MyNavLink to={postsUrl()}>Posts</MyNavLink>
-            <MyNavLink to={collectionsUrl()}>Collections</MyNavLink>
-            <MyNavLink to={shotSlashUrl()}>ShotSlash</MyNavLink>
-          </div>
-          {data?.analyticsData && (
-            <div>
-              <Await resolve={data.analyticsData}>
-                {(analyticsData) => {
-                  return (
-                    <Link
-                      className="flex items-center space-x-6"
-                      to={dashboardUrl()}
-                    >
-                      <div className="flex items-center">
-                        <PlusIcon className="size-[22px] mr-2" />
-                        <span className="text-lg font-mono font-medium text-gray-100">
-                          {analyticsData.exercisesCreatedToday}
-                        </span>
-                      </div>
+        <div className="flex min-h-dvh">
+          <header className="bg-gray-50 flex flex-col">
+            <div className="p-6 pr-8 font-semibold h-dvh flex flex-col">
+              <Link
+                to={homeUrl()}
+                className="text-lg mb-10 -ml-[4px] text-gray-700 flex items-center font-black tracking-tight"
+              >
+                <WCMLogo className="size-8 mr-[7px]" />
+                <span>WCM</span>
+              </Link>
+              <div className="mb-8 grid grid-cols-1 gap-6">
+                <MyNavLink to={coursesUrl()}>
+                  <CoursesIcon />
+                  <span>Courses</span>
+                </MyNavLink>
+                <MyNavLink to={postsUrl()}>
+                  <PostsIcon />
+                  <span>Posts</span>
+                </MyNavLink>
+                <MyNavLink to={collectionsUrl()}>
+                  <CollectionsIcon />
+                  <span>Collections</span>
+                </MyNavLink>
+                <MyNavLink to={shotSlashUrl()}>
+                  <ShotSlashIcon />
+                  <span>ShotSlash</span>
+                </MyNavLink>
+              </div>
+              {data?.analyticsData && (
+                <div className="text-gray-600 mt-auto">
+                  <Await resolve={data.analyticsData}>
+                    {(analyticsData) => {
+                      return (
+                        <Link
+                          className="flex items-center space-x-4"
+                          to={dashboardUrl()}
+                        >
+                          <div className="flex items-center">
+                            <PlusIcon className="size-[22px] mr-2" />
+                            <span className="text-lg font-mono font-medium">
+                              {analyticsData.exercisesCreatedToday}
+                            </span>
+                          </div>
 
-                      <div className="flex items-center">
-                        <MicIcon className="size-[18px] mr-[11px]" />
-                        <span className="text-lg font-mono font-medium text-gray-100">
-                          {analyticsData.exercisesMarkedReadyForRecordingToday}
-                        </span>
-                      </div>
-                      <div className="flex items-center">
-                        <VideoIcon className="size-[19px] mr-[13px]" />
-                        <span className="text-lg font-mono font-medium text-gray-100">
-                          {0}
-                        </span>
-                      </div>
-                    </Link>
-                  );
-                }}
-              </Await>
+                          <div className="flex items-center">
+                            <MicIcon className="size-[18px] mr-[11px]" />
+                            <span className="text-lg font-mono font-medium">
+                              {
+                                analyticsData.exercisesMarkedReadyForRecordingToday
+                              }
+                            </span>
+                          </div>
+                          <div className="flex items-center">
+                            <VideoIcon className="size-[19px] mr-[13px]" />
+                            <span className="text-lg font-mono font-medium">
+                              {0}
+                            </span>
+                          </div>
+                        </Link>
+                      );
+                    }}
+                  </Await>
+                </div>
+              )}
+              <span className="text-gray-500 block mt-3">Matt Pocock</span>
             </div>
-          )}
-        </header>
-        <main className="p-6">{children}</main>
+          </header>
+          <main className="p-6 flex-grow text-gray-700 max-w-6xl">
+            {children}
+          </main>
+        </div>
         <Scripts />
         <ScrollRestoration />
       </body>

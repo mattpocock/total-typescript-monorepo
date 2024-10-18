@@ -106,7 +106,7 @@ export const posts = {
           id: input.id,
         },
         data: {
-          title: input.title,
+          title: input.title.trim(),
           learningGoal: input.learningGoal,
           notes: input.notes,
           postedAt: input.postedAt,

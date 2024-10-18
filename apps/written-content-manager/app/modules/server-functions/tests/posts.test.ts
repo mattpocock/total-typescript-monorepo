@@ -236,6 +236,23 @@ describe("posts", () => {
 
       expect(await p.analyticsEvent.findMany()).toHaveLength(0);
     });
+
+    it("Should trim a title passed to it", async () => {
+      const post = await serverFunctions.posts.create({
+        title: "",
+      });
+
+      await serverFunctions.posts.update({
+        id: post.id,
+        title: "        ",
+      });
+
+      const postInDb = await serverFunctions.posts.get({
+        id: post.id,
+      });
+
+      expect(postInDb.title).toEqual("");
+    });
   });
 
   describe("delete", () => {
