@@ -15,7 +15,8 @@ import {
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { p } from "~/db";
-import { coursesUrl, courseUrl, sectionUrl } from "~/routes";
+import { serverFunctions } from "~/modules/server-functions/server-functions";
+import { courseUrl, sectionUrl } from "~/routes";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
@@ -27,14 +28,8 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const { courseId } = params;
-  const course = await p.course.findUniqueOrThrow({
-    where: {
-      id: courseId,
-    },
-    select: {
-      id: true,
-      title: true,
-    },
+  const course = await serverFunctions.courses.get({
+    id: courseId!,
   });
 
   return course;

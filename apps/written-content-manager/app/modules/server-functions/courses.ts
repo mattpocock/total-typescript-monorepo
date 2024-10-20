@@ -2,10 +2,62 @@ import { z } from "zod";
 import { createServerFunction } from "./utils";
 
 export const courses = {
+  create: createServerFunction(
+    z.object({
+      title: z.string(),
+      type: z.enum(["WORKSHOP", "TUTORIAL"]).optional().default("WORKSHOP"),
+      repoSlug: z.string().optional(),
+    }),
+    async ({ input, p }) => {
+      return p.course.create({
+        data: {
+          title: input.title,
+          type: input.type,
+          repoSlug: input.repoSlug,
+        },
+      });
+    }
+  ),
+  delete: createServerFunction(
+    z.object({ id: z.string().uuid() }),
+    async ({ input, p }) => {
+      return p.course.update({
+        data: {
+          deleted: true,
+        },
+        where: {
+          id: input.id,
+        },
+      });
+    }
+  ),
+  update: createServerFunction(
+    z.object({
+      id: z.string().uuid(),
+      title: z.string().optional(),
+      type: z.enum(["WORKSHOP", "TUTORIAL"]).optional(),
+      repoSlug: z.string().optional(),
+    }),
+    async ({ input, p }) => {
+      return p.course.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          title: input.title,
+          type: input.type,
+          repoSlug: input.repoSlug,
+        },
+      });
+    }
+  ),
   list: createServerFunction(z.object({}), async ({ input, p }) => {
     const courses = await p.course.findMany({
       orderBy: {
         updatedAt: "desc",
+      },
+      where: {
+        deleted: false,
       },
     });
 
@@ -37,6 +89,9 @@ export const courses = {
         select: {
           id: true,
           title: true,
+          repoSlug: true,
+          deleted: true,
+          type: true,
           sections: {
             where: {
               deleted: false,

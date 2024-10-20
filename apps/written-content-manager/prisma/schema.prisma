@@ -46,6 +46,7 @@ model Course {
   title     String
   type      CourseType
   repoSlug  String?
+  deleted   Boolean    @default(false)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 

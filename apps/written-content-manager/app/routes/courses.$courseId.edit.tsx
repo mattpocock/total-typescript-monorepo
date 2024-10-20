@@ -1,22 +1,11 @@
-import type { CourseType } from "@prisma/client";
-import type {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-  MetaFunction,
-} from "@remix-run/node";
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { Form, redirect, useLoaderData } from "@remix-run/react";
 import { FormButtons, FormContent } from "~/components";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { p } from "~/db";
-import { coursesUrl, courseUrl } from "~/routes";
+import { serverFunctions } from "~/modules/server-functions/server-functions";
+import { courseUrl } from "~/routes";
+import { createJsonAction } from "~/utils";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
@@ -26,30 +15,20 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   ];
 };
 
-export const action = async ({ request, params }: ActionFunctionArgs) => {
-  const body = await request.formData();
-
-  const course = await p.course.update({
-    where: {
-      id: params.courseId!,
-    },
-    data: {
-      title: body.get("title") as string,
-      type: body.get("type") as CourseType,
-      repoSlug: body.get("repoSlug") as string,
-    },
+export const action = createJsonAction(async (json, args) => {
+  const course = await serverFunctions.courses.update({
+    ...json,
+    id: args.params.courseId,
   });
 
-  const redirectTo = new URL(request.url).searchParams.get("redirectTo");
+  const redirectTo = new URL(args.request.url).searchParams.get("redirectTo");
 
   return redirect(redirectTo ?? courseUrl(course.id));
-};
+});
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-  const course = await p.course.findUniqueOrThrow({
-    where: {
-      id: params.courseId!,
-    },
+  const course = await serverFunctions.courses.get({
+    id: params.courseId!,
   });
 
   return course;

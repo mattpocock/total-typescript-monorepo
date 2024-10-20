@@ -1,5 +1,4 @@
-import { Await, defer, useLoaderData } from "@remix-run/react";
-import { Suspense } from "react";
+import { useLoaderData } from "@remix-run/react";
 import { PageContent, TitleArea } from "~/components";
 import { p } from "~/db";
 

@@ -135,5 +135,88 @@ describe("courses", () => {
         ],
       });
     });
+
+    it("Should retrieve deleted courses", async () => {
+      const course = await serverFunctions.courses.create({
+        title: "abc",
+      });
+
+      await serverFunctions.courses.delete({
+        id: course.id,
+      });
+
+      const courseInDb = await serverFunctions.courses.get({
+        id: course.id,
+      });
+
+      expect(courseInDb).toMatchObject({
+        id: course.id,
+        title: "abc",
+        deleted: true,
+      });
+    });
+  });
+
+  describe("create", () => {
+    it("Should create a course", async () => {
+      const course = await serverFunctions.courses.create({
+        title: "abc",
+        type: "WORKSHOP",
+        repoSlug: "abc-slug",
+      });
+
+      const courseInDb = await serverFunctions.courses.get({
+        id: course.id,
+      });
+
+      expect(courseInDb).toMatchObject({
+        id: course.id,
+        title: "abc",
+        type: "WORKSHOP",
+        repoSlug: "abc-slug",
+      });
+    });
+  });
+
+  describe("update", () => {
+    it("Should update a course", async () => {
+      const course = await serverFunctions.courses.create({
+        title: "abc",
+        type: "WORKSHOP",
+      });
+
+      await serverFunctions.courses.update({
+        id: course.id,
+        title: "new-abc",
+        repoSlug: "new-abc-slug",
+        type: "TUTORIAL",
+      });
+
+      const courseInDb = await serverFunctions.courses.get({
+        id: course.id,
+      });
+
+      expect(courseInDb).toMatchObject({
+        id: course.id,
+        title: "new-abc",
+        repoSlug: "new-abc-slug",
+        type: "TUTORIAL",
+      });
+    });
+  });
+
+  describe("delete", () => {
+    it("Should delete the course", async () => {
+      const course = await serverFunctions.courses.create({
+        title: "abc",
+        type: "WORKSHOP",
+      });
+
+      await serverFunctions.courses.delete({
+        id: course.id,
+      });
+
+      expect(await serverFunctions.courses.list()).toHaveLength(0);
+    });
   });
 });
