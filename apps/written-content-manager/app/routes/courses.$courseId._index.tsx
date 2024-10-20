@@ -62,7 +62,7 @@ export default function Course() {
       <TitleArea
         title={`${course.title} Sections`}
         underTitle={
-          <div className="flex items-center space-x-5 text-gray-600 text-sm">
+          <div className="flex items-center space-x-5 text-gray-600 dark:text-gray-300 text-sm">
             <div className="flex items-center space-x-2">
               <PlusIcon className="size-4" />
               <span>
@@ -108,7 +108,7 @@ export default function Course() {
               <TableRow key={section.id}>
                 <TableCell>
                   <div className="flex items-center space-x-4">
-                    <div className="rounded-full size-9 flex justify-center items-center border-2 border-gray-200 flex-shrink-0">
+                    <div className="rounded-full size-9 flex justify-center items-center border-2 border-gray-200 dark:border-gray-700 flex-shrink-0">
                       {(index + 1).toString().padStart(2, "0")}
                     </div>
                     <div>
@@ -119,7 +119,7 @@ export default function Course() {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center space-x-5 text-gray-700">
+                  <div className="flex items-center space-x-5">
                     <div className="flex items-center space-x-1">
                       <PlusIcon className="size-4" />
                       <span>

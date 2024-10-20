@@ -28,14 +28,15 @@
     "body": ["---", "summary: \"$1\"", "---"]
   },
   "component": {
-    "prefix": "comp",
+    "prefix": ["comp", "c"],
     "body": [
       "export interface $1Props {",
-      "  $2",
+      "  className?: string;",
+      "  children?: React.ReactNode;",
       "}",
       "",
       "export const $1 = (props: $1Props) => {",
-      "  return $3",
+      "  return <$2 className={cn(\"\", props.className)}>{props.children}</$2>;",
       "}"
     ]
   }

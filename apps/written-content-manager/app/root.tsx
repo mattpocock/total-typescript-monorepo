@@ -12,25 +12,29 @@ import {
   useLoaderData,
   useRouteError,
   useRouteLoaderData,
-  useFetchers,
 } from "@remix-run/react";
-import clsx from "clsx";
 import {
+  LibraryIcon as CollectionsIcon,
+  BookIcon as CoursesIcon,
   MicIcon,
   PlusIcon,
-  VideoIcon,
-  BookIcon as CoursesIcon,
   ActivityIcon as PostsIcon,
-  LibraryIcon as CollectionsIcon,
   CameraIcon as ShotSlashIcon,
+  VideoIcon,
   SeparatorVertical as WCMLogo,
 } from "lucide-react";
+import NProgress from "nprogress";
+import { useEffect, useMemo, useState } from "react";
+import { useGlobalLoadingState } from "remix-utils/use-global-navigation-state";
 import {
   CommandPalette,
   OnPageActionsContext,
   type ActionsType,
 } from "./command-palette";
 import { p } from "./db";
+import "./fonts.css";
+import { cn } from "./lib/utils";
+import "./nprogress.css";
 import {
   collectionsUrl,
   coursesUrl,
@@ -39,15 +43,8 @@ import {
   postsUrl,
   shotSlashUrl,
 } from "./routes";
-import "./tailwind.css";
-import "./fonts.css";
 import "./shiki.css";
-import { useEffect, useMemo, useState } from "react";
-import NProgress from "nprogress";
-import "./nprogress.css";
-import { useGlobalLoadingState } from "remix-utils/use-global-navigation-state";
-import { cn } from "./lib/utils";
-import { Sidebar } from "./components/ui/sidebar";
+import "./tailwind.css";
 
 export const loader = () => {
   const courses = p.course
@@ -163,7 +160,7 @@ const MyNavLink = ({
         cn(
           "font-semibold flex items-center justify-center md:justify-normal space-x-3 dark:text-gray-300 text-gray-600 rounded-md p-2 -m-2",
           isActive &&
-            "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-200"
+            "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-100"
         )
       }
       to={to}
@@ -184,7 +181,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body className="dark dark:bg-gray-950">
+      <body className="dark:bg-gray-950">
         <div className="flex min-h-dvh">
           <header className="bg-gray-50 dark:bg-gray-900 flex flex-col">
             <div className="p-6 md:pr-8 font-semibold h-dvh flex flex-col">

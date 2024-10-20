@@ -65,7 +65,7 @@ export const EagerlyLoadedEditor = (props: CodeEditorProps) => {
     <div className={props.className}>
       <label className="mb-2 block text-sm">{props.label}</label>
       <input type="hidden" name={props.name} value={value} />
-      <div className={clsx("border-gray-200 border-2")}>
+      <div className={clsx("border-gray-200 dark:border-gray-700 border-2")}>
         <Editor
           path={path}
           loading={<div>Loading Code Editor...</div>}
@@ -76,7 +76,7 @@ export const EagerlyLoadedEditor = (props: CodeEditorProps) => {
             props.onChange?.(value);
           }}
           language={resolveLanguage(props.language)}
-          theme="vs"
+          theme="vs-dark"
           options={{
             minimap: { enabled: false, showSlider: "mouseover" },
             fontSize: props.fontSize ?? 16,

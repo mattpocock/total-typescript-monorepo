@@ -9,7 +9,13 @@ import {
 } from "@remix-run/react";
 import { DeleteIcon } from "lucide-react";
 import { useRef } from "react";
-import { FormButtons, FormContent, PageContent, TitleArea } from "~/components";
+import {
+  FormButtons,
+  FormContent,
+  PageContent,
+  TitleArea,
+  VSCodeIcon,
+} from "~/components";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { DatePicker } from "~/components/ui/datepicker";
@@ -114,15 +120,16 @@ export default function EditPost() {
           </div>
           <Button
             type="button"
+            variant={"secondary"}
             onClick={(e) => {
               e.preventDefault();
               vscode.openSocialPostPlayground(post.id);
             }}
           >
-            <img src="/vscode-alt.svg" className="size-5 mr-3" />
+            <VSCodeIcon className="size-5 mr-3" />
             Open
           </Button>
-          <Button asChild type="button">
+          <Button asChild type="button" variant={"secondary"}>
             <a
               href={`https://publish.buffer.com/post/new`}
               target="buffer-page"
@@ -147,7 +154,7 @@ export default function EditPost() {
                 >
                   {file.path}
                 </a>
-                <pre className="p-6 text-xs border-2 border-gray-200">
+                <pre className="p-6 text-xs border-2 border-gray-200 dark:border-gray-700">
                   {file.content}
                 </pre>
               </div>

@@ -7,10 +7,16 @@ import {
   useLoaderData,
   type ClientLoaderFunctionArgs,
 } from "@remix-run/react";
-import { DeleteIcon, PlusIcon, ZapIcon } from "lucide-react";
+import { DeleteIcon, PlusIcon } from "lucide-react";
 import { useMemo, useRef } from "react";
 import { useOnPageActions } from "~/command-palette";
-import { FormContent, PageContent, TitleArea } from "~/components";
+import {
+  FormContent,
+  PageContent,
+  TableDescription,
+  TitleArea,
+  ViralIcon,
+} from "~/components";
 import { Button } from "~/components/ui/button";
 import { Combobox } from "~/components/ui/combobox";
 import { Input } from "~/components/ui/input";
@@ -166,9 +172,9 @@ export default function EditPost() {
                         className="text-base"
                       >
                         <h2>{post.socialPost.title}</h2>
-                        <p className="text-sm text-gray-500">
+                        <TableDescription>
                           {post.socialPost.learningGoal}
-                        </p>
+                        </TableDescription>
                       </Link>
                     </TableCell>
                     <TableCell>
@@ -181,11 +187,7 @@ export default function EditPost() {
                       )}
                     </TableCell>
                     <TableCell>
-                      {post.socialPost.isViral ? (
-                        <div className="size-8 flex justify-center items-center rounded-full bg-gray-100">
-                          <ZapIcon className="size-5" />
-                        </div>
-                      ) : null}
+                      {post.socialPost.isViral ? <ViralIcon /> : null}
                     </TableCell>
                     <TableCell>
                       <Button

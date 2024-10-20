@@ -14,7 +14,13 @@ import {
   MicIcon,
   PlusIcon,
 } from "lucide-react";
-import { FormButtons, FormContent, PageTitle, TitleArea } from "~/components";
+import {
+  FormButtons,
+  FormContent,
+  TableDescription,
+  TitleArea,
+  VSCodeIcon,
+} from "~/components";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -35,7 +41,6 @@ import { p } from "~/db";
 import {
   addExerciseDialogUrl,
   addExerciseUrl,
-  coursesUrl,
   courseUrl,
   deleteExerciseUrl,
   editExerciseUrl,
@@ -140,9 +145,9 @@ export default function Section() {
                         className="text-base"
                       >
                         <h2>{exercise.title}</h2>
-                        <p className="text-sm text-gray-500">
+                        <TableDescription>
                           {exercise.learningGoal}
-                        </p>
+                        </TableDescription>
                       </Link>
                     </div>
                   </div>
@@ -174,10 +179,7 @@ export default function Section() {
                         vscode.openExercise(exercise.id);
                       }}
                     >
-                      <img
-                        src="/vscode-alt.svg"
-                        className="size-5 flex-shrink-0"
-                      />
+                      <VSCodeIcon className="size-5 flex-shrink-0" />
                     </Button>
                     <Button
                       variant="secondary"

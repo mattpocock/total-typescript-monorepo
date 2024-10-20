@@ -32,7 +32,7 @@ export function DatePicker(props: {
               variant={"outline"}
               type="button"
               className={cn(
-                "justify-start text-left font-normal rounded-r-none col-span-2 border-r-0",
+                "justify-start text-left font-normal rounded-r-none col-span-2 border-r-0 dark:border-gray-600",
                 !date && "text-muted-foreground"
               )}
             >
@@ -58,8 +58,8 @@ export function DatePicker(props: {
         </Popover>
         <Button
           type="button"
-          className="rounded-l-none"
-          variant="default"
+          className="rounded-l-none border-gray-200 dark:border-gray-600 border-l-0"
+          variant="outline"
           onClick={() => {
             setDate(new Date());
             props.onChange?.();

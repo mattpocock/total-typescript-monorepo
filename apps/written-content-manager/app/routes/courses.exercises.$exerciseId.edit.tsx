@@ -12,7 +12,13 @@ import { DeleteIcon, PlayIcon, SquareIcon } from "lucide-react";
 import path from "path";
 import { useEffect, useRef, useState } from "react";
 import { AudioRecorder } from "~/audio-recorder";
-import { FormButtons, FormContent, PageContent, TitleArea } from "~/components";
+import {
+  FormButtons,
+  FormContent,
+  PageContent,
+  TitleArea,
+  VSCodeIcon,
+} from "~/components";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -253,46 +259,50 @@ export default function Exercise() {
           ></Input>
           {exercise.files.length > 0 && (
             <Button
+              variant="secondary"
               type="button"
               onClick={(e) => {
                 e.preventDefault();
                 vscode.openExercise(exercise.id);
               }}
             >
-              <img src="/vscode-alt.svg" className="size-5 mr-3" />
+              <VSCodeIcon className="size-5 mr-3" />
               Open
             </Button>
           )}
           {exercise.files.length === 0 && (
             <div className="grid grid-cols-2 col-span-full gap-4">
               <Button
+                variant="secondary"
                 type="button"
                 onClick={(e) => {
                   e.preventDefault();
                   vscode.createProblemSolution(exercise.id);
                 }}
               >
-                <img src="/vscode-alt.svg" className="size-5 mr-3" />
+                <VSCodeIcon className="size-5 mr-3" />
                 Create Problem/Solution Files
               </Button>
               <Button
+                variant="secondary"
                 type="button"
                 onClick={(e) => {
                   e.preventDefault();
                   vscode.createExplainer(exercise.id);
                 }}
               >
-                <img src="/vscode-alt.svg" className="size-5 mr-3" />
+                <VSCodeIcon className="size-5 mr-3" />
                 Create Explainer File
               </Button>
               <Button
+                variant="secondary"
                 type="button"
                 onClick={(e) => {
                   e.preventDefault();
                   vscode.copyPreviousExerciseFiles(exercise.id);
                 }}
               >
-                <img src="/vscode-alt.svg" className="size-5 mr-3" />
+                <VSCodeIcon className="size-5 mr-3" />
                 Copy Previous Exercise
               </Button>
             </div>

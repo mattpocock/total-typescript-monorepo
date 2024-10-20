@@ -1,7 +1,13 @@
 import type { MetaFunction } from "@remix-run/node";
 import { Form, Link, redirect, useLoaderData } from "@remix-run/react";
 import { DeleteIcon, PlusIcon, ZapIcon } from "lucide-react";
-import { PageContent, PageDescription, TitleArea } from "~/components";
+import {
+  PageContent,
+  PageDescription,
+  TitleArea,
+  ViralIcon,
+  VSCodeIcon,
+} from "~/components";
 import { Button } from "~/components/ui/button";
 import {
   Table,
@@ -76,13 +82,7 @@ const Page = () => {
                   <p>{new Date(post.postedAt).toISOString().slice(0, 10)}</p>
                 )}
               </TableCell>
-              <TableCell>
-                {post.isViral ? (
-                  <div className="size-8 flex justify-center items-center rounded-full bg-gray-100 dark:bg-gray-800">
-                    <ZapIcon className="size-5" />
-                  </div>
-                ) : null}
-              </TableCell>
+              <TableCell>{post.isViral ? <ViralIcon /> : null}</TableCell>
               <TableCell>{post.collections.length}</TableCell>
               <TableCell>
                 <div className="flex items-center">
@@ -93,10 +93,7 @@ const Page = () => {
                       vscode.openSocialPostPlayground(post.id);
                     }}
                   >
-                    <img
-                      src="/vscode-alt.svg"
-                      className="size-5 flex-shrink-0"
-                    />
+                    <VSCodeIcon className="size-5 flex-shrink-0" />
                   </Button>
 
                   <Form
