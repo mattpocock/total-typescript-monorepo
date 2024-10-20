@@ -2,7 +2,7 @@ import { z } from "zod";
 import { createServerFunction } from "./utils";
 
 export const sections = {
-  add: createServerFunction(
+  create: createServerFunction(
     z.object({ courseId: z.string().uuid(), title: z.string() }),
     async ({ input, p }) => {
       const sectionWithHighestOrder = await p.section.findFirst({
@@ -38,7 +38,37 @@ export const sections = {
       return section;
     }
   ),
-  reorder: createServerFunction(
+  reorderAll: createServerFunction(
+    z.object({
+      courseId: z.string().uuid(),
+      sectionIds: z.array(z.string().uuid()).min(1),
+    }),
+    async ({ input, p }) => {
+      const sectionsCount = await p.section.count({
+        where: {
+          courseId: input.courseId,
+        },
+      });
+
+      if (input.sectionIds.length !== sectionsCount) {
+        throw new Error("Not all sections specified");
+      }
+
+      await p.$transaction(
+        input.sectionIds.map((id, index) => {
+          return p.section.update({
+            where: {
+              id,
+            },
+            data: {
+              order: index,
+            },
+          });
+        })
+      );
+    }
+  ),
+  reorderOne: createServerFunction(
     z.object({
       direction: z.enum(["forward", "back"]),
       id: z.string().uuid(),

@@ -44,7 +44,7 @@ export default function Course() {
 
   const reorderFetcher = useFetcher();
   const sections = reorderFetcher.json
-    ? (reorderFetcher.json as { id: string }[]).map(({ id }) => {
+    ? (reorderFetcher.json as string[]).map((id) => {
         return course.sections.find((s) => s.id === id)!;
       })
     : course.sections;
@@ -151,12 +151,9 @@ export default function Course() {
                       className="rounded-none border-r-0"
                       onClick={() => {
                         reorderFetcher.submit(
-                          moveElementBack(
-                            course.sections,
-                            section.id
-                          ) satisfies {
-                            id: string;
-                          }[],
+                          moveElementBack(course.sections, section.id).map(
+                            (a) => a.id
+                          ) satisfies string[],
                           {
                             method: "post",
                             action: reorderSectionsUrl(course.id),
@@ -173,12 +170,9 @@ export default function Course() {
                       className="rounded-none border-l-0"
                       onClick={() => {
                         reorderFetcher.submit(
-                          moveElementForward(
-                            course.sections,
-                            section.id
-                          ) satisfies {
-                            id: string;
-                          }[],
+                          moveElementForward(course.sections, section.id).map(
+                            (a) => a.id
+                          ) satisfies string[],
                           {
                             method: "post",
                             action: reorderSectionsUrl(course.id),

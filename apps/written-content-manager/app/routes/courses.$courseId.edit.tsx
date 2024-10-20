@@ -5,7 +5,7 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { serverFunctions } from "~/modules/server-functions/server-functions";
 import { courseUrl } from "~/routes";
-import { createJsonAction } from "~/utils";
+import { createFormDataAction } from "~/utils";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
@@ -15,7 +15,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   ];
 };
 
-export const action = createJsonAction(async (json, args) => {
+export const action = createFormDataAction(async (json, args) => {
   const course = await serverFunctions.courses.update({
     ...json,
     id: args.params.courseId,

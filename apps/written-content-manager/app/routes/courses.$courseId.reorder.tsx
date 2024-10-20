@@ -1,26 +1,13 @@
-import { redirect, type ActionFunctionArgs } from "@remix-run/node";
-import { p } from "~/db";
+import { redirect } from "@remix-run/node";
+import { serverFunctions } from "~/modules/server-functions/server-functions";
 import { courseUrl } from "~/routes";
+import { createJsonAction } from "~/utils";
 
-export const action = async ({ request, params }: ActionFunctionArgs) => {
-  const { courseId } = params;
+export const action = createJsonAction(async (json, args) => {
+  await serverFunctions.sections.reorderAll({
+    courseId: args.params.courseId!,
+    sectionIds: json,
+  });
 
-  const body = await request.json();
-
-  const sections = body as { id: string }[];
-
-  await p.$transaction(
-    sections.map((e, index) => {
-      return p.section.update({
-        where: {
-          id: e.id,
-        },
-        data: {
-          order: index,
-        },
-      });
-    })
-  );
-
-  return redirect(courseUrl(courseId!));
-};
+  return redirect(courseUrl(args.params.courseId!));
+});

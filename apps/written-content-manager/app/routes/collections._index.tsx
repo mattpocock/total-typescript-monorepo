@@ -21,7 +21,7 @@ import {
 } from "~/components/ui/table";
 import { serverFunctions } from "~/modules/server-functions/server-functions";
 import { deleteCollectionUrl, editCollectionUrl } from "~/routes";
-import { createJsonAction } from "~/utils";
+import { createFormDataAction } from "~/utils";
 
 export const meta: MetaFunction = () => {
   return [
@@ -35,7 +35,7 @@ export const loader = async () => {
   return serverFunctions.collections.list();
 };
 
-export const action = createJsonAction(async () => {
+export const action = createFormDataAction(async () => {
   const collection = await serverFunctions.collections.create();
 
   return redirect(editCollectionUrl(collection.id));

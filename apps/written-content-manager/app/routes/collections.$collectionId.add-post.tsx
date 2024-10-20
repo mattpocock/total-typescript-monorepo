@@ -1,7 +1,7 @@
 import { serverFunctions } from "~/modules/server-functions/server-functions";
-import { createJsonAction } from "~/utils";
+import { createFormDataAction } from "~/utils";
 
-export const action = createJsonAction(async (json, args) => {
+export const action = createFormDataAction(async (json, args) => {
   await serverFunctions.collections.linkExistingPost({
     postId: json.postId,
     collectionId: args.params.collectionId!,

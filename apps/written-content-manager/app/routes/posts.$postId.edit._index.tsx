@@ -37,7 +37,7 @@ import {
 } from "~/routes";
 import { useDebounceFetcher } from "~/use-debounced-fetcher";
 import { useVSCode } from "~/use-open-in-vscode";
-import { createJsonAction } from "~/utils";
+import { createFormDataAction } from "~/utils";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
@@ -53,7 +53,7 @@ export const loader = async (args: ClientLoaderFunctionArgs) => {
   });
 };
 
-export const action = createJsonAction(async (json, args) => {
+export const action = createFormDataAction(async (json, args) => {
   const post = await serverFunctions.posts.update({
     ...json,
     id: args.params.postId!,

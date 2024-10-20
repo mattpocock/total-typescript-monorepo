@@ -20,7 +20,7 @@ import {
 import { serverFunctions } from "~/modules/server-functions/server-functions";
 import { deletePostUrl, editPostUrl, postsUrl } from "~/routes";
 import { useVSCode } from "~/use-open-in-vscode";
-import { createJsonAction } from "~/utils";
+import { createFormDataAction } from "~/utils";
 
 export const meta: MetaFunction = () => {
   return [
@@ -34,7 +34,7 @@ export const loader = async () => {
   return serverFunctions.posts.list();
 };
 
-export const action = createJsonAction(async (json) => {
+export const action = createFormDataAction(async (json) => {
   const post = await serverFunctions.posts.create(json);
 
   return redirect(editPostUrl(post.id));

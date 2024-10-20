@@ -38,9 +38,9 @@ import {
   removePostFromCollectionUrl,
 } from "~/routes";
 import { useDebounceFetcher } from "~/use-debounced-fetcher";
-import { createJsonAction } from "~/utils";
+import { createFormDataAction } from "~/utils";
 
-export const action = createJsonAction(async (json, args) => {
+export const action = createFormDataAction(async (json, args) => {
   const collection = await serverFunctions.collections.update({
     ...json,
     id: args.params.collectionId!,

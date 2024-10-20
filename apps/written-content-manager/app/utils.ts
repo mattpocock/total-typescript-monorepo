@@ -65,7 +65,7 @@ export const getHumanReadableStatusFromExercise = (exercise: {
   }
 };
 
-export const requestToJson = async (request: Request): Promise<any> => {
+export const formDataToJson = async (request: Request): Promise<any> => {
   const formData = await request.formData();
   const json = {};
 
@@ -80,9 +80,16 @@ export const createJsonLoader = <T>(
   trpcFn: (args: LoaderFunctionArgs) => Promise<T>
 ) => trpcFn;
 
+export const createFormDataAction =
+  <T>(trpcFn: (json: any, args: ActionFunctionArgs) => Promise<T>) =>
+  async (args: ActionFunctionArgs) => {
+    const json = await formDataToJson(args.request);
+    return trpcFn(json, args);
+  };
+
 export const createJsonAction =
   <T>(trpcFn: (json: any, args: ActionFunctionArgs) => Promise<T>) =>
   async (args: ActionFunctionArgs) => {
-    const json = await requestToJson(args.request);
+    const json = await args.request.json();
     return trpcFn(json, args);
   };
