@@ -9,7 +9,7 @@ import {
 import { DeleteIcon, PlusIcon } from "lucide-react";
 import { useMemo } from "react";
 import { useOnPageActions } from "~/command-palette";
-import { PageContent, TitleArea } from "~/components";
+import { PageContent, PageDescription, TitleArea } from "~/components";
 import { Button } from "~/components/ui/button";
 import {
   Table,
@@ -67,9 +67,9 @@ const Page = () => {
       <TitleArea
         title="Collections"
         underTitle={
-          <p className="text-gray-600">
+          <PageDescription>
             Create collections of posts to be organized into videos or threads.
-          </p>
+          </PageDescription>
         }
       />
       <Table>

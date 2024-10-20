@@ -161,8 +161,9 @@ const MyNavLink = ({
     <NavLink
       className={({ isActive }) =>
         cn(
-          "font-semibold flex items-center justify-center md:justify-normal space-x-3 text-gray-600 rounded-md p-2 -m-2",
-          isActive && "bg-blue-100 text-blue-700"
+          "font-semibold flex items-center justify-center md:justify-normal space-x-3 dark:text-gray-300 text-gray-600 rounded-md p-2 -m-2",
+          isActive &&
+            "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-200"
         )
       }
       to={to}
@@ -183,13 +184,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body className="">
+      <body className="dark dark:bg-gray-950">
         <div className="flex min-h-dvh">
-          <header className="bg-gray-50 flex flex-col">
+          <header className="bg-gray-50 dark:bg-gray-900 flex flex-col">
             <div className="p-6 md:pr-8 font-semibold h-dvh flex flex-col">
               <Link
                 to={homeUrl()}
-                className="text-lg mb-10 md:-ml-[4px] text-gray-700 flex items-center font-black tracking-tight"
+                className="text-lg mb-10 md:-ml-[4px] text-gray-700 dark:text-gray-200 flex items-center font-black tracking-tight"
               >
                 <WCMLogo className="size-8 md:mr-[7px]" />
                 <span className="hidden md:block">WCM</span>
@@ -214,7 +215,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </div>
               <div className="mt-auto hidden md:block">
                 {data?.analyticsData && (
-                  <div className="text-gray-600">
+                  <div className="">
                     <Await resolve={data.analyticsData}>
                       {(analyticsData) => {
                         return (
@@ -249,11 +250,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     </Await>
                   </div>
                 )}
-                <span className="text-gray-500 block mt-3">Matt Pocock</span>
+                <span className="text-gray-500  dark:text-gray-300 block mt-3">
+                  Matt Pocock
+                </span>
               </div>
             </div>
           </header>
-          <main className="p-6 flex-grow text-gray-700 max-w-6xl">
+          <main className="p-6 flex-grow text-gray-700 dark:text-gray-200 max-w-6xl">
             {children}
           </main>
         </div>

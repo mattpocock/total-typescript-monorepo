@@ -18,7 +18,8 @@ import {
   type RenderType,
 } from "@total-typescript/twoslash-shared";
 import path from "path";
-import { PageContent, TitleArea } from "~/components";
+import { PageContent, PageDescription, TitleArea } from "~/components";
+import { Combobox } from "~/components/ui/combobox";
 import { shotSlashUrl } from "~/routes";
 import { useSubscribeToSocket } from "~/use-subscribe-to-socket";
 
@@ -102,12 +103,13 @@ export default function Index() {
   return (
     <Wrapper>
       <div className="space-y-8 max-w-3xl">
-        <select
-          value={renderType}
+        <Combobox
+          defaultValue={renderType}
+          className="max-w-80"
           onChange={(e) => {
             setSearchParams(
               (prev) => {
-                prev.set("renderType", e.target.value);
+                prev.set("renderType", e.value);
                 return prev;
               },
               {
@@ -116,21 +118,21 @@ export default function Index() {
               }
             );
           }}
-          className="p-2 px-4 rounded-md bg-gray-100 appearance-none"
-        >
-          {Object.entries(RENDER_TYPES).map(([key, value]) => {
-            if (key === "error") return null;
-            return (
-              <option key={key} value={value}>
-                {
-                  RENDER_TYPE_HUMAN_READABLE_NAMES[
-                    key as keyof typeof RENDER_TYPES
-                  ]
-                }
-              </option>
-            );
+          preventDeselection
+          emptyText=""
+          name="renderType"
+          options={Object.entries(RENDER_TYPES).flatMap(([key, value]) => {
+            if (key === "error") return [];
+
+            return {
+              label:
+                RENDER_TYPE_HUMAN_READABLE_NAMES[
+                  key as keyof typeof RENDER_TYPES
+                ],
+              value,
+            };
           })}
-        </select>
+        ></Combobox>
         {(() => {
           switch (renderType) {
             case RENDER_TYPES.allBasicWithBorder:
@@ -186,9 +188,9 @@ export const Wrapper = ({ children }: { children: React.ReactNode }) => {
       <TitleArea
         title="ShotSlash"
         underTitle={
-          <p className="text-gray-600">
+          <PageDescription>
             Use Twoslash to create awesome screenshots for your posts.
-          </p>
+          </PageDescription>
         }
       ></TitleArea>
       {children}

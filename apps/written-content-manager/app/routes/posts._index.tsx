@@ -1,7 +1,7 @@
 import type { MetaFunction } from "@remix-run/node";
 import { Form, Link, redirect, useLoaderData } from "@remix-run/react";
 import { DeleteIcon, PlusIcon, ZapIcon } from "lucide-react";
-import { PageContent, TitleArea } from "~/components";
+import { PageContent, PageDescription, TitleArea } from "~/components";
 import { Button } from "~/components/ui/button";
 import {
   Table,
@@ -44,9 +44,9 @@ const Page = () => {
       <TitleArea
         title="Posts"
         underTitle={
-          <p className="text-gray-600">
+          <PageDescription>
             Track your posts on social media and create new ones.
-          </p>
+          </PageDescription>
         }
       />
       <Table>
@@ -65,7 +65,9 @@ const Page = () => {
               <TableCell>
                 <Link to={editPostUrl(post.id)} className="text-base">
                   <h2>{post.title}</h2>
-                  <p className="text-sm text-gray-500">{post.learningGoal}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {post.learningGoal}
+                  </p>
                 </Link>
               </TableCell>
 
@@ -76,7 +78,7 @@ const Page = () => {
               </TableCell>
               <TableCell>
                 {post.isViral ? (
-                  <div className="size-8 flex justify-center items-center rounded-full bg-gray-100">
+                  <div className="size-8 flex justify-center items-center rounded-full bg-gray-100 dark:bg-gray-800">
                     <ZapIcon className="size-5" />
                   </div>
                 ) : null}

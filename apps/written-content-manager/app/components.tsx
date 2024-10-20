@@ -16,6 +16,10 @@ export const PageTitle = (props: { children?: React.ReactNode }) => {
   );
 };
 
+export const PageDescription = (props: { children?: React.ReactNode }) => {
+  return <p className="text-gray-600 dark:text-gray-300">{props.children}</p>;
+};
+
 export const TitleArea = (props: {
   title: string;
   breadcrumbs?: React.ReactNode;

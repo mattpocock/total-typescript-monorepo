@@ -3,7 +3,7 @@ import { Link, useLoaderData, useNavigate } from "@remix-run/react";
 import { PlusIcon } from "lucide-react";
 import { useMemo } from "react";
 import { useOnPageActions } from "~/command-palette";
-import { PageContent, TitleArea } from "~/components";
+import { PageContent, PageDescription, TitleArea } from "~/components";
 import { Button } from "~/components/ui/button";
 import {
   Table,
@@ -52,9 +52,9 @@ const Page = () => {
       <TitleArea
         title="Courses"
         underTitle={
-          <p className="text-gray-600">
+          <PageDescription>
             Build awesome courses for your students.
-          </p>
+          </PageDescription>
         }
       />
       <Table>

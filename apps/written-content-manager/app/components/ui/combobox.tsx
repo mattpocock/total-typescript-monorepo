@@ -28,6 +28,7 @@ export function Combobox(props: {
   placeholder?: string;
   emptyText: string;
   className?: string;
+  preventDeselection?: true;
 }) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(props.defaultValue ?? "");
@@ -92,7 +93,13 @@ export function Combobox(props: {
                     onSelect={(label) => {
                       const resolvedValue = valueToLabelMap.get(label);
                       if (!resolvedValue) return;
-                      setValue(resolvedValue === value ? "" : resolvedValue);
+
+                      if (props.preventDeselection) {
+                        setValue(resolvedValue);
+                      } else {
+                        setValue(resolvedValue === value ? "" : resolvedValue);
+                      }
+
                       setOpen(false);
                       props.onChange?.({
                         value: resolvedValue,
