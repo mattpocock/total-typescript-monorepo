@@ -3,6 +3,54 @@ import { p } from "../../../db";
 import { serverFunctions } from "../server-functions";
 
 describe("exercises", () => {
+  describe("create", () => {
+    it("Should let you create an exercise", async () => {
+      const course = await serverFunctions.courses.create({
+        title: "abc",
+      });
+
+      const section = await serverFunctions.sections.create({
+        courseId: course.id,
+        title: "abc",
+      });
+
+      const exercise = await serverFunctions.exercises.create({
+        sectionId: section.id,
+        title: "abc",
+      });
+
+      const sectionInDb = await serverFunctions.sections.get({
+        id: section.id,
+      });
+
+      expect(sectionInDb.exercises).toMatchObject([
+        {
+          id: exercise.id,
+          title: "abc",
+        },
+      ]);
+    });
+
+    it("Should log it in analytics", async () => {
+      const course = await serverFunctions.courses.create({
+        title: "abc",
+      });
+
+      const section = await serverFunctions.sections.create({
+        courseId: course.id,
+        title: "abc",
+      });
+
+      await serverFunctions.exercises.create({
+        sectionId: section.id,
+        title: "abc",
+      });
+
+      const analytics = await serverFunctions.analytics.allCounts();
+
+      expect(analytics.exercisesCreatedToday).toEqual(1);
+    });
+  });
   describe("moveSection", async () => {
     it("Should move the exercise from one section to another", async () => {
       const course = await p.course.create({

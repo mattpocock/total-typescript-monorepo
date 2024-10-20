@@ -38,6 +38,7 @@ import {
 import { Input } from "~/components/ui/input";
 import { Table, TableBody, TableCell, TableRow } from "~/components/ui/table";
 import { p } from "~/db";
+import { serverFunctions } from "~/modules/server-functions/server-functions";
 import {
   addExerciseDialogUrl,
   addExerciseUrl,
@@ -60,39 +61,7 @@ export const meta: MetaFunction<typeof loader> = (args) => {
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const { sectionId } = params;
-  const section = await p.section.findUniqueOrThrow({
-    where: {
-      id: sectionId,
-    },
-    select: {
-      id: true,
-      title: true,
-      course: {
-        select: {
-          id: true,
-          title: true,
-        },
-      },
-      exercises: {
-        select: {
-          id: true,
-          title: true,
-          learningGoal: true,
-          order: true,
-          readyForRecording: true,
-          audioRecordingCreated: true,
-        },
-        orderBy: {
-          order: "asc",
-        },
-        where: {
-          deleted: false,
-        },
-      },
-    },
-  });
-
-  return section;
+  return serverFunctions.sections.get({ id: sectionId! });
 };
 
 export default function Section() {

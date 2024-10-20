@@ -27,6 +27,15 @@
     "prefix": "fm",
     "body": ["---", "summary: \"$1\"", "---"]
   },
+  "create-server-function": {
+    "prefix": ["csf"],
+    "body": [
+      "createServerFunction(",
+      "  z.object({ $1 }),",
+      "  async ({ input, p }) => {$2}",
+      "),"
+    ]
+  },
   "component": {
     "prefix": ["comp", "c"],
     "body": [

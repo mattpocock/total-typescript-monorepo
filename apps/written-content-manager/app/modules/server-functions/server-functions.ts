@@ -4,6 +4,7 @@ import { courses } from "./courses";
 import { exercises } from "./exercises";
 import { posts } from "./posts";
 import { sections } from "./sections";
+import { videos } from "./videos";
 
 /**
  * The entrypoint for all server actions.
@@ -25,4 +26,5 @@ export const serverFunctions = {
   sections,
   exercises,
   analytics,
+  videos,
 };

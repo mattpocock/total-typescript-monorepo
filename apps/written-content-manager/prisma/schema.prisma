@@ -31,6 +31,7 @@ enum AnalyticsEventType {
   EXERCISE_MARKED_READY_FOR_RECORDING
   EXERCISE_AUDIO_RECORDING_CREATED
   EXERCISE_AUDIO_RECORDING_DELETED
+  EXERCISE_VIDEO_RECORDING_MARKED_AS_FINAL
 }
 
 model AnalyticsEvent {
@@ -66,21 +67,22 @@ model Section {
 }
 
 model Exercise {
-  id                    String   @id @default(uuid())
+  id                    String              @id @default(uuid())
   title                 String
   content               String?
   learningGoal          String?
   notes                 String?
   description           String?
-  readyForRecording     Boolean  @default(false)
-  audioRecordingCreated Boolean  @default(false)
+  readyForRecording     Boolean             @default(false)
+  audioRecordingCreated Boolean             @default(false)
   audioTranscript       String?
   sectionId             String
   order                 Int
-  section               Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  deleted               Boolean  @default(false)
+  section               Section             @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  deleted               Boolean             @default(false)
+  takes                 ExerciseVideoTake[]
 }
 
 model SocialPost {
@@ -115,4 +117,14 @@ model SocialPostCollection {
   posts     SocialPostToSocialPostCollection[]
   createdAt DateTime                           @default(now())
   updatedAt DateTime                           @updatedAt
+}
+
+model ExerciseVideoTake {
+  id         String   @id @default(uuid())
+  uri        String
+  exercise   Exercise @relation(fields: [exerciseId], references: [id])
+  exerciseId String
+  isFinal    Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }

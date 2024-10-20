@@ -103,6 +103,14 @@ export const analytics = {
             type: "POST_MARKED_AS_POSTED",
           },
         }),
+        p.analyticsEvent.count({
+          where: {
+            createdAt: {
+              gte: todayAtMidnight,
+            },
+            type: "EXERCISE_VIDEO_RECORDING_MARKED_AS_FINAL",
+          },
+        }),
       ])
       .then((d) => {
         return {
@@ -118,6 +126,7 @@ export const analytics = {
           postsCreatedToday: d[9],
           postsDeletedToday: d[10],
           postsMarkedAsPostedToday: d[11],
+          exerciseVideoRecordingsMarkedAsFinal: d[12],
         };
       });
   }),

@@ -6,6 +6,7 @@ if (!process.env.DATABASE_URL?.includes("localhost")) {
 }
 
 const allTables = [
+  "exerciseVideoTake",
   "exercise",
   "section",
   "course",

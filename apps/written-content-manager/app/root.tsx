@@ -173,6 +173,10 @@ const MyNavLink = ({
 export function Layout({ children }: { children: React.ReactNode }) {
   const data = useRouteLoaderData<typeof loader>("root");
 
+  const wantsDarkMode =
+    typeof window === "object" &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches;
+
   return (
     <html lang="en">
       <head>
@@ -181,7 +185,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body className="dark:bg-gray-950">
+      <body className={`dark:bg-gray-950 ${wantsDarkMode ? "dark" : ""}`}>
         <div className="flex min-h-dvh">
           <header className="bg-gray-50 dark:bg-gray-900 flex flex-col">
             <div className="p-6 md:pr-8 font-semibold h-dvh flex flex-col">

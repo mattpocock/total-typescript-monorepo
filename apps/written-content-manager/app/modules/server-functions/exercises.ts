@@ -15,4 +15,31 @@ export const exercises = {
       });
     }
   ),
+
+  create: createServerFunction(
+    z.object({
+      sectionId: z.string().uuid(),
+      title: z.string(),
+    }),
+    async ({ input, p }) => {
+      const exercise = await p.exercise.create({
+        data: {
+          order: 0,
+          title: input.title,
+          sectionId: input.sectionId,
+        },
+      });
+
+      await p.analyticsEvent.create({
+        data: {
+          payload: {
+            exerciseId: exercise.id,
+          },
+          type: "EXERCISE_CREATED",
+        },
+      });
+
+      return exercise;
+    }
+  ),
 };

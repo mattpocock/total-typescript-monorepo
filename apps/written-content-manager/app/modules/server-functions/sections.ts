@@ -121,4 +121,43 @@ export const sections = {
       return modifiedSection;
     }
   ),
+
+  get: createServerFunction(
+    z.object({
+      id: z.string(),
+    }),
+    async ({ p, input }) => {
+      return p.section.findUniqueOrThrow({
+        where: {
+          id: input.id,
+        },
+        select: {
+          id: true,
+          title: true,
+          course: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+          exercises: {
+            select: {
+              id: true,
+              title: true,
+              learningGoal: true,
+              order: true,
+              readyForRecording: true,
+              audioRecordingCreated: true,
+            },
+            orderBy: {
+              order: "asc",
+            },
+            where: {
+              deleted: false,
+            },
+          },
+        },
+      });
+    }
+  ),
 };
