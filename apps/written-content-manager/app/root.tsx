@@ -47,6 +47,7 @@ import NProgress from "nprogress";
 import "./nprogress.css";
 import { useGlobalLoadingState } from "remix-utils/use-global-navigation-state";
 import { cn } from "./lib/utils";
+import { Sidebar } from "./components/ui/sidebar";
 
 export const loader = () => {
   const courses = p.course
