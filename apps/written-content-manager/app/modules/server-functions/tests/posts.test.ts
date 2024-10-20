@@ -140,22 +140,13 @@ describe("posts", () => {
     });
 
     it("Should record an analytics event", async () => {
-      const post = await serverFunctions.posts.create({
+      await serverFunctions.posts.create({
         title: "abc",
       });
 
-      expect(
-        await p.analyticsEvent.findFirstOrThrow({
-          where: {
-            type: "POST_CREATED",
-          },
-        })
-      ).toMatchObject({
-        type: "POST_CREATED",
-        payload: {
-          postId: post.id,
-        },
-      });
+      const analytics = await serverFunctions.analytics.allCounts();
+
+      expect(analytics.postsCreatedToday).toEqual(1);
     });
   });
 

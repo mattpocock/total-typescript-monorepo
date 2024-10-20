@@ -99,6 +99,7 @@ export const courses = {
             select: {
               id: true,
               title: true,
+              order: true,
               exercises: {
                 where: {
                   deleted: false,

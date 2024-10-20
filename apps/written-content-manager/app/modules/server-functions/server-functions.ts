@@ -1,3 +1,4 @@
+import { analytics } from "./analytics";
 import { collections } from "./collections";
 import { courses } from "./courses";
 import { exercises } from "./exercises";
@@ -23,4 +24,5 @@ export const serverFunctions = {
   courses,
   sections,
   exercises,
+  analytics,
 };

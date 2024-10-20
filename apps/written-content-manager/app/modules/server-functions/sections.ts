@@ -2,6 +2,42 @@ import { z } from "zod";
 import { createServerFunction } from "./utils";
 
 export const sections = {
+  add: createServerFunction(
+    z.object({ courseId: z.string().uuid(), title: z.string() }),
+    async ({ input, p }) => {
+      const sectionWithHighestOrder = await p.section.findFirst({
+        where: {
+          courseId: input.courseId,
+        },
+        select: {
+          order: true,
+        },
+        orderBy: {
+          order: "desc",
+        },
+      });
+
+      const section = await p.section.create({
+        data: {
+          order: sectionWithHighestOrder
+            ? sectionWithHighestOrder.order + 1
+            : 0,
+          title: input.title,
+          courseId: input.courseId,
+        },
+      });
+      await p.analyticsEvent.create({
+        data: {
+          type: "SECTION_CREATED",
+          payload: {
+            sectionId: section.id,
+          },
+        },
+      });
+
+      return section;
+    }
+  ),
   reorder: createServerFunction(
     z.object({
       direction: z.enum(["forward", "back"]),

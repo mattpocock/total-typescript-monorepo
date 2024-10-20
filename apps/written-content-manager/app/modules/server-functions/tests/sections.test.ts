@@ -174,4 +174,83 @@ describe("sections", () => {
       });
     });
   });
+
+  describe("add", () => {
+    it("Should add a section to the course", async () => {
+      const course = await serverFunctions.courses.create({
+        title: "abc",
+      });
+
+      const section = await serverFunctions.sections.add({
+        courseId: course.id,
+        title: "abc",
+      });
+
+      const courseInDb = await serverFunctions.courses.get({
+        id: course.id,
+      });
+
+      expect(courseInDb.sections).toMatchObject([
+        {
+          id: section.id,
+          title: "abc",
+        },
+      ]);
+    });
+
+    it("Should create an analytics event", async () => {
+      const course = await serverFunctions.courses.create({
+        title: "abc",
+      });
+
+      await serverFunctions.sections.add({
+        courseId: course.id,
+        title: "abc",
+      });
+
+      const analytics = await serverFunctions.analytics.allCounts();
+
+      expect(analytics.sectionsCreatedToday).toEqual(1);
+    });
+
+    it("Should append each section to the bottom of the list", async () => {
+      const course = await serverFunctions.courses.create({
+        title: "abc",
+      });
+
+      const section1 = await serverFunctions.sections.add({
+        courseId: course.id,
+        title: "abc",
+      });
+
+      const section2 = await serverFunctions.sections.add({
+        courseId: course.id,
+        title: "abc",
+      });
+
+      const section3 = await serverFunctions.sections.add({
+        courseId: course.id,
+        title: "abc",
+      });
+
+      const courseInDb = await serverFunctions.courses.get({
+        id: course.id,
+      });
+
+      expect(courseInDb.sections).toMatchObject([
+        {
+          id: section1.id,
+          order: 0,
+        },
+        {
+          id: section2.id,
+          order: 1,
+        },
+        {
+          id: section3.id,
+          order: 2,
+        },
+      ]);
+    });
+  });
 });
