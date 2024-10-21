@@ -15,6 +15,7 @@ import {
   PlusIcon,
   VideoIcon,
 } from "lucide-react";
+import { format, isToday } from "date-fns";
 import { PageContent, TitleArea } from "~/components";
 import { Button } from "~/components/ui/button";
 import { Table, TableBody, TableCell, TableRow } from "~/components/ui/table";
@@ -64,7 +65,7 @@ export default function Course() {
     (e) => e === "ready-for-recording"
   );
 
-  const submit = useSubmit();
+  const printToRepoFetcher = useFetcher();
 
   return (
     <PageContent>
@@ -227,14 +228,21 @@ export default function Course() {
         </Button>
         <Button
           onClick={() => {
-            submit(null, {
+            printToRepoFetcher.submit(null, {
               action: printCourseToRepoUrl(course.id),
               method: "post",
             });
           }}
         >
-          Print To Repo
+          Print To Repo{" "}
         </Button>
+        <span className="text-sm">
+          {course.lastPrintedToRepoAt
+            ? isToday(course.lastPrintedToRepoAt)
+              ? `Last Printed ${format(course.lastPrintedToRepoAt, "HH:mm")}`
+              : `Last Printed ${format(course.lastPrintedToRepoAt, "MM/dd/yyyy")}`
+            : "Never Printed"}
+        </span>
       </div>
     </PageContent>
   );

@@ -43,15 +43,15 @@ model AnalyticsEvent {
 }
 
 model Course {
-  id        String     @id @default(uuid())
-  title     String
-  type      CourseType
-  repoSlug  String?
-  deleted   Boolean    @default(false)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-
-  sections Section[]
+  id                  String     @id @default(uuid())
+  title               String
+  type                CourseType
+  repoSlug            String?
+  deleted             Boolean    @default(false)
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+  sections            Section[]
+  lastPrintedToRepoAt DateTime?
 }
 
 model Section {

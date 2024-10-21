@@ -211,4 +211,41 @@ describe("print-course-to-repo", () => {
       expect(await fs.readFile(exercise1Path, "utf-8")).toEqual("");
     });
   });
+
+  it("Should update the course lastPrintedToRepoAt date", async () => {
+    await mockFS(async (fs) => {
+      const course = await serverFunctions.courses.create({
+        title: "My tRPC Course",
+        repoSlug: "my-trpc-course",
+      });
+
+      await serverFunctions.sections.create({
+        courseId: course.id,
+        title: "Section 1",
+      });
+
+      await fs.ensureDir(
+        path.join(TOTAL_TYPESCRIPT_REPOS_FOLDER, "my-trpc-course", "src")
+      );
+
+      const beforePrintDate = new Date();
+
+      await printCourseToRepo({
+        id: course.id,
+      });
+
+      const afterPrintDate = new Date();
+
+      const updatedCourse = await serverFunctions.courses.get({
+        id: course.id,
+      });
+
+      expect(updatedCourse.lastPrintedToRepoAt?.getTime()).toBeGreaterThan(
+        beforePrintDate.getTime()
+      );
+      expect(updatedCourse.lastPrintedToRepoAt?.getTime()).toBeLessThan(
+        afterPrintDate.getTime()
+      );
+    });
+  });
 });

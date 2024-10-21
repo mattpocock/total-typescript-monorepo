@@ -93,6 +93,7 @@ export const courses = {
           repoSlug: true,
           deleted: true,
           type: true,
+          lastPrintedToRepoAt: true,
           sections: {
             where: {
               deleted: false,

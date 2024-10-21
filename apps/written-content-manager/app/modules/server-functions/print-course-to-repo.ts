@@ -117,6 +117,15 @@ export const printCourseToRepo = createServerFunction(
         totalExerciseCount++;
       }
     }
+    await p.course.update({
+      where: {
+        id: input.id,
+      },
+      data: {
+        lastPrintedToRepoAt: new Date(),
+      },
+    });
+
     return {
       coursePath,
     };
