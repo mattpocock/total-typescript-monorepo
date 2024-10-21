@@ -31,9 +31,22 @@ export const exercises = {
       title: z.string(),
     }),
     async ({ input, p, fs }) => {
+      const exerciseWithHighestOrder = await p.exercise.findFirst({
+        where: {
+          sectionId: input.sectionId,
+        },
+        orderBy: {
+          order: "desc",
+        },
+        select: {
+          order: true,
+        },
+      });
       const exercise = await p.exercise.create({
         data: {
-          order: 0,
+          order: exerciseWithHighestOrder
+            ? exerciseWithHighestOrder.order + 1
+            : 0,
           title: input.title,
           sectionId: input.sectionId,
         },
@@ -107,7 +120,7 @@ export const exercises = {
       const files = await getVSCodeFilesForExercise(input.id);
 
       if (files.length > 0) {
-        throw new Response("Files already exist", { status: 400 });
+        throw new Error("Explainer file already exists");
       }
 
       const path = await import("node:path");
@@ -133,6 +146,166 @@ export const exercises = {
       await fs.writeFile(explainerFile, firstLine);
 
       await fs.openInVSCode(explainerFile);
+    }
+  ),
+
+  getPrevExercise: createServerFunction(
+    z.object({
+      id: z.string().uuid(),
+    }),
+    async ({ input, p }) => {
+      const exercise = await p.exercise.findUniqueOrThrow({
+        where: {
+          id: input.id,
+        },
+        select: {
+          id: true,
+          section: {
+            select: {
+              id: true,
+              course: {
+                select: {
+                  id: true,
+                },
+              },
+              order: true,
+            },
+          },
+          order: true,
+        },
+      });
+
+      const [prevExercise, lastExerciseInPrevSection] = await p.$transaction([
+        p.exercise.findFirst({
+          where: {
+            deleted: false,
+            title: {
+              not: "",
+            },
+            sectionId: exercise.section.id,
+            order: {
+              lt: exercise.order,
+            },
+          },
+          orderBy: {
+            order: "desc",
+          },
+          select: {
+            id: true,
+            title: true,
+          },
+        }),
+        p.exercise.findFirst({
+          where: {
+            deleted: false,
+            title: {
+              not: "",
+            },
+            section: {
+              courseId: exercise.section.course.id,
+              order: {
+                lt: exercise.section.order,
+              },
+            },
+          },
+          orderBy: [
+            {
+              section: {
+                order: "desc",
+              },
+            },
+            {
+              order: "desc",
+            },
+          ],
+          select: {
+            id: true,
+            title: true,
+          },
+        }),
+      ]);
+
+      return prevExercise ?? lastExerciseInPrevSection;
+    }
+  ),
+
+  getNextExercise: createServerFunction(
+    z.object({
+      id: z.string().uuid(),
+    }),
+    async ({ input, p }) => {
+      const exercise = await p.exercise.findUniqueOrThrow({
+        where: {
+          id: input.id,
+        },
+        select: {
+          id: true,
+          section: {
+            select: {
+              id: true,
+              course: {
+                select: {
+                  id: true,
+                },
+              },
+              order: true,
+            },
+          },
+          order: true,
+        },
+      });
+
+      const [nextExercise, firstExerciseInNextSection] = await p.$transaction([
+        p.exercise.findFirst({
+          where: {
+            deleted: false,
+            title: {
+              not: "",
+            },
+            sectionId: exercise.section.id,
+            order: {
+              gt: exercise.order,
+            },
+          },
+          orderBy: {
+            order: "asc",
+          },
+          select: {
+            id: true,
+            title: true,
+          },
+        }),
+        p.exercise.findFirst({
+          where: {
+            deleted: false,
+            title: {
+              not: "",
+            },
+            section: {
+              courseId: exercise.section.course.id,
+              order: {
+                gt: exercise.section.order,
+              },
+            },
+          },
+          orderBy: [
+            {
+              section: {
+                order: "asc",
+              },
+            },
+            {
+              order: "asc",
+            },
+          ],
+          select: {
+            id: true,
+            title: true,
+          },
+        }),
+      ]);
+
+      return nextExercise ?? firstExerciseInNextSection;
     }
   ),
 };

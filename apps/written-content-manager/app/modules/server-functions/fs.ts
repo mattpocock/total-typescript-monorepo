@@ -51,6 +51,7 @@ export class FileSystemFS implements MyFS {
 
 export class LocalFS implements MyFS {
   private fileMap: Map<string, string> = new Map();
+  private filesOpenedInVSCode: Map<string, number> = new Map();
 
   readFileSync(path: string, encoding: BufferEncoding) {
     const file = this.fileMap.get(path);
@@ -85,7 +86,18 @@ export class LocalFS implements MyFS {
     );
   };
 
-  openInVSCode = async (path: string) => {};
+  openInVSCode = async (path: string) => {
+    const count = this.filesOpenedInVSCode.get(path) ?? 0;
+    this.filesOpenedInVSCode.set(path, count + 1);
+  };
+
+  countOpensInVSCode = (path: string): number => {
+    return this.filesOpenedInVSCode.get(path) ?? 0;
+  };
+
+  rm = async (path: string) => {
+    this.fileMap.delete(path);
+  };
 }
 
 export const fsStorage = new AsyncLocalStorage<MyFS>();

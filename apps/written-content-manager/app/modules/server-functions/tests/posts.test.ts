@@ -319,4 +319,64 @@ describe("posts", () => {
       ]);
     });
   });
+
+  describe("viewInVSCode", () => {
+    it("Should open thread.md if it already exists", async () => {
+      await mockFS(async (fs) => {
+        const post = await serverFunctions.posts.create({
+          title: "abc",
+        });
+
+        await serverFunctions.posts.viewInVSCode({
+          id: post.id,
+        });
+
+        const postInDb = await serverFunctions.posts.get({
+          id: post.id,
+        });
+
+        const threadFilePath = postInDb.files.find((f) =>
+          f.fullPath.includes("thread.md")
+        )?.fullPath;
+
+        await serverFunctions.posts.viewInVSCode({
+          id: post.id,
+        });
+
+        expect(fs.countOpensInVSCode(threadFilePath!)).toEqual(2);
+      });
+    });
+
+    it("Should open any file if thread.md has been deleted", async () => {
+      await mockFS(async (fs) => {
+        const post = await serverFunctions.posts.create({
+          title: "abc",
+        });
+
+        await serverFunctions.posts.viewInVSCode({
+          id: post.id,
+        });
+
+        const postInDb = await serverFunctions.posts.get({
+          id: post.id,
+        });
+
+        const threadFilePath = postInDb.files.find((f) =>
+          f.fullPath.includes("thread.md")
+        )?.fullPath;
+
+        await fs.rm(threadFilePath!);
+
+        await serverFunctions.posts.viewInVSCode({
+          id: post.id,
+        });
+
+        const playgroundFilePath = postInDb.files.find((f) =>
+          f.fullPath.includes("playground.ts")
+        )?.fullPath;
+
+        expect(fs.countOpensInVSCode(playgroundFilePath!)).toEqual(1);
+      });
+    });
+  });
 });

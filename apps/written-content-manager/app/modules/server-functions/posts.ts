@@ -168,8 +168,6 @@ export const posts = {
 
       const files = await getVSCodeFilesForPost(input.id!);
 
-      console.log({ files });
-
       if (!files[0]) {
         const playgroundFile = path.join(postsDir, "playground.ts");
         await fs.writeFile(
@@ -191,7 +189,8 @@ export const posts = {
         await fs.writeFile(threadFile, ``);
         await fs.openInVSCode(threadFile);
       } else {
-        await fs.openInVSCode(files[0]);
+        const threadFile = files.find((file) => file.includes("thread.md"));
+        await fs.openInVSCode(threadFile ?? files[0]);
       }
     }
   ),

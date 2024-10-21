@@ -31,6 +31,7 @@ import { Button, buttonVariants } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
 import { p } from "~/db";
+import { serverFunctions } from "~/modules/server-functions/server-functions";
 import { LazyLoadedEditor } from "~/monaco-editor/lazy-loaded-editor";
 import {
   courseUrl,
@@ -53,34 +54,8 @@ export const meta: MetaFunction<typeof loader> = (args) => {
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const { exerciseId } = params;
-  const exercise = await p.exercise.findUniqueOrThrow({
-    where: {
-      id: exerciseId,
-    },
-    select: {
-      section: {
-        select: {
-          id: true,
-          title: true,
-          order: true,
-          course: {
-            select: {
-              id: true,
-              title: true,
-            },
-          },
-        },
-      },
-      id: true,
-      title: true,
-      deleted: true,
-      description: true,
-      learningGoal: true,
-      audioTranscript: true,
-      readyForRecording: true,
-      notes: true,
-      order: true,
-    },
+  const exercise = await serverFunctions.exercises.get({
+    id: exerciseId!,
   });
 
   const [
@@ -185,20 +160,8 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     }),
   ]);
 
-  const files = await getVSCodeFilesForExercise(exerciseId!);
-
-  const audioExists = await getDoesAudioExistForExercise(exerciseId!);
-
   return {
-    exercise: {
-      ...exercise,
-      files: files.map((file) => ({
-        path: path.basename(file),
-        fullPath: file,
-        content: readFileSync(file, "utf-8"),
-      })),
-      audioExists,
-    },
+    exercise,
     prevExercise: prevExercise ?? lastExerciseInPrevSection,
     nextExercise: nextExercise ?? firstExerciseInNextSection,
   };
