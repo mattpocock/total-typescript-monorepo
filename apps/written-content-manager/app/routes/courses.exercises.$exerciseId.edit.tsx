@@ -10,8 +10,9 @@ import clsx from "clsx";
 import { readFileSync } from "fs";
 import { DeleteIcon, PlayIcon, SquareIcon } from "lucide-react";
 import path from "path";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AudioRecorder } from "~/audio-recorder";
+import { useOnPageActions } from "~/command-palette";
 import {
   FormButtons,
   FormContent,
@@ -47,7 +48,7 @@ import {
 } from "~/vscode-utils";
 
 export const meta: MetaFunction<typeof loader> = (args) => {
-  return [{ title: `${args.data?.title} | WCM` }];
+  return [{ title: `${args.data?.exercise.title} | WCM` }];
 };
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
@@ -61,6 +62,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
         select: {
           id: true,
           title: true,
+          order: true,
           course: {
             select: {
               id: true,
@@ -77,21 +79,128 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
       audioTranscript: true,
       readyForRecording: true,
       notes: true,
+      order: true,
     },
   });
+
+  const [
+    prevExercise,
+    nextExercise,
+    lastExerciseInPrevSection,
+    firstExerciseInNextSection,
+  ] = await p.$transaction([
+    p.exercise.findFirst({
+      where: {
+        deleted: false,
+        title: {
+          not: "",
+        },
+        sectionId: exercise.section.id,
+        order: {
+          lt: exercise.order,
+        },
+      },
+      orderBy: {
+        order: "desc",
+      },
+      select: {
+        id: true,
+        title: true,
+      },
+    }),
+    p.exercise.findFirst({
+      where: {
+        deleted: false,
+        title: {
+          not: "",
+        },
+        sectionId: exercise.section.id,
+        order: {
+          gt: exercise.order,
+        },
+      },
+      orderBy: {
+        order: "asc",
+      },
+      select: {
+        id: true,
+        title: true,
+      },
+    }),
+    p.exercise.findFirst({
+      where: {
+        deleted: false,
+        title: {
+          not: "",
+        },
+        section: {
+          courseId: exercise.section.course.id,
+          order: {
+            lt: exercise.section.order,
+          },
+        },
+      },
+      orderBy: [
+        {
+          section: {
+            order: "desc",
+          },
+        },
+        {
+          order: "desc",
+        },
+      ],
+      select: {
+        id: true,
+        title: true,
+      },
+    }),
+    p.exercise.findFirst({
+      where: {
+        deleted: false,
+        title: {
+          not: "",
+        },
+        section: {
+          courseId: exercise.section.course.id,
+          order: {
+            gt: exercise.section.order,
+          },
+        },
+      },
+      orderBy: [
+        {
+          section: {
+            order: "asc",
+          },
+        },
+        {
+          order: "asc",
+        },
+      ],
+      select: {
+        id: true,
+        title: true,
+      },
+    }),
+  ]);
 
   const files = await getVSCodeFilesForExercise(exerciseId!);
 
   const audioExists = await getDoesAudioExistForExercise(exerciseId!);
 
   return {
-    ...exercise,
-    files: files.map((file) => ({
-      path: path.basename(file),
-      fullPath: file,
-      content: readFileSync(file, "utf-8"),
-    })),
-    audioExists,
+    exercise: {
+      ...exercise,
+      files: files.map((file) => ({
+        path: path.basename(file),
+        fullPath: file,
+        content: readFileSync(file, "utf-8"),
+      })),
+      audioExists,
+    },
+    prevExercise: prevExercise ?? lastExerciseInPrevSection,
+    nextExercise: nextExercise ?? firstExerciseInNextSection,
   };
 };
 
@@ -145,7 +254,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 };
 
 export default function Exercise() {
-  const exercise = useLoaderData<typeof loader>();
+  const { exercise, prevExercise, nextExercise } =
+    useLoaderData<typeof loader>();
 
   const debouncedFetcher = useDebounceFetcher();
 
@@ -204,9 +314,28 @@ export default function Exercise() {
     return () => {
       abortController.abort();
     };
-  }, [isAudioPlaying]);
+  }, [isAudioPlaying, audioRef.current]);
 
   const deleteAudioFetcher = useFetcher();
+
+  useOnPageActions(
+    useMemo(() => {
+      return [
+        nextExercise && {
+          label: "Go To Next Exercise",
+          action: () => {
+            navigate(editExerciseUrl(nextExercise.id));
+          },
+        },
+        prevExercise && {
+          label: "Go To Previous Exercise",
+          action: () => {
+            navigate(editExerciseUrl(prevExercise.id));
+          },
+        },
+      ].filter((e) => !!e);
+    }, [prevExercise, nextExercise])
+  );
 
   return (
     <PageContent>
