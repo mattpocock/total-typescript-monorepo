@@ -7,9 +7,7 @@ import {
   type MetaFunction,
 } from "@remix-run/react";
 import clsx from "clsx";
-import { readFileSync } from "fs";
 import { DeleteIcon, PlayIcon, SquareIcon } from "lucide-react";
-import path from "path";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AudioRecorder } from "~/audio-recorder";
 import { useOnPageActions } from "~/command-palette";
@@ -43,10 +41,6 @@ import {
 } from "~/routes";
 import { useDebounceFetcher } from "~/use-debounced-fetcher";
 import { useVSCode } from "~/use-open-in-vscode";
-import {
-  getDoesAudioExistForExercise,
-  getVSCodeFilesForExercise,
-} from "~/vscode-utils";
 
 export const meta: MetaFunction<typeof loader> = (args) => {
   return [{ title: `${args.data?.exercise.title} | WCM` }];
