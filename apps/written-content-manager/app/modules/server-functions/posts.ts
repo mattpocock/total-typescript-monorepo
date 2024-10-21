@@ -1,17 +1,18 @@
 import { z } from "zod";
 import { createServerFunction } from "./utils";
-import { getVSCodeFilesForPost } from "~/vscode-utils";
+import { getPostsDir, getVSCodeFilesForPost } from "~/vscode-utils";
 import path from "path";
-import { readFileSync } from "fs";
 import { Checkbox } from "~/schema";
+import { editPostUrl } from "~/routes";
 
 export const posts = {
   get: createServerFunction(
     z.object({
       id: z.string().uuid(),
     }),
-    async ({ input, p }) => {
+    async ({ input, p, fs }) => {
       const files = await getVSCodeFilesForPost(input.id);
+
       const post = await p.socialPost.findUniqueOrThrow({
         where: {
           id: input.id,
@@ -35,7 +36,7 @@ export const posts = {
         files: files.map((file) => ({
           path: path.basename(file),
           fullPath: file,
-          content: readFileSync(file, "utf-8"),
+          content: fs.readFileSync(file, "utf-8"),
         })),
       };
     }
@@ -157,6 +158,41 @@ export const posts = {
           deleted: true,
         },
       });
+    }
+  ),
+
+  viewInVSCode: createServerFunction(
+    z.object({ id: z.string().uuid() }),
+    async ({ input, p, fs }) => {
+      const postsDir = getPostsDir(input.id!);
+
+      const files = await getVSCodeFilesForPost(input.id!);
+
+      console.log({ files });
+
+      if (!files[0]) {
+        const playgroundFile = path.join(postsDir, "playground.ts");
+        await fs.writeFile(
+          playgroundFile,
+          `// http://localhost:3004${editPostUrl(input.id!)}`
+        );
+
+        const notesFile = path.join(postsDir, "notes.md");
+        await fs.writeFile(
+          notesFile,
+          [
+            `# Notes`,
+            ``,
+            `http://localhost:3004${editPostUrl(input.id!)}`,
+          ].join("\n")
+        );
+
+        const threadFile = path.join(postsDir, "thread.md");
+        await fs.writeFile(threadFile, ``);
+        await fs.openInVSCode(threadFile);
+      } else {
+        await fs.openInVSCode(files[0]);
+      }
     }
   ),
 };

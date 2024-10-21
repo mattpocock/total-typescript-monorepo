@@ -1,8 +1,7 @@
-import { ensureDir, type AbsolutePath } from "@total-typescript/shared";
-import glob from "fast-glob";
-import { access } from "fs/promises";
+import { type AbsolutePath } from "@total-typescript/shared";
 import path from "path";
 import { editExerciseUrl } from "./routes";
+import { getFS } from "./modules/server-functions/fs";
 
 export const PLAYGROUND_ROOT_PATH = path.join(
   import.meta.dirname,
@@ -37,7 +36,8 @@ export const getAudioPathForExercise = (exerciseId: string) => {
 };
 
 export const getDoesAudioExistForExercise = async (exerciseId: string) => {
-  return access(getAudioPathForExercise(exerciseId)).then(
+  const fs = getFS();
+  return fs.access(getAudioPathForExercise(exerciseId)).then(
     () => true,
     () => false
   );
@@ -46,11 +46,11 @@ export const getDoesAudioExistForExercise = async (exerciseId: string) => {
 export const getVSCodeFilesForPost = async (postId: string) => {
   const postPath = getPostsDir(postId);
 
-  await ensureDir(postPath);
+  const fs = getFS();
 
   const possiblePaths = ["**/**"];
 
-  const files = await glob(possiblePaths, {
+  const files = await fs.glob(possiblePaths, {
     cwd: postPath,
     onlyFiles: true,
     absolute: true,
@@ -62,7 +62,7 @@ export const getVSCodeFilesForPost = async (postId: string) => {
 export const getVSCodeFilesForExercise = async (exerciseId: string) => {
   const exercisePath = getExerciseDir(exerciseId);
 
-  await ensureDir(exercisePath);
+  const fs = getFS();
 
   const possiblePaths = [
     "**/*.problem.*{ts,tsx}",
@@ -70,7 +70,7 @@ export const getVSCodeFilesForExercise = async (exerciseId: string) => {
     "**/*.explainer.*{ts,tsx}",
   ];
 
-  const files = await glob(possiblePaths, {
+  const files = await fs.glob(possiblePaths, {
     cwd: exercisePath,
     onlyFiles: true,
     absolute: true,

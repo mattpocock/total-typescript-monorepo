@@ -1,11 +1,18 @@
 import type { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { p } from "../../db";
+import { getFS, type MyFS } from "./fs";
+
+type ServerFunctionContext<TInput> = {
+  input: TInput;
+  p: PrismaClient;
+  fs: MyFS;
+};
 
 export const createServerFunction =
   <TSchema extends z.AnyZodObject, TResult>(
     schema: TSchema,
-    fn: (ctx: { input: z.output<TSchema>; p: PrismaClient }) => Promise<TResult>
+    fn: (ctx: ServerFunctionContext<z.infer<TSchema>>) => Promise<TResult>
   ) =>
   (
     ...args: {} extends z.input<TSchema> ? [] : [unknownInput: z.input<TSchema>]
@@ -13,7 +20,9 @@ export const createServerFunction =
     const unknownInput: any = args[0];
     const input = schema.parse(unknownInput ?? {});
 
-    return fn({ input, p: p });
+    const fs = getFS();
+
+    return fn({ input, p: p, fs });
   };
 
 export const linkExistingPostToCollection = createServerFunction(

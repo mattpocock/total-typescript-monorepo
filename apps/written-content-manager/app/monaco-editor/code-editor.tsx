@@ -153,8 +153,6 @@ export const EagerlyLoadedEditor = (props: CodeEditorProps) => {
               label: "Save",
               keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS],
               run: () => {
-                console.log("SAVING");
-
                 editor.getAction("editor.action.formatDocument")?.run(path);
               },
             });

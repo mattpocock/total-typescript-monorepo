@@ -1,6 +1,7 @@
 import { describe, expect, it, vitest } from "vitest";
 import { p } from "../../../db";
 import { serverFunctions } from "../server-functions";
+import { LocalFS, mockFS } from "../fs";
 
 describe("posts", () => {
   describe("list", () => {
@@ -96,28 +97,19 @@ describe("posts", () => {
     });
 
     it("Should return any associated files", async () => {
-      vitest.mock("fs", () => ({
-        readFileSync: () => "file contents",
-      }));
-
-      vitest.mock("fast-glob", () => ({
-        default: () => ["/first-file/notes.ts"],
-      }));
-      const post = await p.socialPost.create({
-        data: {
-          title: "abc",
-        },
+      const post = await serverFunctions.posts.create({
+        title: "abc",
       });
 
-      expect(await serverFunctions.posts.get({ id: post.id })).toMatchObject({
-        files: [
-          {
-            content: "file contents",
-            fullPath: "/first-file/notes.ts",
-            path: "notes.ts",
-          },
-        ],
+      await serverFunctions.posts.viewInVSCode({
+        id: post.id,
       });
+
+      expect(
+        await serverFunctions.posts
+          .get({ id: post.id })
+          .then((post) => post.files)
+      ).toHaveLength(3);
     });
   });
 
