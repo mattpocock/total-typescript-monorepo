@@ -37,7 +37,7 @@ export const getAudioPathForExercise = (exerciseId: string) => {
 
 export const getDoesAudioExistForExercise = async (exerciseId: string) => {
   const fs = getFS();
-  return fs.access(getAudioPathForExercise(exerciseId)).then(
+  return fs.exists(getAudioPathForExercise(exerciseId)).then(
     () => true,
     () => false
   );

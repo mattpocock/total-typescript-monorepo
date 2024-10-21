@@ -2,16 +2,19 @@ import { ensureDir, execAsync } from "@total-typescript/shared";
 import glob, { type Options } from "fast-glob";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { readFileSync } from "node:fs";
-import { access, readFile, writeFile } from "node:fs/promises";
+import { access, copyFile, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 export interface MyFS {
   readFileSync: (path: string, encoding: BufferEncoding) => string;
   readFile: (path: string, encoding: BufferEncoding) => Promise<string>;
   writeFile: (path: string, data: string) => Promise<void>;
-  access: (path: string) => Promise<boolean>;
+  exists: (path: string) => Promise<boolean>;
   glob: (pattern: string[], options?: Options) => Promise<string[]>;
   openInVSCode: (path: string) => Promise<void>;
+  rimraf: (path: string) => Promise<void>;
+  ensureDir: (path: string) => Promise<void>;
+  copyFile: (src: string, dest: string) => Promise<void>;
 }
 
 export class FileSystemFS implements MyFS {
@@ -33,7 +36,7 @@ export class FileSystemFS implements MyFS {
     return writeFile(path, data);
   };
 
-  access = async (path: string) => {
+  exists = async (path: string) => {
     return access(path).then(
       () => true,
       () => false
@@ -46,6 +49,21 @@ export class FileSystemFS implements MyFS {
 
   openInVSCode = async (path: string) => {
     (await execAsync(`code "${path}"`))._unsafeUnwrap();
+  };
+
+  rimraf = async (path: string) => {
+    return rm(path, {
+      recursive: true,
+      force: true,
+    });
+  };
+
+  ensureDir = async (path: string) => {
+    await ensureDir(path);
+  };
+
+  copyFile = async (src: string, dest: string) => {
+    await copyFile(src, dest);
   };
 }
 
@@ -71,9 +89,18 @@ export class LocalFS implements MyFS {
     this.fileMap.set(path, data);
   };
 
-  ensureDir = async (path: string) => {};
+  ensureDir = async (path: string) => {
+    // Add every directory in the path to the file map
+    const parts = path.split("/");
+    for (let i = 1; i <= parts.length; i++) {
+      const dir = parts.slice(0, i).join("/");
+      if (!this.fileMap.has(dir)) {
+        this.fileMap.set(dir, "");
+      }
+    }
+  };
 
-  access = async (path: string) => {
+  exists = async (path: string) => {
     return this.fileMap.has(path);
   };
 
@@ -95,8 +122,18 @@ export class LocalFS implements MyFS {
     return this.filesOpenedInVSCode.get(path) ?? 0;
   };
 
-  rm = async (path: string) => {
+  rimraf = async (path: string) => {
     this.fileMap.delete(path);
+  };
+
+  copyFile = async (src: string, dest: string) => {
+    const file = this.fileMap.get(src);
+
+    if (typeof file === "undefined") {
+      throw new Error(`File not found: ${src}`);
+    }
+
+    this.fileMap.set(dest, file);
   };
 }
 

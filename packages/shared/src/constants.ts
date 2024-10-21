@@ -4,40 +4,45 @@ import type { AbsolutePath } from "./types.js";
 
 export const DESKTOP_LOCATION = path.join(
   os.homedir(),
-  "Desktop",
+  "Desktop"
 ) as AbsolutePath;
 
 export const SCRIPTKIT_VSCODE_LOCATION = path.join(
   os.homedir(),
   ".kit",
   "db",
-  "vscode.json",
+  "vscode.json"
 ) as AbsolutePath;
 
 export const SCRIPTKIT_LOCATION = path.join(
   os.homedir(),
-  ".kenv",
+  ".kenv"
 ) as AbsolutePath;
 
 export const SCRIPTKIT_SCRIPTS_LOCATION = path.join(
   SCRIPTKIT_LOCATION,
-  "scripts",
+  "scripts"
 ) as AbsolutePath;
 
 export const REPOS_FOLDER = path.join(os.homedir(), "repos") as AbsolutePath;
+
+export const TOTAL_TYPESCRIPT_REPOS_FOLDER = path.join(
+  REPOS_FOLDER,
+  "total-typescript"
+) as AbsolutePath;
 
 export const DAVINCI_RESOLVE_SCRIPTS_LOCATION = path.resolve(
   import.meta.dirname ?? "", // Added as a hack for now
   "..",
   "..",
   "resolve-scripts",
-  "scripts",
+  "scripts"
 );
 
 export const SKILL_RECORDINGS_REPO_LOCATION = path.join(
   REPOS_FOLDER,
   "ts",
-  "products",
+  "products"
 ) as AbsolutePath;
 
 export const DAVINCI_RESOLVE_PROJECTS_LOCATION = path.join(
@@ -50,5 +55,5 @@ export const DAVINCI_RESOLVE_PROJECTS_LOCATION = path.join(
   "Resolve Projects",
   "Users",
   "guest",
-  "Projects",
+  "Projects"
 ) as AbsolutePath;

@@ -365,7 +365,7 @@ describe("posts", () => {
           f.fullPath.includes("thread.md")
         )?.fullPath;
 
-        await fs.rm(threadFilePath!);
+        await fs.rimraf(threadFilePath!);
 
         await serverFunctions.posts.viewInVSCode({
           id: post.id,

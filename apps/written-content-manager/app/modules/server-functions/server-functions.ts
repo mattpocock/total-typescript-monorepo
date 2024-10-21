@@ -3,6 +3,7 @@ import { collections } from "./collections";
 import { courses } from "./courses";
 import { exercises } from "./exercises";
 import { posts } from "./posts";
+import { printCourseToRepo } from "./print-course-to-repo";
 import { sections } from "./sections";
 import { videos } from "./videos";
 
@@ -27,4 +28,7 @@ export const serverFunctions = {
   exercises,
   analytics,
   videos,
+  repos: {
+    printCourseToRepo,
+  },
 };
