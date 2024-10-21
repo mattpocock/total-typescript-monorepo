@@ -112,6 +112,7 @@ export default function Section() {
                       <Link
                         to={editExerciseUrl(exercise.id)}
                         className="text-base"
+                        prefetch="intent"
                       >
                         <h2>{exercise.title}</h2>
                         <TableDescription>
@@ -214,7 +215,7 @@ export default function Section() {
         </TableBody>
       </Table>
       <Button asChild>
-        <Link to={addExerciseDialogUrl(section.id)}>
+        <Link to={addExerciseDialogUrl(section.id)} prefetch="intent">
           <PlusIcon />
         </Link>
       </Button>

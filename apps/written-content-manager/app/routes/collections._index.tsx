@@ -85,6 +85,7 @@ const Page = () => {
             <TableRow key={collection.id}>
               <TableCell>
                 <Link
+                  prefetch="intent"
                   to={editCollectionUrl(collection.id)}
                   className="text-base"
                 >

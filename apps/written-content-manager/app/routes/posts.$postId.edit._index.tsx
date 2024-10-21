@@ -177,6 +177,7 @@ export default function EditPost() {
                         <Link
                           to={editCollectionUrl(collection.id)}
                           className="text-base"
+                          prefetch="intent"
                         >
                           {collection.title}
                         </Link>

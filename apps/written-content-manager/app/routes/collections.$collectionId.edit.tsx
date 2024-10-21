@@ -168,6 +168,7 @@ export default function EditPost() {
                   <TableRow key={post.socialPost.id}>
                     <TableCell>
                       <Link
+                        prefetch="intent"
                         to={editPostUrl(post.socialPost.id)}
                         className="text-base"
                       >

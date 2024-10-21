@@ -112,7 +112,11 @@ export default function Course() {
                       {(index + 1).toString().padStart(2, "0")}
                     </div>
                     <div>
-                      <Link to={sectionUrl(section.id)} className="text-base">
+                      <Link
+                        to={sectionUrl(section.id)}
+                        className="text-base"
+                        prefetch="intent"
+                      >
                         {section.title}
                       </Link>
                     </div>
@@ -142,6 +146,7 @@ export default function Course() {
                     <Button asChild className="rounded-r-none">
                       <Link
                         to={editSectionUrl(section.id, courseUrl(course.id))}
+                        prefetch="intent"
                       >
                         <EditIcon />
                       </Link>
@@ -203,7 +208,10 @@ export default function Course() {
         </TableBody>
       </Table>
       <Button asChild>
-        <Link to={addSectionUrl(course.id, courseUrl(course.id))}>
+        <Link
+          to={addSectionUrl(course.id, courseUrl(course.id))}
+          prefetch="intent"
+        >
           <PlusIcon />
         </Link>
       </Button>

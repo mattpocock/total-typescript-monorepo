@@ -67,7 +67,11 @@ const Page = () => {
           {data.map((course) => (
             <TableRow key={course.id}>
               <TableCell className="space-y-1">
-                <Link className="text-base" to={courseUrl(course.id)}>
+                <Link
+                  className="text-base"
+                  to={courseUrl(course.id)}
+                  prefetch="intent"
+                >
                   {course.title}
                 </Link>
                 <p className="font-mono text-gray-500 text-xs">
@@ -78,7 +82,10 @@ const Page = () => {
               <TableCell>
                 <div className="flex items-center space-x-4">
                   <Button asChild variant="link">
-                    <Link to={editCourseUrl(course.id, coursesUrl())}>
+                    <Link
+                      to={editCourseUrl(course.id, coursesUrl())}
+                      prefetch="intent"
+                    >
                       Edit
                     </Link>
                   </Button>
@@ -89,7 +96,7 @@ const Page = () => {
         </TableBody>
       </Table>
       <Button asChild>
-        <Link to={addCourseUrl(coursesUrl())}>
+        <Link to={addCourseUrl(coursesUrl())} prefetch="intent">
           <PlusIcon />
         </Link>
       </Button>

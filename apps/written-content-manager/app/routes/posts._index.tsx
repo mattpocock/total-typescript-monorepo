@@ -69,7 +69,11 @@ const Page = () => {
           {posts.map((post) => (
             <TableRow key={post.id}>
               <TableCell>
-                <Link to={editPostUrl(post.id)} className="text-base">
+                <Link
+                  to={editPostUrl(post.id)}
+                  className="text-base"
+                  prefetch="intent"
+                >
                   <h2>{post.title}</h2>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {post.learningGoal}

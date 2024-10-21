@@ -156,6 +156,7 @@ const MyNavLink = ({
 }) => {
   return (
     <NavLink
+      prefetch="intent"
       className={({ isActive }) =>
         cn(
           "font-semibold flex items-center justify-center md:justify-normal space-x-3 dark:text-gray-300 text-gray-600 rounded-md p-2 -m-2",
@@ -192,6 +193,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <Link
                 to={homeUrl()}
                 className="text-lg mb-10 md:-ml-[4px] text-gray-700 dark:text-gray-200 flex items-center font-black tracking-tight"
+                prefetch="intent"
               >
                 <WCMLogo className="size-8 md:mr-[7px]" />
                 <span className="hidden md:block">WCM</span>
@@ -293,6 +295,10 @@ export function ErrorBoundary() {
     return <h1>Unknown Error</h1>;
   }
 }
+
+NProgress.configure({
+  minimum: 100,
+});
 
 export default function App() {
   const data = useLoaderData<typeof loader>();
