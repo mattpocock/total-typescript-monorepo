@@ -1,7 +1,7 @@
 import { type AbsolutePath } from "@total-typescript/shared";
 import path from "path";
 import { editExerciseUrl } from "./routes";
-import { getFS } from "./modules/server-functions/fs";
+import { getFS } from "./fs";
 
 export const PLAYGROUND_ROOT_PATH = path.join(
   import.meta.dirname,

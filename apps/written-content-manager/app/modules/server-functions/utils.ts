@@ -1,7 +1,7 @@
 import type { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { p } from "../../db";
-import { getFS, type MyFS } from "./fs";
+import { getFS, type MyFS } from "../../fs";
 
 type ServerFunctionContext<TInput> = {
   input: TInput;

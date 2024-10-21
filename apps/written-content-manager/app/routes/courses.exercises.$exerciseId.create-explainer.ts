@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { type AbsolutePath } from "@total-typescript/shared";
 import { p } from "~/db";
-import { getFS } from "~/modules/server-functions/fs";
+import { getFS } from "~/fs";
 import { editExerciseUrl } from "~/routes";
 import { sanitizeForVSCodeFilename } from "~/utils";
 import { getExerciseDir, getVSCodeFilesForExercise } from "~/vscode-utils";

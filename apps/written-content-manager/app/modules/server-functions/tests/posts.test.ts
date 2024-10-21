@@ -1,7 +1,7 @@
 import { describe, expect, it, vitest } from "vitest";
 import { p } from "../../../db";
 import { serverFunctions } from "../server-functions";
-import { LocalFS, mockFS } from "../fs";
+import { LocalFS, mockFS } from "../../../fs";
 
 describe("posts", () => {
   describe("list", () => {
