@@ -61,7 +61,7 @@ const Page = () => {
             <TableHead>Name</TableHead>
             <TableHead>Posted</TableHead>
             <TableHead>Viral</TableHead>
-            <TableHead>Collections</TableHead>
+            <TableHead className="hidden lg:table-cell">Collections</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -87,12 +87,14 @@ const Page = () => {
                 )}
               </TableCell>
               <TableCell>{post.isViral ? <ViralIcon /> : null}</TableCell>
-              <TableCell>{post.collections.length}</TableCell>
+              <TableCell className="hidden lg:table-cell">
+                {post.collections.length}
+              </TableCell>
               <TableCell>
                 <div className="flex items-center">
                   <Button
                     variant="default"
-                    className="rounded-r-none flex items-center justify-center"
+                    className="rounded-r-none flex items-center justify-center shrink-0"
                     onClick={() => {
                       vscode.openSocialPostPlayground(post.id);
                     }}
@@ -104,7 +106,10 @@ const Page = () => {
                     action={deletePostUrl(post.id, postsUrl())}
                     method="delete"
                   >
-                    <Button variant="secondary" className="rounded-l-none">
+                    <Button
+                      variant="secondary"
+                      className="rounded-l-none shrink-0"
+                    >
                       <DeleteIcon />
                     </Button>
                   </Form>

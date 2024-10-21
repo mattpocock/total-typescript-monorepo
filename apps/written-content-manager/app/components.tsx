@@ -31,7 +31,7 @@ export const ViralIcon = (props: ViralIconProps) => {
   return (
     <div
       className={cn(
-        "size-8 flex ju stify-center items-center rounded-full bg-gray-100 dark:bg-gray-800",
+        "size-8 flex justify-center items-center rounded-full bg-gray-100 dark:bg-gray-800",
         props.className
       )}
     >
@@ -79,5 +79,7 @@ export const PageContent = (props: { children?: React.ReactNode }) => {
 };
 
 export const VSCodeIcon = (props: { className?: string }) => {
-  return <img src="/vscode.svg" className={props.className} />;
+  return (
+    <img src="/vscode.svg" className={cn("block shrink-0", props.className)} />
+  );
 };
