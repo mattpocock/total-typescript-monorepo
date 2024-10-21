@@ -185,6 +185,40 @@ describe("posts", () => {
       });
     });
 
+    it("Should allow you to turn the isViral checkbox off", async () => {
+      const socialPost = await serverFunctions.posts.create({
+        title: "abc",
+      });
+
+      await serverFunctions.posts.update({
+        id: socialPost.id,
+        title: "",
+        isViral: "on",
+      });
+
+      expect(
+        await serverFunctions.posts.get({
+          id: socialPost.id,
+        })
+      ).toMatchObject({
+        isViral: true,
+      });
+
+      await serverFunctions.posts.update({
+        id: socialPost.id,
+        title: "",
+        isViral: "off",
+      });
+
+      expect(
+        await serverFunctions.posts.get({
+          id: socialPost.id,
+        })
+      ).toMatchObject({
+        isViral: false,
+      });
+    });
+
     it("When updating postedAt, should record an analytics event", async () => {
       const initialPost = await p.socialPost.create({
         data: {

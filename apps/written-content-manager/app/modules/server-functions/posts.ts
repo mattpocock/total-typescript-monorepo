@@ -78,7 +78,7 @@ export const posts = {
           z.enum([""]).transform(() => null),
           z.string().datetime().optional(),
         ]),
-        isViral: Checkbox.optional(),
+        isViral: Checkbox.default("off"),
       })
       .strict(),
     async ({ input, p }) => {

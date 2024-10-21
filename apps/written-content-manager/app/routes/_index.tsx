@@ -1,6 +1,15 @@
+import type { MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { PageContent, TitleArea } from "~/components";
 import { serverFunctions } from "~/modules/server-functions/server-functions";
+
+export const meta: MetaFunction = () => {
+  return [
+    {
+      title: "WCM",
+    },
+  ];
+};
 
 export const loader = async () => {
   const data = serverFunctions.analytics.allCounts();

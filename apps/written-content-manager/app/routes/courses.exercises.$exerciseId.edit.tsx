@@ -186,6 +186,7 @@ export default function Exercise() {
     if (!audioRef.current) return;
 
     if (isAudioPlaying) {
+      audioRef.current.playbackRate = 2;
       audioRef.current.play();
 
       audioRef.current.addEventListener(
@@ -403,15 +404,6 @@ export default function Exercise() {
             language="md"
             onChange={handleChange}
           ></LazyLoadedEditor>
-          <LazyLoadedEditor
-            label="Description"
-            className="col-span-full"
-            defaultValue={exercise.description}
-            name="description"
-            language="md"
-            onChange={handleChange}
-          ></LazyLoadedEditor>
-
           <FormButtons>
             <Button type="submit">Save</Button>
           </FormButtons>
