@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createServerFunction } from "./utils";
+import { printCourseToRepo } from "./print-course-to-repo";
 
 export const courses = {
   create: createServerFunction(
@@ -118,4 +119,5 @@ export const courses = {
       });
     }
   ),
+  printToRepo: printCourseToRepo,
 };

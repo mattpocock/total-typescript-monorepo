@@ -1,5 +1,11 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { Form, Link, useFetcher, useLoaderData } from "@remix-run/react";
+import {
+  Form,
+  Link,
+  useFetcher,
+  useLoaderData,
+  useSubmit,
+} from "@remix-run/react";
 import {
   ArrowDownIcon,
   ArrowUpIcon,
@@ -18,6 +24,7 @@ import {
   courseUrl,
   deleteSectionUrl,
   editSectionUrl,
+  printCourseToRepoUrl,
   reorderSectionsUrl,
   sectionUrl,
 } from "~/routes";
@@ -56,6 +63,8 @@ export default function Course() {
   const allExercisesReadyForRecording = allExercises.filter(
     (e) => e === "ready-for-recording"
   );
+
+  const submit = useSubmit();
 
   return (
     <PageContent>
@@ -207,14 +216,26 @@ export default function Course() {
           })}
         </TableBody>
       </Table>
-      <Button asChild>
-        <Link
-          to={addSectionUrl(course.id, courseUrl(course.id))}
-          prefetch="intent"
+      <div className="flex items-center space-x-4">
+        <Button asChild>
+          <Link
+            to={addSectionUrl(course.id, courseUrl(course.id))}
+            prefetch="intent"
+          >
+            <PlusIcon />
+          </Link>
+        </Button>
+        <Button
+          onClick={() => {
+            submit(null, {
+              action: printCourseToRepoUrl(course.id),
+              method: "post",
+            });
+          }}
         >
-          <PlusIcon />
-        </Link>
-      </Button>
+          Print To Repo
+        </Button>
+      </div>
     </PageContent>
   );
 }

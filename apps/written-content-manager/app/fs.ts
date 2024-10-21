@@ -32,7 +32,6 @@ export class FileSystemFS implements MyFS {
   };
 
   writeFile = async (path: string, data: string) => {
-    await ensureDir(path);
     return writeFile(path, data);
   };
 

@@ -26,6 +26,7 @@ export const moveElementForward = <T extends { id: string }>(
 export const sanitizeForVSCodeFilename = (str: string) => {
   return (
     str
+      .replace(/'/g, "")
       // replace punctuation with spaces
       .replace(/[\'\?.,\/#!$%\^&\*;:{}=\-_`~()]/g, " ")
       .trim()

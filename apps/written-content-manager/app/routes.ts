@@ -26,6 +26,10 @@ export const editCourseUrl = (courseId: string, redirectTo: string) => {
   return `/courses/${courseId}/edit?${new URLSearchParams({ redirectTo })}`;
 };
 
+export const printCourseToRepoUrl = (courseId: string) => {
+  return `/courses/${courseId}/print-to-repo`;
+};
+
 export const reorderSectionsUrl = (courseId: string) => {
   return `/courses/${courseId}/reorder`;
 };

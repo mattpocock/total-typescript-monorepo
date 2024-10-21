@@ -29,7 +29,9 @@ describe("print-course-to-repo", () => {
         printCourseToRepo({
           id: course.id,
         })
-      ).rejects.toThrow("Course repo does not exist");
+      ).rejects.toThrow(
+        "Repo my-trpc-course does not exist in total-typescript folder"
+      );
     });
   });
 

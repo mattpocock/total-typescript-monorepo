@@ -28,7 +28,4 @@ export const serverFunctions = {
   exercises,
   analytics,
   videos,
-  repos: {
-    printCourseToRepo,
-  },
 };

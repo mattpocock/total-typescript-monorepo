@@ -23,6 +23,9 @@ export const printCourseToRepo = createServerFunction(
               not: "",
             },
           },
+          orderBy: {
+            order: "asc",
+          },
           include: {
             exercises: {
               where: {
@@ -30,6 +33,9 @@ export const printCourseToRepo = createServerFunction(
                 title: {
                   not: "",
                 },
+              },
+              orderBy: {
+                order: "asc",
               },
             },
           },
@@ -49,7 +55,9 @@ export const printCourseToRepo = createServerFunction(
     const exists = await fs.exists(coursePath);
 
     if (!exists) {
-      throw new Error("Course repo does not exist");
+      throw new Error(
+        `Repo ${course.repoSlug} does not exist in total-typescript folder`
+      );
     }
 
     const srcPath = path.join(coursePath, "src");
@@ -109,5 +117,8 @@ export const printCourseToRepo = createServerFunction(
         totalExerciseCount++;
       }
     }
+    return {
+      coursePath,
+    };
   }
 );

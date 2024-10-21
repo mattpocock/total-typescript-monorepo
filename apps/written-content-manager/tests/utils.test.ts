@@ -11,7 +11,8 @@ describe("sanitizeForVSCodeFilename", () => {
       "Uint16Arrays, Uint32Arrays and Uint64Arrays",
       "uint16arrays-uint32arrays-and-uint64arrays",
     ],
-  ])("Should work", (input: string, output: string) => {
+    ["trpc's Adapters", "trpcs-adapters"],
+  ])("%o -> %o", (input: string, output: string) => {
     expect(sanitizeForVSCodeFilename(input)).toBe(output);
   });
 });
