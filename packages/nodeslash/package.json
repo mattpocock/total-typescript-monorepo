@@ -1,0 +1,19 @@
+{
+  "name": "nodeslash",
+  "version": "0.0.2",
+  "private": true,
+  "type": "module",
+  "files": [
+    "./dist/*"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "2.1.2"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  }
+}

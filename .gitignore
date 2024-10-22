@@ -6,3 +6,4 @@ dist
 *.local
 .env
 .twoslash-lint
+coverage
