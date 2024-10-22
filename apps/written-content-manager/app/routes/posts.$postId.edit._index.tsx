@@ -66,6 +66,7 @@ export const loader = async (args: ClientLoaderFunctionArgs) => {
 };
 
 export const action = createFormDataAction(async (json, args) => {
+  delete json.postId;
   const post = await serverFunctions.posts.update({
     ...json,
     id: args.params.postId!,
