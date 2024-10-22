@@ -125,7 +125,7 @@ export default function Section() {
                 <TableCell>
                   {exercise.audioRecordingCreated ? <MicIcon /> : null}
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden lg:table-cell">
                   <div className="flex justify-start">
                     <div
                       className={`px-3 py-1 text-xs uppercase rounded-lg flex justify-center items-center flex-shrink-0 ${
@@ -143,17 +143,17 @@ export default function Section() {
                 <TableCell>
                   <div className="flex items-center">
                     <Button
-                      variant="default"
-                      className="rounded-r-none flex items-center justify-center"
+                      variant="secondary"
+                      className="rounded-r-none flex items-center justify-center shrink-0"
                       onClick={() => {
                         vscode.openExercise(exercise.id);
                       }}
                     >
-                      <VSCodeIcon className="size-5 flex-shrink-0" />
+                      <VSCodeIcon className="size-5 " />
                     </Button>
                     <Button
                       variant="secondary"
-                      className="rounded-none border-r-0"
+                      className="rounded-none border-r-0 shrink-0"
                       onClick={() => {
                         reorderFetcher.submit(
                           moveElementBack(
@@ -175,7 +175,7 @@ export default function Section() {
                     </Button>
                     <Button
                       variant="secondary"
-                      className="rounded-none border-l-0"
+                      className="rounded-none border-l-0 shrink-0"
                       onClick={() => {
                         reorderFetcher.submit(
                           moveElementForward(

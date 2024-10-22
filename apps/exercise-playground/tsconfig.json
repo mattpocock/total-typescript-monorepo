@@ -1,3 +1,6 @@
 {
-  "extends": "@total-typescript/tsconfig/bundler/dom/app"
+  "extends": "@total-typescript/tsconfig/bundler/dom/app",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true
+  }
 }

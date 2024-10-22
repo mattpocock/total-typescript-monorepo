@@ -93,7 +93,7 @@ const Page = () => {
               <TableCell>
                 <div className="flex items-center">
                   <Button
-                    variant="default"
+                    variant="secondary"
                     className="rounded-r-none flex items-center justify-center shrink-0"
                     onClick={() => {
                       vscode.openSocialPostPlayground(post.id);

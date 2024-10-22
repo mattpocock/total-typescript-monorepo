@@ -167,6 +167,7 @@ export const posts = {
       const postsDir = getPostsDir(input.id!);
 
       const files = await getVSCodeFilesForPost(input.id!);
+      await fs.ensureDir(postsDir);
 
       if (!files[0]) {
         const playgroundFile = path.join(postsDir, "playground.ts");
