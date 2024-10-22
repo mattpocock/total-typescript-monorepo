@@ -10,9 +10,8 @@ Code blocks structurally look like:
     </div>
   </pre> 
 */
-
 .shiki {
-  @apply !bg-gray-900 pl-12 pr-16 text-2xl;
+  @apply !bg-transparent pl-12 pr-16 text-2xl;
   line-height: 2.1rem;
 }
 

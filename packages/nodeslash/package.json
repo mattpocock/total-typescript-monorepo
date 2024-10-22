@@ -1,5 +1,5 @@
 {
-  "name": "nodeslash",
+  "name": "@total-typescript/nodeslash",
   "version": "0.0.2",
   "private": true,
   "type": "module",

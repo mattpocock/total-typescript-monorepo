@@ -12,8 +12,9 @@ import { useLoaderData, useSubmit } from "@remix-run/react";
 import { normalizeAudio } from "@total-typescript/ffmpeg";
 import type { AbsolutePath } from "@total-typescript/shared";
 import {
-  applyShikiToCode,
+  transformCode,
   getLangFromCodeFence,
+  getCodeSamplesFromFile,
 } from "@total-typescript/twoslash-shared";
 import { useMachine } from "@xstate/react";
 import { useEffect, useMemo } from "react";
@@ -96,35 +97,15 @@ export const loader = async () => {
   if (activeFilePath?.endsWith("md")) {
     const contents = await readFile(activeFilePath, "utf-8");
 
-    const codeSnippets: string[] = [];
-
-    const codeBlockRegex = /```[\s\S]*?```/g;
-
-    let match;
-
-    while ((match = codeBlockRegex.exec(contents))) {
-      codeSnippets.push(match[0]);
-    }
+    const codeSnippets = getCodeSamplesFromFile(contents);
 
     const renderedCodeSnippets: string[] = [];
 
     for (const snippet of codeSnippets) {
-      const lines = snippet.split("\n");
-
-      const codeWithoutFences = lines
-        .splice(1, lines.length - 2)
-        .join("\n")
-        .replaceAll("// ---cut---\n\n", "// ---cut---\n");
-
-      const lang = getLangFromCodeFence(lines[0]!);
-
-      const shikiResult = await applyShikiToCode({
-        code: codeWithoutFences.trim(),
-        lang,
-      });
+      const shikiResult = await transformCode(snippet);
 
       if (shikiResult.success) {
-        renderedCodeSnippets.push(shikiResult.html);
+        renderedCodeSnippets.push(shikiResult.codeHtml);
       } else {
         throw new Error(
           [

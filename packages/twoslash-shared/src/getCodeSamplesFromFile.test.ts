@@ -1,8 +1,9 @@
 import { expect, it } from "vitest";
 import { getCodeSamplesFromFile } from "./getCodeSamplesFromFile.js";
 
-it("Should return the correct sections for a markdown string", () => {
-  const markdown = `
+it.each([
+  [
+    `
   \`\`\`ts twoslash
   const a = 1;
   \`\`\`
@@ -10,18 +11,48 @@ it("Should return the correct sections for a markdown string", () => {
   \`\`\`ts twoslash
   const b = 2;
   \`\`\`
-  `;
+  `,
+    [
+      {
+        code: `  const a = 1;`,
+        lang: "ts",
+        mode: "twoslash",
+      },
+      {
+        code: `  const b = 2;`,
+        lang: "ts",
+        mode: "twoslash",
+      },
+    ],
+  ],
+  [
+    `
+  \`\`\`ts nodeslash
+  const a = 1;
+  \`\`\`
 
-  const result = Array.from(getCodeSamplesFromFile(markdown));
+  \`\`\`ts
+  const b = 2;
+  \`\`\`
+  `,
+    [
+      {
+        code: `  const a = 1;`,
+        lang: "ts",
+        mode: "nodeslash",
+      },
+      {
+        code: `  const b = 2;`,
+        lang: "ts",
+        mode: undefined,
+      },
+    ],
+  ],
+])(
+  "Should return the correct sections for a markdown string",
+  (input, output) => {
+    const result = Array.from(getCodeSamplesFromFile(input));
 
-  expect(result).toEqual([
-    {
-      code: `  const a = 1;`,
-      lang: "ts",
-    },
-    {
-      code: `  const b = 2;`,
-      lang: "ts",
-    },
-  ]);
-});
+    expect(result).toMatchObject(output);
+  }
+);

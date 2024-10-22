@@ -4,6 +4,7 @@ import { codeToHtml } from "shiki";
 import { createTwoslashFromCDN } from "twoslash-cdn";
 import type { CompilerOptions } from "typescript";
 import { createStorage } from "unstorage";
+import { applyNodeslash } from "@total-typescript/nodeslash";
 
 const storage = createStorage({
   // driver: (fsDriver as any)({
@@ -32,7 +33,7 @@ export const twoslashFromCDN = createTwoslashFromCDN({
 });
 
 export const transformerTwoslash = createTransformerFactory(
-  twoslashFromCDN.runSync,
+  twoslashFromCDN.runSync
 )({
   renderer: rendererClassic(),
   throws: true,
@@ -43,7 +44,8 @@ export const transformerTwoslash = createTransformerFactory(
 
 export type ApplyShikiSuccess = {
   success: true;
-  html: string;
+  codeHtml: string;
+  terminalText: string;
 };
 
 export type ApplyShikiFailure = {
@@ -53,7 +55,37 @@ export type ApplyShikiFailure = {
   recommendation: string;
 };
 
-export const applyShikiToCode = async (opts: {
+export const transformCode = async (opts: {
+  code: string;
+  lang: string;
+  mode: string | undefined;
+}): Promise<ApplyShikiFailure | ApplyShikiSuccess> => {
+  if (opts.mode === "twoslash") {
+    return applyTwoslashToCode(opts);
+  } else if (opts.mode === "nodeslash") {
+    return applyNodeslashToCode(opts);
+  } else {
+    return applyShikiToCode(opts);
+  }
+};
+
+const applyShikiToCode = async (opts: {
+  code: string;
+  lang: string;
+}): Promise<ApplyShikiSuccess> => {
+  const result = await codeToHtml(opts.code, {
+    lang: opts.lang,
+    theme: "dark-plus",
+  });
+
+  return {
+    success: true,
+    codeHtml: result.toString(),
+    terminalText: "",
+  };
+};
+
+export const applyTwoslashToCode = async (opts: {
   code: string;
   lang: string;
 }): Promise<ApplyShikiSuccess | ApplyShikiFailure> => {
@@ -67,7 +99,8 @@ export const applyShikiToCode = async (opts: {
 
     return {
       success: true,
-      html: result.toString(),
+      codeHtml: result.toString(),
+      terminalText: "",
     };
   } catch (e: any) {
     if (e?.title && e?.description && e?.recommendation) {
@@ -81,4 +114,26 @@ export const applyShikiToCode = async (opts: {
 
     throw e;
   }
+};
+
+const applyNodeslashToCode = async (opts: {
+  code: string;
+  lang: string;
+}): Promise<ApplyShikiSuccess | ApplyShikiFailure> => {
+  const nodeslashResult = await applyNodeslash(opts.code);
+
+  const codeHtmlResult = await applyTwoslashToCode({
+    code: nodeslashResult.code,
+    lang: opts.lang,
+  });
+
+  if (!codeHtmlResult.success) {
+    return codeHtmlResult;
+  }
+
+  return {
+    success: true,
+    codeHtml: codeHtmlResult.codeHtml,
+    terminalText: nodeslashResult.terminalOutput,
+  };
 };

@@ -1,6 +1,6 @@
-```ts twoslash
+```ts nodeslash
 // @errors: 2339
-declare const data: object;
+const data = {};
 
 // ---cut---
 // BAD - doesn't narrow the type in TS

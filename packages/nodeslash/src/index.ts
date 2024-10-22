@@ -1,14 +1,14 @@
-import { mkdtemp, writeFile } from "fs/promises";
-import { tmpdir } from "os";
-import path from "path";
-import { exec, type ExecOptions } from "child_process";
+import type { ExecOptions } from "child_process";
 
 export interface NodeSlashResult {
   terminalOutput: string;
   isError: boolean;
+  code: string;
 }
 
-export const execAsync = (command: string, opts?: ExecOptions) => {
+export const execAsync = async (command: string, opts?: ExecOptions) => {
+  const { exec } = await import("child_process");
+
   return new Promise<{
     stdout: string;
     stderr: string;
@@ -33,6 +33,9 @@ const cleanStderr = (stderr: string) => {
 export const applyNodeslash = async (
   code: string
 ): Promise<NodeSlashResult> => {
+  const { mkdtemp, writeFile } = await import("fs/promises");
+  const path = await import("path");
+  const { tmpdir } = await import("os");
   const workingDirectory = await mkdtemp(path.join(tmpdir(), "nodeslash-"));
 
   const packageJsonFile = path.join(workingDirectory, "package.json");
@@ -44,12 +47,20 @@ export const applyNodeslash = async (
   await writeFile(codeFile, code);
 
   const { stdout, stderr } = await execAsync(
-    `node --experimental-strip-types index.js`,
+    `node --experimental-strip-types --no-warnings index.js`,
     { cwd: workingDirectory }
   );
 
+  const terminalOutput =
+    stdout || stderr
+      ? [`Matts-Air:playground matt$`, stdout + cleanStderr(stderr)]
+          .join("\n")
+          .trim()
+      : "";
+
   return {
     isError: !!stderr,
-    terminalOutput: (stdout + cleanStderr(stderr)).trim(),
+    terminalOutput,
+    code,
   };
 };

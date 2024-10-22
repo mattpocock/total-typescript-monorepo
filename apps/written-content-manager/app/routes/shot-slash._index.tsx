@@ -1,13 +1,7 @@
 "use client";
 
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import {
-  useFetcher,
-  useLoaderData,
-  useNavigate,
-  useSearchParams,
-  useSubmit,
-} from "@remix-run/react";
+import { useLoaderData, useSearchParams, useSubmit } from "@remix-run/react";
 import { getActiveEditorFilePath } from "@total-typescript/shared";
 import {
   getCodeSamplesFromFile,
@@ -20,7 +14,6 @@ import {
 import path from "path";
 import { PageContent, PageDescription, TitleArea } from "~/components";
 import { Combobox } from "~/components/ui/combobox";
-import { shotSlashUrl } from "~/routes";
 import { useSubscribeToSocket } from "~/use-subscribe-to-socket";
 
 export const meta: MetaFunction = () => {

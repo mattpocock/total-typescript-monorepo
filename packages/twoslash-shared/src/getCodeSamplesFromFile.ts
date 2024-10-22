@@ -14,14 +14,15 @@ export function* getCodeSamplesFromFile(fileContents: string) {
       continue;
     }
 
-    const lang = getLangFromCodeFence(fence);
+    const { lang, mode } = getLangFromCodeFence(fence);
 
     // Remove the final fence
     rest.pop();
 
     yield {
       code: rest.join("\n"),
-      lang,
+      lang: lang ?? "ts",
+      mode,
     };
   }
 }

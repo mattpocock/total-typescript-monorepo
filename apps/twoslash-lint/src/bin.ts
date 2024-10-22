@@ -2,7 +2,7 @@
 
 import type { RelativePath } from "@total-typescript/shared";
 import {
-  applyShikiToCode,
+  applyTwoslashToCode,
   type ApplyShikiFailure,
   type ApplyShikiSuccess,
 } from "@total-typescript/twoslash-shared";
@@ -31,7 +31,7 @@ const runChecks = async (
   opts: {
     exitOnError: boolean;
     autofix: boolean;
-  },
+  }
 ) => {
   let totalErrors = 0;
   for (const file of files) {
@@ -81,7 +81,7 @@ const runChecks = async (
         if (cacheResult) {
           result = cacheResult;
         } else {
-          const freshResult = await applyShikiToCode({
+          const freshResult = await applyTwoslashToCode({
             code: codeString,
             lang,
           });
@@ -161,7 +161,7 @@ program
       opts: {
         watch: boolean;
         fix: boolean;
-      },
+      }
     ) => {
       const files = (await fg(globString)) as RelativePath[];
 
@@ -181,7 +181,7 @@ program
           });
         });
       }
-    },
+    }
   );
 
 program.parse(process.argv);

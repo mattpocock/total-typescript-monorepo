@@ -1,4 +1,4 @@
-```ts twoslash
+```ts nodeslash
 // @types: node
 import { mkdtemp } from "fs/promises";
 import { tmpdir } from "os";
@@ -17,7 +17,7 @@ const dir = await mkdtemp(prefix);
 
 // 4. It'll append 6 random chars to the end of the
 // prefix, like playground-abc123
-console.log(dir);
+console.log("Output:", dir);
 ```
 
 ```ts twoslash

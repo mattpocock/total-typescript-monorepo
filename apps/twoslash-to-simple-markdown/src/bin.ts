@@ -1,13 +1,8 @@
 #!/usr/bin/env node
 
-import {
-  type AbsolutePath,
-  type AnyPath,
-  type RelativePath,
-} from "@total-typescript/shared";
+import { type AbsolutePath, type AnyPath } from "@total-typescript/shared";
 import {
   compilerOptions,
-  transformerTwoslash,
   twoslashFromCDN,
 } from "@total-typescript/twoslash-shared";
 import { Command } from "commander";
@@ -94,7 +89,7 @@ const run = async (filePath: AnyPath) => {
           lineAfter,
           0,
           squigglyLine,
-          ...errorTextLines.map((line) => `// ❗ ${line}`),
+          ...errorTextLines.map((line) => `// ❗ ${line}`)
         );
       } else if (errorOrQuery.type === "query") {
         const pointer = `//${" ".repeat(errorOrQuery.character - 2)}${"^".repeat(errorOrQuery.length)} 🚁`;
@@ -116,7 +111,7 @@ const run = async (filePath: AnyPath) => {
     lines.splice(
       startLine,
       endLine - startLine + 1,
-      ...["```" + lang, codeLines.join("\n").trim(), "```"],
+      ...["```" + lang, codeLines.join("\n").trim(), "```"]
     );
   }
 

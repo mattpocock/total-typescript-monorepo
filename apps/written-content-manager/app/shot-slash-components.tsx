@@ -65,14 +65,34 @@ export const ScreenshotSnippetWrapperWithBorder = (props: {
   );
 };
 
-export const CodeSnippet = (props: { html: string }) => {
+export const CodeSnippet = (props: {
+  codeHtml: string;
+  terminalText: string;
+}) => {
   return (
-    <div
-      className="bg-gray-900 rounded-xl px-0 shadow-2xl py-10 text-white"
-      dangerouslySetInnerHTML={{
-        __html: props.html,
-      }}
-    ></div>
+    <>
+      <div className="rounded-xl overflow-hidden">
+        <div
+          className="bg-gray-900 px-0 shadow-2xl py-10 text-white"
+          dangerouslySetInnerHTML={{
+            __html: props.codeHtml,
+          }}
+        ></div>
+        {props.terminalText ? (
+          <div className="bg-gray-950 px-12 py-10 pb-12">
+            <div className="flex items-center space-x-4 pb-8">
+              <div className="bg-red-500 size-[18px] rounded-full"></div>
+              <div className="bg-yellow-500 size-[18px] rounded-full"></div>
+              <div className="bg-green-500 size-[18px] rounded-full"></div>
+            </div>
+
+            <pre className="shadow-2xl text-gray-200 max-w-5xl text-xl text-wrap leading-7">
+              {props.terminalText}
+            </pre>
+          </div>
+        ) : null}
+      </div>
+    </>
   );
 };
 
@@ -81,16 +101,18 @@ export type RendererData =
       mode:
         | typeof RENDER_TYPES.basicWithBorder
         | typeof RENDER_TYPES.simpleNoBorder;
-      html: string;
+      codeHtml: string;
+      terminalText: string;
     }
   | {
       mode:
         | typeof RENDER_TYPES.allSquareWithBorder
         | typeof RENDER_TYPES.allBasicWithBorder;
-      html: string[];
+      content: { codeHtml: string; terminalText: string }[];
     }
   | {
       mode: "error";
+      error: string;
       code: string;
       title: string;
       description: string;
@@ -102,30 +124,48 @@ export function CodeSnippetRenderer({ data }: { data: RendererData }) {
     case RENDER_TYPES.basicWithBorder: {
       return (
         <ScreenshotSnippetWrapperWithBorder>
-          <CodeSnippet html={data.html} />
+          <CodeSnippet
+            codeHtml={data.codeHtml}
+            terminalText={data.terminalText}
+          />
         </ScreenshotSnippetWrapperWithBorder>
       );
     }
     case RENDER_TYPES.simpleNoBorder: {
       return (
         <ScreenshotSnippetWrapper>
-          <CodeSnippet html={data.html} />
+          <CodeSnippet
+            codeHtml={data.codeHtml}
+            terminalText={data.terminalText}
+          />
         </ScreenshotSnippetWrapper>
       );
     }
     case RENDER_TYPES.allSquareWithBorder:
       return (
         <ScreenshotSnippetWrapperWithBorder outerClassName="aspect-square">
-          {data.html.map((html, index) => {
-            return <CodeSnippet key={index} html={html} />;
+          {data.content.map((content, index) => {
+            return (
+              <CodeSnippet
+                key={index}
+                codeHtml={content.codeHtml}
+                terminalText={content.terminalText}
+              />
+            );
           })}
         </ScreenshotSnippetWrapperWithBorder>
       );
     case RENDER_TYPES.allBasicWithBorder: {
       return (
         <ScreenshotSnippetWrapperWithBorder>
-          {data.html.map((html, index) => {
-            return <CodeSnippet key={index} html={html} />;
+          {data.content.map((content, index) => {
+            return (
+              <CodeSnippet
+                key={index}
+                codeHtml={content.codeHtml}
+                terminalText={content.terminalText}
+              />
+            );
           })}
         </ScreenshotSnippetWrapperWithBorder>
       );

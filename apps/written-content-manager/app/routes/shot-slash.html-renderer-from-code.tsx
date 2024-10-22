@@ -7,7 +7,7 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import {
-  applyShikiToCode,
+  applyTwoslashToCode,
   htmlRendererFromCodeSchema,
 } from "@total-typescript/twoslash-shared";
 import {
@@ -25,7 +25,7 @@ export const loader = async (
   const { code, lang, renderType } =
     htmlRendererFromCodeSchema.parse(searchParams);
 
-  const shikiResult = await applyShikiToCode({
+  const shikiResult = await applyTwoslashToCode({
     code: code,
     lang: lang,
   });
@@ -33,6 +33,7 @@ export const loader = async (
   if (!shikiResult.success) {
     return {
       mode: "error",
+      error: "Failed to apply shiki to code sample",
       title: shikiResult.title,
       description: shikiResult.description,
       recommendation: shikiResult.recommendation,
@@ -42,7 +43,8 @@ export const loader = async (
 
   return {
     mode: renderType,
-    html: shikiResult.html,
+    codeHtml: shikiResult.codeHtml,
+    terminalText: shikiResult.terminalText,
   };
 };
 

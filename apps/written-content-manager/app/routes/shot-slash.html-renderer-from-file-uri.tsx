@@ -7,15 +7,20 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import {
-  applyShikiToCode,
+  transformCode,
   getCodeSamplesFromFile,
   htmlRendererFromFileUrlSchema,
   RENDER_TYPES,
 } from "@total-typescript/twoslash-shared";
 import { readFile } from "fs/promises";
-import { CodeSnippetRenderer } from "~/shot-slash-components";
+import {
+  CodeSnippetRenderer,
+  type RendererData,
+} from "~/shot-slash-components";
 
-export const loader = async (args: LoaderFunctionArgs) => {
+export const loader = async (
+  args: LoaderFunctionArgs
+): Promise<RendererData> => {
   const url = new URL(args.request.url);
 
   const searchParams = Object.fromEntries(url.searchParams);
@@ -32,10 +37,7 @@ export const loader = async (args: LoaderFunctionArgs) => {
   ) {
     const snippet = snippets[renderType.snippetIndex]!;
 
-    const shikiResult = await applyShikiToCode({
-      code: snippet.code,
-      lang: snippet.lang,
-    });
+    const shikiResult = await transformCode(snippet);
 
     if (!shikiResult.success) {
       return {
@@ -54,19 +56,17 @@ export const loader = async (args: LoaderFunctionArgs) => {
 
     return {
       mode: renderType.mode,
-      html: shikiResult.html,
+      codeHtml: shikiResult.codeHtml,
+      terminalText: shikiResult.terminalText,
     };
   } else if (
     renderType.mode === RENDER_TYPES.allBasicWithBorder ||
     renderType.mode === RENDER_TYPES.allSquareWithBorder
   ) {
-    const html: string[] = [];
+    const content: { codeHtml: string; terminalText: string }[] = [];
 
     for (const snippet of snippets) {
-      const shikiResult = await applyShikiToCode({
-        code: snippet.code,
-        lang: snippet.lang,
-      });
+      const shikiResult = await transformCode(snippet);
 
       if (!shikiResult.success) {
         return {
@@ -79,14 +79,19 @@ export const loader = async (args: LoaderFunctionArgs) => {
         };
       }
 
-      html.push(shikiResult.html);
+      content.push({
+        codeHtml: shikiResult.codeHtml,
+        terminalText: shikiResult.terminalText,
+      });
     }
 
     return {
       mode: renderType.mode,
-      html,
+      content,
     };
   }
+
+  throw new Error("unsupported");
 };
 
 export default function HTMLRendererFromFileURI() {
