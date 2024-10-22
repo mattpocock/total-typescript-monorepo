@@ -2,32 +2,44 @@ import { z } from "zod";
 import { createServerFunction, linkExistingPostToCollection } from "./utils";
 
 export const collections = {
-  list: createServerFunction(z.object({}), async ({ input, p }) => {
-    return p.socialPostCollection.findMany({
-      where: {
-        deleted: false,
-        title: {
-          not: "",
-        },
-      },
-      orderBy: {
-        updatedAt: "desc",
-      },
-      include: {
-        _count: {
-          select: {
+  list: createServerFunction(
+    z.object({
+      notConnectedToPostId: z.string().uuid().optional(),
+    }),
+    async ({ input, p }) => {
+      return p.socialPostCollection.findMany({
+        where: {
+          deleted: false,
+          title: {
+            not: "",
+          },
+          ...(input.notConnectedToPostId && {
             posts: {
-              where: {
-                socialPost: {
-                  deleted: false,
+              none: {
+                socialPostId: input.notConnectedToPostId,
+              },
+            },
+          }),
+        },
+        orderBy: {
+          updatedAt: "desc",
+        },
+        include: {
+          _count: {
+            select: {
+              posts: {
+                where: {
+                  socialPost: {
+                    deleted: false,
+                  },
                 },
               },
             },
           },
         },
-      },
-    });
-  }),
+      });
+    }
+  ),
 
   get: createServerFunction(
     z.object({ id: z.string().uuid() }),
@@ -105,13 +117,16 @@ export const collections = {
     }
   ),
 
-  create: createServerFunction(z.object({}), async ({ input, p }) => {
-    return p.socialPostCollection.create({
-      data: {
-        title: "",
-      },
-    });
-  }),
+  create: createServerFunction(
+    z.object({ title: z.string().optional() }),
+    async ({ input, p }) => {
+      return p.socialPostCollection.create({
+        data: {
+          title: input.title || "",
+        },
+      });
+    }
+  ),
 
   delete: createServerFunction(
     z.object({ id: z.string().uuid() }),

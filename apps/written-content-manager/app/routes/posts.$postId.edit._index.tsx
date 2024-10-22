@@ -18,6 +18,7 @@ import {
 } from "~/components";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
+import { Combobox } from "~/components/ui/combobox";
 import { DatePicker } from "~/components/ui/datepicker";
 import { Input } from "~/components/ui/input";
 import {
@@ -31,6 +32,7 @@ import {
 import { serverFunctions } from "~/modules/server-functions/server-functions";
 import { LazyLoadedEditor } from "~/monaco-editor/lazy-loaded-editor";
 import {
+  addPostToCollectionUrl,
   editCollectionUrl,
   editPostUrl,
   removePostFromCollectionUrl,
@@ -48,9 +50,19 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 };
 
 export const loader = async (args: ClientLoaderFunctionArgs) => {
-  return serverFunctions.posts.get({
-    id: args.params.postId!,
-  });
+  const [post, collections] = await Promise.all([
+    serverFunctions.posts.get({
+      id: args.params.postId!,
+    }),
+    serverFunctions.collections.list({
+      notConnectedToPostId: args.params.postId!,
+    }),
+  ]);
+
+  return {
+    post,
+    collections,
+  };
 };
 
 export const action = createFormDataAction(async (json, args) => {
@@ -63,7 +75,7 @@ export const action = createFormDataAction(async (json, args) => {
 });
 
 export default function EditPost() {
-  const post = useLoaderData<typeof loader>();
+  const { post, collections } = useLoaderData<typeof loader>();
 
   const debouncedFetcher = useDebounceFetcher();
 
@@ -160,51 +172,57 @@ export default function EditPost() {
               </div>
             );
           })}
-          <Table className="">
-            <TableHeader>
-              <TableRow>
-                <TableHead>Collection</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {post.collections
-                .map((c) => c.collection)
-                .map((collection) => {
-                  return (
-                    <TableRow key={collection.id}>
-                      <TableCell>
-                        <Link
-                          to={editCollectionUrl(collection.id)}
-                          className="text-base"
-                          prefetch="intent"
-                        >
-                          {collection.title}
-                        </Link>
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          type="submit"
-                          variant={"secondary"}
-                          onClick={() => {
-                            fetcher.submit(null, {
-                              action: removePostFromCollectionUrl(
-                                collection.id,
-                                post.id
-                              ),
-                              method: "POST",
-                              preventScrollReset: true,
-                            });
-                          }}
-                        >
-                          <DeleteIcon />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-            </TableBody>
-          </Table>
+          <div className="col-span-full space-y-2">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Collection</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {post.collections
+                  .map((c) => c.collection)
+                  .map((collection) => {
+                    return (
+                      <TableRow key={collection.id}>
+                        <TableCell>
+                          <Link
+                            to={editCollectionUrl(collection.id)}
+                            className="text-base"
+                            prefetch="intent"
+                          >
+                            {collection.title}
+                          </Link>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            type="button"
+                            variant={"secondary"}
+                            onClick={() => {
+                              fetcher.submit(null, {
+                                action: removePostFromCollectionUrl(
+                                  collection.id,
+                                  post.id
+                                ),
+                                method: "POST",
+                                preventScrollReset: true,
+                              });
+                            }}
+                          >
+                            <DeleteIcon />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+              </TableBody>
+            </Table>
+            <AddPostToCollectionForm
+              collections={collections}
+              postId={post.id}
+            />
+          </div>
           <FormButtons>
             <Button type="submit">Save</Button>
           </FormButtons>
@@ -213,3 +231,35 @@ export default function EditPost() {
     </PageContent>
   );
 }
+
+export const AddPostToCollectionForm = (props: {
+  postId: string;
+  collections: { title: string; id: string }[];
+}) => {
+  const fetcher = useFetcher();
+
+  return (
+    <Combobox
+      defaultValue=""
+      name="postId"
+      options={props.collections.map((collection) => ({
+        label: collection.title,
+        value: collection.id,
+      }))}
+      className="min-w-64 max-w-0"
+      placeholder="Add To Collection..."
+      emptyText="No collections found"
+      onChange={({ value, reset }) => {
+        fetcher.submit(
+          { postId: props.postId },
+          {
+            action: addPostToCollectionUrl(value),
+            method: "POST",
+            preventScrollReset: true,
+          }
+        );
+        reset();
+      }}
+    />
+  );
+};

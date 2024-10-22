@@ -4,6 +4,35 @@ import { serverFunctions } from "../server-functions";
 
 describe("collections", () => {
   describe("list", () => {
+    it("Should let you exclude collections that are connected to a post", async () => {
+      const collection = await serverFunctions.collections.create({
+        title: "abc",
+      });
+
+      const post = await serverFunctions.posts.create({
+        title: "abc",
+      });
+
+      await serverFunctions.collections.linkExistingPost({
+        collectionId: collection.id,
+        postId: post.id,
+      });
+
+      const collection2 = await serverFunctions.collections.create({
+        title: "abc",
+      });
+
+      const results = await serverFunctions.collections.list({
+        notConnectedToPostId: post.id,
+      });
+
+      expect(results).toMatchObject([
+        {
+          id: collection2.id,
+        },
+      ]);
+    });
+
     it("Should not include deleted collections", async () => {
       await p.socialPostCollection.create({
         data: {

@@ -15,10 +15,12 @@ export const createServerFunction =
     fn: (ctx: ServerFunctionContext<z.infer<TSchema>>) => Promise<TResult>
   ) =>
   (
-    ...args: {} extends z.input<TSchema> ? [] : [unknownInput: z.input<TSchema>]
+    ...args: {} extends z.input<TSchema>
+      ? [unknownInput?: z.input<TSchema>]
+      : [unknownInput: z.input<TSchema>]
   ) => {
     const unknownInput: any = args[0];
-    const input = schema.parse(unknownInput ?? {});
+    const input = schema.strict().parse(unknownInput ?? {});
 
     const fs = getFS();
 
