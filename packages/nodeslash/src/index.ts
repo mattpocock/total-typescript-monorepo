@@ -7,7 +7,7 @@ export interface NodeSlashResult {
 }
 
 export const execAsync = async (command: string, opts?: ExecOptions) => {
-  const { exec } = await import("child_process");
+  const { exec } = await import("node:child_process");
 
   return new Promise<{
     stdout: string;

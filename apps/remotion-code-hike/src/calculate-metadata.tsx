@@ -3,10 +3,7 @@ import {
   HighlightedCodeBlock,
   parseRoot,
 } from "codehike/blocks";
-import {
-  HighlightedCode,
-  highlight,
-} from "codehike/code";
+import { highlight } from "codehike/code";
 import { CalculateMetadataFunction } from "remotion";
 import { z } from "zod";
 import { DEFAULT_STEP_DURATION } from "./constants";
@@ -14,12 +11,20 @@ import Content from "./content.local.md";
 import { meta } from "./meta";
 import { compilerOptions, twoslash } from "./twoslash";
 
+const MyHighlightedCodeBlock =
+  HighlightedCodeBlock.extend({
+    terminalOutput: z.string().optional(),
+  });
 const Schema = Block.extend({
-  code: z.array(HighlightedCodeBlock as any),
-} as any);
+  code: z.array(MyHighlightedCodeBlock),
+});
+
+type MyHighlightedCode = z.infer<
+  typeof MyHighlightedCodeBlock
+>;
 
 type Props = {
-  steps: HighlightedCode[];
+  steps: MyHighlightedCode[];
   durations: number[] | undefined;
 };
 
@@ -32,9 +37,9 @@ const msToFrames = (duration: number) => {
 export const calculateMetadata: CalculateMetadataFunction<
   Props
 > = async () => {
-  const { code, ...rest } = parseRoot(Content, Schema);
+  const { code } = parseRoot(Content, Schema);
 
-  const twoSlashedCode: HighlightedCode[] = [];
+  const twoSlashedCode: MyHighlightedCode[] = [];
 
   for (const step of code) {
     const twoslashResult = await twoslash.run(
@@ -44,10 +49,11 @@ export const calculateMetadata: CalculateMetadataFunction<
         compilerOptions: compilerOptions,
       },
     );
-    const highlighted = await highlight(
-      { ...step, value: twoslashResult.code },
-      "dark-plus",
-    );
+    const highlighted: MyHighlightedCode =
+      await highlight(
+        { ...step, value: twoslashResult.code },
+        "dark-plus",
+      );
 
     twoslashResult.queries.forEach(
       ({ text, line, character, length }) => {
@@ -74,6 +80,18 @@ export const calculateMetadata: CalculateMetadataFunction<
         });
       },
     );
+
+    if (step.meta.includes("nodeslash")) {
+      const terminalOutput = await fetch(
+        "http://localhost:3006",
+        {
+          method: "POST",
+          body: step.code,
+        },
+      ).then((res) => res.text());
+
+      highlighted.terminalOutput = terminalOutput;
+    }
 
     twoSlashedCode.push(highlighted);
   }

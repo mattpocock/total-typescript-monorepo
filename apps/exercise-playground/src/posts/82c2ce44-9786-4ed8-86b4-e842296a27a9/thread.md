@@ -19,24 +19,3 @@ const dir = await mkdtemp(prefix);
 // prefix, like playground-abc123
 console.log("Output:", dir);
 ```
-
-```ts twoslash
-// @types: node
-import fs from "node:fs/promises";
-import os from "node:os";
-import path from "node:path";
-
-// 1. Make a dir with 6 random characters
-// in the current working directory
-const dir1 = await fs.mkdtemp(process.cwd());
-
-// 2. Add a prefix
-const dir2 = await fs.mkdtemp(
-  path.join(process.cwd(), "playground-"),
-);
-
-// 3. Add it to the global temporary directory
-const dir3 = await fs.mkdtemp(
-  path.join(os.tmpdir(), "playground-"),
-);
-```

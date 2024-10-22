@@ -5,8 +5,8 @@ import path from "path";
 
 const writtenContentPaths = path.resolve(
   import.meta.dirname,
-  "../../written-content",
-  "**/**.source.{ts,tsx}",
+  "../../exercise-playground",
+  "**/**.source.{ts,tsx}"
 );
 
 const watcher = watch(writtenContentPaths, {
@@ -50,6 +50,6 @@ watcher.on("change", (_filePath) => {
       "",
     ]
       .join("\n")
-      .trim() + "\n",
+      .trim() + "\n"
   );
 });
