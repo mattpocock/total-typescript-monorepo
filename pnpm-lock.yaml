@@ -176,8 +176,8 @@ importers:
         specifier: 3.0.1
         version: 3.0.1(@types/react@18.3.3)(react@18.3.1)
       '@remotion/animation-utils':
-        specifier: 4.0.194
-        version: 4.0.194(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: 4.0.223
+        version: 4.0.223(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@remotion/cli':
         specifier: 4.0.194
         version: 4.0.194(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -2528,8 +2528,8 @@ packages:
   '@remix-run/web-stream@1.1.0':
     resolution: {integrity: sha512-KRJtwrjRV5Bb+pM7zxcTJkhIqWWSy+MYsIxHK+0m5atcznsf15YwUBWHWulZerV2+vvHH1Lp1DD7pw6qKW8SgA==}
 
-  '@remotion/animation-utils@4.0.194':
-    resolution: {integrity: sha512-Dmxpf2aNeI2sjMFllBxWPE5ClyVyrfkr8+UxuKYQA39H1GzR6mWZCrX3Y6eeTzUfXpCyHg2vo3wEWw2qVyi8lQ==}
+  '@remotion/animation-utils@4.0.223':
+    resolution: {integrity: sha512-i1WG4D0aYknrjFZ9i3SNPchk3pURo78ZAAF2JcqqRx8eo7FG2MGsa0YqWV79kmXq/fZ/yC8p9nV9xu+/e4uc+w==}
     peerDependencies:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
@@ -5724,6 +5724,12 @@ packages:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
 
+  remotion@4.0.223:
+    resolution: {integrity: sha512-qbZHf/0C5SJUuTLhYewiBMLcOazVPkO61100eJ0QMLXPoBhYkeAdCGWgV4qRqz8jvcZ3cJ8UFFOeYrcYrDJAJg==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+
   require-directory@2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
     engines: {node: '>=0.10.0'}
@@ -8650,11 +8656,11 @@ snapshots:
     dependencies:
       web-streams-polyfill: 3.3.3
 
-  '@remotion/animation-utils@4.0.194(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@remotion/animation-utils@4.0.223(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      remotion: 4.0.194(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      remotion: 4.0.223(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
   '@remotion/bundler@4.0.194(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
@@ -12630,6 +12636,11 @@ snapshots:
       zod: 3.23.8
 
   remotion@4.0.194(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+    dependencies:
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+
+  remotion@4.0.223(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
