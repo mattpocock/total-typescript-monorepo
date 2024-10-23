@@ -15,6 +15,7 @@
     "@trpc/client": "11.0.0-rc.544",
     "zod": "^3.23.8",
     "@total-typescript/helpers": "0.0.1",
-    "undici": "^6.19.8"
+    "undici": "^6.19.8",
+    "fastify": "^5.0.0"
   }
 }

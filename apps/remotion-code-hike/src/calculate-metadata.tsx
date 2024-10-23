@@ -13,13 +13,13 @@ import { compilerOptions, twoslash } from "./twoslash";
 
 const MyHighlightedCodeBlock =
   HighlightedCodeBlock.extend({
-    terminalOutput: z.string().optional(),
+    terminalOutput: HighlightedCodeBlock.optional(),
   });
 const Schema = Block.extend({
   code: z.array(MyHighlightedCodeBlock),
 });
 
-type MyHighlightedCode = z.infer<
+export type MyHighlightedCode = z.infer<
   typeof MyHighlightedCodeBlock
 >;
 
@@ -90,7 +90,14 @@ export const calculateMetadata: CalculateMetadataFunction<
         },
       ).then((res) => res.text());
 
-      highlighted.terminalOutput = terminalOutput;
+      highlighted.terminalOutput = await highlight(
+        {
+          value: terminalOutput,
+          lang: "txt",
+          meta: "",
+        },
+        "dark-plus",
+      );
     }
 
     twoSlashedCode.push(highlighted);

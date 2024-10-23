@@ -53,6 +53,9 @@ importers:
       '@trpc/server':
         specifier: 11.0.0-rc.544
         version: 11.0.0-rc.544
+      fastify:
+        specifier: ^5.0.0
+        version: 5.0.0
       undici:
         specifier: ^6.19.8
         version: 6.19.8
