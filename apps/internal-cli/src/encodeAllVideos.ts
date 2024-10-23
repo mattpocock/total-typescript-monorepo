@@ -14,7 +14,7 @@ export const encodeAllVideos = async () => {
     for (const folder of POSSIBLE_UNENCODED_FOLDER_LOCATIONS) {
       const { stdout } = yield* execAsync(
         `find ${folder} -type f -name "*.mp4"`
-      ).safeUnwrap();
+      );
 
       const inputVideos = stdout
         .trim()
@@ -48,11 +48,11 @@ export const encodeAllVideos = async () => {
           })`
         );
 
-        yield* encodeVideo(videoPath, outputVideoPath).safeUnwrap();
+        yield* encodeVideo(videoPath, outputVideoPath);
 
         yield* ensureDir(
           path.resolve(path.parse(outputVideoPath).dir, "un-encoded")
-        ).safeUnwrap();
+        );
 
         yield* ResultAsync.fromThrowable(rename, (e) => {
           return new Error(`Could not move file`, {
@@ -65,7 +65,7 @@ export const encodeAllVideos = async () => {
             "un-encoded",
             path.parse(videoPath).base
           )
-        ).safeUnwrap();
+        );
       }
     }
 

@@ -14,22 +14,22 @@ const CODE_HIKE_SRC = path.join(
   "..",
   "..",
   "remotion-code-hike",
-  "src",
+  "src"
 ) as AbsolutePath;
 
 const CODE_HIKE_CONTENT_LOCATION = path.join(
   CODE_HIKE_SRC,
-  "content.local.md",
+  "content.local.md"
 ) as AbsolutePath;
 
 const CODE_HIKE_AUDIO_LOCATION = path.join(
   CODE_HIKE_SRC,
-  "narration.local.mkv",
+  "narration.local.mkv"
 ) as AbsolutePath;
 
 const CODE_HIKE_META_LOCATION = path.join(
   CODE_HIKE_SRC,
-  "meta.local.json",
+  "meta.local.json"
 ) as AbsolutePath;
 
 const vscodeWatcher = watch(SCRIPTKIT_VSCODE_LOCATION);
@@ -85,8 +85,8 @@ const createFileUpdater = (filePath: AbsolutePath) => () => {
         durations,
       },
       null,
-      2,
-    ),
+      2
+    )
   );
 
   try {
@@ -101,10 +101,9 @@ const createFileUpdater = (filePath: AbsolutePath) => () => {
 
 const watchActiveFilePath = async () => {
   const result = await safeTry(async function* () {
-    const activeEditorFilePath = yield* getActiveEditorFilePath()
-      .mapErr(() => "active-editor-file-path-failed" as const)
-      .safeUnwrap();
-
+    const activeEditorFilePath = yield* getActiveEditorFilePath().mapErr(
+      () => "active-editor-file-path-failed" as const
+    );
     if (!activeEditorFilePath.endsWith(".md")) {
       return err("not-markdown-file" as const);
     }
@@ -114,7 +113,7 @@ const watchActiveFilePath = async () => {
     }
 
     const watchedFiles = Object.entries(
-      fileWatcher?.getWatched() || {},
+      fileWatcher?.getWatched() || {}
     ).flatMap(([dir, paths]) => {
       return paths.map((p) => path.join(dir, p));
     });

@@ -3,7 +3,6 @@ import React, {
   useEffect,
   useLayoutEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import {
@@ -26,42 +25,53 @@ import {
   featureFlags,
   RESIZE_TRANSITION_LENGTH,
 } from "./constants";
-import { MyHighlightedCode } from "./calculate-metadata";
 
-const useTransitionCodeLogic = ({
+export function CodeTransition({
   oldCode,
-  currentCode,
-  transitionDuration,
+  oldScale,
+  newScale,
+  newCode,
+  oldMarginTop,
+  newMarginTop,
+  transitionDuration: transitionDuration,
+  displayLength,
 }: {
-  oldCode: HighlightedCode | null | undefined;
-  currentCode: HighlightedCode | undefined;
+  oldScale: number;
+  oldMarginTop: number;
+  newMarginTop: number;
+  newScale: number;
+  oldCode: HighlightedCode | null;
+  newCode: HighlightedCode;
   transitionDuration: number;
-}) => {
+  displayLength: number;
+}) {
   const frame = useCurrentFrame();
-  const preRef = useRef<HTMLPreElement>(null);
+
+  const ref = React.useRef<HTMLPreElement>(null);
   const [oldSnapshot, setOldSnapshot] =
     useState<TokenTransitionsSnapshot | null>(null);
   const [delayRenderHandle] = React.useState(() =>
     delayRender(),
   );
 
-  const prevCode: HighlightedCode =
-    useMemo((): HighlightedCode => {
-      return (
-        oldCode || {
-          annotations: [],
-          tokens: [],
-          ...currentCode,
-        }
-      );
-    }, [currentCode, oldCode]);
+  const prevCode: HighlightedCode = useMemo(() => {
+    return (
+      oldCode || {
+        ...newCode,
+        tokens: [],
+        annotations: [],
+      }
+    );
+  }, [newCode, oldCode]);
 
-  console.log({ prevCode });
+  const code = useMemo(() => {
+    return oldSnapshot ? newCode : prevCode;
+  }, [newCode, prevCode, oldSnapshot]);
 
   useEffect(() => {
     if (!oldSnapshot) {
       setOldSnapshot(
-        getStartingSnapshot(preRef.current!),
+        getStartingSnapshot(ref.current!),
       );
     }
   }, [oldSnapshot]);
@@ -69,12 +79,12 @@ const useTransitionCodeLogic = ({
   useLayoutEffect(() => {
     if (!oldSnapshot) {
       setOldSnapshot(
-        getStartingSnapshot(preRef.current!),
+        getStartingSnapshot(ref.current!),
       );
       return;
     }
     const transitions = calculateTransitions(
-      preRef.current!,
+      ref.current!,
       oldSnapshot,
     );
     transitions.forEach(
@@ -105,34 +115,6 @@ const useTransitionCodeLogic = ({
     continueRender(delayRenderHandle);
   });
 
-  const code = useMemo(() => {
-    return oldSnapshot ? currentCode : prevCode;
-  }, [currentCode, prevCode, oldSnapshot]);
-
-  return { code, ref: preRef };
-};
-
-export function CodeTransition({
-  oldCode,
-  oldScale,
-  newScale,
-  currentCode,
-  oldMarginTop,
-  newMarginTop,
-  transitionDuration: transitionDuration,
-  displayLength,
-}: {
-  oldScale: number;
-  oldMarginTop: number;
-  newMarginTop: number;
-  newScale: number;
-  oldCode: MyHighlightedCode | null;
-  currentCode: MyHighlightedCode;
-  transitionDuration: number;
-  displayLength: number;
-}) {
-  const frame = useCurrentFrame();
-
   const scale = interpolate(
     frame,
     [0, RESIZE_TRANSITION_LENGTH],
@@ -155,39 +137,15 @@ export function CodeTransition({
     },
   );
 
-  const mainCode = useTransitionCodeLogic({
-    currentCode,
-    oldCode,
-    transitionDuration,
-  });
-
-  const terminalOutput = useTransitionCodeLogic({
-    currentCode: currentCode.terminalOutput,
-    oldCode: oldCode?.terminalOutput,
-    transitionDuration,
-  });
-
   return (
-    <div
+    <PreWithHandlers
+      ref={ref}
+      code={code}
+      displayLength={displayLength}
       style={{
         transform: `scale(${scale}) ${featureFlags.USE_CENTRED_TEXT ? `translateY(${marginTop}px)` : ""}`,
         transformOrigin: "top left",
       }}
-    >
-      {terminalOutput.code && (
-        <PreWithHandlers
-          code={terminalOutput.code}
-          ref={terminalOutput.ref}
-          displayLength={displayLength}
-        />
-      )}
-      {mainCode.code && (
-        <PreWithHandlers
-          code={mainCode.code}
-          ref={mainCode.ref}
-          displayLength={displayLength}
-        />
-      )}
-    </div>
+    />
   );
 }

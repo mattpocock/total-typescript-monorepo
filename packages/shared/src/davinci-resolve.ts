@@ -18,10 +18,10 @@ type Scripts = {
 
 export const runDavinciResolveScript = <TScript extends keyof Scripts>(
   script: TScript,
-  env: Scripts[TScript],
+  env: Scripts[TScript]
 ) => {
   return safeTry(async function* () {
-    yield* checkFuscriptIsInstalled().safeUnwrap();
+    yield* checkFuscriptIsInstalled();
 
     const scriptPath = resolve(DAVINCI_RESOLVE_SCRIPTS_LOCATION, script);
 
@@ -32,7 +32,7 @@ export const runDavinciResolveScript = <TScript extends keyof Scripts>(
       .join(" ");
 
     return execAsync(`${envString} fuscript -q "${scriptPath}"`).map(
-      (r) => r.stdout,
+      (r) => r.stdout
     );
   });
 };

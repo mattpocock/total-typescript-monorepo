@@ -12,7 +12,7 @@ import { err, ok, safeTry } from "neverthrow";
 // error, and those that won't.
 const mightError = safeTry(function* () {
   if (Math.random() > 0.5) {
-    yield* err("Error here!" as const).safeUnwrap();
+    yield* err("Error here!" as const);
   }
 
   return ok("Success!" as const);
@@ -134,7 +134,7 @@ function mightError(): Result<string, Error> {
 
 // ---cut---
 safeTry(function* () {
-  const result = yield* mightError().safeUnwrap();
+  const result = yield* mightError();
   //    ^?
 
   return ok(result);
@@ -160,7 +160,7 @@ function mightError(): Result<string, Error> {
 
 // ---cut---
 const resultOfSafeTry = safeTry(function* () {
-  const result = yield* mightError().safeUnwrap();
+  const result = yield* mightError();
 
   return ok(result);
 });
@@ -197,8 +197,7 @@ declare const getLocalStorage: (
 // ---cut---
 const resultOfSafeTry = safeTry(function* () {
   // Inside safeTry, it's the happy path...
-  const { id } =
-    yield* jsonParse("{ id: 123 }").safeUnwrap();
+  const { id } = yield* jsonParse("{ id: 123 }");
 
   const storage = yield* getLocalStorage(id).safeUnwrap();
 

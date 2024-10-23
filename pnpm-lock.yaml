@@ -56,6 +56,9 @@ importers:
       fastify:
         specifier: ^5.0.0
         version: 5.0.0
+      neverthrow:
+        specifier: ^8.1.0
+        version: 8.1.0
       undici:
         specifier: ^6.19.8
         version: 6.19.8
@@ -81,8 +84,8 @@ importers:
         specifier: ^3.3.2
         version: 3.3.2
       neverthrow:
-        specifier: ^7.2.0
-        version: 7.2.0
+        specifier: ^8.1.0
+        version: 8.1.0
       prompts:
         specifier: ^2.4.2
         version: 2.4.2
@@ -255,8 +258,8 @@ importers:
         specifier: ^4.0.2
         version: 4.0.2
       neverthrow:
-        specifier: ^7.2.0
-        version: 7.2.0
+        specifier: ^8.1.0
+        version: 8.1.0
 
   apps/twoslash-lint:
     dependencies:
@@ -337,8 +340,8 @@ importers:
         specifier: ^17.13.3
         version: 17.13.3
       neverthrow:
-        specifier: ^7.2.0
-        version: 7.2.0
+        specifier: ^8.1.0
+        version: 8.1.0
       valibot:
         specifier: ^0.37.0
         version: 0.37.0(typescript@5.6.2)
@@ -527,8 +530,8 @@ importers:
         specifier: workspace:*
         version: link:../shared
       neverthrow:
-        specifier: ^7.2.0
-        version: 7.2.0
+        specifier: ^8.1.0
+        version: 8.1.0
 
   packages/nodeslash:
     devDependencies:
@@ -539,8 +542,8 @@ importers:
   packages/shared:
     dependencies:
       neverthrow:
-        specifier: ^7.2.0
-        version: 7.2.0
+        specifier: ^8.1.0
+        version: 8.1.0
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -2674,6 +2677,11 @@ packages:
 
   '@rollup/rollup-linux-x64-gnu@4.20.0':
     resolution: {integrity: sha512-y+eoL2I3iphUg9tN9GB6ku1FA8kOfmF4oUEWhztDJ4KXJy1agk/9+pejOuZkNFhRwHAOxMsBPLbXPd6mJiCwew==}
+    cpu: [x64]
+    os: [linux]
+
+  '@rollup/rollup-linux-x64-gnu@4.24.0':
+    resolution: {integrity: sha512-ZXFk7M72R0YYFN5q13niV0B7G8/5dcQ9JDp8keJSfr3GoZeXEoMHP/HlvqROA3OMbMdfr19IjCeNAnPUG93b6A==}
     cpu: [x64]
     os: [linux]
 
@@ -4916,8 +4924,8 @@ packages:
     resolution: {integrity: sha512-dBpDMdxv9Irdq66304OLfEmQ9tbNRFnFTuZiLo+bD+r332bBmMJ8GBLXklIXXgxd3+v9+KUnZaUR5PJMa75Gsg==}
     engines: {node: '>= 0.4.0'}
 
-  neverthrow@7.2.0:
-    resolution: {integrity: sha512-iGBUfFB7yPczHHtA8dksKTJ9E8TESNTAx1UQWW6TzMF280vo9jdPYpLUXrMN1BCkPdHFdNG3fxOt2CUad8KhAw==}
+  neverthrow@8.1.0:
+    resolution: {integrity: sha512-DV0klbzcsI0XOJvdGElzJ2sEXmEPwQLWio/ttq7D7CQApUduxqzNG2noc8ZPaAFc9XXINYVb0f5ozM0ZJKGF1w==}
     engines: {node: '>=18'}
 
   node-addon-api@7.1.1:
@@ -8855,6 +8863,9 @@ snapshots:
   '@rollup/rollup-linux-x64-gnu@4.20.0':
     optional: true
 
+  '@rollup/rollup-linux-x64-gnu@4.24.0':
+    optional: true
+
   '@rollup/rollup-linux-x64-musl@4.20.0':
     optional: true
 
@@ -11747,7 +11758,9 @@ snapshots:
 
   netmask@2.0.2: {}
 
-  neverthrow@7.2.0: {}
+  neverthrow@8.1.0:
+    optionalDependencies:
+      '@rollup/rollup-linux-x64-gnu': 4.24.0
 
   node-addon-api@7.1.1: {}
 

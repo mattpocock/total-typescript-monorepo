@@ -12,11 +12,9 @@ import { EXTERNAL_DRIVE_MOVIES_ROOT, getExternalDrive } from "./constants.js";
 
 export const openPairedVideoDir = async () => {
   return safeTry(async function* () {
-    const activeEditorFilePath = yield* (
-      await getActiveEditorFilePath()
-    ).safeUnwrap();
+    const activeEditorFilePath = yield* await getActiveEditorFilePath();
 
-    yield* getExternalDrive().safeUnwrap();
+    yield* getExternalDrive();
 
     const relativePath = path.relative(REPOS_FOLDER, activeEditorFilePath);
 
@@ -25,11 +23,11 @@ export const openPairedVideoDir = async () => {
       relativePath
     ) as AbsolutePath;
 
-    const exercisePath = yield* parseExercisePath(targetPath).safeUnwrap();
+    const exercisePath = yield* parseExercisePath(targetPath);
 
     const { resolvedPath } = exercisePath;
 
-    yield* execAsync(`open "${path.dirname(resolvedPath)}"`).safeUnwrap();
+    yield* execAsync(`open "${path.dirname(resolvedPath)}"`);
 
     return okAsync(void 0);
   }).mapErr((e) => {

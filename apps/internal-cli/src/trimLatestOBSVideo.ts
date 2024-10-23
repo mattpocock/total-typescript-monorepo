@@ -22,58 +22,56 @@ import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
 
 export const trimLatestOBSVideo = () => {
   return safeTry(async function* () {
-    yield* getExternalDrive().safeUnwrap();
+    yield* getExternalDrive();
 
-    const latestOBSVideo = yield* getLatestOBSVideo().safeUnwrap();
+    const latestOBSVideo = yield* getLatestOBSVideo();
 
-    const activeEditorFilePath = yield* getActiveEditorFilePath().safeUnwrap();
+    const activeEditorFilePath = yield* getActiveEditorFilePath();
 
     const relativePathToReposFolder = path.relative(
       REPOS_FOLDER,
-      activeEditorFilePath,
+      activeEditorFilePath
     ) as RelativePath;
 
     const absolutePathToTrimmedFootage = path.resolve(
       EXTERNAL_DRIVE_MOVIES_ROOT,
-      relativePathToReposFolder,
+      relativePathToReposFolder
     ) as AbsolutePath;
 
     if (relativePathToReposFolder.startsWith("..")) {
       return err(
-        new Error("Active editor file path is not in the repos folder"),
+        new Error("Active editor file path is not in the repos folder")
       );
     }
 
-    const result = yield* parseExercisePath(
-      absolutePathToTrimmedFootage,
-    ).safeUnwrap();
+    const result = yield* parseExercisePath(absolutePathToTrimmedFootage);
 
-    const fps = yield* getFPS(activeEditorFilePath).safeUnwrap();
+    const fps = yield* getFPS(activeEditorFilePath);
 
     const silence = yield* findSilenceInVideo(activeEditorFilePath, {
       silenceDuration: SILENCE_DURATION,
       padding: PADDING,
       threshold: THRESHOLD,
       fps,
-    }).safeUnwrap();
+    });
 
     const outputFolder = path.dirname(result.resolvedPath) as AbsolutePath;
 
-    yield* ensureDir(outputFolder).safeUnwrap();
+    yield* ensureDir(outputFolder);
 
     console.log("Trimming video...");
 
     const unNormalizedFilename = (result.resolvedPath.replace(
       /\.(ts|tsx)/g,
-      "",
+      ""
     ) + ".un-encoded.mp4") as AbsolutePath;
 
     yield* trimVideo(
       latestOBSVideo,
       unNormalizedFilename,
       silence.startTime,
-      silence.endTime,
-    ).safeUnwrap();
+      silence.endTime
+    );
 
     return ok(void 0);
   }).then((r) => {

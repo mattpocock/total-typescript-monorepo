@@ -65,7 +65,7 @@ export const Main = (props: {
           <Audio src={narration} startFrom={25} />
         </Sequence>
       )}
-      <AbsoluteFill className="bg-gray-900 space-y-12">
+      <AbsoluteFill className="bg-gray-900 space-y-12 py-16 px-20">
         {/* <ProgressBar steps={steps} /> */}
         <div
           className="h-full overflow-hidden"
@@ -140,9 +140,7 @@ export const Main = (props: {
                               oldMarginTop={
                                 prevMarginTop
                               }
-                              currentCode={
-                                thisStep.code
-                              }
+                              newCode={thisStep.code}
                               displayLength={
                                 durationInFrames
                               }

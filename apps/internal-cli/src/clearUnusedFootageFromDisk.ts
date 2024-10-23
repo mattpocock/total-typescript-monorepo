@@ -16,7 +16,7 @@ const regex = /Movies(\/{0,1}).{1,}\.mp4/g;
 
 export const clearUnusedFootageFromDisk = async () => {
   return safeTry(async function* () {
-    yield* getExternalDrive().safeUnwrap();
+    yield* getExternalDrive();
 
     const projects = readdirSync(
       DAVINCI_RESOLVE_PROJECTS_LOCATION

@@ -12,16 +12,16 @@ import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
 
 export const appendVideoToTimeline = async () => {
   return safeTry(async function* () {
-    const inputVideo = yield* getLatestOBSVideo().safeUnwrap();
+    const inputVideo = yield* getLatestOBSVideo();
 
-    const fps = yield* getFPS(inputVideo).safeUnwrap();
+    const fps = yield* getFPS(inputVideo);
 
     const silenceResult = yield* findSilenceInVideo(inputVideo, {
       threshold: THRESHOLD,
       fps,
       padding: 0,
       silenceDuration: SILENCE_DURATION,
-    }).safeUnwrap();
+    });
 
     const textFileOutput = path.resolve(
       inputVideo.replace(".mp4", ".silence.txt")

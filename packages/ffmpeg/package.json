@@ -10,6 +10,6 @@
   },
   "dependencies": {
     "@total-typescript/shared": "workspace:*",
-    "neverthrow": "^7.2.0"
+    "neverthrow": "^8.1.0"
   }
 }

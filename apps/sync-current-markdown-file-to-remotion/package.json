@@ -10,6 +10,6 @@
     "@total-typescript/shared": "workspace:*",
     "chokidar": "^3.6.0",
     "front-matter": "^4.0.2",
-    "neverthrow": "^7.2.0"
+    "neverthrow": "^8.1.0"
   }
 }
