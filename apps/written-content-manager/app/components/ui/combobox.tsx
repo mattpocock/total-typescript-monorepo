@@ -65,7 +65,13 @@ export function Combobox(props: {
 
   return (
     <>
-      <input type="hidden" value={value} name={props.name} ref={ref} />
+      <input
+        type="hidden"
+        value={value}
+        name={props.name}
+        ref={ref}
+        className="hidden"
+      />
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild autoFocus={props.autoFocus}>
           <Button

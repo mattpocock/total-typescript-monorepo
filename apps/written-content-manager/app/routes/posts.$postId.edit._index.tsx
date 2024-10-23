@@ -32,6 +32,7 @@ import {
 import { serverFunctions } from "~/modules/server-functions/server-functions";
 import { LazyLoadedEditor } from "~/monaco-editor/lazy-loaded-editor";
 import {
+  addNewCollectionToPostUrl,
   addPostToCollectionUrl,
   editCollectionUrl,
   editPostUrl,
@@ -219,14 +220,25 @@ export default function EditPost() {
                   })}
               </TableBody>
             </Table>
-            <AddPostToCollectionForm
-              collections={collections}
-              postId={post.id}
-            />
+            <div className="flex items-center">
+              <AddPostToCollectionForm
+                collections={collections}
+                postId={post.id}
+              />
+              <Button
+                className="ml-6"
+                type="button"
+                onClick={() => {
+                  fetcher.submit(null, {
+                    method: "post",
+                    action: addNewCollectionToPostUrl(post.id),
+                  });
+                }}
+              >
+                Add New Collection
+              </Button>
+            </div>
           </div>
-          <FormButtons>
-            <Button type="submit">Save</Button>
-          </FormButtons>
         </FormContent>
       </Form>
     </PageContent>

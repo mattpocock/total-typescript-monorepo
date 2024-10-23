@@ -19,6 +19,14 @@ export const posts = {
         },
         include: {
           collections: {
+            where: {
+              collection: {
+                deleted: false,
+                title: {
+                  not: "",
+                },
+              },
+            },
             select: {
               collection: {
                 select: {
@@ -193,6 +201,27 @@ export const posts = {
         const threadFile = files.find((file) => file.includes("thread.md"));
         await fs.openInVSCode(threadFile ?? files[0]);
       }
+    }
+  ),
+
+  addNewCollection: createServerFunction(
+    z.object({
+      id: z.string().uuid(),
+    }),
+    async ({ input, p }) => {
+      const collection = await p.socialPostCollection.create({
+        data: {
+          title: "",
+          posts: {
+            create: {
+              order: 0,
+              socialPostId: input.id,
+            },
+          },
+        },
+      });
+
+      return collection;
     }
   ),
 };

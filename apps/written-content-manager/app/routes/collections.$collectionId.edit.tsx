@@ -81,6 +81,7 @@ export default function EditPost() {
     debouncedFetcher.debounceSubmit(formRef.current, {
       debounceTimeout: 200,
       preventScrollReset: true,
+      replace: true,
     });
   };
 

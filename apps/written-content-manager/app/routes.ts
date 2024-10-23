@@ -123,6 +123,10 @@ export const openPostInVSCodeUrl = (postId: string) => {
   return `/posts/${postId}/view-vscode`;
 };
 
+export const addNewCollectionToPostUrl = (postId: string) => {
+  return `/posts/${postId}/add-new-collection`;
+};
+
 export const collectionsUrl = () => {
   return `/collections`;
 };

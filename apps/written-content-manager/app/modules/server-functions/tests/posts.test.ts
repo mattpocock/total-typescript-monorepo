@@ -96,6 +96,28 @@ describe("posts", () => {
       });
     });
 
+    it("Should not return collections with empty names", async () => {
+      const post = await p.socialPost.create({
+        data: {
+          title: "abc",
+          collections: {
+            create: {
+              order: 0,
+              collection: {
+                create: {
+                  title: "",
+                },
+              },
+            },
+          },
+        },
+      });
+
+      expect(await serverFunctions.posts.get({ id: post.id })).toMatchObject({
+        collections: [],
+      });
+    });
+
     it("Should return any associated files", async () => {
       const post = await serverFunctions.posts.create({
         title: "abc",
@@ -376,6 +398,29 @@ describe("posts", () => {
         )?.fullPath;
 
         expect(fs.countOpensInVSCode(playgroundFilePath!)).toEqual(1);
+      });
+    });
+  });
+
+  // https://github.com/mattpocock/total-typescript-monorepo
+
+  describe("addNewCollection", () => {
+    it("Should add a collection with an empty title to the post", async () => {
+      const post = await serverFunctions.posts.create({
+        title: "abc",
+      });
+
+      const collection = await serverFunctions.posts.addNewCollection({
+        id: post.id,
+      });
+
+      const collectionInDb = await serverFunctions.collections.get({
+        id: collection.id,
+      });
+
+      expect(collectionInDb).toMatchObject({
+        id: collection.id,
+        title: "",
       });
     });
   });
