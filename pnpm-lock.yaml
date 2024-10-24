@@ -53,6 +53,9 @@ importers:
       '@trpc/server':
         specifier: 11.0.0-rc.544
         version: 11.0.0-rc.544
+      fast-json-stringify:
+        specifier: ^6.0.0
+        version: 6.0.0
       fastify:
         specifier: ^5.0.0
         version: 5.0.0

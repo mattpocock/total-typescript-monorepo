@@ -111,6 +111,18 @@ export const analytics = {
             type: "EXERCISE_VIDEO_RECORDING_MARKED_AS_FINAL",
           },
         }),
+        p.socialPost.count({
+          where: {
+            deleted: false,
+            title: {
+              not: "",
+            },
+            isViral: true,
+            postedAt: {
+              not: null,
+            },
+          },
+        }),
       ])
       .then((d) => {
         return {
@@ -127,6 +139,7 @@ export const analytics = {
           postsDeletedToday: d[10],
           postsMarkedAsPostedToday: d[11],
           exerciseVideoRecordingsMarkedAsFinal: d[12],
+          viralPosts: d[13],
         };
       });
   }),

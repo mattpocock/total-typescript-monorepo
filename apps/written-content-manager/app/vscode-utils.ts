@@ -37,10 +37,7 @@ export const getAudioPathForExercise = (exerciseId: string) => {
 
 export const getDoesAudioExistForExercise = async (exerciseId: string) => {
   const fs = getFS();
-  return fs.exists(getAudioPathForExercise(exerciseId)).then(
-    () => true,
-    () => false
-  );
+  return fs.exists(getAudioPathForExercise(exerciseId));
 };
 
 export const getVSCodeFilesForPost = async (postId: string) => {

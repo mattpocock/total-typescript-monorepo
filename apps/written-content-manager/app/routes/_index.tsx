@@ -81,6 +81,15 @@ export default function Dashboard() {
             {data.postsMarkedAsPostedToday}
           </span>
         </div>
+        <div className="p-6 rounded-lg border-2 border-gray-200 dark:border-gray-500 flex flex-col items-center">
+          <h2 className="text-xl font-semibold tracking-tight">
+            Total Viral Posts
+          </h2>
+          <p>{(data.viralPosts / 52).toFixed(1)} per week</p>
+          <span className="rounded-full size-36 flex items-center justify-center border-gray-200 dark:border-gray-500 border-4 text-5xl text-gray-800 dark:text-gray-200 font-mono mt-4">
+            {data.viralPosts}
+          </span>
+        </div>
       </div>
     </PageContent>
   );

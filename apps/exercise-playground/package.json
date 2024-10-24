@@ -17,6 +17,7 @@
     "@total-typescript/helpers": "0.0.1",
     "undici": "^6.19.8",
     "fastify": "^5.0.0",
-    "neverthrow": "^8.1.0"
+    "neverthrow": "^8.1.0",
+    "fast-json-stringify": "^6.0.0"
   }
 }

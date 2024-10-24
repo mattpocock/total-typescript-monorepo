@@ -102,6 +102,8 @@ export const exercises = {
 
       const audioExists = await getDoesAudioExistForExercise(input.id);
 
+      console.log({ audioExists });
+
       return {
         ...exercise,
         files: files.map((file) => ({

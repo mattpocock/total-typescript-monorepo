@@ -24,6 +24,7 @@ export const action = async (args: ActionFunctionArgs) => {
     data: {
       audioRecordingCreated: false,
       audioTranscript: null,
+      readyForRecording: false,
     },
   });
 
