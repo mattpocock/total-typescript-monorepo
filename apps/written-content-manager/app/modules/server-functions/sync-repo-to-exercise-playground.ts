@@ -1,9 +1,10 @@
 import { rimraf, type AbsolutePath } from "@total-typescript/shared";
-import { access, cp, readFile } from "fs/promises";
+import { access, cp, readFile, rename } from "fs/promises";
 import path from "path";
 import { z } from "zod";
 import { getExerciseDir } from "~/vscode-utils";
 import { createServerFunction } from "./utils";
+import { createTmpDir } from "./tests/test-utils";
 
 export const syncRepoToExercisePlayground = createServerFunction(
   z.object({
@@ -68,6 +69,7 @@ export const syncRepoToExercisePlayground = createServerFunction(
 
       const locationOnDisk = path.join(
         coursePath,
+        "src",
         map[exerciseId]!
       ) as AbsolutePath;
 
@@ -84,12 +86,28 @@ export const syncRepoToExercisePlayground = createServerFunction(
 
       const exerciseDir = getExerciseDir(exercise.id);
 
+      const tmpDir = await createTmpDir();
+
+      const audioFileOriginalLocation = path.join(exerciseDir, "audio.mkv");
+
+      const tmpAudioFileLocation = path.join(tmpDir.dir, "audio.mkv");
+
+      try {
+        await rename(audioFileOriginalLocation, tmpAudioFileLocation);
+      } catch (e) {}
+
       await rimraf(exerciseDir);
 
       await cp(locationOnDisk, exerciseDir, {
         recursive: true,
         force: true,
       });
+
+      try {
+        await rename(tmpAudioFileLocation, audioFileOriginalLocation);
+      } catch (e) {}
+
+      await rimraf(tmpDir.dir);
     }
   }
 );

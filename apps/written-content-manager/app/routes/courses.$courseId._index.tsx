@@ -228,16 +228,9 @@ export default function Course() {
           </Link>
         </Button>
 
-        <Button
-          onClick={() => {
-            printToRepoFetcher.submit(null, {
-              action: syncRepoToExercisePlaygroundUrl(course.id),
-              method: "post",
-            });
-          }}
-        >
-          Sync Repo To Playground
-        </Button>
+        <Form method="post" action={syncRepoToExercisePlaygroundUrl(course.id)}>
+          <Button>Sync Repo To Playground</Button>
+        </Form>
         <Button
           onClick={() => {
             printToRepoFetcher.submit(null, {

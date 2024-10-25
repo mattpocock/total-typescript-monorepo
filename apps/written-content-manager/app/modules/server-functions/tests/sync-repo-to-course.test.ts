@@ -4,6 +4,7 @@ import path from "path";
 import { expect, it } from "vitest";
 import { serverFunctions } from "../server-functions";
 import { syncRepoToExercisePlayground } from "../sync-repo-to-exercise-playground";
+import { getExerciseDir } from "~/vscode-utils";
 
 it("Should fail if the course does not have a repo slug", async () => {
   const course = await serverFunctions.courses.create({
@@ -53,7 +54,7 @@ it("Should fail if the exercise does not exist in the database", async () => {
     repoSlug: "my-trpc-course",
   });
 
-  await ensureDir(path.join(testPaths?.reposDir!, "my-trpc-course"));
+  await ensureDir(path.join(testPaths?.reposDir!, "my-trpc-course", "src"));
 
   await writeFile(
     path.join(testPaths?.reposDir!, "my-trpc-course", "_map.json"),
@@ -85,7 +86,7 @@ it("Should fail if the exercise mentioned in _map.json cannot be found on disk",
     sectionId: section.id,
   });
 
-  await ensureDir(path.join(testPaths?.reposDir!, "my-trpc-course"));
+  await ensureDir(path.join(testPaths?.reposDir!, "my-trpc-course", "src"));
 
   await writeFile(
     path.join(testPaths?.reposDir!, "my-trpc-course", "_map.json"),
@@ -103,7 +104,49 @@ it("Should fail if the exercise mentioned in _map.json cannot be found on disk",
   );
 });
 
-it("Should replace all files in the exercise playground with the files from the course repo", async () => {
+it("Should not fail if the exercise mentioned in _map.json is an empty directory", async () => {
+  const course = await serverFunctions.courses.create({
+    title: "My tRPC Course",
+    repoSlug: "my-trpc-course",
+  });
+
+  const section = await serverFunctions.sections.create({
+    title: "My Section",
+    courseId: course.id,
+  });
+
+  const exercise = await serverFunctions.exercises.create({
+    title: "My Exercise",
+    sectionId: section.id,
+  });
+
+  await ensureDir(path.join(testPaths?.reposDir!, "my-trpc-course"));
+
+  await writeFile(
+    path.join(testPaths?.reposDir!, "my-trpc-course", "_map.json"),
+    JSON.stringify({
+      [exercise.id]: "001-my-section/001-my-exercise",
+    })
+  );
+
+  await ensureDir(
+    path.join(
+      testPaths?.reposDir!,
+      "my-trpc-course",
+      "src",
+      "001-my-section",
+      "001-my-exercise"
+    )
+  );
+
+  await expect(
+    syncRepoToExercisePlayground({
+      id: course.id,
+    })
+  ).resolves.not.toThrow();
+});
+
+it("Should replace all non-audio files in the exercise playground with the files from the course repo", async () => {
   const course = await serverFunctions.courses.create({
     title: "My tRPC Course",
     repoSlug: "my-trpc-course",
@@ -123,7 +166,7 @@ it("Should replace all files in the exercise playground with the files from the 
     id: exercise.id,
   });
 
-  await ensureDir(path.join(testPaths?.reposDir!, "my-trpc-course"));
+  await ensureDir(path.join(testPaths?.reposDir!, "my-trpc-course", "src"));
 
   await writeFile(
     path.join(testPaths?.reposDir!, "my-trpc-course", "_map.json"),
@@ -136,6 +179,7 @@ it("Should replace all files in the exercise playground with the files from the 
     path.join(
       testPaths?.reposDir!,
       "my-trpc-course",
+      "src",
       "001-my-section",
       "001-my-exercise"
     )
@@ -145,6 +189,7 @@ it("Should replace all files in the exercise playground with the files from the 
     path.join(
       testPaths?.reposDir!,
       "my-trpc-course",
+      "src",
       "001-my-section",
       "001-my-exercise",
       "exercise-file.explainer.ts"
@@ -152,21 +197,19 @@ it("Should replace all files in the exercise playground with the files from the 
     "console.log('Hello, World!');"
   );
 
+  await writeFile(path.join(getExerciseDir(exercise.id), "audio.mkv"), "audio");
+
   await syncRepoToExercisePlayground({
     id: course.id,
   });
 
-  console.log(
-    await readdir(path.join(testPaths?.exercisePlaygroundPath!, exercise.id))
-  );
+  const exerciseOnDb = await serverFunctions.exercises.get({
+    id: exercise.id,
+  });
 
-  const files = await serverFunctions.exercises
-    .get({
-      id: exercise.id,
-    })
-    .then((exercise) => exercise.files);
+  expect(exerciseOnDb.files).toHaveLength(1);
+  expect(exerciseOnDb.files[0]!.path).toBe("exercise-file.explainer.ts");
+  expect(exerciseOnDb.files[0]!.content).toBe("console.log('Hello, World!');");
 
-  expect(files).toHaveLength(1);
-  expect(files[0]!.path).toBe("exercise-file.explainer.ts");
-  expect(files[0]!.content).toBe("console.log('Hello, World!');");
+  expect(exerciseOnDb.audioExists).toBe(true);
 });

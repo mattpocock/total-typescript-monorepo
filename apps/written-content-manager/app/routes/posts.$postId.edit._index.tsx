@@ -9,13 +9,7 @@ import {
 } from "@remix-run/react";
 import { DeleteIcon } from "lucide-react";
 import { useRef } from "react";
-import {
-  FormButtons,
-  FormContent,
-  PageContent,
-  TitleArea,
-  VSCodeIcon,
-} from "~/components";
+import { FormContent, PageContent, TitleArea, VSCodeIcon } from "~/components";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Combobox } from "~/components/ui/combobox";
