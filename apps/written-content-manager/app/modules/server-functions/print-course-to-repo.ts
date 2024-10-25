@@ -64,6 +64,8 @@ export const printCourseToRepo = createServerFunction(
 
     await fs.rimraf(srcPath);
 
+    const exerciseMap: Record<string, string> = {};
+
     let totalExerciseCount = 0;
 
     for (
@@ -73,10 +75,9 @@ export const printCourseToRepo = createServerFunction(
     ) {
       const section = course.sections[sectionIndex]!;
 
-      const sectionPath = path.join(
-        srcPath,
-        `${(sectionIndex + 1).toString().padStart(3, "0")}-${sanitizeForVSCodeFilename(section.title)}`
-      );
+      const sectionName = `${(sectionIndex + 1).toString().padStart(3, "0")}-${sanitizeForVSCodeFilename(section.title)}`;
+
+      const sectionPath = path.join(srcPath, sectionName);
 
       await fs.ensureDir(sectionPath);
 
@@ -92,6 +93,8 @@ export const printCourseToRepo = createServerFunction(
         const exercisePath = path.join(sectionPath, exerciseName);
 
         await fs.ensureDir(exercisePath);
+
+        exerciseMap[exercise.id] = path.join(sectionName, exerciseName);
 
         const files = await getVSCodeFilesForExercise(exercise.id);
 
@@ -117,6 +120,12 @@ export const printCourseToRepo = createServerFunction(
         totalExerciseCount++;
       }
     }
+
+    await fs.writeFile(
+      path.join(coursePath, "_map.json"),
+      JSON.stringify(exerciseMap)
+    );
+
     await p.course.update({
       where: {
         id: input.id,

@@ -170,6 +170,64 @@ describe("print-course-to-repo", () => {
     });
   });
 
+  it("Should create a mapping in the root between exercises and directories", async () => {
+    await mockFS(async (fs) => {
+      const course = await serverFunctions.courses.create({
+        title: "My tRPC Course",
+        repoSlug: "my-trpc-course",
+      });
+
+      const section1 = await serverFunctions.sections.create({
+        courseId: course.id,
+        title: "Section 1",
+      });
+
+      const section2 = await serverFunctions.sections.create({
+        courseId: course.id,
+        title: "Section 2",
+      });
+
+      const exercise1 = await serverFunctions.exercises.create({
+        sectionId: section1.id,
+        title: "Exercise 1",
+      });
+
+      await serverFunctions.exercises.createExplainerFile({
+        id: exercise1.id,
+      });
+
+      const exercise2 = await serverFunctions.exercises.create({
+        sectionId: section2.id,
+        title: "Exercise 2",
+      });
+
+      await serverFunctions.exercises.createExplainerFile({
+        id: exercise2.id,
+      });
+
+      await fs.ensureDir(
+        path.join(TOTAL_TYPESCRIPT_REPOS_FOLDER, "my-trpc-course", "src")
+      );
+
+      await printCourseToRepo({
+        id: course.id,
+      });
+
+      const mappingPath = path.join(
+        TOTAL_TYPESCRIPT_REPOS_FOLDER,
+        "my-trpc-course",
+        "_map.json"
+      );
+
+      const mapping = JSON.parse(await fs.readFile(mappingPath, "utf-8"));
+
+      expect(mapping).toEqual({
+        [exercise1.id]: "001-section-1/001-exercise-1",
+        [exercise2.id]: "002-section-2/002-exercise-2",
+      });
+    });
+  });
+
   it("Should remove any prefixes in the files", async () => {
     await mockFS(async (fs) => {
       const course = await serverFunctions.courses.create({
