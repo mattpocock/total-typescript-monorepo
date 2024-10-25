@@ -1,5 +1,5 @@
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
-import type { AppRouter } from "./batching-on-the-client.explainer.server";
+import type { AppRouter } from "./016-batching-on-the-client.explainer.server";
 
 const trpcClient = createTRPCClient<AppRouter>({
   links: [

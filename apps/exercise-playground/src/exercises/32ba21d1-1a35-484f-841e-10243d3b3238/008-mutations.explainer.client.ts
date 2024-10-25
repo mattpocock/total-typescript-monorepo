@@ -1,5 +1,5 @@
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
-import type { AppRouter } from "./mutations.explainer.server";
+import type { AppRouter } from "./008-mutations.explainer.server";
 
 const trpcClient = createTRPCClient<AppRouter>({
   links: [

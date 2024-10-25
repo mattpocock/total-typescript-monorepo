@@ -1,5 +1,5 @@
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
-import { AppRouter } from "./007-parsing-inputs-with-zod.explainer.server";
+import type { AppRouter } from "./007-parsing-inputs-with-zod.explainer.server";
 
 const trpcClient = createTRPCClient<AppRouter>({
   links: [
