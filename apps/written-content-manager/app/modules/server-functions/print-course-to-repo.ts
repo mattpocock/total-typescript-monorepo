@@ -112,7 +112,7 @@ export const printCourseToRepo = createServerFunction(
             delete lines[0];
           }
 
-          await writeFile(filePath, lines.join("\n").trim());
+          await writeFile(filePath, lines.join("\n").trimStart());
         }
 
         totalExerciseCount++;
@@ -121,7 +121,7 @@ export const printCourseToRepo = createServerFunction(
 
     await writeFile(
       path.join(coursePath, "_map.json"),
-      JSON.stringify(exerciseMap)
+      JSON.stringify(exerciseMap, null, 2) + "\n"
     );
 
     await p.course.update({
