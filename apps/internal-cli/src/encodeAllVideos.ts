@@ -50,7 +50,7 @@ export const encodeAllVideos = async () => {
 
         yield* encodeVideo(videoPath, outputVideoPath);
 
-        yield* ensureDir(
+        await ensureDir(
           path.resolve(path.parse(outputVideoPath).dir, "un-encoded")
         );
 

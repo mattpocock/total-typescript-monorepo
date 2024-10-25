@@ -57,7 +57,7 @@ export const trimLatestOBSVideo = () => {
 
     const outputFolder = path.dirname(result.resolvedPath) as AbsolutePath;
 
-    yield* ensureDir(outputFolder);
+    await ensureDir(outputFolder);
 
     console.log("Trimming video...");
 
