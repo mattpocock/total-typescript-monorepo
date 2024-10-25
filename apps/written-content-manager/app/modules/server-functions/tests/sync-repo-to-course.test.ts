@@ -1,122 +1,172 @@
 import { ensureDir } from "@total-typescript/shared";
-import { writeFile } from "fs/promises";
+import { readdir, writeFile } from "fs/promises";
 import path from "path";
-import { describe, expect, it } from "vitest";
+import { expect, it } from "vitest";
 import { serverFunctions } from "../server-functions";
-import { syncRepoToCourse } from "../sync-repo-to-course";
-import { createTmpDir } from "./test-utils";
+import { syncRepoToExercisePlayground } from "../sync-repo-to-exercise-playground";
 
-describe("sync-repo-to-course", () => {
-  it("Should fail if the course does not have a repo slug", async () => {
-    const course = await serverFunctions.courses.create({
-      title: "My tRPC Course",
-    });
-
-    await using dir = await createTmpDir();
-
-    await expect(
-      syncRepoToCourse({
-        id: course.id,
-        reposDir: dir.dir,
-      })
-    ).rejects.toThrow("Course does not have a repo slug");
+it("Should fail if the course does not have a repo slug", async () => {
+  const course = await serverFunctions.courses.create({
+    title: "My tRPC Course",
   });
 
-  it("Should fail if the course repo does not exist", async () => {
-    const course = await serverFunctions.courses.create({
-      title: "My tRPC Course",
-      repoSlug: "my-trpc-course",
-    });
+  await expect(
+    syncRepoToExercisePlayground({
+      id: course.id,
+    })
+  ).rejects.toThrow("Course does not have a repo slug");
+});
 
-    await using dir = await createTmpDir();
-
-    await expect(
-      syncRepoToCourse({
-        id: course.id,
-        reposDir: dir.dir,
-      })
-    ).rejects.toThrow(
-      "Repo my-trpc-course does not exist in total-typescript folder"
-    );
+it("Should fail if the course repo does not exist", async () => {
+  const course = await serverFunctions.courses.create({
+    title: "My tRPC Course",
+    repoSlug: "my-trpc-course",
   });
 
-  it('Should fail if the course repo does not have a "_map.json" file', async () => {
-    const course = await serverFunctions.courses.create({
-      title: "My tRPC Course",
-      repoSlug: "my-trpc-course",
-    });
+  await expect(
+    syncRepoToExercisePlayground({
+      id: course.id,
+    })
+  ).rejects.toThrow(
+    "Repo my-trpc-course does not exist in total-typescript folder"
+  );
+});
 
-    await using dir = await createTmpDir();
-
-    await ensureDir(path.join(dir.dir, "my-trpc-course"));
-
-    await expect(
-      syncRepoToCourse({
-        id: course.id,
-        reposDir: dir.dir,
-      })
-    ).rejects.toThrow("Repo my-trpc-course does not have a _map.json file");
+it('Should fail if the course repo does not have a "_map.json" file', async () => {
+  const course = await serverFunctions.courses.create({
+    title: "My tRPC Course",
+    repoSlug: "my-trpc-course",
   });
 
-  it("Should fail if the exercise does not exist in the database", async () => {
-    const course = await serverFunctions.courses.create({
-      title: "My tRPC Course",
-      repoSlug: "my-trpc-course",
-    });
+  await ensureDir(path.join(testPaths?.reposDir!, "my-trpc-course"));
 
-    await using dir = await createTmpDir();
+  await expect(
+    syncRepoToExercisePlayground({
+      id: course.id,
+    })
+  ).rejects.toThrow("Repo my-trpc-course does not have a _map.json file");
+});
 
-    await ensureDir(path.join(dir.dir, "my-trpc-course"));
-
-    await writeFile(
-      path.join(dir.dir, "my-trpc-course", "_map.json"),
-      JSON.stringify({
-        "exercise-id": "exercise-file.ts",
-      })
-    );
-
-    await expect(
-      syncRepoToCourse({
-        id: course.id,
-        reposDir: dir.dir,
-      })
-    ).rejects.toThrow("Exercise with id exercise-id does not exist");
+it("Should fail if the exercise does not exist in the database", async () => {
+  const course = await serverFunctions.courses.create({
+    title: "My tRPC Course",
+    repoSlug: "my-trpc-course",
   });
 
-  it("Should fail if the exercise mentioned in _map.json cannot be found on disk", async () => {
-    const course = await serverFunctions.courses.create({
-      title: "My tRPC Course",
-      repoSlug: "my-trpc-course",
-    });
+  await ensureDir(path.join(testPaths?.reposDir!, "my-trpc-course"));
 
-    const section = await serverFunctions.sections.create({
-      title: "My Section",
-      courseId: course.id,
-    });
+  await writeFile(
+    path.join(testPaths?.reposDir!, "my-trpc-course", "_map.json"),
+    JSON.stringify({
+      "exercise-id": "exercise-file.ts",
+    })
+  );
 
-    const exercise = await serverFunctions.exercises.create({
-      title: "My Exercise",
-      sectionId: section.id,
-    });
+  await expect(
+    syncRepoToExercisePlayground({
+      id: course.id,
+    })
+  ).rejects.toThrow("Exercise with id exercise-id does not exist");
+});
 
-    await using dir = await createTmpDir();
-
-    await ensureDir(path.join(dir.dir, "my-trpc-course"));
-
-    await writeFile(
-      path.join(dir.dir, "my-trpc-course", "_map.json"),
-      JSON.stringify({
-        [exercise.id]: "001-my-section/001-my-exercise",
-      })
-    );
-
-    await expect(
-      syncRepoToCourse({
-        id: course.id,
-        reposDir: dir.dir,
-      })
-    ).rejects.toThrow(
-      `Exercise with id ${exercise.id} does not exist on disk at 001-my-section/001-my-exercise`
-    );
+it("Should fail if the exercise mentioned in _map.json cannot be found on disk", async () => {
+  const course = await serverFunctions.courses.create({
+    title: "My tRPC Course",
+    repoSlug: "my-trpc-course",
   });
+
+  const section = await serverFunctions.sections.create({
+    title: "My Section",
+    courseId: course.id,
+  });
+
+  const exercise = await serverFunctions.exercises.create({
+    title: "My Exercise",
+    sectionId: section.id,
+  });
+
+  await ensureDir(path.join(testPaths?.reposDir!, "my-trpc-course"));
+
+  await writeFile(
+    path.join(testPaths?.reposDir!, "my-trpc-course", "_map.json"),
+    JSON.stringify({
+      [exercise.id]: "001-my-section/001-my-exercise",
+    })
+  );
+
+  await expect(
+    syncRepoToExercisePlayground({
+      id: course.id,
+    })
+  ).rejects.toThrow(
+    `Exercise with id ${exercise.id} does not exist on disk at 001-my-section/001-my-exercise`
+  );
+});
+
+it("Should replace all files in the exercise playground with the files from the course repo", async () => {
+  const course = await serverFunctions.courses.create({
+    title: "My tRPC Course",
+    repoSlug: "my-trpc-course",
+  });
+
+  const section = await serverFunctions.sections.create({
+    title: "My Section",
+    courseId: course.id,
+  });
+
+  const exercise = await serverFunctions.exercises.create({
+    title: "My Exercise",
+    sectionId: section.id,
+  });
+
+  await serverFunctions.exercises.createExplainerFile({
+    id: exercise.id,
+  });
+
+  await ensureDir(path.join(testPaths?.reposDir!, "my-trpc-course"));
+
+  await writeFile(
+    path.join(testPaths?.reposDir!, "my-trpc-course", "_map.json"),
+    JSON.stringify({
+      [exercise.id]: "001-my-section/001-my-exercise",
+    })
+  );
+
+  await ensureDir(
+    path.join(
+      testPaths?.reposDir!,
+      "my-trpc-course",
+      "001-my-section",
+      "001-my-exercise"
+    )
+  );
+
+  await writeFile(
+    path.join(
+      testPaths?.reposDir!,
+      "my-trpc-course",
+      "001-my-section",
+      "001-my-exercise",
+      "exercise-file.explainer.ts"
+    ),
+    "console.log('Hello, World!');"
+  );
+
+  await syncRepoToExercisePlayground({
+    id: course.id,
+  });
+
+  console.log(
+    await readdir(path.join(testPaths?.exercisePlaygroundPath!, exercise.id))
+  );
+
+  const files = await serverFunctions.exercises
+    .get({
+      id: exercise.id,
+    })
+    .then((exercise) => exercise.files);
+
+  expect(files).toHaveLength(1);
+  expect(files[0]!.path).toBe("exercise-file.explainer.ts");
+  expect(files[0]!.content).toBe("console.log('Hello, World!');");
 });

@@ -1,14 +1,15 @@
-import { access, readFile } from "fs/promises";
+import { rimraf, type AbsolutePath } from "@total-typescript/shared";
+import { access, cp, readFile } from "fs/promises";
 import path from "path";
 import { z } from "zod";
+import { getExerciseDir } from "~/vscode-utils";
 import { createServerFunction } from "./utils";
 
-export const syncRepoToCourse = createServerFunction(
+export const syncRepoToExercisePlayground = createServerFunction(
   z.object({
     id: z.string().uuid(),
-    reposDir: z.string(),
   }),
-  async ({ input, p }) => {
+  async ({ input, p, paths }) => {
     const course = await p.course.findUniqueOrThrow({
       where: {
         id: input.id,
@@ -19,7 +20,7 @@ export const syncRepoToCourse = createServerFunction(
       throw new Error("Course does not have a repo slug");
     }
 
-    const coursePath = path.join(input.reposDir, course.repoSlug);
+    const coursePath = path.join(paths.reposDir, course.repoSlug);
 
     const exists = await access(coursePath).then(
       () => true,
@@ -65,7 +66,10 @@ export const syncRepoToCourse = createServerFunction(
         );
       }
 
-      const locationOnDisk = path.join(coursePath, map[exerciseId]!);
+      const locationOnDisk = path.join(
+        coursePath,
+        map[exerciseId]!
+      ) as AbsolutePath;
 
       if (
         !(await access(locationOnDisk).then(
@@ -77,6 +81,15 @@ export const syncRepoToCourse = createServerFunction(
           `Exercise with id ${exerciseId} does not exist on disk at ${map[exerciseId]!}`
         );
       }
+
+      const exerciseDir = getExerciseDir(exercise.id);
+
+      await rimraf(exerciseDir);
+
+      await cp(locationOnDisk, exerciseDir, {
+        recursive: true,
+        force: true,
+      });
     }
   }
 );

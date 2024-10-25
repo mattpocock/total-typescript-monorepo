@@ -28,6 +28,7 @@ import {
   printCourseToRepoUrl,
   reorderSectionsUrl,
   sectionUrl,
+  syncRepoToExercisePlaygroundUrl,
 } from "~/routes";
 import {
   getStatusFromExercise,
@@ -225,6 +226,17 @@ export default function Course() {
           >
             <PlusIcon />
           </Link>
+        </Button>
+
+        <Button
+          onClick={() => {
+            printToRepoFetcher.submit(null, {
+              action: syncRepoToExercisePlaygroundUrl(course.id),
+              method: "post",
+            });
+          }}
+        >
+          Sync Repo To Playground
         </Button>
         <Button
           onClick={() => {

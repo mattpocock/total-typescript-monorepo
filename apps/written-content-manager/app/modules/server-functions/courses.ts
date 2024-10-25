@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createServerFunction } from "./utils";
 import { printCourseToRepo } from "./print-course-to-repo";
+import { syncRepoToExercisePlayground } from "./sync-repo-to-exercise-playground";
 
 export const courses = {
   create: createServerFunction(
@@ -121,4 +122,5 @@ export const courses = {
     }
   ),
   printToRepo: printCourseToRepo,
+  syncRepoToExercisePlayground: syncRepoToExercisePlayground,
 };

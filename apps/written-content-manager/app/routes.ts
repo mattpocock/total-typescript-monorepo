@@ -30,6 +30,10 @@ export const printCourseToRepoUrl = (courseId: string) => {
   return `/courses/${courseId}/print-to-repo`;
 };
 
+export const syncRepoToExercisePlaygroundUrl = (courseId: string) => {
+  return `/courses/${courseId}/sync-repo-to-exercise-playground`;
+};
+
 export const reorderSectionsUrl = (courseId: string) => {
   return `/courses/${courseId}/reorder`;
 };
