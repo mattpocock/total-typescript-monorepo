@@ -146,6 +146,8 @@ export const exercises = {
       await fs.writeFile(explainerFile, firstLine);
 
       await fs.openInVSCode(explainerFile);
+
+      return { filePath: explainerFile };
     }
   ),
 

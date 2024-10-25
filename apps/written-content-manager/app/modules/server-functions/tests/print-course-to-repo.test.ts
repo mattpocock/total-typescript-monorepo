@@ -270,6 +270,56 @@ describe("print-course-to-repo", () => {
     });
   });
 
+  it("Should not duplicate 00X prefixes in the files", async () => {
+    await mockFS(async (fs) => {
+      const course = await serverFunctions.courses.create({
+        title: "My tRPC Course",
+        repoSlug: "my-trpc-course",
+      });
+
+      const section1 = await serverFunctions.sections.create({
+        courseId: course.id,
+        title: "Section 1",
+      });
+
+      const exercise1 = await serverFunctions.exercises.create({
+        sectionId: section1.id,
+        title: "Exercise 1",
+      });
+
+      const { filePath } = await serverFunctions.exercises.createExplainerFile({
+        id: exercise1.id,
+      });
+
+      const dir = path.dirname(filePath);
+
+      // Create a file with a 00X prefix
+      const newFilePath = path.join(dir, "010-exercise-1.explainer.ts");
+
+      await fs.rimraf(filePath);
+      await fs.writeFile(newFilePath, "");
+
+      await fs.ensureDir(
+        path.join(TOTAL_TYPESCRIPT_REPOS_FOLDER, "my-trpc-course", "src")
+      );
+
+      await printCourseToRepo({
+        id: course.id,
+      });
+
+      const exercise1Path = path.join(
+        TOTAL_TYPESCRIPT_REPOS_FOLDER,
+        "my-trpc-course",
+        "src",
+        "001-section-1",
+        "001-exercise-1",
+        "001-exercise-1.explainer.ts"
+      );
+
+      expect(await fs.readFile(exercise1Path, "utf-8")).toEqual("");
+    });
+  });
+
   it("Should update the course lastPrintedToRepoAt date", async () => {
     await mockFS(async (fs) => {
       const course = await serverFunctions.courses.create({
