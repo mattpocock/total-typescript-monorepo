@@ -5,3 +5,4 @@ node_modules
 .env
 public/uploads
 coverage
+vite.config.ts.*
