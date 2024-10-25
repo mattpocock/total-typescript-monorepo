@@ -1,12 +1,12 @@
-import { mkdtemp, rm, writeFile } from "fs/promises";
+import { ensureDir } from "@total-typescript/shared";
+import { writeFile } from "fs/promises";
 import path from "path";
 import { describe, expect, it } from "vitest";
 import { serverFunctions } from "../server-functions";
 import { syncRepoToCourse } from "../sync-repo-to-course";
-import { ensureDir } from "@total-typescript/shared";
 import { createTmpDir } from "./test-utils";
 
-describe("sync-course-to-repo", () => {
+describe("sync-repo-to-course", () => {
   it("Should fail if the course does not have a repo slug", async () => {
     const course = await serverFunctions.courses.create({
       title: "My tRPC Course",

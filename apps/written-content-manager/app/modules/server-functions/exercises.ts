@@ -7,7 +7,7 @@ import {
 } from "~/vscode-utils";
 import path from "node:path";
 import { sanitizeForVSCodeFilename } from "~/utils";
-import type { AbsolutePath } from "@total-typescript/shared";
+import { ensureDir, type AbsolutePath } from "@total-typescript/shared";
 import { editExerciseUrl } from "~/routes";
 
 export const exercises = {
@@ -67,7 +67,7 @@ export const exercises = {
 
   get: createServerFunction(
     z.object({ id: z.string().uuid() }),
-    async ({ input, p, fs }) => {
+    async ({ input, p, fs, paths }) => {
       const exercise = await p.exercise.findUniqueOrThrow({
         where: {
           id: input.id,
@@ -116,7 +116,7 @@ export const exercises = {
 
   createExplainerFile: createServerFunction(
     z.object({ id: z.string().uuid() }),
-    async ({ input, p, fs }) => {
+    async ({ input, p, fs, paths }) => {
       const files = await getVSCodeFilesForExercise(input.id);
 
       if (files.length > 0) {
@@ -126,6 +126,8 @@ export const exercises = {
       const path = await import("node:path");
 
       const exercisePath = getExerciseDir(input.id);
+
+      await ensureDir(exercisePath);
 
       const exercise = await p.exercise.findUniqueOrThrow({
         where: {

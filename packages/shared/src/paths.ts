@@ -1,6 +1,7 @@
 import { err, ok, Result } from "neverthrow";
 import type { AnyPath } from "./types.js";
 import { execAsync } from "./utils.js";
+import { access, rm } from "fs/promises";
 
 export class ExerciseNotFoundError {
   message: string;
@@ -12,7 +13,7 @@ export class ExerciseNotFoundError {
 const regex = /^\d{1,}/;
 
 export const parseExercisePath = <T extends AnyPath>(
-  fullPathname: T,
+  fullPathname: T
 ): Result<
   {
     resolvedPath: T;
@@ -37,5 +38,19 @@ export const parseExercisePath = <T extends AnyPath>(
 };
 
 export const ensureDir = (dir: string) => {
-  return execAsync(`mkdir -p "${dir}"`);
+  return execAsync(`mkdir -p "${dir}"`).then((r) => r._unsafeUnwrap());
+};
+
+export const exists = (dir: string) => {
+  return access(dir).then(
+    () => true,
+    () => false
+  );
+};
+
+export const rimraf = (dir: string) => {
+  return rm(dir, {
+    recursive: true,
+    force: true,
+  });
 };

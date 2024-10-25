@@ -1,16 +1,17 @@
-import { TOTAL_TYPESCRIPT_REPOS_FOLDER } from "@total-typescript/shared";
 import path from "path";
 import { z } from "zod";
 import { sanitizeForVSCodeFilename } from "~/utils";
 import { getVSCodeFilesForExercise } from "~/vscode-utils";
 import { createServerFunction } from "./utils";
 import { getExerciseSuffix } from "./get-exercise-suffix";
+import { ensureDir, exists, rimraf } from "@total-typescript/shared";
+import { readFile, writeFile } from "fs/promises";
 
 export const printCourseToRepo = createServerFunction(
   z.object({
     id: z.string().uuid(),
   }),
-  async ({ input, p, fs }) => {
+  async ({ input, p, paths }) => {
     const course = await p.course.findUniqueOrThrow({
       where: {
         id: input.id,
@@ -47,14 +48,11 @@ export const printCourseToRepo = createServerFunction(
       throw new Error("Course does not have a repo slug");
     }
 
-    const coursePath = path.join(
-      TOTAL_TYPESCRIPT_REPOS_FOLDER,
-      course.repoSlug
-    );
+    const coursePath = path.join(paths.reposDir, course.repoSlug);
 
-    const exists = await fs.exists(coursePath);
+    const courseExists = await exists(coursePath);
 
-    if (!exists) {
+    if (!courseExists) {
       throw new Error(
         `Repo ${course.repoSlug} does not exist in total-typescript folder`
       );
@@ -62,7 +60,7 @@ export const printCourseToRepo = createServerFunction(
 
     const srcPath = path.join(coursePath, "src");
 
-    await fs.rimraf(srcPath);
+    await rimraf(srcPath);
 
     const exerciseMap: Record<string, string> = {};
 
@@ -79,7 +77,7 @@ export const printCourseToRepo = createServerFunction(
 
       const sectionPath = path.join(srcPath, sectionName);
 
-      await fs.ensureDir(sectionPath);
+      await ensureDir(sectionPath);
 
       for (
         let exerciseIndex = 0;
@@ -92,7 +90,7 @@ export const printCourseToRepo = createServerFunction(
 
         const exercisePath = path.join(sectionPath, exerciseName);
 
-        await fs.ensureDir(exercisePath);
+        await ensureDir(exercisePath);
 
         exerciseMap[exercise.id] = path.join(sectionName, exerciseName);
 
@@ -104,7 +102,7 @@ export const printCourseToRepo = createServerFunction(
           /* v8 ignore next */
           if (!suffix) continue;
 
-          const contents = await fs.readFile(file, "utf-8");
+          const contents = await readFile(file, "utf-8");
 
           const filePath = path.join(exercisePath, `${exerciseName}.${suffix}`);
 
@@ -114,14 +112,14 @@ export const printCourseToRepo = createServerFunction(
             delete lines[0];
           }
 
-          await fs.writeFile(filePath, lines.join("\n").trim());
+          await writeFile(filePath, lines.join("\n").trim());
         }
 
         totalExerciseCount++;
       }
     }
 
-    await fs.writeFile(
+    await writeFile(
       path.join(coursePath, "_map.json"),
       JSON.stringify(exerciseMap)
     );

@@ -10,7 +10,7 @@ export const posts = {
     z.object({
       id: z.string().uuid(),
     }),
-    async ({ input, p, fs }) => {
+    async ({ input, p, fs, paths }) => {
       const files = await getVSCodeFilesForPost(input.id);
 
       const post = await p.socialPost.findUniqueOrThrow({
@@ -171,10 +171,10 @@ export const posts = {
 
   viewInVSCode: createServerFunction(
     z.object({ id: z.string().uuid() }),
-    async ({ input, p, fs }) => {
-      const postsDir = getPostsDir(input.id!);
+    async ({ input, p, fs, paths }) => {
+      const postsDir = getPostsDir(input.id);
 
-      const files = await getVSCodeFilesForPost(input.id!);
+      const files = await getVSCodeFilesForPost(input.id);
       await fs.ensureDir(postsDir);
 
       if (!files[0]) {

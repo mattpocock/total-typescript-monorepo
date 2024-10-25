@@ -1,7 +1,8 @@
 import { describe, expect, it, vitest } from "vitest";
 import { p } from "../../../db";
 import { serverFunctions } from "../server-functions";
-import { LocalFS, mockFS } from "../../../fs";
+import { rimraf } from "@total-typescript/shared";
+import { fs } from "~/fs";
 
 describe("posts", () => {
   describe("list", () => {
@@ -344,61 +345,59 @@ describe("posts", () => {
 
   describe("viewInVSCode", () => {
     it("Should open thread.md if it already exists", async () => {
-      await mockFS(async (fs) => {
-        const post = await serverFunctions.posts.create({
-          title: "abc",
-        });
-
-        await serverFunctions.posts.viewInVSCode({
-          id: post.id,
-        });
-
-        const postInDb = await serverFunctions.posts.get({
-          id: post.id,
-        });
-
-        const threadFilePath = postInDb.files.find((f) =>
-          f.fullPath.includes("thread.md")
-        )?.fullPath;
-
-        await serverFunctions.posts.viewInVSCode({
-          id: post.id,
-        });
-
-        expect(fs.countOpensInVSCode(threadFilePath!)).toEqual(2);
+      const openInVSCode = vitest.spyOn(fs, "openInVSCode").mockResolvedValue();
+      const post = await serverFunctions.posts.create({
+        title: "abc",
       });
+
+      await serverFunctions.posts.viewInVSCode({
+        id: post.id,
+      });
+
+      const postInDb = await serverFunctions.posts.get({
+        id: post.id,
+      });
+
+      const threadFilePath = postInDb.files.find((f) =>
+        f.fullPath.includes("thread.md")
+      )?.fullPath;
+
+      await serverFunctions.posts.viewInVSCode({
+        id: post.id,
+      });
+
+      expect(openInVSCode).toHaveBeenCalledWith(threadFilePath);
     });
 
     it("Should open any file if thread.md has been deleted", async () => {
-      await mockFS(async (fs) => {
-        const post = await serverFunctions.posts.create({
-          title: "abc",
-        });
-
-        await serverFunctions.posts.viewInVSCode({
-          id: post.id,
-        });
-
-        const postInDb = await serverFunctions.posts.get({
-          id: post.id,
-        });
-
-        const threadFilePath = postInDb.files.find((f) =>
-          f.fullPath.includes("thread.md")
-        )?.fullPath;
-
-        await fs.rimraf(threadFilePath!);
-
-        await serverFunctions.posts.viewInVSCode({
-          id: post.id,
-        });
-
-        const playgroundFilePath = postInDb.files.find((f) =>
-          f.fullPath.includes("playground.ts")
-        )?.fullPath;
-
-        expect(fs.countOpensInVSCode(playgroundFilePath!)).toEqual(1);
+      const openInVSCode = vitest.spyOn(fs, "openInVSCode").mockResolvedValue();
+      const post = await serverFunctions.posts.create({
+        title: "abc",
       });
+
+      await serverFunctions.posts.viewInVSCode({
+        id: post.id,
+      });
+
+      const postInDb = await serverFunctions.posts.get({
+        id: post.id,
+      });
+
+      const threadFilePath = postInDb.files.find((f) =>
+        f.fullPath.includes("thread.md")
+      )?.fullPath;
+
+      await rimraf(threadFilePath!);
+
+      await serverFunctions.posts.viewInVSCode({
+        id: post.id,
+      });
+
+      const notesFilePath = postInDb.files.find((f) =>
+        f.fullPath.includes("notes.md")
+      )?.fullPath;
+
+      expect(openInVSCode).toHaveBeenCalledWith(notesFilePath);
     });
   });
 

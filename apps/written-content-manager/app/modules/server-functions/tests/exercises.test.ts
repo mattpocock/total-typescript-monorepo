@@ -1,6 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vitest } from "vitest";
 import { p } from "../../../db";
 import { serverFunctions } from "../server-functions";
+import { createTmpDir } from "./test-utils";
+import { fs } from "~/fs";
 
 describe("exercises", () => {
   describe("create", () => {
@@ -115,7 +117,9 @@ describe("exercises", () => {
       });
 
       expect(
-        await serverFunctions.exercises.get({ id: exercise.id })
+        await serverFunctions.exercises.get({
+          id: exercise.id,
+        })
       ).toMatchObject({
         id: exercise.id,
         title: "abc",
@@ -136,6 +140,8 @@ describe("exercises", () => {
         sectionId: section.id,
         title: "abc",
       });
+
+      vitest.spyOn(fs, "openInVSCode").mockResolvedValue();
 
       await serverFunctions.exercises.createExplainerFile({
         id: exercise.id,
@@ -165,6 +171,8 @@ describe("exercises", () => {
         title: "abc",
       });
 
+      vitest.spyOn(fs, "openInVSCode").mockResolvedValue();
+
       await serverFunctions.exercises.createExplainerFile({
         id: exercise.id,
       });
@@ -190,6 +198,8 @@ describe("exercises", () => {
         sectionId: section.id,
         title: "abc",
       });
+
+      vitest.spyOn(fs, "openInVSCode").mockResolvedValue();
 
       await serverFunctions.exercises.createExplainerFile({
         id: exercise.id,

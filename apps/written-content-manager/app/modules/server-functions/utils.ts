@@ -1,12 +1,28 @@
 import type { PrismaClient } from "@prisma/client";
+import { TOTAL_TYPESCRIPT_REPOS_FOLDER } from "@total-typescript/shared";
 import { z } from "zod";
+import {
+  getExercisePlaygroundRootPath,
+  getPostsPlaygroundRootPath,
+} from "~/vscode-utils";
 import { p } from "../../db";
-import { getFS, type MyFS } from "../../fs";
+import { fs } from "../../fs";
+
+type Paths = {
+  exercisePlaygroundPath: string;
+  postsPlaygroundPath: string;
+  reposDir: string;
+};
+
+declare global {
+  var testPaths: Paths | undefined;
+}
 
 type ServerFunctionContext<TInput> = {
   input: TInput;
   p: PrismaClient;
-  fs: MyFS;
+  fs: typeof fs;
+  paths: Paths;
 };
 
 export const createServerFunction =
@@ -14,7 +30,7 @@ export const createServerFunction =
     schema: TSchema,
     fn: (ctx: ServerFunctionContext<z.infer<TSchema>>) => Promise<TResult>
   ) =>
-  (
+  async (
     ...args: {} extends z.input<TSchema>
       ? [unknownInput?: z.input<TSchema>]
       : [unknownInput: z.input<TSchema>]
@@ -22,9 +38,18 @@ export const createServerFunction =
     const unknownInput: any = args[0];
     const input = schema.strict().parse(unknownInput ?? {});
 
-    const fs = getFS();
-
-    return fn({ input, p: p, fs });
+    return await fn({
+      input,
+      p,
+      fs,
+      paths: {
+        exercisePlaygroundPath: getExercisePlaygroundRootPath(),
+        postsPlaygroundPath: getPostsPlaygroundRootPath(),
+        reposDir:
+          /* v8 ignore next */
+          globalThis.testPaths?.reposDir ?? TOTAL_TYPESCRIPT_REPOS_FOLDER,
+      },
+    });
   };
 
 export const linkExistingPostToCollection = createServerFunction(

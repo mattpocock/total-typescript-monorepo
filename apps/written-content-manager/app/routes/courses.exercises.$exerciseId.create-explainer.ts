@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { type AbsolutePath } from "@total-typescript/shared";
 import { p } from "~/db";
-import { getFS } from "~/fs";
+import { fs } from "~/fs";
 import { editExerciseUrl } from "~/routes";
 import { sanitizeForVSCodeFilename } from "~/utils";
 import { getExerciseDir, getVSCodeFilesForExercise } from "~/vscode-utils";
@@ -16,8 +16,6 @@ export const action = async ({ params }: ActionFunctionArgs) => {
   }
 
   const path = await import("node:path");
-
-  const fs = getFS();
 
   const exercisePath = getExerciseDir(exerciseId!);
 
