@@ -299,6 +299,9 @@ importers:
       chokidar:
         specifier: ^3.5.3
         version: 3.6.0
+      fastify:
+        specifier: ^5.0.0
+        version: 5.0.0
       fastq:
         specifier: ^1.17.1
         version: 1.17.1

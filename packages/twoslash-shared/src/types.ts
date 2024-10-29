@@ -45,7 +45,7 @@ export const htmlRendererFromFileUrlSchema = z.intersection(
     uri: z.string(),
     cacheBuster: z.string().optional(),
   }),
-  renderTypeDiscriminatedUnionSchema,
+  renderTypeDiscriminatedUnionSchema
 );
 
 export const htmlRendererFromCodeSchema = z.object({

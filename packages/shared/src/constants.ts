@@ -14,10 +14,7 @@ export const SCRIPTKIT_VSCODE_LOCATION = path.join(
   "vscode.json"
 ) as AbsolutePath;
 
-export const SCRIPTKIT_LOCATION = path.join(
-  os.homedir(),
-  ".kenv"
-) as AbsolutePath;
+const SCRIPTKIT_LOCATION = path.join(os.homedir(), ".kenv") as AbsolutePath;
 
 export const SCRIPTKIT_SCRIPTS_LOCATION = path.join(
   SCRIPTKIT_LOCATION,

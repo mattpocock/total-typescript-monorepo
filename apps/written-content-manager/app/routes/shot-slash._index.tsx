@@ -2,7 +2,6 @@
 
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { useLoaderData, useSearchParams, useSubmit } from "@remix-run/react";
-import { getActiveEditorFilePath } from "@total-typescript/shared";
 import {
   getCodeSamplesFromFile,
   IMAGE_SERVER_PORT,
@@ -29,10 +28,9 @@ export const loader = async (args: LoaderFunctionArgs) => {
   let uri = url.searchParams.get("uri");
 
   if (!uri) {
-    const activeFilePath = (await getActiveEditorFilePath()).match(
-      (t) => t,
-      () => null
-    );
+    const activeFilePath = await fetch(
+      `http://localhost:${IMAGE_SERVER_PORT}/active-path`
+    ).then((res) => res.text());
 
     if (!activeFilePath) {
       return {
@@ -53,6 +51,8 @@ export const loader = async (args: LoaderFunctionArgs) => {
       return hash;
     }
   );
+
+  console.log(snippetHashes);
 
   const fileContentsHash = createHash("md5").update(fileContents).digest("hex");
 

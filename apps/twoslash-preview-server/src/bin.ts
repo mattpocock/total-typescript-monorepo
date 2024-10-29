@@ -1,12 +1,20 @@
+import type { AbsolutePath } from "@total-typescript/shared";
 import { runImageServer } from "./run-image-server.js";
 import { runWebsocketServer } from "./run-websocket-server.js";
+import { EventEmitter } from "node:events";
 
-runWebsocketServer().catch((e) => {
+let currentPath: AbsolutePath | undefined;
+
+runImageServer(() => {
+  return currentPath;
+}).catch((e) => {
   console.error(e);
   process.exit(1);
 });
 
-runImageServer().catch((e) => {
+runWebsocketServer((path) => {
+  currentPath = path;
+}).catch((e) => {
   console.error(e);
   process.exit(1);
 });

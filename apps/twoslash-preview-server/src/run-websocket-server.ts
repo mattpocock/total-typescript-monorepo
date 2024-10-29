@@ -1,7 +1,4 @@
-import {
-  type AbsolutePath,
-  getActiveEditorFilePath,
-} from "@total-typescript/shared";
+import { type AbsolutePath } from "@total-typescript/shared";
 import {
   type WSEvent,
   WEBSOCKET_PORT,
@@ -73,32 +70,21 @@ server.on("connection", (client) => {
   });
 });
 
-const CONTENT_PATH = path.resolve(
-  process.cwd(),
-  `../exercise-playground/**/*.md`
-);
 const ROOT = path.resolve(process.cwd(), "../exercise-playground");
 
-const reportFilePath = (filePath: AbsolutePath) => {
-  console.log("File changed: " + path.relative(ROOT, filePath));
+const CONTENT_PATH = path.resolve(ROOT, `**/*.md`);
 
-  updateFilePath(filePath);
-};
+export const runWebsocketServer = async (
+  reportFilePathChanged: (path: AbsolutePath) => void
+) => {
+  const reportFilePath = (filePath: AbsolutePath) => {
+    console.log("File changed: " + path.relative(ROOT, filePath));
 
-export const runWebsocketServer = async () => {
-  await getActiveEditorFilePath().match(
-    (filePath) => {
-      if (filePath.startsWith(ROOT) && filePath.endsWith(".md")) {
-        reportFilePath(SHIKI_TEST_LOCATION as AbsolutePath);
-      } else {
-        reportFilePath(SHIKI_TEST_LOCATION as AbsolutePath);
-      }
-    },
-    (e) => {
-      console.error(e);
-      process.exit(1);
-    }
-  );
+    updateFilePath(filePath);
+    reportFilePathChanged(filePath);
+  };
+
+  reportFilePath(SHIKI_TEST_LOCATION as AbsolutePath);
 
   chokidar
     .watch([CONTENT_PATH, SHIKI_TEST_LOCATION], {
