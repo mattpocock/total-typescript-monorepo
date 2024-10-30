@@ -2,7 +2,7 @@ import { openai } from "@ai-sdk/openai";
 import { generateText, tool } from "ai";
 import { z } from "zod";
 
-const country = `Djiboutia`;
+const country = `Taiwan`;
 
 const example = await generateText({
   model: openai("gpt-4o-mini"),
@@ -11,18 +11,16 @@ const example = await generateText({
     answer: tool({
       description: "A tool for providing the final answer.",
       parameters: z.object({
+        country: z.string().describe("The country to find the capital of."),
         capital: z
           .string()
           .or(z.literal("unknown"))
           .describe(
-            "The capital of the given country. If unknown, use 'unknown'.",
+            "The capital of the given country. If unknown, use 'unknown'."
           ),
         confidence: z
-          .number()
-          .int()
-          .describe(
-            "A number between 0 and 100 representing how confident you are with the final result.",
-          ),
+          .enum(["high", "medium", "low"])
+          .describe("The confidence level of the answer."),
       }),
     }),
   },
