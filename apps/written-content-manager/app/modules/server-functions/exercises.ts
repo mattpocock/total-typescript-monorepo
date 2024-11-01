@@ -29,6 +29,7 @@ export const exercises = {
     z.object({
       sectionId: z.string().uuid(),
       title: z.string(),
+      learningGoal: z.string().optional(),
     }),
     async ({ input, p, fs }) => {
       const exerciseWithHighestOrder = await p.exercise.findFirst({
@@ -49,6 +50,7 @@ export const exercises = {
             : 0,
           title: input.title,
           sectionId: input.sectionId,
+          learningGoal: input.learningGoal,
         },
       });
 

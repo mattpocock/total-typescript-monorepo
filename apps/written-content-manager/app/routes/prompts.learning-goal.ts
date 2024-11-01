@@ -14,46 +14,10 @@ const schema = z.object({
 export const action = createFormDataAction(async (json) => {
   const { courseTitle, sectionTitle, title } = schema.parse(json);
 
-  const exercises = await p.exercise.findMany({
-    where: {
-      learningGoal: {
-        not: "",
-      },
-      title: {
-        not: "",
-      },
-      AND: {
-        title: {
-          not: title.trim(),
-        },
-      },
-      deleted: false,
-    },
-    orderBy: {
-      updatedAt: "desc",
-    },
-    take: 10,
-    select: {
-      title: true,
-      learningGoal: true,
-      section: {
-        select: {
-          title: true,
-          course: {
-            select: {
-              title: true,
-            },
-          },
-        },
-      },
-    },
-  });
-
   const result = await getLearningGoal({
     title,
     courseTitle,
     sectionTitle,
-    exercises,
   });
 
   return result;

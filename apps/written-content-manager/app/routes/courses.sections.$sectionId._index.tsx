@@ -14,9 +14,11 @@ import {
   MicIcon,
   PlusIcon,
 } from "lucide-react";
+import { useState } from "react";
 import {
   FormButtons,
   FormContent,
+  LearningGoalInput,
   TableDescription,
   TitleArea,
   VSCodeIcon,
@@ -45,6 +47,7 @@ import {
   courseUrl,
   deleteExerciseUrl,
   editExerciseUrl,
+  generateNextExerciseUrl,
   reorderExercisesUrl,
   sectionUrl,
 } from "~/routes";
@@ -78,6 +81,8 @@ export default function Section() {
   const [search, setSearch] = useSearchParams();
 
   const vscode = useVSCode();
+
+  const generateNextExerciseFetcher = useFetcher();
 
   return (
     <div className="space-y-8 flex-col">
@@ -214,47 +219,84 @@ export default function Section() {
           })}
         </TableBody>
       </Table>
-      <Button asChild>
-        <Link to={addExerciseDialogUrl(section.id)} prefetch="intent">
-          <PlusIcon />
-        </Link>
-      </Button>
-      <Dialog
+      <div className="flex items-center space-x-4">
+        <Button asChild>
+          <Link to={addExerciseDialogUrl(section.id)} prefetch="intent">
+            <PlusIcon />
+          </Link>
+        </Button>
+        <Button
+          onClick={() => {
+            generateNextExerciseFetcher.submit(null, {
+              method: "post",
+              action: generateNextExerciseUrl(section.id),
+            });
+          }}
+        >
+          Generate Next Exercise
+        </Button>
+      </div>
+      <AddExerciseDialog
         open={search.has("add")}
-        onOpenChange={(o) => {
-          if (!o) {
-            navigate(sectionUrl(section.id));
-          }
-        }}
-      >
-        <DialogContent>
-          <DialogHeader>Add Exercise</DialogHeader>
-          <DialogDescription>
-            <Form
-              method="POST"
-              action={addExerciseUrl(section.id, sectionUrl(section.id))}
-            >
-              <FormContent>
-                <Input
-                  name="title"
-                  required
-                  autoFocus
-                  placeholder="Title"
-                  className="col-span-full"
-                />
-                <Input
-                  name="learningGoal"
-                  placeholder="Learning Goal"
-                  className="col-span-full"
-                />
-                <FormButtons>
-                  <Button type="submit">Save</Button>
-                </FormButtons>
-              </FormContent>
-            </Form>
-          </DialogDescription>
-        </DialogContent>
-      </Dialog>
+        sectionId={section.id}
+        section={section}
+      />
     </div>
   );
 }
+
+const AddExerciseDialog = (props: {
+  sectionId: string;
+  open: boolean;
+  section: {
+    title: string;
+    course: { title: string };
+  };
+}) => {
+  const navigate = useNavigate();
+  const [exerciseTitle, setExerciseTitle] = useState("");
+  return (
+    <Dialog
+      open={props.open}
+      onOpenChange={(o) => {
+        if (!o) {
+          navigate(sectionUrl(props.sectionId));
+        }
+      }}
+    >
+      <DialogContent>
+        <DialogHeader>Add Exercise</DialogHeader>
+        <DialogDescription>
+          <Form
+            method="POST"
+            action={addExerciseUrl(
+              props.sectionId,
+              sectionUrl(props.sectionId)
+            )}
+          >
+            <FormContent>
+              <Input
+                name="title"
+                required
+                autoFocus
+                placeholder="Title"
+                className="col-span-full"
+                onChange={(e) => setExerciseTitle(e.target.value)}
+              />
+              <LearningGoalInput
+                defaultValue={""}
+                exercise={{
+                  title: exerciseTitle,
+                  section: props.section,
+                }}
+              />
+              <FormButtons>
+                <Button type="submit">Save</Button>
+              </FormButtons>
+            </FormContent>
+          </Form>
+        </DialogDescription>
+      </DialogContent>
+    </Dialog>
+  );
+};

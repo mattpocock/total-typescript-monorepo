@@ -54,6 +54,10 @@ export const editSectionUrl = (sectionId: string, redirectTo: string) => {
   return `/courses/sections/${sectionId}/edit?${new URLSearchParams({ redirectTo })}`;
 };
 
+export const generateNextExerciseUrl = (sectionId: string) => {
+  return `/courses/sections/${sectionId}/generate-next-exercise`;
+};
+
 // export const exerciseUrl = (exerciseId: string) => {
 //   return `/courses/exercises/${exerciseId}`;
 // };

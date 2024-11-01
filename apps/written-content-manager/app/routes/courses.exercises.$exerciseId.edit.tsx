@@ -14,6 +14,7 @@ import { useOnPageActions } from "~/command-palette";
 import {
   FormButtons,
   FormContent,
+  LearningGoalInput,
   PageContent,
   TitleArea,
   VSCodeIcon,
@@ -295,18 +296,6 @@ export default function Exercise() {
     }, [prevExercise, nextExercise])
   );
 
-  const learningGoalFetcher = useFetcher<{ learningGoal: string }>();
-
-  const learningGoalRef = useRef<HTMLInputElement | null>(null);
-
-  useEffect(() => {
-    if (learningGoalFetcher.data?.learningGoal) {
-      learningGoalRef.current!.value = learningGoalFetcher.data.learningGoal;
-
-      handleChange();
-    }
-  }, [learningGoalFetcher.data?.learningGoal]);
-
   return (
     <PageContent>
       <TitleArea
@@ -350,36 +339,11 @@ export default function Exercise() {
             autoFocus
             onChange={handleChange}
           />
-          <div className="col-span-full flex">
-            <Input
-              ref={learningGoalRef}
-              className="flex-grow border-r-0 rounded-r-none"
-              defaultValue={exercise.learningGoal ?? ""}
-              name="learningGoal"
-              placeholder="Learning Goal"
-              onChange={handleChange}
-            ></Input>
-            <Button
-              variant="outline"
-              className="rounded-l-none border-l-0"
-              type="button"
-              onClick={() => {
-                learningGoalFetcher.submit(
-                  {
-                    title: exercise.title,
-                    courseTitle: exercise.section.course.title,
-                    sectionTitle: exercise.section.title,
-                  },
-                  {
-                    action: getLearningGoalUrl(),
-                    method: "POST",
-                  }
-                );
-              }}
-            >
-              Generate
-            </Button>
-          </div>
+          <LearningGoalInput
+            defaultValue={exercise.learningGoal}
+            exercise={exercise}
+            handleChange={handleChange}
+          />
           {exercise.files.length > 0 && (
             <Button
               variant="secondary"
