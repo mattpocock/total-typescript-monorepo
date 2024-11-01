@@ -175,3 +175,7 @@ export const shotSlashHtmlRendererFromCodeUrl = () => {
 export const shotSlashHtmlRendererFromFileUrl = () => {
   return `/shot-slash/html-renderer-from-file-uri`;
 };
+
+export const getLearningGoalUrl = () => {
+  return `/prompts/learning-goal`;
+};

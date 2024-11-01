@@ -15,6 +15,8 @@
     "migrate:unsafe": "pnpm run migrate:dev && pnpm run migrate:prod"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^0.0.70",
+    "ai": "^3.4.25",
     "@monaco-editor/react": "^4.6.0",
     "@prisma/client": "5.19.1",
     "@radix-ui/react-checkbox": "^1.1.1",

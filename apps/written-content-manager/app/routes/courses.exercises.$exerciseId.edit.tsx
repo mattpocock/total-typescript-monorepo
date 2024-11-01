@@ -37,6 +37,7 @@ import {
   exerciseAudioUrl,
   exerciseDeleteAudioUrl,
   exerciseUploadAudioUrl,
+  getLearningGoalUrl,
   sectionUrl,
 } from "~/routes";
 import { useDebounceFetcher } from "~/use-debounced-fetcher";
@@ -294,6 +295,18 @@ export default function Exercise() {
     }, [prevExercise, nextExercise])
   );
 
+  const learningGoalFetcher = useFetcher<{ learningGoal: string }>();
+
+  const learningGoalRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (learningGoalFetcher.data?.learningGoal) {
+      learningGoalRef.current!.value = learningGoalFetcher.data.learningGoal;
+
+      handleChange();
+    }
+  }, [learningGoalFetcher.data?.learningGoal]);
+
   return (
     <PageContent>
       <TitleArea
@@ -337,13 +350,36 @@ export default function Exercise() {
             autoFocus
             onChange={handleChange}
           />
-          <Input
-            className="col-span-full"
-            defaultValue={exercise.learningGoal ?? ""}
-            name="learningGoal"
-            placeholder="Learning Goal"
-            onChange={handleChange}
-          ></Input>
+          <div className="col-span-full flex">
+            <Input
+              ref={learningGoalRef}
+              className="flex-grow border-r-0 rounded-r-none"
+              defaultValue={exercise.learningGoal ?? ""}
+              name="learningGoal"
+              placeholder="Learning Goal"
+              onChange={handleChange}
+            ></Input>
+            <Button
+              variant="outline"
+              className="rounded-l-none border-l-0"
+              type="button"
+              onClick={() => {
+                learningGoalFetcher.submit(
+                  {
+                    title: exercise.title,
+                    courseTitle: exercise.section.course.title,
+                    sectionTitle: exercise.section.title,
+                  },
+                  {
+                    action: getLearningGoalUrl(),
+                    method: "POST",
+                  }
+                );
+              }}
+            >
+              Generate
+            </Button>
+          </div>
           {exercise.files.length > 0 && (
             <Button
               variant="secondary"
