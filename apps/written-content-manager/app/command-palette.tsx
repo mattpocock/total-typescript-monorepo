@@ -33,13 +33,11 @@ export const OnPageActionsContext = createContext<{
 export const useOnPageActions = (actions: ActionsType) => {
   const onPageActionsContext = useContext(OnPageActionsContext);
 
-  if (!onPageActionsContext) throw new Error("No OnPageActionsContext found");
-
   useEffect(() => {
-    onPageActionsContext.setActions(actions);
+    onPageActionsContext?.setActions(actions);
 
     return () => {
-      onPageActionsContext.setActions([]);
+      onPageActionsContext?.setActions([]);
     };
   }, [actions]);
 };

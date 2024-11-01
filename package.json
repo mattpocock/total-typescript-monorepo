@@ -29,7 +29,7 @@
     "@types/node": "^22.7.7",
     "prettier": "^3.3.3",
     "tsx": "^4.19.0",
-    "turbo": "^2.2.3",
+    "turbo": "canary",
     "typescript": "5.6.2",
     "vitest": "^2.0.5"
   },

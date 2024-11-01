@@ -138,12 +138,19 @@ export const loader = () => {
       };
     });
 
-  return defer({
-    courses,
-    sections,
-    exercises,
-    analyticsData,
-  });
+  return defer(
+    {
+      courses,
+      sections,
+      exercises,
+      analyticsData,
+    },
+    {
+      headers: {
+        "Cache-Control": "public, max-age=300",
+      },
+    }
+  );
 };
 
 const MyNavLink = ({
