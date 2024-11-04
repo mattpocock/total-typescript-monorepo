@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 import { Input } from "./components/ui/input";
 import { Button } from "./components/ui/button";
 import { getLearningGoalUrl } from "./routes";
+import { Textarea } from "./components/ui/textarea";
 
 export const FormContent = (props: { children?: React.ReactNode }) => {
   return (
@@ -99,7 +100,7 @@ export const LearningGoalInput = (props: {
 }) => {
   const learningGoalFetcher = useFetcher<{ learningGoal: string }>();
 
-  const learningGoalRef = useRef<HTMLInputElement | null>(null);
+  const learningGoalRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
     if (learningGoalFetcher.data?.learningGoal) {
@@ -110,18 +111,18 @@ export const LearningGoalInput = (props: {
   }, [learningGoalFetcher.data?.learningGoal]);
 
   return (
-    <div className="col-span-full flex">
-      <Input
+    <div className="col-span-full flex items-stretch">
+      <Textarea
         ref={learningGoalRef}
-        className="flex-grow border-r-0 rounded-r-none"
+        className="flex-grow border-r-0 rounded-r-none min-h-32"
         defaultValue={props.defaultValue ?? ""}
         name="learningGoal"
         placeholder="Learning Goal"
         onChange={props.handleChange}
-      ></Input>
+      ></Textarea>
       <Button
         variant="outline"
-        className="rounded-l-none border-l-0"
+        className="rounded-l-none border-l-0 h-full"
         type="button"
         onClick={() => {
           learningGoalFetcher.submit(
