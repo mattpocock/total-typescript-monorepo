@@ -16,6 +16,7 @@ import {
 import {
   LibraryIcon as CollectionsIcon,
   BookIcon as CoursesIcon,
+  LightbulbIcon,
   MicIcon,
   PlusIcon,
   ActivityIcon as PostsIcon,
@@ -209,6 +210,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <MyNavLink to={coursesUrl()}>
                   <CoursesIcon />
                   <span className="hidden md:block">Courses</span>
+                </MyNavLink>
+                <MyNavLink to={`/concepts`}>
+                  <LightbulbIcon />
+                  <span className="hidden md:block">Concepts</span>
                 </MyNavLink>
                 <MyNavLink to={postsUrl()}>
                   <PostsIcon />
