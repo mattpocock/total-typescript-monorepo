@@ -1,10 +1,12 @@
 import { analytics } from "./analytics";
 import { collections } from "./collections";
+import { concepts } from "./concepts";
 import { courses } from "./courses";
 import { exercises } from "./exercises";
 import { posts } from "./posts";
 import { sections } from "./sections";
 import { videos } from "./videos";
+import { workflows } from "./workflows";
 
 /**
  * The entrypoint for all server actions.
@@ -27,4 +29,6 @@ export const serverFunctions = {
   exercises,
   analytics,
   videos,
+  workflows,
+  concepts,
 };

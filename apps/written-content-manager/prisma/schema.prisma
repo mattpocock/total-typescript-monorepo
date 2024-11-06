@@ -128,3 +128,72 @@ model ExerciseVideoTake {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
+
+model Concept {
+  id           String                        @id @default(uuid())
+  title        String
+  content      String
+  createdAt    DateTime                      @default(now())
+  updatedAt    DateTime                      @updatedAt
+  deletedAt    DateTime?
+  workflowRuns ContentWorkflowRunToConcept[]
+}
+
+model ContentWorkflow {
+  id        String                @id @default(uuid())
+  title     String
+  steps     ContentWorkflowStep[]
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+  runs      ContentWorkflowRun[]
+  deletedAt DateTime?
+}
+
+model ContentWorkflowStep {
+  id         String                   @id @default(uuid())
+  prompt     String
+  order      Int                      @default(0)
+  workflowId String
+  workflow   ContentWorkflow          @relation(fields: [workflowId], references: [id])
+  /// The version of the step. This is used to determine if a workflow has changed.
+  version    Int                      @default(1)
+  createdAt  DateTime                 @default(now())
+  updatedAt  DateTime                 @updatedAt
+  runs       ContentWorkflowRunStep[]
+  deletedAt  DateTime?
+}
+
+model ContentWorkflowRun {
+  id         String          @id @default(uuid())
+  workflowId String
+  workflow   ContentWorkflow @relation(fields: [workflowId], references: [id])
+
+  createdAt DateTime                      @default(now())
+  updatedAt DateTime                      @updatedAt
+  steps     ContentWorkflowRunStep[]
+  deletedAt DateTime?
+  concepts  ContentWorkflowRunToConcept[]
+}
+
+model ContentWorkflowRunStep {
+  id        String              @id @default(uuid())
+  version   Int                 @default(1)
+  content   String
+  stepId    String
+  step      ContentWorkflowStep @relation(fields: [stepId], references: [id])
+  runId     String
+  run       ContentWorkflowRun  @relation(fields: [runId], references: [id])
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+}
+
+model ContentWorkflowRunToConcept {
+  runId     String
+  run       ContentWorkflowRun @relation(fields: [runId], references: [id])
+  conceptId String
+  concept   Concept            @relation(fields: [conceptId], references: [id])
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@id([runId, conceptId])
+}
