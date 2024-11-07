@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { createServerFunction } from "./utils";
+import { generateText } from "ai";
+import { model } from "~/model";
 
 export const workflows = {
   list: createServerFunction(z.object({}), async ({ input, p }) => {
@@ -20,6 +22,20 @@ export const workflows = {
       return p.contentWorkflow.findUniqueOrThrow({
         where: {
           id: input.id,
+        },
+        include: {
+          steps: {
+            where: {
+              deletedAt: null,
+            },
+            orderBy: {
+              order: "asc",
+            },
+            select: {
+              prompt: true,
+              id: true,
+            },
+          },
         },
       });
     }
@@ -68,7 +84,7 @@ export const workflows = {
     }
   ),
   steps: {
-    add: createServerFunction(
+    create: createServerFunction(
       z.object({
         workflowId: z.string().uuid(),
         prompt: z.string(),
@@ -110,6 +126,9 @@ export const workflows = {
           },
           data: {
             prompt: input.prompt,
+            version: {
+              increment: 1,
+            },
           },
         });
       }
@@ -125,6 +144,213 @@ export const workflows = {
           },
           data: {
             deletedAt: new Date(),
+          },
+        });
+      }
+    ),
+  },
+  runs: {
+    runSteps: {
+      upsert: createServerFunction(
+        z.object({
+          runId: z.string().uuid(),
+          stepId: z.string().uuid(),
+          output: z.string().optional(),
+          input: z.string().optional(),
+        }),
+        async ({ input, p }) => {
+          return p.contentWorkflowRunStep.upsert({
+            where: {
+              runId_stepId: {
+                runId: input.runId,
+                stepId: input.stepId,
+              },
+            },
+            create: {
+              stepId: input.stepId,
+              runId: input.runId,
+              output: input.output ?? "",
+              input: input.input,
+            },
+            update: {
+              output: input.output,
+              input: input.input,
+            },
+          });
+        }
+      ),
+      execute: createServerFunction(
+        z.object({
+          stepId: z.string().uuid(),
+          runId: z.string().uuid(),
+        }),
+        async ({ input, p }) => {
+          let prompt: string;
+          let inputString: string;
+
+          const runStep = await p.contentWorkflowRunStep.findUniqueOrThrow({
+            where: {
+              runId_stepId: {
+                runId: input.runId,
+                stepId: input.stepId,
+              },
+            },
+            select: {
+              input: true,
+              output: true,
+              step: {
+                select: {
+                  version: true,
+                  prompt: true,
+                  order: true,
+                  workflowId: true,
+                },
+              },
+            },
+          });
+
+          const stepBefore = await p.contentWorkflowStep.findFirst({
+            where: {
+              order: {
+                lt: runStep.step.order,
+              },
+              workflowId: runStep.step.workflowId,
+              deletedAt: null,
+            },
+            orderBy: {
+              order: "desc",
+            },
+            select: {
+              id: true,
+            },
+          });
+
+          prompt = runStep.step.prompt;
+
+          if (!prompt) {
+            throw new Error("The step's prompt is empty.");
+          }
+
+          if (!stepBefore) {
+            if (!runStep.input) {
+              throw new Error(
+                "An input is required for the first step in the run."
+              );
+            } else {
+              inputString = runStep.input;
+            }
+          } else {
+            const previousRunStep = await p.contentWorkflowRunStep.findUnique({
+              where: {
+                runId_stepId: {
+                  runId: input.runId,
+                  stepId: stepBefore.id,
+                },
+              },
+              select: {
+                output: true,
+              },
+            });
+
+            if (!previousRunStep?.output) {
+              throw new Error("The previous step has not generated an output.");
+            }
+
+            inputString = previousRunStep.output;
+          }
+
+          const result = await generateText({
+            model,
+            system: prompt,
+            prompt: inputString,
+            toolChoice: "required",
+            tools: {
+              answer: {
+                parameters: z.object({
+                  answer: z.string().describe("The answer to the prompt."),
+                }),
+                description: "The tool used to answer the prompt.",
+              },
+            },
+          });
+
+          const answer = result.toolCalls[0]?.args.answer;
+
+          if (!answer) {
+            throw new Error("No answer was generated.");
+          }
+
+          return p.contentWorkflowRunStep.update({
+            where: {
+              runId_stepId: {
+                runId: input.runId,
+                stepId: input.stepId,
+              },
+            },
+            data: {
+              output: answer,
+              version: runStep.step.version,
+            },
+          });
+        }
+      ),
+    },
+    get: createServerFunction(
+      z.object({
+        id: z.string().uuid(),
+      }),
+      async ({ input, p }) => {
+        return p.contentWorkflowRun.findUniqueOrThrow({
+          where: {
+            id: input.id,
+          },
+          include: {
+            workflow: {
+              select: {
+                id: true,
+                title: true,
+                steps: {
+                  select: {
+                    id: true,
+                    prompt: true,
+                    version: true,
+                  },
+                },
+              },
+            },
+            steps: {
+              select: {
+                input: true,
+                output: true,
+                version: true,
+              },
+            },
+          },
+        });
+      }
+    ),
+    create: createServerFunction(
+      z.object({
+        workflowId: z.string().uuid(),
+      }),
+      async ({ input, p }) => {
+        return p.contentWorkflowRun.create({
+          data: {
+            workflowId: input.workflowId,
+          },
+        });
+      }
+    ),
+    linkToConcept: createServerFunction(
+      z.object({
+        workflowRunId: z.string().uuid(),
+        conceptId: z.string().uuid(),
+      }),
+      async ({ input, p }) => {
+        return p.contentWorkflowRunToConcept.create({
+          data: {
+            conceptId: input.conceptId,
+            runId: input.workflowRunId,
           },
         });
       }

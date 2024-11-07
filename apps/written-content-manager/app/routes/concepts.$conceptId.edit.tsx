@@ -1,5 +1,11 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { Form, useLoaderData } from "@remix-run/react";
+import {
+  Form,
+  Link,
+  useFetcher,
+  useLoaderData,
+  useNavigate,
+} from "@remix-run/react";
 import { useRef } from "react";
 import {
   FormButtons,
@@ -16,12 +22,22 @@ import {
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
 import { Button } from "~/components/ui/button";
+import { Combobox } from "~/components/ui/combobox";
 import { Input } from "~/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
+import { p } from "~/db";
 import { serverFunctions } from "~/modules/server-functions/server-functions";
 import { LazyLoadedEditor } from "~/monaco-editor/lazy-loaded-editor";
-import { courseUrl, sectionUrl } from "~/routes";
 import { useDebounceFetcher } from "~/use-debounced-fetcher";
 import { createFormDataAction } from "~/utils";
+import { workflowConceptUrl } from "../routes";
 
 export const meta: MetaFunction = () => {
   return [
@@ -40,11 +56,38 @@ export const action = createFormDataAction(async (json, args) => {
 });
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
-  return serverFunctions.concepts.get({ id: params.conceptId! });
+  const [concept, workflowsNotInConcept] = await Promise.all([
+    serverFunctions.concepts.get({ id: params.conceptId! }),
+    p.contentWorkflow.findMany({
+      select: {
+        id: true,
+        title: true,
+      },
+      where: {
+        deletedAt: null,
+        runs: {
+          every: {
+            concepts: {
+              every: {
+                conceptId: {
+                  not: params.conceptId,
+                },
+              },
+            },
+          },
+        },
+      },
+    }),
+  ]);
+
+  return {
+    concept,
+    workflows: workflowsNotInConcept,
+  };
 };
 
 export default function Page() {
-  const concept = useLoaderData<typeof loader>();
+  const { concept, workflows } = useLoaderData<typeof loader>();
 
   const debouncedFetcher = useDebounceFetcher();
 
@@ -55,6 +98,8 @@ export default function Page() {
       preventScrollReset: true,
     });
   };
+
+  const navigate = useNavigate();
 
   return (
     <PageContent>
@@ -96,6 +141,49 @@ export default function Page() {
           </FormButtons>
         </FormContent>
       </Form>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {concept.workflowRuns.map((workflowRun) => (
+            <TableRow key={workflowRun.run.workflow.id}>
+              <TableCell>
+                <Link
+                  prefetch="intent"
+                  to={`/concepts/${concept.id}/workflows/${workflowRun.run.workflow.id}`}
+                  className="text-base"
+                >
+                  <h2>{workflowRun.run.workflow.title}</h2>
+                </Link>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      <div>
+        <Combobox
+          defaultValue=""
+          name="postId"
+          options={workflows.map((workflow) => ({
+            label: workflow.title,
+            value: workflow.id,
+          }))}
+          className="min-w-64"
+          placeholder="Add Workflow..."
+          emptyText="No workflows found"
+          onChange={({ value, reset }) => {
+            navigate(
+              workflowConceptUrl({
+                conceptId: concept.id,
+                workflowId: value,
+              })
+            );
+          }}
+        />
+      </div>
     </PageContent>
   );
 }

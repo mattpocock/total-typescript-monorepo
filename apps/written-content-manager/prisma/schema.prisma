@@ -176,15 +176,19 @@ model ContentWorkflowRun {
 }
 
 model ContentWorkflowRunStep {
-  id        String              @id @default(uuid())
   version   Int                 @default(1)
-  content   String
+  /// The input to the step. Only present on the first step.
+  input     String?
+  /// The output of the step.
+  output    String
   stepId    String
   step      ContentWorkflowStep @relation(fields: [stepId], references: [id])
   runId     String
   run       ContentWorkflowRun  @relation(fields: [runId], references: [id])
   createdAt DateTime            @default(now())
   updatedAt DateTime            @updatedAt
+
+  @@id([runId, stepId])
 }
 
 model ContentWorkflowRunToConcept {

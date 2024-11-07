@@ -23,6 +23,10 @@ const allTables = [
   "socialPostToSocialPostCollection",
   "socialPost",
   "socialPostCollection",
+  "contentWorkflowRunStep",
+  "contentWorkflowRun",
+  "contentWorkflowStep",
+  "contentWorkflow",
 ] as const;
 
 const clearAllTables = async () => {

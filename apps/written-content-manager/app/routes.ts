@@ -183,3 +183,10 @@ export const shotSlashHtmlRendererFromFileUrl = () => {
 export const getLearningGoalUrl = () => {
   return `/prompts/learning-goal`;
 };
+
+export const workflowConceptUrl = (props: {
+  conceptId: string;
+  workflowId: string;
+}) => {
+  return `/concepts/${props.conceptId}/workflows/${props.workflowId}`;
+};
