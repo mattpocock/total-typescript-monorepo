@@ -22,6 +22,7 @@ import {
   ActivityIcon as PostsIcon,
   CameraIcon as ShotSlashIcon,
   VideoIcon,
+  SparklesIcon as WorkflowsIcon,
   SeparatorVertical as WCMLogo,
 } from "lucide-react";
 import NProgress from "nprogress";
@@ -222,6 +223,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <MyNavLink to={collectionsUrl()}>
                   <CollectionsIcon />
                   <span className="hidden md:block">Collections</span>
+                </MyNavLink>
+                <MyNavLink to={`/workflows`}>
+                  <WorkflowsIcon />
+                  <span className="hidden md:block">Workflows</span>
                 </MyNavLink>
                 <MyNavLink to={shotSlashUrl()}>
                   <ShotSlashIcon />
