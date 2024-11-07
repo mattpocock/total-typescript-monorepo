@@ -36,11 +36,6 @@ describe("workflows", () => {
             workflowId: workflow.id,
           });
 
-          await serverFunctions.workflows.runs.runSteps.upsert({
-            runId: run.id,
-            stepId: step.id,
-          });
-
           await expect(
             serverFunctions.workflows.runs.runSteps.execute({
               stepId: step.id,
@@ -62,11 +57,6 @@ describe("workflows", () => {
 
           const run = await serverFunctions.workflows.runs.create({
             workflowId: workflow.id,
-          });
-
-          await serverFunctions.workflows.runs.runSteps.upsert({
-            runId: run.id,
-            stepId: step.id,
           });
 
           await expect(
@@ -94,11 +84,6 @@ describe("workflows", () => {
 
           const run = await serverFunctions.workflows.runs.create({
             workflowId: workflow.id,
-          });
-
-          await serverFunctions.workflows.runs.runSteps.upsert({
-            runId: run.id,
-            stepId: step2.id,
           });
 
           await expect(

@@ -185,25 +185,25 @@ export const workflows = {
           runId: z.string().uuid(),
         }),
         async ({ input, p }) => {
-          let prompt: string;
+          let prompt: string | undefined;
           let inputString: string;
 
-          const runStep = await p.contentWorkflowRunStep.findUniqueOrThrow({
+          const step = await p.contentWorkflowStep.findUniqueOrThrow({
             where: {
-              runId_stepId: {
-                runId: input.runId,
-                stepId: input.stepId,
-              },
+              id: input.stepId,
             },
             select: {
-              input: true,
-              output: true,
-              step: {
+              version: true,
+              prompt: true,
+              order: true,
+              workflowId: true,
+              runs: {
+                where: {
+                  runId: input.runId,
+                },
                 select: {
-                  version: true,
-                  prompt: true,
-                  order: true,
-                  workflowId: true,
+                  input: true,
+                  output: true,
                 },
               },
             },
@@ -212,9 +212,9 @@ export const workflows = {
           const stepBefore = await p.contentWorkflowStep.findFirst({
             where: {
               order: {
-                lt: runStep.step.order,
+                lt: step.order,
               },
-              workflowId: runStep.step.workflowId,
+              workflowId: step.workflowId,
               deletedAt: null,
             },
             orderBy: {
@@ -225,14 +225,16 @@ export const workflows = {
             },
           });
 
-          prompt = runStep.step.prompt;
+          prompt = step.prompt;
 
           if (!prompt) {
             throw new Error("The step's prompt is empty.");
           }
 
+          const runStep = step.runs[0];
+
           if (!stepBefore) {
-            if (!runStep.input) {
+            if (!runStep?.input) {
               throw new Error(
                 "An input is required for the first step in the run."
               );
@@ -274,22 +276,30 @@ export const workflows = {
             },
           });
 
-          const answer = result.toolCalls[0]?.args.answer;
+          const answer = result.toolCalls
+            .map((toolCall) => toolCall.args.answer)
+            .join("\n\n");
 
           if (!answer) {
             throw new Error("No answer was generated.");
           }
 
-          return p.contentWorkflowRunStep.update({
+          return p.contentWorkflowRunStep.upsert({
             where: {
               runId_stepId: {
                 runId: input.runId,
                 stepId: input.stepId,
               },
             },
-            data: {
+            create: {
+              runId: input.runId,
+              stepId: input.stepId,
               output: answer,
-              version: runStep.step.version,
+              version: step.version,
+            },
+            update: {
+              output: answer,
+              version: step.version,
             },
           });
         }

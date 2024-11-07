@@ -67,7 +67,9 @@ export default function Page() {
                   </BreadcrumbItem>
                   <BreadcrumbSeparator />
                   <BreadcrumbItem>
-                    <BreadcrumbLink to={`/concepts/${workflowRun.concept.id}`}>
+                    <BreadcrumbLink
+                      to={`/concepts/${workflowRun.concept.id}/edit`}
+                    >
                       {workflowRun.concept.title}
                     </BreadcrumbLink>
                   </BreadcrumbItem>
@@ -130,10 +132,10 @@ export const WorkflowStep = (props: {
 
   const executeFetcher = useJsonFetcher();
 
-  const [outputKey, setOutputKey] = useState(() => crypto.randomUUID());
+  const [isEditingOutput, setIsEditingOutput] = useState(false);
 
   return (
-    <div className="bg-gray-50 p-6 space-y-6">
+    <div className="bg-gray-50 dark:bg-gray-900 p-6 space-y-6">
       <div className=" flex items-center space-x-6">
         <h2 className="text-xl font-semibold">Step {props.index + 1}</h2>
         <Button
@@ -187,27 +189,44 @@ export const WorkflowStep = (props: {
               runId: props.runId,
               stepId: props.stepId,
             });
+            setIsEditingOutput(false);
           }}
         >
           {executeFetcher.state === "submitting" ? "Executing..." : "Execute"}
         </Button>
       </div>
-      <LazyLoadedEditor
-        key={outputKey}
-        name="output"
-        defaultValue={props.output ?? ""}
-        label="Output"
-        height="400px"
-        language="md"
-        onChange={(value) => {
-          jsonFetcher.submit({
-            type: "UPDATE_WORKFLOW_RUN_STEP",
-            runId: props.runId,
-            stepId: props.stepId,
-            output: value ?? "",
-          });
-        }}
-      />
+      {isEditingOutput ? (
+        <LazyLoadedEditor
+          name="output"
+          defaultValue={props.output ?? ""}
+          label="Output"
+          height="400px"
+          language="md"
+          onChange={(value) => {
+            jsonFetcher.submit({
+              type: "UPDATE_WORKFLOW_RUN_STEP",
+              runId: props.runId,
+              stepId: props.stepId,
+              output: value ?? "",
+            });
+          }}
+        />
+      ) : (
+        <div className="w-full bg-gray-800 p-6">
+          {props.output
+            .split("\n")
+            .map((l) => l.trim())
+            .filter(Boolean)
+            .map((line, index) => (
+              <p key={index} className="font-mono">
+                {line}
+              </p>
+            ))}
+          <Button onClick={() => setIsEditingOutput(true)} variant="secondary">
+            Edit
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
