@@ -1,7 +1,7 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { redirect, useFetcher, useLoaderData } from "@remix-run/react";
+import { redirect, useLoaderData } from "@remix-run/react";
 import { DeleteIcon, PlusIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { PageContent, TitleArea } from "~/components";
 import {
   Breadcrumb,
