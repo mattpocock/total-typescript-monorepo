@@ -114,6 +114,48 @@ export const workflows = {
         });
       }
     ),
+    createAfterStep: createServerFunction(
+      z.object({
+        prompt: z.string(),
+        afterStepId: z.string().uuid(),
+      }),
+      async ({ input, p }) => {
+        const existingStep = await p.contentWorkflowStep.findUniqueOrThrow({
+          where: {
+            id: input.afterStepId,
+          },
+          select: {
+            order: true,
+            workflowId: true,
+          },
+        });
+
+        const [step] = await p.$transaction([
+          p.contentWorkflowStep.create({
+            data: {
+              prompt: input.prompt,
+              order: existingStep.order + 1,
+              workflowId: existingStep.workflowId,
+            },
+          }),
+          p.contentWorkflowStep.updateMany({
+            where: {
+              order: {
+                gt: existingStep.order,
+              },
+              workflowId: existingStep.workflowId,
+            },
+            data: {
+              order: {
+                increment: 1,
+              },
+            },
+          }),
+        ]);
+
+        return step;
+      }
+    ),
     update: createServerFunction(
       z.object({
         id: z.string().uuid(),

@@ -105,17 +105,19 @@ export default function Page() {
           />
         );
       })}
-      <Button
-        onClick={() => {
-          fetcher.submit({
-            type: "ADD_WORKFLOW_STEP",
-            workflowId: workflowRun.workflow.id,
-            prompt: "",
-          });
-        }}
-      >
-        <PlusIcon />
-      </Button>
+      {workflowRun.steps.length === 0 && (
+        <Button
+          onClick={() => {
+            fetcher.submit({
+              type: "ADD_WORKFLOW_STEP",
+              workflowId: workflowRun.workflow.id,
+              prompt: "",
+            });
+          }}
+        >
+          <PlusIcon />
+        </Button>
+      )}
     </PageContent>
   );
 }
@@ -132,101 +134,119 @@ export const WorkflowStep = (props: {
 
   const executeFetcher = useJsonFetcher();
 
+  const addNewFetcher = useJsonFetcher();
+
   const [isEditingOutput, setIsEditingOutput] = useState(false);
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 p-6 space-y-6">
-      <div className=" flex items-center space-x-6">
-        <h2 className="text-xl font-semibold">Step {props.index + 1}</h2>
-        <Button
-          onClick={() => {
-            jsonFetcher.submit({
-              type: "DELETE_WORKFLOW_STEP",
-              id: props.stepId,
-            });
-          }}
-        >
-          <DeleteIcon />
-        </Button>
-      </div>
-      {props.index === 0 && (
-        <LazyLoadedEditor
-          name="input"
-          defaultValue={props.input ?? ""}
-          label="Initial Input"
-          height="150px"
-          language="md"
-          onChange={(value) => {
-            jsonFetcher.submit({
-              type: "UPDATE_WORKFLOW_RUN_STEP",
-              runId: props.runId,
-              stepId: props.stepId,
-              input: value,
-            });
-          }}
-        />
-      )}
-
-      <div className="space-y-4">
-        <LazyLoadedEditor
-          name="prompt"
-          defaultValue={props.prompt ?? ""}
-          label="Prompt"
-          height="150px"
-          language="md"
-          onChange={(value) => {
-            jsonFetcher.submit({
-              type: "UPDATE_WORKFLOW_STEP",
-              id: props.stepId,
-              prompt: value ?? "",
-            });
-          }}
-        />
-        <Button
-          onClick={() => {
-            executeFetcher.submit({
-              type: "EXECUTE_WORKFLOW_STEP",
-              runId: props.runId,
-              stepId: props.stepId,
-            });
-            setIsEditingOutput(false);
-          }}
-        >
-          {executeFetcher.state === "submitting" ? "Executing..." : "Execute"}
-        </Button>
-      </div>
-      {isEditingOutput ? (
-        <LazyLoadedEditor
-          name="output"
-          defaultValue={props.output ?? ""}
-          label="Output"
-          height="400px"
-          language="md"
-          onChange={(value) => {
-            jsonFetcher.submit({
-              type: "UPDATE_WORKFLOW_RUN_STEP",
-              runId: props.runId,
-              stepId: props.stepId,
-              output: value ?? "",
-            });
-          }}
-        />
-      ) : (
-        <div className="w-full bg-gray-800 p-6">
-          {props.output
-            .split("\n")
-            .map((l) => l.trim())
-            .filter(Boolean)
-            .map((line, index) => (
-              <p key={index} className="font-mono">
-                {line}
-              </p>
-            ))}
-          <Button onClick={() => setIsEditingOutput(true)} variant="secondary">
-            Edit
+    <>
+      <div className="bg-gray-50 dark:bg-gray-900 p-6 space-y-6">
+        <div className=" flex items-center space-x-6">
+          <h2 className="text-xl font-semibold">Step {props.index + 1}</h2>
+          <Button
+            onClick={() => {
+              jsonFetcher.submit({
+                type: "DELETE_WORKFLOW_STEP",
+                id: props.stepId,
+              });
+            }}
+          >
+            <DeleteIcon />
           </Button>
         </div>
-      )}
-    </div>
+        {props.index === 0 && (
+          <LazyLoadedEditor
+            name="input"
+            defaultValue={props.input ?? ""}
+            label="Initial Input"
+            height="150px"
+            language="md"
+            onChange={(value) => {
+              jsonFetcher.submit({
+                type: "UPDATE_WORKFLOW_RUN_STEP",
+                runId: props.runId,
+                stepId: props.stepId,
+                input: value,
+              });
+            }}
+          />
+        )}
+
+        <div className="space-y-4">
+          <LazyLoadedEditor
+            name="prompt"
+            defaultValue={props.prompt ?? ""}
+            label="Prompt"
+            height="150px"
+            language="md"
+            onChange={(value) => {
+              jsonFetcher.submit({
+                type: "UPDATE_WORKFLOW_STEP",
+                id: props.stepId,
+                prompt: value ?? "",
+              });
+            }}
+          />
+          <Button
+            onClick={() => {
+              executeFetcher.submit({
+                type: "EXECUTE_WORKFLOW_STEP",
+                runId: props.runId,
+                stepId: props.stepId,
+              });
+              setIsEditingOutput(false);
+            }}
+          >
+            {executeFetcher.state === "submitting" ? "Executing..." : "Execute"}
+          </Button>
+        </div>
+        {isEditingOutput ? (
+          <LazyLoadedEditor
+            name="output"
+            defaultValue={props.output ?? ""}
+            label="Output"
+            height="400px"
+            language="md"
+            onChange={(value) => {
+              jsonFetcher.submit({
+                type: "UPDATE_WORKFLOW_RUN_STEP",
+                runId: props.runId,
+                stepId: props.stepId,
+                output: value ?? "",
+              });
+            }}
+          />
+        ) : (
+          <div className="w-full bg-gray-800 p-6">
+            {props.output
+              .split("\n")
+              .map((l) => l.trim())
+              .filter(Boolean)
+              .map((line, index) => (
+                <p key={index} className="font-mono">
+                  {line}
+                </p>
+              ))}
+            <Button
+              onClick={() => setIsEditingOutput(true)}
+              variant="secondary"
+            >
+              Edit
+            </Button>
+          </div>
+        )}
+      </div>
+      <Button
+        onClick={() => {
+          addNewFetcher.submit({
+            type: "ADD_WORKFLOW_STEP_AFTER",
+            stepId: props.stepId,
+            prompt: "",
+          });
+        }}
+      >
+        <PlusIcon />
+      </Button>
+    </>
   );
 };

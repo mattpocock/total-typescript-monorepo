@@ -29,6 +29,11 @@ export type MultiJsonInput =
       type: "ADD_WORKFLOW_STEP";
       workflowId: string;
       prompt: string;
+    }
+  | {
+      type: "ADD_WORKFLOW_STEP_AFTER";
+      stepId: string;
+      prompt: string;
     };
 
 export const action = createJsonAction(async (json: MultiJsonInput) => {
@@ -63,7 +68,13 @@ export const action = createJsonAction(async (json: MultiJsonInput) => {
         stepId: json.stepId,
         runId: json.runId,
       });
-      return redirect(runWorkflowUrl(json.runId));
+      return null;
+    case "ADD_WORKFLOW_STEP_AFTER":
+      const step = await serverFunctions.workflows.steps.createAfterStep({
+        prompt: json.prompt,
+        afterStepId: json.stepId,
+      });
+      return null;
   }
 
   json satisfies never;
