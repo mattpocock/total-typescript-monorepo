@@ -130,13 +130,14 @@ model ExerciseVideoTake {
 }
 
 model Concept {
-  id           String                        @id @default(uuid())
-  title        String
-  content      String
-  createdAt    DateTime                      @default(now())
-  updatedAt    DateTime                      @updatedAt
-  deletedAt    DateTime?
-  workflowRuns ContentWorkflowRunToConcept[]
+  id        String    @id @default(uuid())
+  title     String
+  content   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  workflowRuns ContentWorkflowRun[]
 }
 
 model ContentWorkflow {
@@ -166,13 +167,14 @@ model ContentWorkflowStep {
 model ContentWorkflowRun {
   id         String          @id @default(uuid())
   workflowId String
-  workflow   ContentWorkflow @relation(fields: [workflowId], references: [id])
+  workflow   ContentWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime                      @default(now())
-  updatedAt DateTime                      @updatedAt
+  createdAt DateTime                 @default(now())
+  updatedAt DateTime                 @updatedAt
   steps     ContentWorkflowRunStep[]
   deletedAt DateTime?
-  concepts  ContentWorkflowRunToConcept[]
+  conceptId String?
+  concept   Concept?                 @relation(fields: [conceptId], references: [id], onDelete: Cascade)
 }
 
 model ContentWorkflowRunStep {
@@ -182,22 +184,11 @@ model ContentWorkflowRunStep {
   /// The output of the step.
   output    String
   stepId    String
-  step      ContentWorkflowStep @relation(fields: [stepId], references: [id])
+  step      ContentWorkflowStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
   runId     String
-  run       ContentWorkflowRun  @relation(fields: [runId], references: [id])
+  run       ContentWorkflowRun  @relation(fields: [runId], references: [id], onDelete: Cascade)
   createdAt DateTime            @default(now())
   updatedAt DateTime            @updatedAt
 
   @@id([runId, stepId])
-}
-
-model ContentWorkflowRunToConcept {
-  runId     String
-  run       ContentWorkflowRun @relation(fields: [runId], references: [id])
-  conceptId String
-  concept   Concept            @relation(fields: [conceptId], references: [id])
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
-
-  @@id([runId, conceptId])
 }

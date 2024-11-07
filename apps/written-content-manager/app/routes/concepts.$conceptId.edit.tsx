@@ -35,9 +35,9 @@ import {
 import { p } from "~/db";
 import { serverFunctions } from "~/modules/server-functions/server-functions";
 import { LazyLoadedEditor } from "~/monaco-editor/lazy-loaded-editor";
+import { createRunUrl, runWorkflowUrl } from "~/routes";
 import { useDebounceFetcher } from "~/use-debounced-fetcher";
 import { createFormDataAction } from "~/utils";
-import { workflowConceptUrl } from "../routes";
 
 export const meta: MetaFunction = () => {
   return [
@@ -66,14 +66,8 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
       where: {
         deletedAt: null,
         runs: {
-          every: {
-            concepts: {
-              every: {
-                conceptId: {
-                  not: params.conceptId,
-                },
-              },
-            },
+          none: {
+            conceptId: params.conceptId!,
           },
         },
       },
@@ -99,7 +93,7 @@ export default function Page() {
     });
   };
 
-  const navigate = useNavigate();
+  const fetcher = useFetcher();
 
   return (
     <PageContent>
@@ -149,14 +143,14 @@ export default function Page() {
         </TableHeader>
         <TableBody>
           {concept.workflowRuns.map((workflowRun) => (
-            <TableRow key={workflowRun.run.workflow.id}>
+            <TableRow key={workflowRun.workflow.id}>
               <TableCell>
                 <Link
                   prefetch="intent"
-                  to={`/concepts/${concept.id}/workflows/${workflowRun.run.workflow.id}`}
+                  to={runWorkflowUrl(workflowRun.id)}
                   className="text-base"
                 >
-                  <h2>{workflowRun.run.workflow.title}</h2>
+                  <h2>{workflowRun.workflow.title}</h2>
                 </Link>
               </TableCell>
             </TableRow>
@@ -175,11 +169,14 @@ export default function Page() {
           placeholder="Add Workflow..."
           emptyText="No workflows found"
           onChange={({ value, reset }) => {
-            navigate(
-              workflowConceptUrl({
+            fetcher.submit(
+              {
                 conceptId: concept.id,
-                workflowId: value,
-              })
+              },
+              {
+                action: createRunUrl(value),
+                method: "POST",
+              }
             );
           }}
         />

@@ -36,6 +36,7 @@ export type CodeEditorProps = {
   className?: string;
   fontSize?: number;
   readonly?: boolean;
+  height?: string;
 };
 
 let incrementable = 0;
@@ -69,7 +70,7 @@ export const EagerlyLoadedEditor = (props: CodeEditorProps) => {
         <Editor
           path={path}
           loading={<div>Loading Code Editor...</div>}
-          height={"300px"}
+          height={props.height ?? "300px"}
           value={value}
           onChange={(value) => {
             setValue(value);

@@ -310,6 +310,12 @@ export const workflows = {
                 id: true,
                 title: true,
                 steps: {
+                  orderBy: {
+                    order: "asc",
+                  },
+                  where: {
+                    deletedAt: null,
+                  },
                   select: {
                     id: true,
                     prompt: true,
@@ -319,10 +325,27 @@ export const workflows = {
               },
             },
             steps: {
+              orderBy: {
+                step: {
+                  order: "asc",
+                },
+              },
+              where: {
+                step: {
+                  deletedAt: null,
+                },
+              },
               select: {
                 input: true,
                 output: true,
                 version: true,
+                stepId: true,
+              },
+            },
+            concept: {
+              select: {
+                id: true,
+                title: true,
               },
             },
           },
@@ -347,10 +370,12 @@ export const workflows = {
         conceptId: z.string().uuid(),
       }),
       async ({ input, p }) => {
-        return p.contentWorkflowRunToConcept.create({
+        return p.contentWorkflowRun.update({
+          where: {
+            id: input.workflowRunId,
+          },
           data: {
             conceptId: input.conceptId,
-            runId: input.workflowRunId,
           },
         });
       }

@@ -184,9 +184,14 @@ export const getLearningGoalUrl = () => {
   return `/prompts/learning-goal`;
 };
 
-export const workflowConceptUrl = (props: {
-  conceptId: string;
-  workflowId: string;
-}) => {
-  return `/concepts/${props.conceptId}/workflows/${props.workflowId}`;
+export const runWorkflowUrl = (runId: string) => {
+  return `/workflows/runs/${runId}`;
+};
+
+export const createRunUrl = (workflowId: string) => {
+  return `/workflows/${workflowId}/create-run`;
+};
+
+export const jsonActionUrl = () => {
+  return `/multi-json`;
 };
