@@ -21,6 +21,37 @@ export const concepts = {
         where: {
           id: input.id,
         },
+        include: {
+          workflowRuns: {
+            select: {
+              run: {
+                select: {
+                  steps: {
+                    select: {
+                      step: {
+                        select: {
+                          prompt: true,
+                        },
+                      },
+                      run: {},
+                    },
+                    orderBy: {
+                      step: {
+                        order: "asc",
+                      },
+                    },
+                  },
+                  workflow: {
+                    select: {
+                      id: true,
+                      title: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       });
     }
   ),
@@ -67,6 +98,30 @@ export const concepts = {
         },
         data: {
           deletedAt: new Date(),
+        },
+      });
+    }
+  ),
+  addWorkflowRun: createServerFunction(
+    z.object({
+      conceptId: z.string().uuid(),
+      workflowId: z.string().uuid(),
+    }),
+    async ({ input, p }) => {
+      return p.concept.update({
+        where: {
+          id: input.conceptId,
+        },
+        data: {
+          workflowRuns: {
+            create: {
+              run: {
+                create: {
+                  workflowId: input.workflowId,
+                },
+              },
+            },
+          },
         },
       });
     }
