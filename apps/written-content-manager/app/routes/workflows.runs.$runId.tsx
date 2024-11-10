@@ -217,7 +217,7 @@ export const WorkflowStep = (props: {
             }}
           />
         ) : (
-          <div className="w-full bg-gray-800 p-6">
+          <div className="w-full bg-gray-800 p-6 text-gray-100">
             {props.output
               .split("\n")
               .map((l) => l.trim())
@@ -230,6 +230,7 @@ export const WorkflowStep = (props: {
             <Button
               onClick={() => setIsEditingOutput(true)}
               variant="secondary"
+              className="mt-6"
             >
               Edit
             </Button>
