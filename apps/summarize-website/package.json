@@ -1,0 +1,22 @@
+{
+  "name": "summarize-website",
+  "version": "0.0.2",
+  "private": true,
+  "type": "module",
+  "files": [
+    "./dist/*"
+  ],
+  "scripts": {
+    "go": "node --env-file=./.env --experimental-strip-types --no-warnings src/bin.ts"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "dependencies": {
+    "@stricli/core": "^1.1.0",
+    "ai": "^3.4.33",
+    "@ai-sdk/openai": "^0.0.72",
+    "@types/html-to-text": "^9.0.4",
+    "html-to-text": "^9.0.5"
+  }
+}
