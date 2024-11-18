@@ -21,7 +21,11 @@ const record: RecordOfStrings = { a: "a", b: "b", c: "c" };
 Utility types, like `Pick` and `Omit`, are generic types.
 
 ```ts
-type Person = { name: string; age: number; location: string };
+type Person = {
+  name: string;
+  age: number;
+  location: string;
+};
 
 type PersonWithOnlyName = Pick<Person, "name">;
 type PersonWithoutName = Omit<Person, "name">;
@@ -83,6 +87,27 @@ type StringBox = Box<"abc">;
 type NumberBox = Box<123>; // Error
 ```
 
+### Multiple Type Parameters
+
+You can have multiple type parameters in a generic type.
+
+```ts
+type Result<T, E> = { value: T; error: E };
+```
+
+### Naming Type Parameters
+
+By convention, type parameters are either a single letter or prefixed with `T`:
+
+```ts
+type Box<T> = { value: T };
+
+type Result<TValue, TError> = {
+  value: TValue;
+  error: TError;
+};
+```
+
 ### Generic Types MUST Receive All Type Arguments
 
 You must pass in all type arguments when using a generic type.
@@ -91,7 +116,7 @@ You must pass in all type arguments when using a generic type.
 type Box<T> = { value: T };
 
 type StringBox = Box<string>; // OK
-type NumberBox = Box; // Error
+type BadBox = Box; // Error
 ```
 
 ### Default Type Parameters
@@ -156,13 +181,123 @@ function genericFirst<T>(arr: T[]) {
 
 ### Type Arguments Vs Runtime Arguments
 
-When you pass a type argument, it forces the runtime arguments to match.
+When you pass a type argument, it forces the runtime arguments to match it.
 
 ```ts
-const firstNumber = first<number>([1, 2, 3]);
+first<string>([1, 2, 3]);
+//             ^^^^^^^ Error!
 
+first<string>(["a", "b", "c"]); // OK
+
+first<number>([1, 2, 3]); // OK
+```
 
 ### Inferring From Runtime Arguments
 
-When you pass a
+When you don't pass a type argument, TypeScript infers it from the runtime arguments.
+
+```ts
+const firstElement1 = first([1, 2, 3]);
+//    ^ number, inferred from [1, 2, 3]
+
+const firstElement2 = first(["a", "b", "c"]);
+//    ^ string, inferred from ["a", "b", "c"]
+
+const firstElement3 = first([true, false]);
+//    ^ boolean, inferred from [true, false]
+```
+
+### Type Parameters Constraints
+
+You can constrain the type of the type parameter in a generic function, just like in a generic type.
+
+```ts
+function first<T extends string>(arr: T[]) {
+  return arr[0];
+}
+
+first(["a", "b", "c"]); // OK
+first([1, 2, 3]); // Error
+```
+
+### Unreferenced Type Paramaters
+
+You can have type parameters that are not used in the function's arguments.
+
+```ts
+const createSet = <T>() => new Set<T>();
+```
+
+When no type argument is passed, they default to `unknown`.
+
+```ts
+const set = createSet();
+//    ^ Set<unknown>
+```
+
+When there is a constraint, they default to the constraint.
+
+```ts
+const createSet = <T extends string>() => new Set<T>();
+
+const stringSet = createSet();
+//    ^ Set<string>
+```
+
+### Type Parameter Defaults
+
+You can provide default type parameters for your generic functions.
+
+```ts
+const createSet = <T = number>() => new Set<T>();
+
+const numberSet = createSet();
+//    ^ Set<number>
+
+const stringSet = createSet<string>();
+//    ^ Set<string>
+```
+
+### No Partial Type Inference
+
+If you pass one type argument to a function, you must pass all of them.
+
+```ts
+const map = <TInput, TOutput>(
+  arr: TInput[],
+  fn: (value: TInput) => TOutput,
+) => arr.map(fn);
+
+const idObjects = map<number>([1, 2, 3], (id) => ({ id }));
+//                    ^^^^^^ Expected 2 type arguments.
+```
+
+### Generic Classes
+
+Classes can also be generic:
+
+```ts
+class Box<T> {
+  value: T;
+
+  constructor(value: T) {
+    this.value = value;
+  }
+}
+
+const box = new Box("hello");
+//    ^ Box<string>
+```
+
+### Const Type Parameters
+
+You can use `const` assertions to make generic function type parameters behave as if they were `as const`.
+
+```ts
+//             ↓↓↓↓ const type parameter
+const first = <const T extends readonly any[]>(arr: T[]) =>
+  arr[0];
+
+const firstElement = first(["a", "b", "c"]);
+//    ^ "a", instead of string
 ```
