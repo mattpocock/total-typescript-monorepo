@@ -151,20 +151,6 @@ I'll be posting a lot more about evals. We'll be diving into deterministic evals
 
 ---
 
-# What Are Evals?
+# The Eval Developer Pipeline
 
-## What Are Evals?
-
-- Evals are like unit tests for your AI.
-- Unit tests give you a pass/fail metric. Instead, evals give you a score on the quality of the response. They're a range slider, not a checkbox.
-- Most software is deterministic. Software built with AI is probabilistic.
-
----
-
-## Why Are Evals Important?
-
-- Every AI system has a dependency on the underlying LLM.
-
-## What Are The Alternative To Evals?
-
-## Why Can't You Use Tests On AI?
+We now know a little of why evals are so useful. But how do you run them? How do you make them a part of your developer pipeline?
