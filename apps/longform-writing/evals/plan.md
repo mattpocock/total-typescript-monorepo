@@ -52,7 +52,32 @@
 
 ---
 
-# The Data Flywheel
+# The LLM App Flywheel
+
+- Improving LLM apps is so difficult that we need to leverage any advantage to make them better.
+- LLM apps need a continuous cycle of improvement, driven by user data and human feedback.
+- This cycle is what I'll call the LLM App Flywheel, inspired by [Vercel's post](https://vercel.com/blog/eval-driven-development-build-better-ai-faster).
+
+## The Flywheel
+
+![alt text](image-1.png)
+
+- Evals improve the product. To run evals, you need good data to test with.
+- A better product, linked with distribution, drives more user activity.
+- User activity generates production logs.
+- Production logs are then fed back into datasets.
+
+## Every Step Matters
+
+You can't skip any steps here.
+
+- Without good data, your evals will be useless.
+- Without evals, you won't know how to improve your product.
+- Without putting the product in front of users, you won't get user activity.
+- Without user activity, you won't get production logs.
+- Without production logs (or production logging infrastructure), you won't have data to feed back into your datasets.
+
+## Scaling The Flywheel
 
 ---
 
