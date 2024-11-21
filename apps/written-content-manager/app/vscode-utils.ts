@@ -40,7 +40,7 @@ export const getDoesAudioExistForExercise = async (exerciseId: string) => {
 export const getVSCodeFilesForPost = async (postId: string) => {
   const postPath = getPostsDir(postId);
 
-  const possiblePaths = ["**/**"];
+  const possiblePaths = ["**/*.{md,ts,tsx}"];
 
   const files = await fs.glob(possiblePaths, {
     cwd: postPath,
