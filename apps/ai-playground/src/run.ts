@@ -18,10 +18,7 @@ const fileToRun = await enquirer
   })
   .then((res) => path.join(dir, res.file));
 
-execSync(
-  `node --experimental-strip-types --no-warnings --watch --env-file="../../.env" ${fileToRun}`,
-  {
-    cwd: dir,
-    stdio: "inherit",
-  }
-);
+execSync(`pnpm braintrust eval ${fileToRun}`, {
+  cwd: dir,
+  stdio: "inherit",
+});
