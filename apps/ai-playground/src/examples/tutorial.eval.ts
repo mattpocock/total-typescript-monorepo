@@ -1,7 +1,10 @@
-import { Eval, wrapAISDKModel } from "braintrust";
-import { LevenshteinScorer } from "autoevals";
-import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
+import { generateText } from "ai";
+import {
+  Eval,
+  wrapAISDKModel,
+  type EvalScorer
+} from "braintrust";
 import { readFileSync } from "fs";
 
 const context = readFileSync("./src/assets/object-book-content.md", "utf-8");
@@ -18,23 +21,40 @@ const generateConceptPage = async (title: string, essayPlan: string) => {
       You will also receive the title of the reference
       page you will create.
       The title will be wrapped in a <title> tag.
-      You will also receive an essay plan for the page.
-      The essay plan will be wrapped in an <essay-plan> tag.
-      Follow the essay plan if you like, but feel free to
-      deviate from it if you think it will improve the page.
+      You will also receive a plan for the page.
+      The plan will be wrapped in an <plan> tag.
+      Write the page based on the plan, following
+      its headings.
     `,
     prompt: `
     <context>
       ${context}
     </context>
-    <essay-plan>
+    <plan>
       ${essayPlan}
-    </essay-plan>
+    </plan>
     <title>${title}</title>
     `,
   });
 
-  return await removeUnwantedSections(result.text);
+  const resultWithoutUnwantedSections = await removeUnwantedSections(
+    result.text
+  );
+
+  return resultWithoutUnwantedSections;
+};
+
+const removeCodeSampleHeadings = async (essay: string) => {
+  return essay
+    .split("\n")
+    .filter((line) => {
+      const shouldRemove =
+        line.startsWith("#") &&
+        (line.includes("Code Sample") || line.includes("Example"));
+
+      return !shouldRemove;
+    })
+    .join("\n");
 };
 
 const removeUnwantedSections = async (essay: string) => {
@@ -43,8 +63,6 @@ const removeUnwantedSections = async (essay: string) => {
     system: `
       You will receive an essay.
       Remove the introduction and conclusion from the essay.
-      Remove any practical exercises from the essay, if
-      they are present.
       Return the essay.
     `,
     prompt: `
@@ -52,7 +70,7 @@ const removeUnwantedSections = async (essay: string) => {
     `,
   });
 
-  return result.text;
+  return removeCodeSampleHeadings(result.text);
 };
 
 // const generateConceptPageWithCritique = async (opts: {
@@ -133,7 +151,8 @@ const createEssayPlan = async (prompt: string) => {
       The context will be wrapped in a <context> tag.
       You will also receive the title of the essay plan.
       The title will be wrapped in a <title> tag.
-      Provide code examples as part of the essay plan.
+      Ensure that every point in the essay plan is
+      backed up by a code example.
       Do not include a conclusion in the essay plan.
       Do not include additional resources in the essay plan.
     `,
@@ -150,6 +169,32 @@ const createEssayPlan = async (prompt: string) => {
   return essayPlan;
 };
 
+const hasCodeSamples =
+  (num: number): EvalScorer<string, string, undefined> =>
+  async (args) => {
+    const codeSamplesCount = args.output
+      .split("\n")
+      .filter((line) => line.startsWith("```")).length;
+
+    return {
+      score: codeSamplesCount >= num ? 1 : 0,
+      name: "Code samples",
+    };
+  };
+
+const hasMarkdownHeadings =
+  (num: number): EvalScorer<string, string, undefined> =>
+  async (args) => {
+    const headingsCount = args.output
+      .split("\n")
+      .filter((line) => line.startsWith("#")).length;
+
+    return {
+      score: headingsCount >= num ? 1 : 0,
+      name: "Markdown headings",
+    };
+  };
+
 Eval("Generate concept page", {
   data: () => {
     return [
@@ -165,6 +210,18 @@ Eval("Generate concept page", {
       {
         input: "`Pick` and `Omit`",
       },
+      {
+        input: "Typing Function Parameters",
+      },
+      {
+        input: "Function Return Types",
+      },
+      {
+        input: "Arrays and Tuples",
+      },
+      {
+        input: "Optional Object Properties",
+      },
     ];
   },
   task: async (title) => {
@@ -173,5 +230,5 @@ Eval("Generate concept page", {
 
     return conceptPage;
   },
-  scores: [],
+  scores: [hasMarkdownHeadings(3), hasCodeSamples(3)],
 });
