@@ -18,6 +18,7 @@
     "make-video": "turbo watch dev --filter=remotion-code-hike --filter=sync-current-markdown-file-to-remotion --filter=source-to-code-samples --filter=record-narration --filter=nodeslash-server",
     "new": "(cd apps/written-content && pnpm run new)",
     "scratch": "(cd apps/written-content && pnpm run scratch)",
+    "ai": "(cd apps/ai-playground && pnpm run go)",
     "manage": "turbo watch lint dev --filter written-content-manager --filter=@total-typescript/twoslash-preview-server"
   },
   "keywords": [],

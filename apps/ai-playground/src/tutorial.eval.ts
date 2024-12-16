@@ -1,17 +1,24 @@
 import { openai } from "@ai-sdk/openai";
 import { generateText } from "ai";
-import {
-  Eval,
-  wrapAISDKModel,
-  type EvalScorer
-} from "braintrust";
+import { createScorer, evalite } from "evalite";
+import { traceAISDKModel } from "evalite/ai-sdk";
 import { readFileSync } from "fs";
+import fsDriver from "unstorage/drivers/fs";
+import { createStorage } from "unstorage";
+import { cacheModel } from "./cache-model";
 
-const context = readFileSync("./src/assets/object-book-content.md", "utf-8");
+const storage = createStorage({
+  driver: (fsDriver as any)({
+    base: "./llm-cache.local",
+  }),
+});
+
+const flagshipModel = cacheModel(traceAISDKModel(openai("gpt-4o")), storage);
+const cheapModel = cacheModel(traceAISDKModel(openai("gpt-4o-mini")), storage);
 
 const generateConceptPage = async (title: string, essayPlan: string) => {
   const result = await generateText({
-    model: wrapAISDKModel(openai.chat("gpt-4o")),
+    model: flagshipModel,
     system: `
       You are a technical writer writing some documentation
       for a feature of the TypeScript programming language.
@@ -28,7 +35,7 @@ const generateConceptPage = async (title: string, essayPlan: string) => {
     `,
     prompt: `
     <context>
-      ${context}
+      
     </context>
     <plan>
       ${essayPlan}
@@ -59,7 +66,7 @@ const removeCodeSampleHeadings = async (essay: string) => {
 
 const removeUnwantedSections = async (essay: string) => {
   const result = await generateText({
-    model: wrapAISDKModel(openai.chat("gpt-4o-mini")),
+    model: cheapModel,
     system: `
       You will receive an essay.
       Remove the introduction and conclusion from the essay.
@@ -79,7 +86,7 @@ const removeUnwantedSections = async (essay: string) => {
 //   critique: string;
 // }) => {
 //   const result = await generateText({
-//     model: wrapAISDKModel(openai.chat("gpt-4o")),
+//     model,
 //     system: `
 //       You are a technical writer editing some documentation
 //       for a feature of the TypeScript programming language.
@@ -112,7 +119,7 @@ const removeUnwantedSections = async (essay: string) => {
 
 // const critiqueConceptPage = async (conceptPage: string) => {
 //   const result = await generateText({
-//     model: wrapAISDKModel(openai.chat("gpt-4o")),
+//     model,
 //     system: `
 //       You are a teacher reviewing a reference page
 //       for a feature of the TypeScript programming language.
@@ -141,7 +148,7 @@ const removeUnwantedSections = async (essay: string) => {
 
 const createEssayPlan = async (prompt: string) => {
   const result = await generateText({
-    model: wrapAISDKModel(openai.chat("gpt-4o")),
+    model: flagshipModel,
     system: `
       You are a technical writer creating an essay plan
       for a documentation page for a feature of the
@@ -158,7 +165,7 @@ const createEssayPlan = async (prompt: string) => {
     `,
     prompt: `
     <context>
-      ${context}
+    
     </context>
     <title>${prompt}</title>
     `,
@@ -169,34 +176,36 @@ const createEssayPlan = async (prompt: string) => {
   return essayPlan;
 };
 
-const hasCodeSamples =
-  (num: number): EvalScorer<string, string, undefined> =>
-  async (args) => {
-    const codeSamplesCount = args.output
-      .split("\n")
-      .filter((line) => line.startsWith("```")).length;
+const hasCodeSamples = (num: number) =>
+  createScorer<string>({
+    name: `Has ${num} code samples`,
+    scorer: (args) => {
+      const codeSamplesCount = args.output
+        .split("\n")
+        .filter((line) => line.startsWith("```")).length;
 
-    return {
-      score: codeSamplesCount >= num ? 1 : 0,
-      name: "Code samples",
-    };
-  };
+      return {
+        score: codeSamplesCount >= num ? 1 : 0,
+      };
+    },
+  });
 
-const hasMarkdownHeadings =
-  (num: number): EvalScorer<string, string, undefined> =>
-  async (args) => {
-    const headingsCount = args.output
-      .split("\n")
-      .filter((line) => line.startsWith("#")).length;
+const hasMarkdownHeadings = (num: number) =>
+  createScorer<string>({
+    name: `Has ${num} Markdown headings`,
+    scorer: (args) => {
+      const headingsCount = args.output
+        .split("\n")
+        .filter((line) => line.startsWith("#")).length;
 
-    return {
-      score: headingsCount >= num ? 1 : 0,
-      name: "Markdown headings",
-    };
-  };
+      return {
+        score: headingsCount >= num ? 1 : 0,
+      };
+    },
+  });
 
-Eval("Generate concept page", {
-  data: () => {
+evalite("Generate concept page", {
+  data: async () => {
     return [
       {
         input: "Intersections vs `interface extends`",
@@ -230,5 +239,5 @@ Eval("Generate concept page", {
 
     return conceptPage;
   },
-  scores: [hasMarkdownHeadings(3), hasCodeSamples(3)],
+  scorers: [hasMarkdownHeadings(3), hasCodeSamples(3)],
 });
