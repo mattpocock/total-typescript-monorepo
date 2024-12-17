@@ -12,13 +12,22 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     select: {
       title: true,
       sections: {
+        where: {
+          deleted: false,
+        },
         select: {
           title: true,
           exercises: {
+            where: {
+              deleted: false,
+            },
             select: {
               title: true,
               learningGoal: true,
               notes: true,
+            },
+            orderBy: {
+              order: "asc",
             },
           },
         },
