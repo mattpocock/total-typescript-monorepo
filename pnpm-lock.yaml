@@ -221,8 +221,8 @@ importers:
         specifier: 4.0.194
         version: 4.0.194(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@remotion/google-fonts':
-        specifier: 4.0.194
-        version: 4.0.194(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: 4.0.241
+        version: 4.0.241(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@total-typescript/nodeslash':
         specifier: workspace:*
         version: link:../../packages/nodeslash
@@ -2840,8 +2840,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@remotion/google-fonts@4.0.194':
-    resolution: {integrity: sha512-sAsGNOloga3Viy2g9Z8pFuCvh/1la/1P2xBLD538xzcWAiq0eCQrKEwx94SORa1ZZZi4ML+/mAH36Wo6Z5bgCg==}
+  '@remotion/google-fonts@4.0.241':
+    resolution: {integrity: sha512-/Vb8cu+7QvmvnIPjMB6LH408WrJ3Paqo/2rWrjBYfCDT1ge44yEbrGB1j1uohXLKNE0C7vZ+KrQE+0jx1YX+sg==}
 
   '@remotion/media-utils@4.0.194':
     resolution: {integrity: sha512-+MGDEQMMCTmvYreTpSZUhmMyp4+elRDJ0AnSc5lULhdyqLuy6voiusNVxj4P1IehnzMtuyGNl+BCTEj5u7R0Uw==}
@@ -3338,6 +3338,7 @@ packages:
 
   acorn-import-assertions@1.9.0:
     resolution: {integrity: sha512-cmMwop9x+8KFhxvKrKfPYmN6/pKTYYHBqLa0DfvVZcKMJWNyWLnaqND7dx/qn66R7ewM1UX5XMaDVP5wlVTaVA==}
+    deprecated: package has been renamed to acorn-import-attributes
     peerDependencies:
       acorn: ^8
 
@@ -6467,6 +6468,12 @@ packages:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
 
+  remotion@4.0.241:
+    resolution: {integrity: sha512-bntxPkf9TLjnSO/2NOI7Eeb/oc6iKBBW+2X8kfuxLyeHxsK4LCpBweFoggqSoopK8vRdHbP3jz3A9dQurcyBNQ==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+
   require-directory@2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
     engines: {node: '>=0.10.0'}
@@ -7082,6 +7089,7 @@ packages:
 
   turbo@2.2.4-canary.8:
     resolution: {integrity: sha512-BTbRdJnDtdXsTas8S1KvzWA4th51lYXOUF/0az1zTFKC0N0bL2lkwvIRs1GQZuAtoQ4xEo2YShdfpbinS2OQVg==}
+    deprecated: cache flags are not backwards compatible
     hasBin: true
 
   twoslash-cdn@0.2.9:
@@ -9861,9 +9869,9 @@ snapshots:
   '@remotion/compositor-win32-x64-msvc@4.0.194':
     optional: true
 
-  '@remotion/google-fonts@4.0.194(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@remotion/google-fonts@4.0.241(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      remotion: 4.0.194(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      remotion: 4.0.241(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     transitivePeerDependencies:
       - react
       - react-dom
@@ -14397,6 +14405,11 @@ snapshots:
       zod: 3.23.8
 
   remotion@4.0.194(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+    dependencies:
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+
+  remotion@4.0.241(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
