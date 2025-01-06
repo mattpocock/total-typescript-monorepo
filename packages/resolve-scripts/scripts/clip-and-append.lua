@@ -8,23 +8,21 @@ local folder = mediaPool:GetCurrentFolder()
 
 local input = os.getenv('INPUT_VIDEO')
 
+if not input then
+  error('No INPUT_VIDEO provided')
+end
+
+local cuts = os.getenv('CLIPS_TO_APPEND')
+
+if not cuts then
+  error('No CLIPS_TO_APPEND provided')
+end
+
 local mediaStorage = resolve:GetMediaStorage()
 
 local clips = mediaStorage:AddItemListToMediaPool(input)
 
 local mediaId = clips[1]:GetMediaId()
-
-local cuts = os.getenv('CLIPS_TO_APPEND')
-
-if not mediaId then
-  print('No media ID provided')
-  os.exit()
-end
-
-if not cuts then
-  print('No cuts provided')
-  os.exit()
-end
 
 print ('Media ID: ' .. mediaId)
 print ('Cuts: ' .. cuts)

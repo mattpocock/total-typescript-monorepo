@@ -24,7 +24,7 @@ export const appendVideoToTimeline = async () => {
     });
 
     const textFileOutput = path.resolve(
-      inputVideo.replace(".mp4", ".silence.txt")
+      inputVideo.replace(".mkv", ".silence.txt")
     );
 
     writeFileSync(textFileOutput, silenceResult.rawStdout);
@@ -40,6 +40,7 @@ export const appendVideoToTimeline = async () => {
     await runDavinciResolveScript("clip-and-append.lua", {
       INPUT_VIDEO: inputVideo,
       CLIPS_TO_APPEND: serialisedClipsOfSpeaking,
+      WSLENV: "INPUT_VIDEO/p:CLIPS_TO_APPEND",
     });
 
     return okAsync(void 0);

@@ -8,6 +8,7 @@ type Scripts = {
   "clip-and-append.lua": {
     INPUT_VIDEO: string;
     CLIPS_TO_APPEND: string;
+    WSLENV: string;
   };
   "import-file-to-bin.lua": {
     INPUT: string;

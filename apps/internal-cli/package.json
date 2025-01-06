@@ -9,7 +9,7 @@
   "scripts": {
     "test": "vitest run",
     "build": "tsc",
-    "setup": "(pnpm unlink | true) && pnpm link --global"
+    "setup": "pnpm link --global"
   },
   "exports": {
     ".": "./dist/index.js"

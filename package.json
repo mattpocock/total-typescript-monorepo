@@ -19,7 +19,8 @@
     "new": "(cd apps/written-content && pnpm run new)",
     "scratch": "(cd apps/written-content && pnpm run scratch)",
     "ai": "(cd apps/ai-playground && pnpm run go)",
-    "manage": "turbo watch lint dev --filter written-content-manager --filter=@total-typescript/twoslash-preview-server"
+    "manage": "turbo watch lint dev --filter written-content-manager --filter=@total-typescript/twoslash-preview-server",
+    "append": "apps/internal-cli/dist/bin.js append-video-to-timeline"
   },
   "keywords": [],
   "author": "Matt Pocock",
