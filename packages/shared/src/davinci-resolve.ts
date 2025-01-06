@@ -27,7 +27,7 @@ export const runDavinciResolveScript = <TScript extends keyof Scripts>(
   return safeTry(async function* () {
     yield* checkFuscriptIsInstalled();
 
-    const scriptPath = resolve(DAVINCI_RESOLVE_SCRIPTS_LOCATION, script);
+    const scriptPath = `\\\\\\wsl.localhost\\Ubuntu-24.04\\home\\mattpocock\\repos\\ts\\total-typescript-monorepo\\packages\\resolve-scripts\\scripts\\${script}`;
 
     const envString = Object.entries(env)
       .map(([key, value]) => {
@@ -35,9 +35,7 @@ export const runDavinciResolveScript = <TScript extends keyof Scripts>(
       })
       .join(" ");
 
-    return execAsync(
-      `${envString} ${FUSCRIPT_LOCATION} -q "${scriptPath}"`
-    ).map((r) => r.stdout);
+    return execAsync(`${envString} ${FUSCRIPT_LOCATION} -q "${scriptPath}"`);
   });
 };
 

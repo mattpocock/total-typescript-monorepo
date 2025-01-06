@@ -19,7 +19,8 @@ export const appendVideoToTimeline = async () => {
     const silenceResult = yield* findSilenceInVideo(inputVideo, {
       threshold: THRESHOLD,
       fps,
-      padding: 0,
+      startPadding: 0,
+      endPadding: 0.1,
       silenceDuration: SILENCE_DURATION,
     });
 
@@ -35,13 +36,16 @@ export const appendVideoToTimeline = async () => {
       })
       .join(":::");
 
-    console.log("Appending to Timeline");
+    const { stdout, stderr } = yield* runDavinciResolveScript(
+      "clip-and-append.lua",
+      {
+        INPUT_VIDEO: inputVideo,
+        CLIPS_TO_APPEND: serialisedClipsOfSpeaking,
+        WSLENV: "INPUT_VIDEO/p:CLIPS_TO_APPEND",
+      }
+    );
 
-    await runDavinciResolveScript("clip-and-append.lua", {
-      INPUT_VIDEO: inputVideo,
-      CLIPS_TO_APPEND: serialisedClipsOfSpeaking,
-      WSLENV: "INPUT_VIDEO/p:CLIPS_TO_APPEND",
-    });
+    console.log(stdout, stderr);
 
     return okAsync(void 0);
   }).mapErr((e) => {

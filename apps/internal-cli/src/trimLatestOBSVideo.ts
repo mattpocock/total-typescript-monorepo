@@ -50,7 +50,8 @@ export const trimLatestOBSVideo = () => {
 
     const silence = yield* findSilenceInVideo(activeEditorFilePath, {
       silenceDuration: SILENCE_DURATION,
-      padding: PADDING,
+      startPadding: PADDING,
+      endPadding: PADDING,
       threshold: THRESHOLD,
       fps,
     });

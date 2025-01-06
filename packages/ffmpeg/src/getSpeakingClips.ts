@@ -1,9 +1,10 @@
 export const getClipsOfSpeakingFromFFmpeg = (
   stdout: string,
   opts: {
-    padding: number;
+    startPadding: number;
+    endPadding: number;
     fps: number;
-  },
+  }
 ) => {
   let silence = stdout
     .trim()
@@ -45,13 +46,14 @@ export const getClipsOfSpeakingFromFFmpeg = (
 
     const endFramePlusOne = endFrame + 1;
 
-    const framePadding = opts.padding * opts.fps;
+    const startFramePadding = opts.startPadding * opts.fps;
+    const endFramePadding = opts.endPadding * opts.fps;
 
     clipsOfSpeaking.push({
-      startFrame: startFrame - framePadding,
-      startTime: startTime - opts.padding,
-      endFrame: endFramePlusOne + framePadding,
-      endTime: endTime + opts.padding,
+      startFrame: startFrame - startFramePadding,
+      startTime: startTime - opts.startPadding,
+      endFrame: endFramePlusOne + endFramePadding,
+      endTime: endTime + opts.endPadding,
       silenceEnd: currentSilence.silenceEnd,
       duration: endTime - startTime,
     });

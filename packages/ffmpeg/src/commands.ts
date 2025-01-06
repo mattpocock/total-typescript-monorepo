@@ -5,10 +5,10 @@ import { err, ok, okAsync, Result, ResultAsync } from "neverthrow";
 
 export const encodeVideo = (
   inputVideo: AbsolutePath,
-  outputVideoPath: AbsolutePath,
+  outputVideoPath: AbsolutePath
 ) => {
   return execAsync(
-    `ffmpeg -y -hide_banner -i "${inputVideo}" -c:v libx264 -profile high -b:v 7000k -pix_fmt yuv420p -maxrate 16000k "${outputVideoPath}"`,
+    `ffmpeg -y -hide_banner -i "${inputVideo}" -c:v libx264 -profile high -b:v 7000k -pix_fmt yuv420p -maxrate 16000k "${outputVideoPath}"`
   );
 };
 
@@ -27,12 +27,13 @@ export const findSilenceInVideo = (
   opts: {
     threshold: number | string;
     silenceDuration: number | string;
-    padding: number;
+    startPadding: number;
+    endPadding: number;
     fps: number;
-  },
+  }
 ) => {
   return execAsync(
-    `ffmpeg -hide_banner -vn -i "${inputVideo}" -af "silencedetect=n=${opts.threshold}dB:d=${opts.silenceDuration}" -f null - 2>&1 | grep "silence_end" | awk '{print $5 " " $8}'`,
+    `ffmpeg -hide_banner -vn -i "${inputVideo}" -af "silencedetect=n=${opts.threshold}dB:d=${opts.silenceDuration}" -f null - 2>&1 | grep "silence_end" | awk '{print $5 " " $8}'`
   )
     .map(({ stdout }) => {
       return {
@@ -55,7 +56,7 @@ export const findSilenceInVideo = (
 
       return ok({
         speakingClips: speakingClips.filter(
-          (clip) => clip.duration > MINIMUM_CLIP_LENGTH_IN_SECONDS,
+          (clip) => clip.duration > MINIMUM_CLIP_LENGTH_IN_SECONDS
         ),
         startTime,
         endTime,
@@ -72,13 +73,13 @@ export const trimVideo = (
   inputVideo: AbsolutePath,
   outputVideo: AbsolutePath,
   startTime: number,
-  endTime: number,
+  endTime: number
 ) => {
   return execAsync(
     `ffmpeg -y -hide_banner -ss ${formatFloatForFFmpeg(
-      startTime,
+      startTime
     )} -to ${formatFloatForFFmpeg(
-      endTime,
-    )} -i "${inputVideo}" -c copy "${outputVideo.replaceAll("\\", "")}"`,
+      endTime
+    )} -i "${inputVideo}" -c copy "${outputVideo.replaceAll("\\", "")}"`
   );
 };
