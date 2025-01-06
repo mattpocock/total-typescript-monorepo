@@ -20,7 +20,7 @@ export const appendVideoToTimeline = async () => {
       threshold: THRESHOLD,
       fps,
       startPadding: 0,
-      endPadding: 0.1,
+      endPadding: 0.05,
       silenceDuration: SILENCE_DURATION,
     });
 
