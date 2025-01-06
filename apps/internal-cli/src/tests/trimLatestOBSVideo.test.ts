@@ -12,8 +12,8 @@ vi.mock("@total-typescript/ffmpeg", () => ({
         ok({
           startTime: 0,
           endTime: 10,
-        }),
-      ),
+        })
+      )
     ),
   SILENCE_DURATION: 10,
   PADDING: 10,
@@ -38,7 +38,7 @@ vi.mock("@total-typescript/shared", async (importOriginal) => ({
 
 vi.mock("../constants.js", () => ({
   getExternalDrive: () => new ResultAsync(Promise.resolve(ok("/Drive"))),
-  EXTERNAL_DRIVE_MOVIES_ROOT: "/Drive/output",
+  OBS_OUTPUT_DIRECTORY: "/Drive/output",
 }));
 
 vi.mock("../getLatestOBSVideo.js", () => ({
@@ -55,7 +55,7 @@ it("Should call trim on the video", async () => {
     "/tmp/video.mp4",
     "/Drive/output/01-video.problem.un-encoded.mp4",
     0,
-    10,
+    10
   );
 });
 

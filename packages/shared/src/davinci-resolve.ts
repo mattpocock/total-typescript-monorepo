@@ -1,8 +1,8 @@
+import { safeTry } from "neverthrow";
 import { resolve } from "path";
 import { DAVINCI_RESOLVE_SCRIPTS_LOCATION } from "./constants.js";
 import type { EmptyObject } from "./types.js";
-import { execAsync, exitProcessWithError } from "./utils.js";
-import { safeTry } from "neverthrow";
+import { execAsync } from "./utils.js";
 
 type Scripts = {
   "clip-and-append.lua": {
@@ -15,6 +15,9 @@ type Scripts = {
   "get-current-timeline-clip.lua": EmptyObject;
   "add-subtitles.lua": EmptyObject;
 };
+
+const FUSCRIPT_LOCATION =
+  "/mnt/d/Program\\ Files/Blackmagic\\ Design/DaVinci\\ Resolve/fuscript.exe";
 
 export const runDavinciResolveScript = <TScript extends keyof Scripts>(
   script: TScript,
@@ -31,14 +34,14 @@ export const runDavinciResolveScript = <TScript extends keyof Scripts>(
       })
       .join(" ");
 
-    return execAsync(`${envString} fuscript -q "${scriptPath}"`).map(
-      (r) => r.stdout
-    );
+    return execAsync(
+      `${envString} ${FUSCRIPT_LOCATION} -q "${scriptPath}"`
+    ).map((r) => r.stdout);
   });
 };
 
 const checkFuscriptIsInstalled = () => {
-  return execAsync("fuscript --version").mapErr((e) => {
+  return execAsync(`${FUSCRIPT_LOCATION} --version`).mapErr((e) => {
     return new Error("fuscript is not installed", {
       cause: e,
     });

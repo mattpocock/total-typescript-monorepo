@@ -17,7 +17,7 @@ import {
 } from "@total-typescript/shared";
 import { err, ok, safeTry } from "neverthrow";
 import path from "path";
-import { EXTERNAL_DRIVE_MOVIES_ROOT, getExternalDrive } from "./constants.js";
+import { OBS_OUTPUT_DIRECTORY, getExternalDrive } from "./constants.js";
 import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
 
 export const trimLatestOBSVideo = () => {
@@ -34,7 +34,7 @@ export const trimLatestOBSVideo = () => {
     ) as RelativePath;
 
     const absolutePathToTrimmedFootage = path.resolve(
-      EXTERNAL_DRIVE_MOVIES_ROOT,
+      OBS_OUTPUT_DIRECTORY,
       relativePathToReposFolder
     ) as AbsolutePath;
 

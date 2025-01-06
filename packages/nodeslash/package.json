@@ -11,7 +11,7 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "2.1.2"
+    "@vitest/coverage-v8": "2.1.8"
   },
   "exports": {
     ".": "./dist/index.js"

@@ -7,10 +7,7 @@ config({
 });
 
 const envSchema = z.object({
-  OBS_OUTPUT_MODE: z
-    .enum(["desktop", "external-drive"])
-    .default("external-drive"),
-  EXTERNAL_DRIVE_ROOT: z.string(),
+  OBS_OUTPUT_DIRECTORY: z.string(),
 });
 
 const result = envSchema.safeParse(process.env);

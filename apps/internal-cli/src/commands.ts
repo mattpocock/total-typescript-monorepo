@@ -1,17 +1,10 @@
+import { SKILL_RECORDINGS_REPO_LOCATION } from "@total-typescript/shared";
 import { execSync } from "child_process";
+import { addExerciseToBook } from "./addExerciseToBook.js";
+import { appendVideoToTimeline } from "./appendVideoToTimeline.js";
 import { encodeAllVideos } from "./encodeAllVideos.js";
-import { openPairedVideoDir } from "./openPairedVideoDir.js";
 import { selectLatestOBSVideo } from "./selectLatestOBSVideo.js";
 import { trimLatestOBSVideo } from "./trimLatestOBSVideo.js";
-import {
-  execAsync,
-  SKILL_RECORDINGS_REPO_LOCATION,
-} from "@total-typescript/shared";
-import { appendVideoToTimeline } from "./appendVideoToTimeline.js";
-import { clearUnusedFootageFromDisk } from "./clearUnusedFootageFromDisk.js";
-import { getLatestMp4File } from "./getLatestOBSVideo.js";
-import { DAVINCI_RESOLVE_EXPORTS_LOCATION } from "./constants.js";
-import { addExerciseToBook } from "./addExerciseToBook.js";
 
 export type Command<TArgs extends readonly string[]> = {
   scriptkitName: string;
@@ -52,13 +45,6 @@ export const commands = createCommands([
     run: trimLatestOBSVideo,
   },
   {
-    scriptkitName: "Open Paired Video Dir",
-    fileName: "open-paired-video-dir",
-    description: "Open the paired video directory.",
-    cliCommand: "open-paired-video-dir",
-    run: openPairedVideoDir,
-  },
-  {
     scriptkitName: "Post Article to Skill Recordings",
     fileName: "post-article-to-skill-recordings",
     description: "Post an issue to the Skill Recordings repo.",
@@ -78,31 +64,6 @@ export const commands = createCommands([
     description: "Append the latest OBS video to the Davinci Resolve timeline.",
     cliCommand: "append-video-to-timeline",
     run: appendVideoToTimeline,
-  },
-  {
-    scriptkitName: "Clear Unused Footage From Disk",
-    fileName: "clear-unused-footage-from-disk",
-    description:
-      "Clear footage not used in DaVinci Resolve from the external drive.",
-    cliCommand: "clear-unused-footage-from-disk",
-    run: clearUnusedFootageFromDisk,
-  },
-  {
-    scriptkitName: "Select Latest DaVinci Resolve Export",
-    fileName: "select-latest-davinci-resolve-export",
-    description:
-      "Select the latest DaVinci Resolve export from the external drive.",
-    cliCommand: "select-latest-davinci-resolve-export",
-    run: () => {
-      return getLatestMp4File(DAVINCI_RESOLVE_EXPORTS_LOCATION)
-        .andThen((r) => {
-          return execAsync(`open -R "${r}"`);
-        })
-        .mapErr((e) => {
-          console.error(e);
-          process.exit(1);
-        });
-    },
   },
   {
     scriptkitName: "Add Exercise To Book",

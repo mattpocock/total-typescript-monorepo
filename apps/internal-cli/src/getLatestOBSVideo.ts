@@ -5,7 +5,7 @@ import {
   type AbsolutePath,
 } from "@total-typescript/shared";
 import path from "path";
-import { EXTERNAL_DRIVE_RAW_FOOTAGE_ROOT } from "./constants.js";
+import { OBS_OUTPUT_DIRECTORY } from "./constants.js";
 
 export const getLatestMp4File = (dir: AbsolutePath) => {
   return execAsync(`ls -t ${path.join(dir, "*.mp4")}`).map((r) => {
@@ -14,9 +14,5 @@ export const getLatestMp4File = (dir: AbsolutePath) => {
 };
 
 export const getLatestOBSVideo = () => {
-  if (env.OBS_OUTPUT_MODE === "desktop") {
-    return getLatestMp4File(DESKTOP_LOCATION);
-  }
-
-  return getLatestMp4File(EXTERNAL_DRIVE_RAW_FOOTAGE_ROOT);
+  return getLatestMp4File(OBS_OUTPUT_DIRECTORY);
 };
