@@ -42,8 +42,8 @@
     "editor.occurrencesHighlight": "undefined",
     "editor.selectionHighlight": "undefined",
     "workbench.colorTheme": "undefined",
-    "prettier.trailingComma": "undefined",
     "zenMode.showTabs": "undefined",
-    "workbench.editor.labelFormat": "undefined"
-  },
+    "workbench.editor.labelFormat": "undefined",
+    "window.autoDetectColorScheme": "undefined"
+  }
 }
