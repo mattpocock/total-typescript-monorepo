@@ -10,7 +10,9 @@ import { okAsync, safeTry } from "neverthrow";
 import path from "path";
 import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
 
-export const appendVideoToTimeline = async () => {
+export const appendVideoToTimeline = async (
+  mode: "new-timeline" | "current-timeline"
+) => {
   return safeTry(async function* () {
     const inputVideo = yield* getLatestOBSVideo();
 
@@ -42,6 +44,7 @@ export const appendVideoToTimeline = async () => {
         INPUT_VIDEO: inputVideo,
         CLIPS_TO_APPEND: serialisedClipsOfSpeaking,
         WSLENV: "INPUT_VIDEO/p:CLIPS_TO_APPEND",
+        NEW_TIMELINE: mode === "new-timeline" ? "true" : "false",
       }
     );
 

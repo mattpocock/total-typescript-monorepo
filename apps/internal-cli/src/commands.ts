@@ -59,11 +59,19 @@ export const commands = createCommands([
     },
   },
   {
-    scriptkitName: "Append Video to Davinci Resolve Timeline",
+    scriptkitName: "Append Video to Current Davinci Resolve Timeline",
     fileName: "append-video-to-timeline",
     description: "Append the latest OBS video to the Davinci Resolve timeline.",
     cliCommand: "append-video-to-timeline",
-    run: appendVideoToTimeline,
+    run: () => appendVideoToTimeline("current-timeline"),
+  },
+  {
+    scriptkitName: "Append Video to New Davinci Resolve Timeline",
+    fileName: "append-video-to-new-timeline",
+    description:
+      "Append the latest OBS video to a new Davinci Resolve timeline.",
+    cliCommand: "append-video-to-new-timeline",
+    run: () => appendVideoToTimeline("new-timeline"),
   },
   {
     scriptkitName: "Add Exercise To Book",

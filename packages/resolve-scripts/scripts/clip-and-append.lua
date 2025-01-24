@@ -18,6 +18,7 @@ if not cuts then
   error('No CLIPS_TO_APPEND provided')
 end
 
+
 local mediaStorage = resolve:GetMediaStorage()
 
 local clips = mediaStorage:AddItemListToMediaPool(input)
@@ -72,9 +73,15 @@ for i, cut in ipairs(result) do
   }
 end
 
-mediaPool:AppendToTimeline(clipInfos)
+local newTimeline = os.getenv('NEW_TIMELINE')
+
+local currentDatetime = os.date('%Y-%m-%d %H:%M:%S')
+
+if newTimeline == 'true' then
+  mediaPool:CreateTimelineFromClips('abcdef', clipInfos)
+else
+  mediaPool:AppendToTimeline(clipInfos)
+end
 
 resolve:OpenPage("cut")
-
-local timeline = project:GetCurrentTimeline()
 
