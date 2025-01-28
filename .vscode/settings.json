@@ -16,12 +16,15 @@
   ],
   "typescript.preferences.includePackageJsonAutoImports": "on",
   "presentation-mode.configBackup": {
+    "editor.rulers": "undefined",
+    "eslint.enable": "undefined",
     "explorer.autoReveal": "undefined",
     "workbench.statusBar.visible": "undefined",
     "workbench.editor.showTabs": "undefined",
     "editor.lineNumbers": "undefined",
     "editor.folding": "undefined",
     "github.copilot.enable": "undefined",
+    "workbench.colorCustomizations": "undefined",
     "explorer.fileNesting.patterns": {
       "*.ts": "${capture}.js",
       "*.js": "${capture}.js.map, ${capture}.min.js, ${capture}.d.ts",
