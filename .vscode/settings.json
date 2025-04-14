@@ -47,6 +47,7 @@
     "workbench.colorTheme": "undefined",
     "zenMode.showTabs": "undefined",
     "workbench.editor.labelFormat": "undefined",
-    "window.autoDetectColorScheme": "undefined"
+    "window.autoDetectColorScheme": "undefined",
+    "github.copilot.nextEditSuggestions.enabled": "undefined"
   }
 }

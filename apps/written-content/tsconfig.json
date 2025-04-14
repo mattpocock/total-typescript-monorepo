@@ -1,6 +1,7 @@
 {
   "extends": "@total-typescript/tsconfig/bundler",
   "compilerOptions": {
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "erasableSyntaxOnly": true
   }

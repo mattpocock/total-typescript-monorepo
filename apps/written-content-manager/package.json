@@ -15,8 +15,8 @@
     "migrate:unsafe": "pnpm run migrate:dev && pnpm run migrate:prod"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^0.0.70",
-    "ai": "^3.4.25",
+    "@ai-sdk/anthropic": "^1.1.15",
+    "ai": "4.1.54",
     "@monaco-editor/react": "^4.6.0",
     "@prisma/client": "5.19.1",
     "@radix-ui/react-checkbox": "^1.1.1",
@@ -53,8 +53,8 @@
     "@remix-run/dev": "2.11.1",
     "@total-typescript/ffmpeg": "workspace:*",
     "@total-typescript/shared": "workspace:*",
-    "@types/react": "^18.2.20",
-    "@types/react-dom": "^18.2.7",
+    "@types/react": "18.3.18",
+    "@types/react-dom": "18.3.1",
     "@vitest/coverage-v8": "2.1.8",
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.38",
