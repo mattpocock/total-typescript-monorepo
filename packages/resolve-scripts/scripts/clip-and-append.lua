@@ -1,3 +1,25 @@
+--[[
+Clip and Append Script for DaVinci Resolve
+-----------------------------------------
+This script is designed to work with DaVinci Resolve to append clips
+to an existing timeline based on specified cut points.
+
+Environment Variables Required:
+- INPUT_VIDEO: Path to the video file to be processed
+- CLIPS_TO_APPEND: String containing cut points in the format "startFrame___endFrame:::startFrame___endFrame"
+
+Functionality:
+1. Takes a video file and specified cut points
+2. Adds the video to the media pool
+3. Creates clips based on the specified cut points
+4. Appends them to the existing timeline
+5. Opens the Cut page in Resolve
+
+Example Usage:
+INPUT_VIDEO="/path/to/video.mp4"
+CLIPS_TO_APPEND="0___100:::200___300"
+]]
+
 local resolve = Resolve()
 local projectManager = resolve:GetProjectManager()
 local project = projectManager:GetCurrentProject()
@@ -18,7 +40,6 @@ if not cuts then
   error('No CLIPS_TO_APPEND provided')
 end
 
-
 local mediaStorage = resolve:GetMediaStorage()
 
 local clips = mediaStorage:AddItemListToMediaPool(input)
@@ -38,8 +59,6 @@ for i, folderClip in ipairs(folderClips) do
     break
   end
 end
-
-
 
 local function split(pString, pPattern)
   local Table = {} -- NOTE: use {n = 0} in Lua-5.0
@@ -73,15 +92,7 @@ for i, cut in ipairs(result) do
   }
 end
 
-local newTimeline = os.getenv('NEW_TIMELINE')
-
-local currentDatetime = os.date('%Y-%m-%d %H:%M:%S')
-
-if newTimeline == 'true' then
-  mediaPool:CreateTimelineFromClips('abcdef', clipInfos)
-else
-  mediaPool:AppendToTimeline(clipInfos)
-end
+mediaPool:AppendToTimeline(clipInfos)
 
 resolve:OpenPage("cut")
 
