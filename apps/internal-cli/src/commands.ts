@@ -1,4 +1,7 @@
-import { SKILL_RECORDINGS_REPO_LOCATION } from "@total-typescript/shared";
+import {
+  runDavinciResolveScript,
+  SKILL_RECORDINGS_REPO_LOCATION,
+} from "@total-typescript/shared";
 import { execSync } from "child_process";
 import { addExerciseToBook } from "./addExerciseToBook.js";
 import { appendVideoToTimeline } from "./appendVideoToTimeline.js";
@@ -29,6 +32,25 @@ export const commands = createCommands([
       "Encode all unencoded videos in the external drive and save in place.",
     cliCommand: "encode-all-videos",
     run: encodeAllVideos,
+  },
+  {
+    scriptkitName: "Add Current Timeline to Render Queue",
+    fileName: "add-current-timeline-to-render-queue",
+    description: "Add the current timeline to the render queue.",
+    cliCommand: "add-current-timeline-to-render-queue",
+    run: async () => {
+      await runDavinciResolveScript(
+        "add-timeline-to-render-queue.lua",
+        {}
+      ).match(
+        (r) => {
+          console.log(r.stdout);
+        },
+        (e) => {
+          console.error(e);
+        }
+      );
+    },
   },
   {
     scriptkitName: "Select Latest OBS Video",

@@ -94,7 +94,7 @@ end
 
 local currentDatetime = os.date('%Y-%m-%d %H:%M:%S')
 
--- Get the current timeline
+-- Add a marker to the timeline
 local timeline = project:GetCurrentTimeline()
 local endFrame = timeline:GetEndFrame()
 local startFrame = timeline:GetStartFrame()

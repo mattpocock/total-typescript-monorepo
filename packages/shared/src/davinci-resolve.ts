@@ -16,6 +16,7 @@ type Scripts = {
   };
   "get-current-timeline-clip.lua": EmptyObject;
   "add-subtitles.lua": EmptyObject;
+  "add-timeline-to-render-queue.lua": EmptyObject;
 };
 
 const FUSCRIPT_LOCATION =
