@@ -92,6 +92,14 @@ for i, cut in ipairs(result) do
   }
 end
 
+local currentDatetime = os.date('%Y-%m-%d %H:%M:%S')
+
+-- Get the current timeline
+local timeline = project:GetCurrentTimeline()
+local endFrame = timeline:GetEndFrame()
+local startFrame = timeline:GetStartFrame()
+timeline:AddMarker((endFrame - startFrame), "Red", "Append Point", "Content appended after this point", 1)
+
 mediaPool:AppendToTimeline(clipInfos)
 
 resolve:OpenPage("cut")
