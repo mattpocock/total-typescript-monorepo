@@ -6,20 +6,48 @@ export const getClipsOfSpeakingFromFFmpeg = (
     fps: number;
   }
 ) => {
-  let silence = stdout
+  // Parse the silence detection output
+  const silenceLines = stdout
     .trim()
     .split("\n")
-    .filter((line) => !line.endsWith("]"))
-    .map((line) => line.split(" "))
-    .map(([silenceEnd, duration]) => {
-      return {
-        silenceEnd: Number(silenceEnd),
-        duration: Number(duration),
-      };
+    .filter((line) => line.includes("[silencedetect @"))
+    .map((line) => {
+      if (line.includes("silence_start")) {
+        const match = line.match(/silence_start: (\d+\.?\d*)/);
+        return {
+          type: "start" as const,
+          time: match ? Number(match[1]) : undefined,
+        };
+      }
+      if (line.includes("silence_end")) {
+        const match = line.match(
+          /silence_end: (\d+\.?\d*) \| silence_duration: (\d+\.?\d*)/
+        );
+        return {
+          type: "end" as const,
+          time: match ? Number(match[1]) : undefined,
+          duration: match ? Number(match[2]) : undefined,
+        };
+      }
+      return null;
     })
-    .filter(({ silenceEnd, duration }) => {
-      return !(isNaN(silenceEnd) || isNaN(duration));
-    });
+    .filter((line): line is NonNullable<typeof line> => line !== null);
+
+  // Group silence starts and ends together
+  const silence: { silenceEnd: number; duration: number }[] = [];
+  let currentStart: number | undefined;
+
+  for (const line of silenceLines) {
+    if (line.type === "start") {
+      currentStart = line.time;
+    } else if (line.type === "end" && currentStart !== undefined) {
+      silence.push({
+        silenceEnd: line.time!,
+        duration: line.duration!,
+      });
+      currentStart = undefined;
+    }
+  }
 
   const clipsOfSpeaking: {
     startFrame: number;
@@ -36,7 +64,6 @@ export const getClipsOfSpeakingFromFFmpeg = (
     if (!nextSilence) return;
 
     const startTime = currentSilence.silenceEnd;
-
     const endTime = nextSilence.silenceEnd - nextSilence.duration;
 
     const startFrame = Math.floor(startTime * opts.fps);

@@ -1,0 +1,70 @@
+Input #0, matroska,webm, from '/mnt/c/Users/mpoco/Desktop/2025-01-06_14-41-54.mkv':
+  Metadata:
+    ENCODER         : Lavf60.16.100
+  Duration: 00:03:35.47, start: 0.000000, bitrate: 6031 kb/s
+  Stream #0:0: Video: h264 (High), yuv420p(tv, bt709, progressive), 1920x1080 [SAR 1:1 DAR 16:9], 60 fps, 60 tbr, 1k tbn
+    Metadata:
+      DURATION        : 00:03:35.467000000
+  Stream #0:1: Audio: aac (LC), 48000 Hz, stereo, fltp
+    Metadata:
+      title           : simple_aac_recording0
+      DURATION        : 00:03:35.424000000
+Stream mapping:
+  Stream #0:1 -> #0:0 (aac (native) -> pcm_s16le (native))
+Press [q] to stop, [?] for help
+Output #0, null, to 'pipe:':
+  Metadata:
+    encoder         : Lavf60.16.100
+  Stream #0:0: Audio: pcm_s16le, 48000 Hz, stereo, s16, 1536 kb/s
+    Metadata:
+      title           : simple_aac_recording0
+      DURATION        : 00:03:35.424000000
+      encoder         : Lavc60.31.102 pcm_s16le
+[silencedetect @ 0x55791a4e4680] silence_start: 0d=N/A    
+[silencedetect @ 0x55791a4e4680] silence_end: 3.9114 | silence_duration: 3.9114
+[silencedetect @ 0x55791a4e4680] silence_start: 10.0927
+[silencedetect @ 0x55791a4e4680] silence_end: 19.7461 | silence_duration: 9.65348
+[silencedetect @ 0x55791a4e4680] silence_start: 20.0118
+[silencedetect @ 0x55791a4e4680] silence_end: 22.8109 | silence_duration: 2.79906
+[silencedetect @ 0x55791a4e4680] silence_start: 23.6369
+[silencedetect @ 0x55791a4e4680] silence_end: 26.085 | silence_duration: 2.44813
+[silencedetect @ 0x55791a4e4680] silence_start: 31.6768
+[silencedetect @ 0x55791a4e4680] silence_end: 38.2987 | silence_duration: 6.62192
+[silencedetect @ 0x55791a4e4680] silence_start: 42.7896
+[silencedetect @ 0x55791a4e4680] silence_end: 66.5091 | silence_duration: 23.7194
+[silencedetect @ 0x55791a4e4680] silence_start: 66.8104
+[silencedetect @ 0x55791a4e4680] silence_end: 73.3197 | silence_duration: 6.50931
+[silencedetect @ 0x55791a4e4680] silence_start: 73.3204
+[silencedetect @ 0x55791a4e4680] silence_end: 75.4877 | silence_duration: 2.16727
+[silencedetect @ 0x55791a4e4680] silence_start: 76.0084
+[silencedetect @ 0x55791a4e4680] silence_end: 83.5361 | silence_duration: 7.52771
+[silencedetect @ 0x55791a4e4680] silence_start: 83.5361
+[silencedetect @ 0x55791a4e4680] silence_end: 88.861 | silence_duration: 5.32487
+[silencedetect @ 0x55791a4e4680] silence_start: 88.8625
+[silencedetect @ 0x55791a4e4680] silence_end: 92.9525 | silence_duration: 4.08996
+[silencedetect @ 0x55791a4e4680] silence_start: 92.9538
+[silencedetect @ 0x55791a4e4680] silence_end: 98.7283 | silence_duration: 5.7745
+[silencedetect @ 0x55791a4e4680] silence_start: 100.558
+[silencedetect @ 0x55791a4e4680] silence_end: 102.137 | silence_duration: 1.5795
+[silencedetect @ 0x55791a4e4680] silence_start: 102.137
+[silencedetect @ 0x55791a4e4680] silence_end: 106.082 | silence_duration: 3.94481
+[silencedetect @ 0x55791a4e4680] silence_start: 108.151
+[silencedetect @ 0x55791a4e4680] silence_end: 113.819 | silence_duration: 5.66725
+[silencedetect @ 0x55791a4e4680] silence_start: 116.939
+[silencedetect @ 0x55791a4e4680] silence_end: 135.523 | silence_duration: 18.5843
+[silencedetect @ 0x55791a4e4680] silence_start: 142.1
+[silencedetect @ 0x55791a4e4680] silence_end: 151.527 | silence_duration: 9.42713
+[silencedetect @ 0x55791a4e4680] silence_start: 159.226
+[silencedetect @ 0x55791a4e4680] silence_end: 181.032 | silence_duration: 21.8056
+[silencedetect @ 0x55791a4e4680] silence_start: 184.946
+[silencedetect @ 0x55791a4e4680] silence_end: 188.723 | silence_duration: 3.77683
+[silencedetect @ 0x55791a4e4680] silence_start: 188.723
+[silencedetect @ 0x55791a4e4680] silence_end: 191.403 | silence_duration: 2.6805
+[silencedetect @ 0x55791a4e4680] silence_start: 194.752
+[silencedetect @ 0x55791a4e4680] silence_end: 204.833 | silence_duration: 10.0807
+[silencedetect @ 0x55791a4e4680] silence_start: 204.833
+[silencedetect @ 0x55791a4e4680] silence_end: 206.379 | silence_duration: 1.54571
+[silencedetect @ 0x55791a4e4680] silence_start: 213.504
+[out#0/null @ 0x55791a2e2280] video:0kB audio:40392kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: unknown
+size=N/A time=00:03:35.40 bitrate=N/A speed= 202x    
+[silencedetect @ 0x55791a4e4680] silence_end: 215.424 | silence_duration: 1.9199 
