@@ -20,7 +20,7 @@
     "zod": "^3.23.8",
     "evalite": "0.6.2",
     "@evalite/core": "0.4.2",
-    "vitest": "2.1.8",
+    "vitest": "2.1.9",
     "autoevals": "^0.0.106",
     "unstorage": "^1.13.1"
   }
