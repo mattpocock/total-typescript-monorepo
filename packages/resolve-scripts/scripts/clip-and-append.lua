@@ -108,7 +108,7 @@ for i, clipInfo in ipairs(clipInfos) do
     local timelineItem = appendedItems[i]
     if timelineItem then
       -- Set the clip color to orange
-      timelineItem:SetClipColor("Red")
+      timelineItem:SetClipColor("Orange")
     end
   end
 end
