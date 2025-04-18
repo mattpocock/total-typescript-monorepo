@@ -27,7 +27,7 @@ export const appendVideoToTimeline = async (
     });
 
     const textFileOutput = path.resolve(
-      inputVideo.replace(".mkv", ".silence.txt")
+      inputVideo.replace(".mp4", ".silence.txt")
     );
 
     writeFileSync(textFileOutput, silenceResult.rawStdout);

@@ -1,4 +1,4 @@
-Input #0, matroska,webm, from '/mnt/c/Users/mpoco/Desktop/2025-01-06_14-41-54.mkv':
+Input #0, matroska,webm, from '/mnt/c/Users/mpoco/Desktop/2025-01-06_14-41-54.mp4':
   Metadata:
     ENCODER         : Lavf60.16.100
   Duration: 00:03:35.47, start: 0.000000, bitrate: 6031 kb/s
