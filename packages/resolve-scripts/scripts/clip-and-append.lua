@@ -6,7 +6,7 @@ to an existing timeline based on specified cut points.
 
 Environment Variables Required:
 - INPUT_VIDEO: Path to the video file to be processed
-- CLIPS_TO_APPEND: String containing cut points in the format "startFrame___endFrame:::startFrame___endFrame"
+- CLIPS_TO_APPEND: String containing cut points in the format "startFrame___endFrame___isBadTake:::startFrame___endFrame___isBadTake"
 
 Functionality:
 1. Takes a video file and specified cut points
@@ -17,7 +17,7 @@ Functionality:
 
 Example Usage:
 INPUT_VIDEO="/path/to/video.mp4"
-CLIPS_TO_APPEND="0___100:::200___300"
+CLIPS_TO_APPEND="0___100___1:::200___300___0"
 ]]
 
 local resolve = Resolve()
@@ -88,19 +88,30 @@ for i, cut in ipairs(result) do
   clipInfos[i] = {
     startFrame = tonumber(splitResult[1]),
     endFrame = tonumber(splitResult[2]),
+    isBadTake = splitResult[3] == "1",
     mediaPoolItem = clip
   }
 end
-
-local currentDatetime = os.date('%Y-%m-%d %H:%M:%S')
 
 -- Add a marker to the timeline
 local timeline = project:GetCurrentTimeline()
 local endFrame = timeline:GetEndFrame()
 local startFrame = timeline:GetStartFrame()
-timeline:AddMarker((endFrame - startFrame), "Red", "Append Point", "Content appended after this point", 1)
+timeline:AddMarker((endFrame - startFrame), "Blue", "Append Point", "Content appended after this point", 1)
 
-mediaPool:AppendToTimeline(clipInfos)
+local appendedItems = mediaPool:AppendToTimeline(clipInfos)
+
+-- Set color to orange for bad takes
+for i, clipInfo in ipairs(clipInfos) do
+  if clipInfo.isBadTake then
+    -- Get the timeline item that was just appended
+    local timelineItem = appendedItems[i]
+    if timelineItem then
+      -- Set the clip color to orange
+      timelineItem:SetClipColor("Red")
+    end
+  end
+end
 
 resolve:OpenPage("cut")
 

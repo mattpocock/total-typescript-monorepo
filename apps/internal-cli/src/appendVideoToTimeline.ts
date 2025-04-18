@@ -3,6 +3,8 @@ import {
   THRESHOLD,
   findSilenceInVideo,
   getFPS,
+  extractBadTakeMarkersFromFile,
+  isBadTake,
 } from "@total-typescript/ffmpeg";
 import { runDavinciResolveScript } from "@total-typescript/shared";
 import { writeFileSync } from "fs";
@@ -32,9 +34,23 @@ export const appendVideoToTimeline = async (
 
     writeFileSync(textFileOutput, silenceResult.rawStdout);
 
+    const badTakeMarkers = yield* extractBadTakeMarkersFromFile(
+      inputVideo,
+      fps
+    );
+
+    console.dir(badTakeMarkers, { depth: null });
+    console.dir(silenceResult.speakingClips, { depth: null });
+
     const serialisedClipsOfSpeaking = silenceResult.speakingClips
-      .map((clip) => {
-        return `${clip.startFrame}___${clip.endFrame}`;
+      .map((clip, index) => {
+        const isBad = isBadTake(
+          clip,
+          badTakeMarkers,
+          index,
+          silenceResult.speakingClips
+        );
+        return `${clip.startFrame}___${clip.endFrame}___${isBad ? "1" : "0"}`;
       })
       .join(":::");
 
