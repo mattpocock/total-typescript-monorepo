@@ -221,8 +221,8 @@ importers:
         specifier: 4.0.194
         version: 4.0.194(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@remotion/google-fonts':
-        specifier: 4.0.194
-        version: 4.0.194(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: 4.0.289
+        version: 4.0.289(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@total-typescript/nodeslash':
         specifier: workspace:*
         version: link:../../packages/nodeslash
@@ -2826,8 +2826,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@remotion/google-fonts@4.0.194':
-    resolution: {integrity: sha512-sAsGNOloga3Viy2g9Z8pFuCvh/1la/1P2xBLD538xzcWAiq0eCQrKEwx94SORa1ZZZi4ML+/mAH36Wo6Z5bgCg==}
+  '@remotion/google-fonts@4.0.289':
+    resolution: {integrity: sha512-UmuvnjUrDhLemrwEXpMWF28NwXwgt+XaWctzmr2gF443wRC67wGkWqYZ6VW1OUrLtx+pAsZFYHb2W6lC4LXlsg==}
 
   '@remotion/media-utils@4.0.194':
     resolution: {integrity: sha512-+MGDEQMMCTmvYreTpSZUhmMyp4+elRDJ0AnSc5lULhdyqLuy6voiusNVxj4P1IehnzMtuyGNl+BCTEj5u7R0Uw==}
@@ -3330,6 +3330,7 @@ packages:
 
   acorn-import-assertions@1.9.0:
     resolution: {integrity: sha512-cmMwop9x+8KFhxvKrKfPYmN6/pKTYYHBqLa0DfvVZcKMJWNyWLnaqND7dx/qn66R7ewM1UX5XMaDVP5wlVTaVA==}
+    deprecated: package has been renamed to acorn-import-attributes
     peerDependencies:
       acorn: ^8
 
@@ -5608,6 +5609,7 @@ packages:
   node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
     engines: {node: '>=10.5.0'}
+    deprecated: Use your platform's native DOMException instead
 
   node-fetch-native@1.6.4:
     resolution: {integrity: sha512-IhOigYzAKHd244OC0JIMIUrjzctirCmPkaIfhDeGcEETWof5zKYUW7e7MYvChGWh/4CJeXEgsRyGzuF334rOOQ==}
@@ -6446,6 +6448,12 @@ packages:
 
   remotion@4.0.194:
     resolution: {integrity: sha512-LhDkr/9mw6B/iyo9qHcKiRQtOxPGMw4tvUkgbOs63EMomsG07UzGov53nNZrzisJhhaHd71vOSWqcjeuyht2xA==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+
+  remotion@4.0.289:
+    resolution: {integrity: sha512-yoUFCPcrDeP1b4bG83mMuz6OuSb3zZ6odpVAW21gAt6HnDoNaCX+LCVGTj9AkD79SZvvsrOcAtJ1VbKeuKCZnw==}
     peerDependencies:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
@@ -9837,9 +9845,9 @@ snapshots:
   '@remotion/compositor-win32-x64-msvc@4.0.194':
     optional: true
 
-  '@remotion/google-fonts@4.0.194(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@remotion/google-fonts@4.0.289(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      remotion: 4.0.194(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      remotion: 4.0.289(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     transitivePeerDependencies:
       - react
       - react-dom
@@ -14369,6 +14377,11 @@ snapshots:
       zod: 3.23.8
 
   remotion@4.0.194(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+    dependencies:
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+
+  remotion@4.0.289(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
