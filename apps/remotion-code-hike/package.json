@@ -25,7 +25,7 @@
     "file-loader": "^6.2.0",
     "@types/react": "^18.0.26",
     "tailwindcss": "^3.4.4",
-    "@remotion/tailwind": "4.0.194",
+    "@remotion/tailwind": "4.0.295",
     "@remotion/bundler": "4.0.194"
   },
   "prettier": {
