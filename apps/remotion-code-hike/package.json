@@ -9,7 +9,7 @@
     "@mdx-js/loader": "3.0.1",
     "@mdx-js/react": "3.0.1",
     "@remotion/animation-utils": "4.0.194",
-    "@remotion/cli": "4.0.194",
+    "@remotion/cli": "4.0.295",
     "@remotion/google-fonts": "4.0.194",
     "codehike": "1.0.4",
     "@total-typescript/nodeslash": "workspace:*",
