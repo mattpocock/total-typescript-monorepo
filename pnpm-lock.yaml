@@ -215,8 +215,8 @@ importers:
         specifier: 3.0.1
         version: 3.0.1(@types/react@18.3.3)(react@18.3.1)
       '@remotion/animation-utils':
-        specifier: 4.0.194
-        version: 4.0.194(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: 4.0.295
+        version: 4.0.295(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@remotion/cli':
         specifier: 4.0.194
         version: 4.0.194(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1926,6 +1926,7 @@ packages:
 
   '@evalite/core@0.4.2':
     resolution: {integrity: sha512-e6c1S3/VqSVf7IhT6OdztEqPWt+W7fDloiJhIMPmpz97FwDPfzlDBe3xgU7Xr/q28GL6IunA+WKOz2q1QUWKvw==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   '@fastify/accept-negotiator@2.0.0':
     resolution: {integrity: sha512-/Sce/kBzuTxIq5tJh85nVNOq9wKD8s+viIgX0fFMDBdw95gnpf53qmF1oBgJym3cPFliWUuSloVg/1w/rH0FcQ==}
@@ -2772,8 +2773,8 @@ packages:
   '@remix-run/web-stream@1.1.0':
     resolution: {integrity: sha512-KRJtwrjRV5Bb+pM7zxcTJkhIqWWSy+MYsIxHK+0m5atcznsf15YwUBWHWulZerV2+vvHH1Lp1DD7pw6qKW8SgA==}
 
-  '@remotion/animation-utils@4.0.194':
-    resolution: {integrity: sha512-Dmxpf2aNeI2sjMFllBxWPE5ClyVyrfkr8+UxuKYQA39H1GzR6mWZCrX3Y6eeTzUfXpCyHg2vo3wEWw2qVyi8lQ==}
+  '@remotion/animation-utils@4.0.295':
+    resolution: {integrity: sha512-ZBAkCZ+lxWq/Mi6rje2Gbs/Zl3b6YtQrhFB3kcgjd/I2A5BBLcEQI0DmZtWkl2/8Djmrk0UCtxACE8sOgHzXzQ==}
     peerDependencies:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
@@ -3330,6 +3331,7 @@ packages:
 
   acorn-import-assertions@1.9.0:
     resolution: {integrity: sha512-cmMwop9x+8KFhxvKrKfPYmN6/pKTYYHBqLa0DfvVZcKMJWNyWLnaqND7dx/qn66R7ewM1UX5XMaDVP5wlVTaVA==}
+    deprecated: package has been renamed to acorn-import-attributes
     peerDependencies:
       acorn: ^8
 
@@ -5608,6 +5610,7 @@ packages:
   node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
     engines: {node: '>=10.5.0'}
+    deprecated: Use your platform's native DOMException instead
 
   node-fetch-native@1.6.4:
     resolution: {integrity: sha512-IhOigYzAKHd244OC0JIMIUrjzctirCmPkaIfhDeGcEETWof5zKYUW7e7MYvChGWh/4CJeXEgsRyGzuF334rOOQ==}
@@ -6446,6 +6449,12 @@ packages:
 
   remotion@4.0.194:
     resolution: {integrity: sha512-LhDkr/9mw6B/iyo9qHcKiRQtOxPGMw4tvUkgbOs63EMomsG07UzGov53nNZrzisJhhaHd71vOSWqcjeuyht2xA==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+
+  remotion@4.0.295:
+    resolution: {integrity: sha512-TO2NHScMJR5DG3UAjYk/jsxqn8m0mJ1swOaBmQxNpZnk9UV2psnpx4ZEw9y0KxAW2UWQQWGTooyCj6xA6poBBw==}
     peerDependencies:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
@@ -9766,11 +9775,11 @@ snapshots:
     dependencies:
       web-streams-polyfill: 3.3.3
 
-  '@remotion/animation-utils@4.0.194(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@remotion/animation-utils@4.0.295(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      remotion: 4.0.194(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      remotion: 4.0.295(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
   '@remotion/bundler@4.0.194(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
@@ -14369,6 +14378,11 @@ snapshots:
       zod: 3.23.8
 
   remotion@4.0.194(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+    dependencies:
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+
+  remotion@4.0.295(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
