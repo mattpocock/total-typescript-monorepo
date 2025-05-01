@@ -49,35 +49,3 @@ describe("mode: undefined", () => {
     expect(result.success).toEqual(true);
   });
 });
-
-describe("mode: nodeslash", () => {
-  it("Should fail when a code sample has a type error in it", async () => {
-    const code = `
-      const a: string = 1;
-      `;
-
-    const result = await transformCode({
-      code,
-      lang: "ts",
-      mode: "nodeslash",
-    });
-
-    expect(result.success).toEqual(false);
-  });
-
-  it("Should produce multiple snippets", async () => {
-    const code = `
-      console.log('Hello, world!');
-      `;
-
-    const result = await transformCode({
-      code,
-      lang: "ts",
-      mode: "nodeslash",
-    });
-
-    expect(result.success).toEqual(true);
-    assert(result.success === true);
-    expect(result.terminalText).toMatch("Hello, world!");
-  });
-});

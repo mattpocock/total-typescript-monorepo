@@ -25,29 +25,6 @@ it.each([
       },
     ],
   ],
-  [
-    `
-  \`\`\`ts nodeslash
-  const a = 1;
-  \`\`\`
-
-  \`\`\`ts
-  const b = 2;
-  \`\`\`
-  `,
-    [
-      {
-        code: `  const a = 1;`,
-        lang: "ts",
-        mode: "nodeslash",
-      },
-      {
-        code: `  const b = 2;`,
-        lang: "ts",
-        mode: undefined,
-      },
-    ],
-  ],
 ])(
   "Should return the correct sections for a markdown string",
   (input, output) => {

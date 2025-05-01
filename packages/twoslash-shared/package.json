@@ -18,7 +18,6 @@
     "shiki": "^1.6.3",
     "twoslash-cdn": "^0.2.7",
     "unstorage": "^1.10.2",
-    "zod": "^3.23.8",
-    "@total-typescript/nodeslash": "workspace:*"
+    "zod": "^3.23.8"
   }
 }

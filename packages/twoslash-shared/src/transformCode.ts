@@ -4,7 +4,6 @@ import { codeToHtml } from "shiki";
 import { createTwoslashFromCDN } from "twoslash-cdn";
 import type { CompilerOptions } from "typescript";
 import { createStorage } from "unstorage";
-import { applyNodeslash } from "@total-typescript/nodeslash";
 
 const storage = createStorage({
   // driver: (fsDriver as any)({
@@ -62,8 +61,6 @@ export const transformCode = async (opts: {
 }): Promise<ApplyShikiFailure | ApplyShikiSuccess> => {
   if (opts.mode === "twoslash") {
     return applyTwoslashToCode(opts);
-  } else if (opts.mode === "nodeslash") {
-    return applyNodeslashToCode(opts);
   } else {
     return applyShikiToCode(opts);
   }
@@ -114,26 +111,4 @@ export const applyTwoslashToCode = async (opts: {
 
     throw e;
   }
-};
-
-const applyNodeslashToCode = async (opts: {
-  code: string;
-  lang: string;
-}): Promise<ApplyShikiSuccess | ApplyShikiFailure> => {
-  const nodeslashResult = await applyNodeslash(opts.code);
-
-  const codeHtmlResult = await applyTwoslashToCode({
-    code: nodeslashResult.code,
-    lang: opts.lang,
-  });
-
-  if (!codeHtmlResult.success) {
-    return codeHtmlResult;
-  }
-
-  return {
-    success: true,
-    codeHtml: codeHtmlResult.codeHtml,
-    terminalText: nodeslashResult.terminalOutput,
-  };
 };

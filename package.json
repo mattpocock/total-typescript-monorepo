@@ -15,7 +15,6 @@
     "release": "pnpm run ci && changeset publish",
     "write": "turbo watch dev --filter=shot-slash --filter=@total-typescript/twoslash-preview-server --filter=written-content",
     "write-new": "pnpm run scratch && pnpm run write",
-    "make-video": "turbo watch dev --filter=remotion-code-hike --filter=sync-current-markdown-file-to-remotion --filter=source-to-code-samples --filter=record-narration --filter=nodeslash-server",
     "new": "(cd apps/written-content && pnpm run new)",
     "scratch": "(cd apps/written-content && pnpm run scratch)",
     "ai": "(cd apps/ai-playground && pnpm run go)",
