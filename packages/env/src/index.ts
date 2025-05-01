@@ -8,6 +8,7 @@ config({
 
 const envSchema = z.object({
   OBS_OUTPUT_DIRECTORY: z.string(),
+  DAVINCI_EXPORT_DIRECTORY: z.string(),
 });
 
 const result = envSchema.safeParse(process.env);

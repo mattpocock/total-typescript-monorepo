@@ -1,15 +1,13 @@
 import {
   SILENCE_DURATION,
   THRESHOLD,
+  extractBadTakeMarkersFromFile,
   findSilenceInVideo,
   getFPS,
-  extractBadTakeMarkersFromFile,
   isBadTake,
 } from "@total-typescript/ffmpeg";
 import { runDavinciResolveScript } from "@total-typescript/shared";
-import { writeFileSync } from "fs";
 import { okAsync, safeTry } from "neverthrow";
-import path from "path";
 import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
 
 export const appendVideoToTimeline = async (
@@ -27,12 +25,6 @@ export const appendVideoToTimeline = async (
       endPadding: 0.05,
       silenceDuration: SILENCE_DURATION,
     });
-
-    const textFileOutput = path.resolve(
-      inputVideo.replace(".mp4", ".silence.txt")
-    );
-
-    writeFileSync(textFileOutput, silenceResult.rawStdout);
 
     const badTakeMarkers = yield* extractBadTakeMarkersFromFile(
       inputVideo,

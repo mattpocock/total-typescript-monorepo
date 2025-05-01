@@ -25,8 +25,12 @@ if not timeline then
     return
 end
 
--- Create a folder for exports if it doesn't exist
-local exportFolder = "D:\\Exports"
+-- Get export directory from environment variable
+local exportFolder = os.getenv("DAVINCI_EXPORT_DIRECTORY")
+if not exportFolder then
+    print("DAVINCI_EXPORT_DIRECTORY environment variable is not set")
+    return
+end
 
 -- Get timeline name
 local timelineName = timeline:GetName()

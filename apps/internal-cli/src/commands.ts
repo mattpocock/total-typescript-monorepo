@@ -8,6 +8,7 @@ import { appendVideoToTimeline } from "./appendVideoToTimeline.js";
 import { encodeAllVideos } from "./encodeAllVideos.js";
 import { selectLatestOBSVideo } from "./selectLatestOBSVideo.js";
 import { trimLatestOBSVideo } from "./trimLatestOBSVideo.js";
+import { env } from "@total-typescript/env";
 
 export type Command<TArgs extends readonly string[]> = {
   scriptkitName: string;
@@ -55,10 +56,9 @@ export const commands = createCommands([
     description: "Add the current timeline to the render queue.",
     cliCommand: "add-current-timeline-to-render-queue",
     run: async () => {
-      await runDavinciResolveScript(
-        "add-timeline-to-render-queue.lua",
-        {}
-      ).match(
+      await runDavinciResolveScript("add-timeline-to-render-queue.lua", {
+        DAVINCI_EXPORT_DIRECTORY: env.DAVINCI_EXPORT_DIRECTORY,
+      }).match(
         (r) => {
           console.log(r.stdout);
         },
