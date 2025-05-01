@@ -2,11 +2,6 @@ import path from "path";
 import os from "os";
 import type { AbsolutePath } from "./types.js";
 
-export const DESKTOP_LOCATION = path.join(
-  os.homedir(),
-  "Desktop"
-) as AbsolutePath;
-
 export const SCRIPTKIT_VSCODE_LOCATION = path.join(
   os.homedir(),
   ".kit",
