@@ -1,6 +1,4 @@
 import { safeTry } from "neverthrow";
-import { resolve } from "path";
-import { DAVINCI_RESOLVE_SCRIPTS_LOCATION } from "./constants.js";
 import type { EmptyObject } from "./types.js";
 import { execAsync } from "./utils.js";
 
@@ -17,6 +15,7 @@ type Scripts = {
   "get-current-timeline-clip.lua": EmptyObject;
   "add-subtitles.lua": EmptyObject;
   "add-timeline-to-render-queue.lua": EmptyObject;
+  "create-timeline.lua": EmptyObject;
 };
 
 const FUSCRIPT_LOCATION =

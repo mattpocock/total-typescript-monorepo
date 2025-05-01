@@ -34,6 +34,22 @@ export const commands = createCommands([
     run: encodeAllVideos,
   },
   {
+    scriptkitName: "Create New Timeline",
+    fileName: "create-timeline",
+    description: "Create a new empty timeline in the current project.",
+    cliCommand: "create-timeline",
+    run: async () => {
+      await runDavinciResolveScript("create-timeline.lua", {}).match(
+        (r) => {
+          console.log(r.stdout);
+        },
+        (e) => {
+          console.error(e);
+        }
+      );
+    },
+  },
+  {
     scriptkitName: "Add Current Timeline to Render Queue",
     fileName: "add-current-timeline-to-render-queue",
     description: "Add the current timeline to the render queue.",
