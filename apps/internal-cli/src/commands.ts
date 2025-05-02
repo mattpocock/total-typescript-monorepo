@@ -27,6 +27,17 @@ const createCommands = <TArgs extends string[][]>(args: {
 
 export const commands = createCommands([
   {
+    scriptkitName: "Move Raw Footage to Long Term Storage",
+    fileName: "move-raw-footage-to-long-term-storage",
+    description: "Move raw footage to long term storage.",
+    cliCommand: "move-raw-footage-to-long-term-storage",
+    run: async () => {
+      execSync(
+        `(cd "${env.LONG_TERM_FOOTAGE_STORAGE_DIRECTORY}" && mv "${env.OBS_OUTPUT_DIRECTORY}"/* .)`
+      );
+    },
+  },
+  {
     scriptkitName: "Encode All Videos",
     fileName: "encode-all-videos",
     description:
