@@ -10,6 +10,7 @@ const envSchema = z.object({
   OBS_OUTPUT_DIRECTORY: z.string(),
   DAVINCI_EXPORT_DIRECTORY: z.string(),
   LONG_TERM_FOOTAGE_STORAGE_DIRECTORY: z.string(),
+  DROPBOX_DIRECTORY: z.string(),
 });
 
 const result = envSchema.safeParse(process.env);
