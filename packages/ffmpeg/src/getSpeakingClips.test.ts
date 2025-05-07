@@ -46,7 +46,5 @@ describe("getClipsOfSpeakingFromFFmpegNew", () => {
     expect(firstClip.endTime).toBe(
       firstClip.silenceEnd + firstClip.duration + opts.endPadding
     );
-
-    console.log(result);
   });
 });

@@ -1,5 +1,9 @@
 import { execAsync, type AbsolutePath } from "@total-typescript/shared";
 import { ResultAsync } from "neverthrow";
+import {
+  DEFINITELY_BAD_TAKE_PADDING,
+  MAX_BAD_TAKE_DISTANCE,
+} from "./constants.js";
 
 export interface RawChapter {
   id: number;
@@ -13,7 +17,7 @@ export interface RawChapter {
   };
 }
 
-export interface BadTakeMarker extends RawChapter {
+export interface BadTakeMarker {
   frame: number;
 }
 
@@ -35,18 +39,50 @@ export class CouldNotExtractChaptersError extends Error {
   override message = "Could not extract chapters from video file.";
 }
 
+export type TakeQuality = "good" | "maybe-bad" | "definitely-bad";
+
 export const isBadTake = (
-  clip: SpeakingClip,
+  clip: { startFrame: number; endFrame: number },
   badTakeMarkers: BadTakeMarker[],
   index: number,
-  clips: SpeakingClip[]
-): boolean => {
+  clips: { startFrame: number; endFrame: number }[],
+  fps: number
+): TakeQuality => {
+  // Check if there's a bad take marker within the clip itself
+  const hasBadTakeInClip = badTakeMarkers.some(
+    (badTakeMarker) =>
+      badTakeMarker.frame >= clip.startFrame &&
+      badTakeMarker.frame <= clip.endFrame
+  );
+
+  if (hasBadTakeInClip) {
+    return "definitely-bad";
+  }
+
+  // Check if there's a bad take marker within the padding of the end
+  const paddingInFrames = Math.floor(DEFINITELY_BAD_TAKE_PADDING * fps);
+  const maxDistanceInFrames = Math.floor(MAX_BAD_TAKE_DISTANCE * fps);
+  const hasBadTakeNearEnd = badTakeMarkers.some(
+    (badTakeMarker) =>
+      badTakeMarker.frame > clip.endFrame &&
+      badTakeMarker.frame <= clip.endFrame + paddingInFrames &&
+      badTakeMarker.frame <= clip.endFrame + maxDistanceInFrames
+  );
+
+  if (hasBadTakeNearEnd) {
+    return "definitely-bad";
+  }
+
   // If this is the last clip, check if there's a bad take
   // marker after it
   if (index === clips.length - 1) {
     return badTakeMarkers.some(
-      (badTakeMarker) => badTakeMarker.frame > clip.startFrame
-    );
+      (badTakeMarker) =>
+        badTakeMarker.frame > clip.startFrame &&
+        badTakeMarker.frame <= clip.endFrame + maxDistanceInFrames
+    )
+      ? "maybe-bad"
+      : "good";
   }
 
   // For all other clips, check if there's a bad take marker
@@ -55,8 +91,11 @@ export const isBadTake = (
   return badTakeMarkers.some(
     (badTakeMarker) =>
       badTakeMarker.frame > clip.startFrame &&
-      badTakeMarker.frame < nextClip.startFrame
-  );
+      badTakeMarker.frame < nextClip.startFrame &&
+      badTakeMarker.frame <= clip.endFrame + maxDistanceInFrames
+  )
+    ? "maybe-bad"
+    : "good";
 };
 
 export const extractBadTakeMarkersFromFile = (

@@ -2,3 +2,16 @@ export const THRESHOLD = -24;
 export const SILENCE_DURATION = 0.8;
 export const PADDING = 0.3;
 export const MINIMUM_CLIP_LENGTH_IN_SECONDS = 1;
+/**
+ * When I press 'bad take' after I finish recording,
+ * this is the number of frames to check after the end
+ * for the bad take marker to DEFINITELY be a bad take.
+ */
+export const DEFINITELY_BAD_TAKE_PADDING = 2;
+
+/**
+ * If a bad take marker is more than this many seconds after
+ * the end of a clip, we consider it unrelated to the clip
+ * and ignore it.
+ */
+export const MAX_BAD_TAKE_DISTANCE = 5;

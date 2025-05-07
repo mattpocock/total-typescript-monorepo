@@ -36,14 +36,21 @@ export const appendVideoToTimeline = async (
 
     const serialisedClipsOfSpeaking = silenceResult.speakingClips
       .map((clip, index) => {
-        const isBad = isBadTake(
+        const takeQuality = isBadTake(
           clip,
           badTakeMarkers,
           index,
-          silenceResult.speakingClips
+          silenceResult.speakingClips,
+          fps
         );
-        return `${clip.startFrame}___${clip.endFrame}___${isBad ? "1" : "0"}`;
+        return {
+          clip,
+          takeQuality,
+          serialized: `${clip.startFrame}___${clip.endFrame}___${takeQuality === "maybe-bad" ? "1" : "0"}`,
+        };
       })
+      .filter(({ takeQuality }) => takeQuality !== "definitely-bad")
+      .map(({ serialized }) => serialized)
       .join(":::");
 
     const { stdout, stderr } = yield* runDavinciResolveScript(
