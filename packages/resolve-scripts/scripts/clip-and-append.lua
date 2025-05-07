@@ -46,9 +46,6 @@ local clips = mediaStorage:AddItemListToMediaPool(input)
 
 local mediaId = clips[1]:GetMediaId()
 
-print ('Media ID: ' .. mediaId)
-print ('Cuts: ' .. cuts)
-
 local folderClips = folder:GetClipList()
 
 local clip

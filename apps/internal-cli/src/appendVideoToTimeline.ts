@@ -6,15 +6,23 @@ import {
   getFPS,
   isBadTake,
 } from "@total-typescript/ffmpeg";
-import { runDavinciResolveScript } from "@total-typescript/shared";
+import {
+  runDavinciResolveScript,
+  type AbsolutePath,
+} from "@total-typescript/shared";
 import { okAsync, safeTry } from "neverthrow";
 import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
+import path from "path";
 
-export const appendVideoToTimeline = async (
-  mode: "new-timeline" | "current-timeline"
-) => {
+export const appendVideoToTimeline = async (video: string | undefined) => {
   return safeTry(async function* () {
-    const inputVideo = yield* getLatestOBSVideo();
+    let inputVideo: AbsolutePath;
+
+    if (video) {
+      inputVideo = path.resolve(video) as AbsolutePath;
+    } else {
+      inputVideo = yield* getLatestOBSVideo();
+    }
 
     const fps = yield* getFPS(inputVideo);
 
@@ -59,7 +67,6 @@ export const appendVideoToTimeline = async (
         INPUT_VIDEO: inputVideo,
         CLIPS_TO_APPEND: serialisedClipsOfSpeaking,
         WSLENV: "INPUT_VIDEO/p:CLIPS_TO_APPEND",
-        NEW_TIMELINE: mode === "new-timeline" ? "true" : "false",
       }
     );
 

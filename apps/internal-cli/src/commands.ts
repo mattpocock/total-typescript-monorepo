@@ -4,13 +4,10 @@ import {
   SKILL_RECORDINGS_REPO_LOCATION,
 } from "@total-typescript/shared";
 import { execSync } from "child_process";
-import { appendVideoToTimeline } from "./appendVideoToTimeline.js";
 
 export type Command<TArgs extends readonly string[]> = {
-  scriptkitName: string;
-  fileName: string;
-  description: string;
   cliCommand: string;
+  description: string;
   args?: [...TArgs];
   run: (...args: TArgs) => any;
 };
@@ -23,10 +20,8 @@ const createCommands = <TArgs extends string[][]>(args: {
 
 export const commands = createCommands([
   {
-    scriptkitName: "Move Raw Footage to Long Term Storage",
-    fileName: "move-raw-footage-to-long-term-storage",
-    description: "Move raw footage to long term storage.",
     cliCommand: "move-raw-footage-to-long-term-storage",
+    description: "Move raw footage to long term storage.",
     run: async () => {
       execSync(
         `(cd "${env.LONG_TERM_FOOTAGE_STORAGE_DIRECTORY}" && mv "${env.OBS_OUTPUT_DIRECTORY}"/* .)`
@@ -34,10 +29,8 @@ export const commands = createCommands([
     },
   },
   {
-    scriptkitName: "Create New Timeline",
-    fileName: "create-timeline",
-    description: "Create a new empty timeline in the current project.",
     cliCommand: "create-timeline",
+    description: "Create a new empty timeline in the current project.",
     run: async () => {
       await runDavinciResolveScript("create-timeline.lua", {}).match(
         (r) => {
@@ -50,10 +43,8 @@ export const commands = createCommands([
     },
   },
   {
-    scriptkitName: "Add Current Timeline to Render Queue",
-    fileName: "add-current-timeline-to-render-queue",
-    description: "Add the current timeline to the render queue.",
     cliCommand: "add-current-timeline-to-render-queue",
+    description: "Add the current timeline to the render queue.",
     run: async () => {
       await runDavinciResolveScript("add-timeline-to-render-queue.lua", {
         DAVINCI_EXPORT_DIRECTORY: env.DAVINCI_EXPORT_DIRECTORY,
@@ -68,10 +59,8 @@ export const commands = createCommands([
     },
   },
   {
-    scriptkitName: "Post Article to Skill Recordings",
-    fileName: "post-article-to-skill-recordings",
-    description: "Post an issue to the Skill Recordings repo.",
     cliCommand: "post-article-to-skill-recordings",
+    description: "Post an issue to the Skill Recordings repo.",
     args: ["Sanity Link", "Title"],
     run: async (sanityLink, title) => {
       execSync(
@@ -80,12 +69,5 @@ export const commands = createCommands([
         }" --body "${sanityLink}")`
       );
     },
-  },
-  {
-    scriptkitName: "Append Video to Current Davinci Resolve Timeline",
-    fileName: "append-video-to-timeline",
-    description: "Append the latest OBS video to the Davinci Resolve timeline.",
-    cliCommand: "append-video-to-timeline",
-    run: () => appendVideoToTimeline("current-timeline"),
   },
 ]);

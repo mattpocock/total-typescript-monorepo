@@ -4,6 +4,7 @@ import { Command } from "commander";
 import { commands } from "./commands.js";
 import { toDashCase } from "@total-typescript/shared";
 import packageJson from "../package.json" with { type: "json" };
+import { appendVideoToTimeline } from "./appendVideoToTimeline.js";
 
 const program = new Command();
 
@@ -25,5 +26,13 @@ commands.forEach((command) => {
     .action(command.run)
     .description(command.description);
 });
+
+program
+  .command("append-video-to-timeline [video]")
+  .aliases(["a", "append"])
+  .description("Append video to the current timeline")
+  .action(async (video: string | undefined) => {
+    await appendVideoToTimeline(video);
+  });
 
 program.parse(process.argv);

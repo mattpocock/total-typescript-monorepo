@@ -7,7 +7,6 @@ type Scripts = {
     INPUT_VIDEO: string;
     CLIPS_TO_APPEND: string;
     WSLENV: string;
-    NEW_TIMELINE: "true" | "false";
   };
   "import-file-to-bin.lua": {
     INPUT: string;
