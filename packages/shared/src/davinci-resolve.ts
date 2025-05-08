@@ -12,7 +12,9 @@ type Scripts = {
     INPUT: string;
   };
   "get-current-timeline-clip.lua": EmptyObject;
-  "add-subtitles.lua": EmptyObject;
+  "add-subtitles.lua": {
+    OUTPUT_FOLDER: string;
+  };
   "add-timeline-to-render-queue.lua": {
     DAVINCI_EXPORT_DIRECTORY: string;
   };

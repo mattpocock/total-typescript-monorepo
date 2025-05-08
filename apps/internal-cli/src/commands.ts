@@ -59,6 +59,22 @@ export const commands = createCommands([
     },
   },
   {
+    cliCommand: "export-subtitles",
+    description: "Export subtitles from the current timeline as SRT.",
+    run: async () => {
+      await runDavinciResolveScript("add-subtitles.lua", {
+        OUTPUT_FOLDER: env.DAVINCI_EXPORT_DIRECTORY,
+      }).match(
+        (r) => {
+          console.log(r.stdout);
+        },
+        (e) => {
+          console.error(e);
+        }
+      );
+    },
+  },
+  {
     cliCommand: "post-article-to-skill-recordings",
     description: "Post an issue to the Skill Recordings repo.",
     args: ["Sanity Link", "Title"],
