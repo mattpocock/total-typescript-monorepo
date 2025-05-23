@@ -19,6 +19,7 @@ type Scripts = {
     DAVINCI_EXPORT_DIRECTORY: string;
   };
   "create-timeline.lua": EmptyObject;
+  "zoom-clip.lua": EmptyObject;
 };
 
 const FUSCRIPT_LOCATION =

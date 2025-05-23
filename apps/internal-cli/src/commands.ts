@@ -86,4 +86,19 @@ export const commands = createCommands([
       );
     },
   },
+  {
+    cliCommand: "zoom-clip",
+    description:
+      "Zoom and reposition the currently selected clip in the timeline.",
+    run: async () => {
+      await runDavinciResolveScript("zoom-clip.lua", {}).match(
+        (r) => {
+          console.log(r.stdout);
+        },
+        (e) => {
+          console.error(e);
+        }
+      );
+    },
+  },
 ]);

@@ -1,0 +1,11 @@
+---
+description: Adding Davinci Resolve Scripts
+globs: 
+alwaysApply: false
+---
+Here are several important files needed for communicating from our internal CLI (`tt` globally) to Davinci Resolve
+
+[commands.ts](mdc:apps/internal-cli/src/commands.ts) - where commands for the internal CLI are declared
+[davinci-resolve.ts](mdc:packages/shared/src/davinci-resolve.ts) - the function we use for communicating with the davinci resolve scripts in the repo.
+[add-subtitles.lua](mdc:packages/resolve-scripts/scripts/add-subtitles.lua) is an example of one of the davinci resolve scripts in the repo - in the `resolve-scripts` package.
+[docs.txt](mdc:packages/resolve-scripts/scripts/docs.txt) is a file containing all the information needed to write Davinci resolve lua scripts.
