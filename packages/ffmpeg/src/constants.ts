@@ -1,6 +1,13 @@
 export const THRESHOLD = -24;
 export const SILENCE_DURATION = 0.8;
-export const PADDING = 0.3;
+export const TRIM_VIDEO_PADDING = 0.3;
+
+export const AUTO_EDITED_START_PADDING = 0;
+export const AUTO_EDITED_END_PADDING = 0.08;
+// The final padding applied to the auto-edited video
+// to ensure it's not cut off at the end
+export const AUTO_EDITED_VIDEO_FINAL_END_PADDING = 0.5;
+
 export const MINIMUM_CLIP_LENGTH_IN_SECONDS = 1;
 /**
  * When I press 'bad take' after I finish recording,

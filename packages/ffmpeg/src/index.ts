@@ -6,3 +6,4 @@ export * from "./normalizeAudio.js";
 export * from "./convertToWav.js";
 export * from "./transcribeAudio.js";
 export * from "./extractChaptersFromFile.js";
+export * from "./createSpeakingOnlyVideo.js";

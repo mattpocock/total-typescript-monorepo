@@ -2,9 +2,11 @@
 
 import { Command } from "commander";
 import { commands } from "./commands.js";
-import { toDashCase } from "@total-typescript/shared";
+import { toDashCase, type AbsolutePath } from "@total-typescript/shared";
 import packageJson from "../package.json" with { type: "json" };
 import { appendVideoToTimeline } from "./appendVideoToTimeline.js";
+import { createSpeakingOnlyVideo } from "@total-typescript/ffmpeg";
+import path from "path";
 
 const program = new Command();
 
@@ -33,6 +35,17 @@ program
   .description("Append video to the current timeline")
   .action(async (video: string | undefined) => {
     await appendVideoToTimeline(video);
+  });
+
+program
+  .command("create-speaking-only-video <input> <output>")
+  .aliases(["s", "speaking"])
+  .description("Create a new video containing only the good speaking parts")
+  .action(async (input: string, output: string) => {
+    await createSpeakingOnlyVideo(
+      path.resolve(input) as AbsolutePath,
+      path.resolve(output) as AbsolutePath
+    );
   });
 
 program.parse(process.argv);

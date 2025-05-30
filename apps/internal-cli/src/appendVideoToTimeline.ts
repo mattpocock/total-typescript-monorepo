@@ -1,6 +1,8 @@
 import {
   SILENCE_DURATION,
   THRESHOLD,
+  AUTO_EDITED_END_PADDING,
+  AUTO_EDITED_START_PADDING,
   extractBadTakeMarkersFromFile,
   findSilenceInVideo,
   getFPS,
@@ -29,8 +31,8 @@ export const appendVideoToTimeline = async (video: string | undefined) => {
     const silenceResult = yield* findSilenceInVideo(inputVideo, {
       threshold: THRESHOLD,
       fps,
-      startPadding: 0,
-      endPadding: 0.05,
+      startPadding: AUTO_EDITED_START_PADDING,
+      endPadding: AUTO_EDITED_END_PADDING,
       silenceDuration: SILENCE_DURATION,
     });
 

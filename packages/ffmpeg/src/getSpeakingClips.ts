@@ -71,18 +71,19 @@ export const getClipsOfSpeakingFromFFmpeg = (
 
     if (startFrame === endFrame) return;
 
-    const endFramePlusOne = endFrame + 1;
-
     const startFramePadding = opts.startPadding * opts.fps;
     const endFramePadding = opts.endPadding * opts.fps;
 
+    const resolvedStartFrame = startFrame - startFramePadding;
+    const resolvedEndFrame = endFrame + endFramePadding;
+
     clipsOfSpeaking.push({
-      startFrame: startFrame - startFramePadding,
-      startTime: startTime - opts.startPadding,
-      endFrame: endFramePlusOne + endFramePadding,
-      endTime: endTime + opts.endPadding,
+      startFrame: resolvedStartFrame,
+      endFrame: resolvedEndFrame,
+      startTime: resolvedStartFrame / opts.fps,
+      endTime: resolvedEndFrame / opts.fps,
       silenceEnd: currentSilence.silenceEnd,
-      duration: endTime - startTime,
+      duration: (resolvedEndFrame - resolvedStartFrame) / opts.fps,
     });
   });
 

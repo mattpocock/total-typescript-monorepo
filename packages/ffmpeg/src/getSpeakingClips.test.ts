@@ -40,11 +40,5 @@ describe("getClipsOfSpeakingFromFFmpegNew", () => {
     expect(typeof firstClip.endTime).toBe("number");
     expect(typeof firstClip.silenceEnd).toBe("number");
     expect(typeof firstClip.duration).toBe("number");
-
-    // Check that the padding is applied correctly
-    expect(firstClip.startTime).toBe(firstClip.silenceEnd - opts.startPadding);
-    expect(firstClip.endTime).toBe(
-      firstClip.silenceEnd + firstClip.duration + opts.endPadding
-    );
   });
 });

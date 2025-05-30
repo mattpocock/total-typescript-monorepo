@@ -2,6 +2,7 @@ import { exec, type ExecException, type ExecOptions } from "child_process";
 import { stat } from "fs/promises";
 import { errAsync, ok, ResultAsync } from "neverthrow";
 import type { AbsolutePath } from "./types.js";
+import type { ObjectEncodingOptions } from "fs";
 
 export const pathExists = (path: string) => {
   return ResultAsync.fromPromise(stat(path), (e) => e)
@@ -9,7 +10,10 @@ export const pathExists = (path: string) => {
     .orElse(() => ok(false));
 };
 
-export const execAsync = (command: string, opts?: ExecOptions) => {
+export const execAsync = (
+  command: string,
+  opts?: ExecOptions & ObjectEncodingOptions
+) => {
   return ResultAsync.fromPromise(
     new Promise<{
       stdout: string;
