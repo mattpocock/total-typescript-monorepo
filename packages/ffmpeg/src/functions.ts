@@ -1,7 +1,7 @@
 import { execAsync, type AbsolutePath } from "@total-typescript/shared";
-import { getClipsOfSpeakingFromFFmpeg } from "./getSpeakingClips.js";
+import { err, ok } from "neverthrow";
 import { MINIMUM_CLIP_LENGTH_IN_SECONDS } from "./constants.js";
-import { err, ok, okAsync, Result, ResultAsync } from "neverthrow";
+import { getClipsOfSpeakingFromFFmpeg } from "./getSpeakingClips.js";
 
 export const encodeVideo = (
   inputVideo: AbsolutePath,

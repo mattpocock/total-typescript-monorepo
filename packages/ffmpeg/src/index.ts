@@ -1,4 +1,4 @@
-export * from "./commands.js";
+export * from "./functions.js";
 export * from "./constants.js";
 export * from "./getFPS.js";
 export * from "./getVideoDuration.js";
