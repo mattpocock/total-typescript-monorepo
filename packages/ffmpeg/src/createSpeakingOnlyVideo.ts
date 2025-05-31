@@ -13,6 +13,9 @@ import {
 } from "./extractChaptersFromFile.js";
 import { findSilenceInVideo } from "./functions.js";
 import { getFPS } from "./getFPS.js";
+import { join } from "path";
+import { mkdir, writeFile } from "fs/promises";
+import { tmpdir } from "os";
 
 export class CouldNotCreateSpeakingOnlyVideoError extends Error {
   readonly _tag = "CouldNotCreateSpeakingOnlyVideoError";
@@ -39,16 +42,21 @@ export const createSpeakingOnlyVideo = (
   outputVideo: AbsolutePath
 ) => {
   return safeTry(async function* () {
+    const startTime = Date.now();
     console.log("🎥 Processing video:", inputVideo);
     console.log("📝 Output will be saved to:", outputVideo);
 
     // Get the video's FPS
     console.log("⏱️  Detecting video FPS...");
+    const fpsStart = Date.now();
     const fps = yield* getFPS(inputVideo);
-    console.log("✅ Detected FPS:", fps);
+    console.log(
+      `✅ Detected FPS: ${fps} (took ${(Date.now() - fpsStart) / 1000}s)`
+    );
 
     // First, find all speaking clips
     console.log("🔍 Finding speaking clips...");
+    const speakingStart = Date.now();
     const { speakingClips } = yield* findSilenceInVideo(inputVideo, {
       threshold: THRESHOLD,
       silenceDuration: SILENCE_DURATION,
@@ -56,18 +64,24 @@ export const createSpeakingOnlyVideo = (
       endPadding: AUTO_EDITED_END_PADDING,
       fps,
     });
-    console.log(`✅ Found ${speakingClips.length} speaking clips`);
+    console.log(
+      `✅ Found ${speakingClips.length} speaking clips (took ${(Date.now() - speakingStart) / 1000}s)`
+    );
 
     // Then get all bad take markers
     console.log("🎯 Extracting bad take markers...");
+    const markersStart = Date.now();
     const badTakeMarkers = yield* extractBadTakeMarkersFromFile(
       inputVideo,
       fps
     );
-    console.log(`✅ Found ${badTakeMarkers.length} bad take markers`);
+    console.log(
+      `✅ Found ${badTakeMarkers.length} bad take markers (took ${(Date.now() - markersStart) / 1000}s)`
+    );
 
     // Filter out bad takes
     console.log("🔍 Filtering out bad takes...");
+    const filterStart = Date.now();
     const goodClips = speakingClips.filter((clip, index) => {
       const quality = isBadTake(
         clip,
@@ -78,38 +92,57 @@ export const createSpeakingOnlyVideo = (
       );
       return quality === "good";
     });
-    console.log(`✅ Found ${goodClips.length} good clips`);
+    console.log(
+      `✅ Found ${goodClips.length} good clips (took ${(Date.now() - filterStart) / 1000}s)`
+    );
 
     if (goodClips.length === 0) {
       console.log("❌ No good clips found");
       yield* err(new CouldNotCreateSpeakingOnlyVideoError());
     }
 
-    // Create a complex filter to concatenate all good clips
-    console.log("🎬 Creating FFmpeg filter...");
-    const filterComplex = goodClips
-      .map((clip, i, arr) => {
-        const startTime = clip.startTime;
+    // Create a temporary directory for clips
+    const tempDir = join(tmpdir(), `speaking-clips-${Date.now()}`);
+    yield* execAsync(`mkdir -p "${tempDir}"`);
 
-        const isLastClip = i === arr.length - 1;
+    // Create individual clips
+    console.log("🎬 Creating individual clips...");
+    const clipsStart = Date.now();
+    const clipFiles = await Promise.all(
+      goodClips.map(async (clip, i) => {
+        const clipStart = Date.now();
+        const outputFile = join(tempDir, `clip-${i}.mp4`);
+        const duration =
+          i === goodClips.length - 1
+            ? clip.duration + AUTO_EDITED_VIDEO_FINAL_END_PADDING
+            : clip.duration;
 
-        // If this is the last clip, add the final padding
-        const duration = isLastClip
-          ? clip.duration + AUTO_EDITED_VIDEO_FINAL_END_PADDING
-          : clip.duration;
-        return `[0:v]trim=start=${startTime}:duration=${duration},setpts=PTS-STARTPTS[v${i}];[0:a]atrim=start=${startTime}:duration=${duration},asetpts=PTS-STARTPTS[a${i}];`;
+        await execAsync(
+          `ffmpeg -y -hide_banner -i "${inputVideo}" -ss ${clip.startTime} -t ${duration} -c:v libx264 -preset ultrafast -crf 28 -c:a aac -b:a 192k "${outputFile}"`
+        ).mapErr((e) => {
+          throw e;
+        });
+
+        console.log(
+          `✅ Created clip ${i + 1}/${goodClips.length} (took ${(Date.now() - clipStart) / 1000}s)`
+        );
+        return outputFile;
       })
-      .join("");
+    );
+    console.log(
+      `✅ Created all ${goodClips.length} clips (took ${(Date.now() - clipsStart) / 1000}s)`
+    );
 
-    const videoInputs = goodClips.map((_, i) => `[v${i}]`).join("");
-    const audioInputs = goodClips.map((_, i) => `[a${i}]`).join("");
+    // Create a concat file
+    const concatFile = join(tempDir, "concat.txt");
+    const concatContent = clipFiles.map((file) => `file '${file}'`).join("\n");
+    await writeFile(concatFile, concatContent);
 
-    const concatFilter = `${filterComplex}${videoInputs}concat=n=${goodClips.length}:v=1:a=0[outv];${audioInputs}concat=n=${goodClips.length}:v=0:a=1[outa]`;
-
-    // Run ffmpeg with the complex filter
-    console.log("🎥 Creating final video...");
+    // Concatenate all clips
+    console.log("🎥 Concatenating clips...");
+    const concatStart = Date.now();
     yield* execAsync(
-      `ffmpeg -y -hide_banner -i "${inputVideo}" -filter_complex "${concatFilter}" -map "[outv]" -map "[outa]" -c:v libx264 -c:a aac "${outputVideo}"`
+      `ffmpeg -y -hide_banner -f concat -safe 0 -i "${concatFile}" -c:v libx264 -preset ultrafast -crf 28 -c:a aac -b:a 192k "${outputVideo}"`
     ).mapErr((e) => {
       console.log(e);
       return new FFMPegWithComplexFilterError({
@@ -117,8 +150,17 @@ export const createSpeakingOnlyVideo = (
         stderr: e.stderr,
       });
     });
+    console.log(
+      `✅ Concatenated all clips (took ${(Date.now() - concatStart) / 1000}s)`
+    );
 
-    console.log("✅ Successfully created speaking-only video!");
+    // Clean up temporary files
+    yield* execAsync(`rm -rf "${tempDir}"`);
+
+    const totalTime = (Date.now() - startTime) / 1000;
+    console.log(
+      `✅ Successfully created speaking-only video! (Total time: ${totalTime}s)`
+    );
     return ok(undefined);
   }).mapErr((e) => {
     if ("stdout" in e) {

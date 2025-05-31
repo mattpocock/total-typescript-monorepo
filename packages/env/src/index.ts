@@ -7,6 +7,7 @@ config({
 });
 
 const envSchema = z.object({
+  EXPORT_DIRECTORY_IN_UNIX: z.string(),
   OBS_OUTPUT_DIRECTORY: z.string(),
   DAVINCI_EXPORT_DIRECTORY: z.string(),
   LONG_TERM_FOOTAGE_STORAGE_DIRECTORY: z.string(),
