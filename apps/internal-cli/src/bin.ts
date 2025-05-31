@@ -9,6 +9,8 @@ import { createSpeakingOnlyVideo } from "@total-typescript/ffmpeg";
 import path from "path";
 import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
 import { env } from "@total-typescript/env";
+import readline from "readline/promises";
+import fs from "fs/promises";
 
 const program = new Command();
 
@@ -40,10 +42,10 @@ program
   });
 
 program
-  .command("create-speaking-only-video")
-  .aliases(["s", "speaking"])
+  .command("create-short")
+  .aliases(["s", "short"])
   .description(
-    "Create a new video containing only the good speaking parts from the latest OBS recording"
+    "Create a new short video from the latest OBS recording and save it to the shorts export directory"
   )
   .action(async () => {
     const latestVideoResult = await getLatestOBSVideo();
@@ -53,13 +55,42 @@ program
     }
 
     const latestVideo = latestVideoResult.value;
-    const outputFilename = `auto-edit-${path.basename(latestVideo)}`;
-    const outputPath = path.join(
+
+    // Prompt for the output filename
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+
+    const outputFilename = await rl.question(
+      "Enter the name for your short (without extension): "
+    );
+
+    // Ensure the readline interface is closed
+    // when the process exits
+    process.on("beforeExit", () => {
+      rl.close();
+    });
+
+    // First create in the export directory
+    const tempOutputPath = path.join(
       env.EXPORT_DIRECTORY_IN_UNIX,
-      outputFilename
+      `${outputFilename}.mp4`
     ) as AbsolutePath;
 
-    await createSpeakingOnlyVideo(latestVideo, outputPath);
+    await createSpeakingOnlyVideo(latestVideo, tempOutputPath);
+    console.log(`Video created successfully at: ${tempOutputPath}`);
+
+    // Then move to shorts directory
+    const finalOutputPath = path.join(
+      env.SHORTS_EXPORT_DIRECTORY,
+      `${outputFilename}.mp4`
+    ) as AbsolutePath;
+
+    await fs.rename(tempOutputPath, finalOutputPath);
+    console.log(`Short moved to: ${finalOutputPath}`);
+
+    rl.close();
   });
 
 program.parse(process.argv);
