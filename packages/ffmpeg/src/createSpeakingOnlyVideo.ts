@@ -118,7 +118,7 @@ export const createSpeakingOnlyVideo = (
             : clip.duration;
 
         await execAsync(
-          `ffmpeg -y -hide_banner -i "${inputVideo}" -ss ${clip.startTime} -t ${duration} -c:v libx264 -preset ultrafast -crf 28 -c:a aac -b:a 192k "${outputFile}"`
+          `ffmpeg -y -hide_banner -ss ${clip.startTime} -i "${inputVideo}" -t ${duration} -c:v libx264 -preset medium -crf 28 -c:a aac -b:a 192k "${outputFile}"`
         ).mapErr((e) => {
           throw e;
         });
@@ -142,7 +142,7 @@ export const createSpeakingOnlyVideo = (
     console.log("🎥 Concatenating clips...");
     const concatStart = Date.now();
     yield* execAsync(
-      `ffmpeg -y -hide_banner -f concat -safe 0 -i "${concatFile}" -c:v libx264 -preset ultrafast -crf 28 -c:a aac -b:a 192k "${outputVideo}"`
+      `ffmpeg -y -hide_banner -f concat -safe 0 -i "${concatFile}" -c:v libx264 -preset medium -crf 28 -c:a aac -b:a 192k "${outputVideo}"`
     ).mapErr((e) => {
       console.log(e);
       return new FFMPegWithComplexFilterError({
