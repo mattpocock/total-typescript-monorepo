@@ -1,5 +1,5 @@
 import { execAsync, type AbsolutePath } from "@total-typescript/shared";
-import { err, ok } from "neverthrow";
+import { err, ok, safeTry } from "neverthrow";
 import { MINIMUM_CLIP_LENGTH_IN_SECONDS } from "./constants.js";
 import { getClipsOfSpeakingFromFFmpeg } from "./getSpeakingClips.js";
 
@@ -32,37 +32,35 @@ export const findSilenceInVideo = (
     fps: number;
   }
 ) => {
-  return execAsync(
-    `ffmpeg -hide_banner -vn -i "${inputVideo}" -af "silencedetect=n=${opts.threshold}dB:d=${opts.silenceDuration}" -f null - 2>&1`
-  )
-    .map(({ stdout }) => {
-      return {
-        speakingClips: getClipsOfSpeakingFromFFmpeg(stdout, opts),
-        stdout,
-      };
-    })
-    .andThen((input) => {
-      const { speakingClips, stdout } = input;
-      if (!speakingClips[0]) {
-        return err(new CouldNotFindStartTimeError());
-      }
-      const endClip = speakingClips[speakingClips.length - 1];
+  return safeTry(async function* () {
+    const { stdout } = yield* execAsync(
+      `ffmpeg -hide_banner -vn -i "${inputVideo}" -af "silencedetect=n=${opts.threshold}dB:d=${opts.silenceDuration}" -f null - 2>&1`
+    );
 
-      if (!endClip) {
-        return err(new CouldNotFindEndTimeError());
-      }
-      const startTime = speakingClips[0].startTime;
-      const endTime = endClip.endTime;
+    const speakingClips = getClipsOfSpeakingFromFFmpeg(stdout, opts);
 
-      return ok({
-        speakingClips: speakingClips.filter(
-          (clip) => clip.duration > MINIMUM_CLIP_LENGTH_IN_SECONDS
-        ),
-        startTime,
-        endTime,
-        rawStdout: stdout,
-      });
+    if (!speakingClips[0]) {
+      return err(new CouldNotFindStartTimeError());
+    }
+
+    const endClip = speakingClips[speakingClips.length - 1];
+
+    if (!endClip) {
+      return err(new CouldNotFindEndTimeError());
+    }
+
+    const startTime = speakingClips[0].startTime;
+    const endTime = endClip.endTime;
+
+    return ok({
+      speakingClips: speakingClips.filter(
+        (clip) => clip.duration > MINIMUM_CLIP_LENGTH_IN_SECONDS
+      ),
+      startTime,
+      endTime,
+      rawStdout: stdout,
     });
+  });
 };
 
 export const formatFloatForFFmpeg = (num: number) => {
