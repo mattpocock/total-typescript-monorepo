@@ -2,6 +2,13 @@ import { execAsync, type AbsolutePath } from "@total-typescript/shared";
 import { err, ok, safeTry } from "neverthrow";
 import { MINIMUM_CLIP_LENGTH_IN_SECONDS } from "./constants.js";
 import { getClipsOfSpeakingFromFFmpeg } from "./getSpeakingClips.js";
+import path from "path";
+import fs from "fs/promises";
+import {
+  createSubtitleFromAudio,
+  extractAudioFromVideo,
+  getFPS,
+} from "./index.js";
 
 export const encodeVideo = (
   inputVideo: AbsolutePath,
@@ -109,21 +116,122 @@ export type VideoPosition = {
   y: number;
 };
 
-export const layerVideos = (
-  backgroundVideo: AbsolutePath,
-  overlayVideo: AbsolutePath,
-  outputVideo: AbsolutePath
+export type Subtitle = {
+  start: number;
+  end: number;
+  text: string;
+};
+
+const REMOTION_DIR = path.join(
+  import.meta.dirname,
+  "..",
+  "..",
+  "..",
+  "apps",
+  "remotion-subtitle-renderer"
+);
+
+const MAXIMUM_SUBTITLE_LENGTH_IN_CHARS = 68;
+
+export const renderSubtitles = (
+  inputPath: AbsolutePath,
+  outputPath: AbsolutePath
 ) => {
   return safeTry(async function* () {
-    console.log("🎥 Layering videos...");
-    console.log("Background:", backgroundVideo);
-    console.log("Overlay:", overlayVideo);
+    const startTime = Date.now();
+    console.log("🎥 Processing video for subtitles:", inputPath);
+    console.log("📝 Output will be saved to:", outputPath);
 
-    const { stdout } = yield* execAsync(
-      `ffmpeg -y -hide_banner -i "${backgroundVideo}" -i "${overlayVideo}" -filter_complex "[0:v][1:v]overlay=0:0" -c:a copy "${outputVideo}"`
-    );
+    const audioPath = `${inputPath}.mp3` as AbsolutePath;
 
-    console.log("✅ Successfully layered videos!");
-    return ok({ stdout });
+    try {
+      // Extract audio
+      console.log("🎵 Extracting audio...");
+      const audioStart = Date.now();
+      await extractAudioFromVideo(inputPath, audioPath);
+      console.log(
+        `✅ Audio extracted successfully (took ${(Date.now() - audioStart) / 1000}s)`
+      );
+
+      // Transcribe audio
+      console.log("🎙️ Transcribing audio...");
+      const transcribeStart = Date.now();
+      const subtitles = await createSubtitleFromAudio(audioPath);
+      console.log(
+        `✅ Audio transcribed successfully (took ${(Date.now() - transcribeStart) / 1000}s)`
+      );
+
+      console.log("⏱️ Detecting video FPS...");
+      const fpsStart = Date.now();
+      const fpsResult = await getFPS(inputPath);
+      if (fpsResult.isErr()) {
+        throw fpsResult.error;
+      }
+      const fps = fpsResult.value;
+      console.log(
+        `✅ Detected FPS: ${fps} (took ${(Date.now() - fpsStart) / 1000}s)`
+      );
+
+      const subtitlesAsFrames = subtitles.map((subtitle: Subtitle) => ({
+        startFrame: Math.floor(subtitle.start * fps),
+        endFrame: Math.floor(subtitle.end * fps),
+        text: subtitle.text.trim(),
+      }));
+
+      const JSON_FILE_PATH = path.join(REMOTION_DIR, "src", "subtitle.json");
+
+      await fs.writeFile(JSON_FILE_PATH, JSON.stringify(subtitlesAsFrames));
+
+      await fs.copyFile(
+        inputPath,
+        path.join(REMOTION_DIR, "public", "input.mp4") as AbsolutePath
+      );
+
+      const tmpOutputPath = path.join(
+        REMOTION_DIR,
+        "out",
+        "with-subtitles.mp4"
+      );
+
+      const cmd = `nice -n 19 npx remotion render MyComp ${tmpOutputPath}`;
+
+      console.log("🎬 Rendering subtitles...");
+      const renderStart = Date.now();
+      const renderResult = await execAsync(cmd, {
+        cwd: REMOTION_DIR,
+      });
+
+      if (renderResult.isErr()) {
+        throw renderResult.error;
+      }
+      console.log(
+        `✅ Subtitles rendered (took ${(Date.now() - renderStart) / 1000}s)`
+      );
+
+      console.log("📋 Copying final output...");
+      const finalCopyStart = Date.now();
+      await fs.copyFile(tmpOutputPath, outputPath);
+      console.log(
+        `✅ Final output copied (took ${(Date.now() - finalCopyStart) / 1000}s)`
+      );
+
+      // Clean up the temporary audio file
+      await fs.unlink(audioPath);
+
+      const totalTime = (Date.now() - startTime) / 1000;
+      console.log(
+        `✅ Successfully rendered subtitles! (Total time: ${totalTime}s)`
+      );
+
+      return ok(undefined);
+    } catch (error) {
+      // Clean up the temporary audio file if it exists
+      try {
+        await fs.unlink(audioPath);
+      } catch {
+        // Ignore error if file doesn't exist
+      }
+      return err(error);
+    }
   });
 };

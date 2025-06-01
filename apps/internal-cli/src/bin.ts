@@ -13,6 +13,7 @@ import {
   createSpeakingOnlyVideo,
   createSubtitleFromAudio,
   getFPS,
+  renderSubtitles,
 } from "@total-typescript/ffmpeg";
 import path from "path";
 import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
@@ -91,6 +92,13 @@ program
     await createSpeakingOnlyVideo(latestVideo, tempOutputPath);
     console.log(`Video created successfully at: ${tempOutputPath}`);
 
+    const withSubtitlesPath = path.join(
+      env.EXPORT_DIRECTORY_IN_UNIX,
+      `${outputFilename}-with-subtitles.mp4`
+    ) as AbsolutePath;
+
+    await renderSubtitles(tempOutputPath, withSubtitlesPath);
+
     if (options.dryRun) {
       console.log("Dry run mode: Skipping move to shorts directory");
       rl.close();
@@ -103,112 +111,10 @@ program
       `${outputFilename}.mp4`
     ) as AbsolutePath;
 
-    await fs.rename(tempOutputPath, finalOutputPath);
+    await fs.rename(withSubtitlesPath, finalOutputPath);
     console.log(`Short moved to: ${finalOutputPath}`);
 
     rl.close();
-  });
-
-program
-  .command("transcribe-latest")
-  .aliases(["t", "transcribe"])
-  .description("Transcribe the most recent video in the export directory")
-  .action(async () => {
-    // Get all files in the export directory
-    const files = await fs.readdir(env.EXPORT_DIRECTORY_IN_UNIX);
-
-    // Filter for video files and get their stats
-    const videoFiles = await Promise.all(
-      files
-        .filter((file) => file.endsWith(".mp4"))
-        .map(async (file) => {
-          const filePath = path.join(env.EXPORT_DIRECTORY_IN_UNIX, file);
-          const stats = await fs.stat(filePath);
-          return { file, stats };
-        })
-    );
-
-    if (videoFiles.length === 0) {
-      console.error("No video files found in export directory");
-      process.exit(1);
-    }
-
-    // Sort by creation time and get the most recent
-    const latestVideo = videoFiles.sort(
-      (a, b) => b.stats.mtime.getTime() - a.stats.mtime.getTime()
-    )[0];
-
-    if (!latestVideo) {
-      console.error("No video files found in export directory");
-      process.exit(1);
-    }
-
-    const videoPath = path.join(
-      env.EXPORT_DIRECTORY_IN_UNIX,
-      latestVideo.file
-    ) as AbsolutePath;
-    const audioPath = path.join(
-      env.EXPORT_DIRECTORY_IN_UNIX,
-      `${latestVideo.file}.mp3`
-    ) as AbsolutePath;
-
-    console.log(`Processing video: ${latestVideo.file}`);
-
-    try {
-      // Extract audio
-      await extractAudioFromVideo(videoPath, audioPath);
-      console.log("Audio extracted successfully");
-
-      // Transcribe audio
-      const subtitles = await createSubtitleFromAudio(audioPath);
-
-      const fps = (await getFPS(videoPath))._unsafeUnwrap();
-
-      const subtitlesAsFrames = subtitles.map((subtitle) => ({
-        startFrame: Math.floor(subtitle.start * fps),
-        endFrame: Math.floor(subtitle.end * fps),
-        text: subtitle.text.trim(),
-      }));
-
-      const REMOTION_DIR = path.resolve(
-        import.meta.dirname,
-        "../../remotion-subtitle-renderer"
-      );
-
-      const JSON_FILE_PATH = path.join(
-        REMOTION_DIR,
-        "src",
-        "subtitle.json"
-      ) as AbsolutePath;
-
-      await fs.writeFile(JSON_FILE_PATH, JSON.stringify(subtitlesAsFrames));
-
-      // Copy the video to the remotion directory
-      await fs.copyFile(
-        videoPath,
-        path.join(REMOTION_DIR, "public", "input.mp4") as AbsolutePath
-      );
-
-      const cmd = `nice -n 19 npx remotion render MyComp ${REMOTION_DIR}/out/subtitle.mp4`;
-
-      console.log("Rendering subtitle...");
-      await execAsync(cmd, {
-        cwd: REMOTION_DIR,
-      })
-        .mapErr((e) => {
-          console.error("Error rendering subtitle:", e);
-          process.exit(1);
-        })
-        .map(() => {
-          console.log("Subtitle rendered successfully");
-        });
-
-      // Clean up the temporary audio file
-      await fs.unlink(audioPath);
-    } catch (error) {
-      console.error("Error processing video:", error);
-      process.exit(1);
-    }
   });
 
 program.parse(process.argv);

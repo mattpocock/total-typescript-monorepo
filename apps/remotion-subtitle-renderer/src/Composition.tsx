@@ -15,7 +15,7 @@ export const MyComposition = ({
 }) => {
   return (
     <>
-      {/* <OffthreadVideo src={staticFile("/input.mp4")} /> */}
+      <OffthreadVideo src={staticFile("/input.mp4")} />
       {subtitles.map((subtitle) => (
         <Sequence
           from={subtitle.startFrame - 2}
