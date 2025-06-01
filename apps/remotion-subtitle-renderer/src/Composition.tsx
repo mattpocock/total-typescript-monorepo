@@ -1,11 +1,9 @@
 import {
   AbsoluteFill,
+  Easing,
+  interpolate,
   Sequence,
   useCurrentFrame,
-  interpolate,
-  Easing,
-  staticFile,
-  OffthreadVideo,
 } from "remotion";
 
 export const MyComposition = ({
@@ -15,11 +13,15 @@ export const MyComposition = ({
 }) => {
   return (
     <>
-      <OffthreadVideo src={staticFile("/input.mp4")} />
-      {subtitles.map((subtitle) => (
+      {/* <OffthreadVideo src={staticFile("/input.mp4")} /> */}
+      {subtitles.map((subtitle, index, arr) => (
         <Sequence
           from={subtitle.startFrame - 2}
-          durationInFrames={subtitle.endFrame - subtitle.startFrame}
+          durationInFrames={
+            index === arr.length - 1
+              ? Infinity
+              : subtitle.endFrame - subtitle.startFrame
+          }
         >
           <AbsoluteFill className="flex items-center justify-center">
             <Subtitle text={subtitle.text} />
@@ -31,6 +33,7 @@ export const MyComposition = ({
 };
 
 const ANIMATION_DURATION = 8;
+const BASE_Y_TRANSFORM = 64;
 
 const Subtitle = ({ text }: { text: string }) => {
   const frame = useCurrentFrame();
@@ -39,9 +42,7 @@ const Subtitle = ({ text }: { text: string }) => {
     extrapolateRight: "clamp",
   });
 
-  const BASE_Y_TRANSFORM = 64;
-
-  const y = interpolate(frame, [0, ANIMATION_DURATION], [50, 0], {
+  const y = interpolate(frame, [0, ANIMATION_DURATION], [20, 0], {
     extrapolateRight: "clamp",
     easing: Easing.bezier(0.25, 0.1, 0.25, 1),
   });

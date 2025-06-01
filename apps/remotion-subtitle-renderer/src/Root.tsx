@@ -1,8 +1,9 @@
 import "./index.css";
-import { Composition } from "remotion";
+import { Composition, staticFile } from "remotion";
 import { MyComposition } from "./Composition";
 import { z } from "zod";
 import subtitleJson from "./subtitle.json";
+import { parseMedia } from "@remotion/media-parser";
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -10,8 +11,6 @@ export const RemotionRoot: React.FC = () => {
       <Composition
         id="MyComp"
         component={MyComposition}
-        durationInFrames={subtitleJson[subtitleJson.length - 1].endFrame}
-        fps={60}
         schema={z.object({
           subtitles: z.array(
             z.object({
@@ -21,6 +20,21 @@ export const RemotionRoot: React.FC = () => {
             }),
           ),
         })}
+        calculateMetadata={async () => {
+          const video = await parseMedia({
+            src: staticFile("/input.mp4"),
+            fields: {
+              durationInSeconds: true,
+              fps: true,
+            },
+          });
+          return {
+            durationInFrames: Math.floor(
+              (video.durationInSeconds ?? 0) * (video.fps ?? 60),
+            ),
+            fps: video.fps ?? 60,
+          };
+        }}
         defaultProps={{
           subtitles: subtitleJson,
         }}

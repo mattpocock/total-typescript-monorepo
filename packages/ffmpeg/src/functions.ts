@@ -131,7 +131,45 @@ const REMOTION_DIR = path.join(
   "remotion-subtitle-renderer"
 );
 
-const MAXIMUM_SUBTITLE_LENGTH_IN_CHARS = 68;
+const MAXIMUM_SUBTITLE_LENGTH_IN_CHARS = 32;
+
+const splitSubtitle = (subtitle: Subtitle): Subtitle[] => {
+  // If the subtitle is already short enough, return it as is
+  if (subtitle.text.length <= MAXIMUM_SUBTITLE_LENGTH_IN_CHARS) {
+    return [subtitle];
+  }
+
+  // Calculate how many chunks we need
+  const numChunks = Math.ceil(
+    subtitle.text.length / MAXIMUM_SUBTITLE_LENGTH_IN_CHARS
+  );
+
+  // Split the text into words
+  const words = subtitle.text.split(" ");
+
+  const wordsPerChunk = Math.ceil(words.length / numChunks);
+
+  const chunks: Subtitle[] = [];
+
+  const duration = subtitle.end - subtitle.start;
+  const chunkDuration = duration / numChunks;
+
+  for (let i = 0; i < numChunks; i++) {
+    const startTime = subtitle.start + i * chunkDuration;
+    const endTime = startTime + chunkDuration;
+
+    const startWordIndex = i * wordsPerChunk;
+    const endWordIndex = startWordIndex + wordsPerChunk;
+
+    chunks.push({
+      start: startTime,
+      end: endTime,
+      text: words.slice(startWordIndex, endWordIndex).join(" ").trim(),
+    });
+  }
+
+  return chunks;
+};
 
 export const renderSubtitles = (
   inputPath: AbsolutePath,
@@ -161,6 +199,9 @@ export const renderSubtitles = (
         `✅ Audio transcribed successfully (took ${(Date.now() - transcribeStart) / 1000}s)`
       );
 
+      // Split long subtitles into smaller chunks
+      const processedSubtitles = subtitles.flatMap(splitSubtitle);
+
       console.log("⏱️ Detecting video FPS...");
       const fpsStart = Date.now();
       const fpsResult = await getFPS(inputPath);
@@ -172,11 +213,13 @@ export const renderSubtitles = (
         `✅ Detected FPS: ${fps} (took ${(Date.now() - fpsStart) / 1000}s)`
       );
 
-      const subtitlesAsFrames = subtitles.map((subtitle: Subtitle) => ({
-        startFrame: Math.floor(subtitle.start * fps),
-        endFrame: Math.floor(subtitle.end * fps),
-        text: subtitle.text.trim(),
-      }));
+      const subtitlesAsFrames = processedSubtitles.map(
+        (subtitle: Subtitle) => ({
+          startFrame: Math.floor(subtitle.start * fps),
+          endFrame: Math.floor(subtitle.end * fps),
+          text: subtitle.text.trim(),
+        })
+      );
 
       const JSON_FILE_PATH = path.join(REMOTION_DIR, "src", "subtitle.json");
 
@@ -187,19 +230,16 @@ export const renderSubtitles = (
         path.join(REMOTION_DIR, "public", "input.mp4") as AbsolutePath
       );
 
-      const tmpOutputPath = path.join(
-        REMOTION_DIR,
-        "out",
-        "with-subtitles.mp4"
-      );
-
-      const cmd = `nice -n 19 npx remotion render MyComp ${tmpOutputPath}`;
+      const subtitlesOverlayPath = path.join(REMOTION_DIR, "out", "MyComp.mov");
 
       console.log("🎬 Rendering subtitles...");
       const renderStart = Date.now();
-      const renderResult = await execAsync(cmd, {
-        cwd: REMOTION_DIR,
-      });
+      const renderResult = await execAsync(
+        `nice -n 19 npx remotion render MyComp "${subtitlesOverlayPath}"`,
+        {
+          cwd: REMOTION_DIR,
+        }
+      );
 
       if (renderResult.isErr()) {
         throw renderResult.error;
@@ -208,12 +248,13 @@ export const renderSubtitles = (
         `✅ Subtitles rendered (took ${(Date.now() - renderStart) / 1000}s)`
       );
 
-      console.log("📋 Copying final output...");
-      const finalCopyStart = Date.now();
-      await fs.copyFile(tmpOutputPath, outputPath);
-      console.log(
-        `✅ Final output copied (took ${(Date.now() - finalCopyStart) / 1000}s)`
+      const layeringResult = await execAsync(
+        `nice -n 19 ffmpeg -i "${inputPath}" -i "${subtitlesOverlayPath}" -filter_complex "[0:v][1:v]overlay" -c:a copy "${outputPath}"`
       );
+
+      if (layeringResult.isErr()) {
+        throw layeringResult.error;
+      }
 
       // Clean up the temporary audio file
       await fs.unlink(audioPath);
