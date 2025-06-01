@@ -25,8 +25,7 @@ export const transcribeAudio = async (
       audio: audioBuffer,
       providerOptions: {
         openai: {
-          prompt: `Only transcribe if there is clear human speech.`,
-          temperature: 0,
+          prompt: `Click clack, keyboard clicks. Sniffing noses. Coughs.`,
         },
       },
       maxRetries: 0,
