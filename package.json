@@ -9,7 +9,7 @@
   },
   "private": true,
   "scripts": {
-    "dev": "turbo watch build lint",
+    "dev": "turbo watch build",
     "ci": "turbo build test lint",
     "build": "turbo build",
     "release": "pnpm run ci && changeset publish",

@@ -13,6 +13,7 @@ const envSchema = z.object({
   LONG_TERM_FOOTAGE_STORAGE_DIRECTORY: z.string(),
   DROPBOX_DIRECTORY: z.string(),
   SHORTS_EXPORT_DIRECTORY: z.string(),
+  OPENAI_API_KEY: z.string(),
 });
 
 const result = envSchema.safeParse(process.env);

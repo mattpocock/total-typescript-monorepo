@@ -47,7 +47,8 @@ program
   .description(
     "Create a new short video from the latest OBS recording and save it to the shorts export directory"
   )
-  .action(async () => {
+  .option("-d, --dry-run", "Run without saving to Dropbox")
+  .action(async (options: { dryRun?: boolean }) => {
     const latestVideoResult = await getLatestOBSVideo();
     if (latestVideoResult.isErr()) {
       console.error("Failed to get latest OBS video:", latestVideoResult.error);
@@ -80,6 +81,12 @@ program
 
     await createSpeakingOnlyVideo(latestVideo, tempOutputPath);
     console.log(`Video created successfully at: ${tempOutputPath}`);
+
+    if (options.dryRun) {
+      console.log("Dry run mode: Skipping move to shorts directory");
+      rl.close();
+      return;
+    }
 
     // Then move to shorts directory
     const finalOutputPath = path.join(
