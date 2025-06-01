@@ -103,3 +103,27 @@ export const trimVideo = (
     )} -i "${inputVideo}" -c copy "${outputVideo.replaceAll("\\", "")}"`
   );
 };
+
+export type VideoPosition = {
+  x: number;
+  y: number;
+};
+
+export const layerVideos = (
+  backgroundVideo: AbsolutePath,
+  overlayVideo: AbsolutePath,
+  outputVideo: AbsolutePath
+) => {
+  return safeTry(async function* () {
+    console.log("🎥 Layering videos...");
+    console.log("Background:", backgroundVideo);
+    console.log("Overlay:", overlayVideo);
+
+    const { stdout } = yield* execAsync(
+      `ffmpeg -y -hide_banner -i "${backgroundVideo}" -i "${overlayVideo}" -filter_complex "[0:v][1:v]overlay=0:0" -c:a copy "${outputVideo}"`
+    );
+
+    console.log("✅ Successfully layered videos!");
+    return ok({ stdout });
+  });
+};

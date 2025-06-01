@@ -1,5 +1,8 @@
 import { execAsync, type AbsolutePath } from "@total-typescript/shared";
+import { writeFile } from "fs/promises";
 import { err, ok, safeTry } from "neverthrow";
+import { tmpdir } from "os";
+import { join } from "path";
 import {
   AUTO_EDITED_END_PADDING,
   AUTO_EDITED_START_PADDING,
@@ -13,9 +16,6 @@ import {
 } from "./extractChaptersFromFile.js";
 import { findSilenceInVideo } from "./functions.js";
 import { getFPS } from "./getFPS.js";
-import { join } from "path";
-import { mkdir, writeFile } from "fs/promises";
-import { tmpdir } from "os";
 
 export class CouldNotCreateSpeakingOnlyVideoError extends Error {
   readonly _tag = "CouldNotCreateSpeakingOnlyVideoError";
