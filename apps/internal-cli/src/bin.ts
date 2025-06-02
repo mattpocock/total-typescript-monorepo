@@ -14,6 +14,7 @@ import packageJson from "../package.json" with { type: "json" };
 import { appendVideoToTimeline } from "./appendVideoToTimeline.js";
 import { commands } from "./commands.js";
 import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
+import { validateWindowsFilename } from "./validateWindowsFilename.js";
 
 const program = new Command();
 
@@ -52,7 +53,7 @@ program
   )
   .option("-d, --dry-run", "Run without saving to Dropbox")
   .option("-ns, --no-subtitles", "Disable subtitle rendering")
-  .action(async (options: { dryRun?: boolean; noSubtitles: boolean }) => {
+  .action(async (options: { dryRun?: boolean; subtitles?: boolean }) => {
     const latestVideoResult = await getLatestOBSVideo();
     if (latestVideoResult.isErr()) {
       console.error("Failed to get latest OBS video:", latestVideoResult.error);
@@ -73,6 +74,12 @@ program
 
     rl.close();
 
+    const validationResult = validateWindowsFilename(outputFilename);
+    if (!validationResult.isValid) {
+      console.error("Error:", validationResult.error);
+      process.exit(1);
+    }
+
     // Ensure the readline interface is closed
     // when the process exits
     process.on("beforeExit", () => {
@@ -90,7 +97,7 @@ program
 
     let finalVideoPath = tempOutputPath;
 
-    if (!options.noSubtitles) {
+    if (options.subtitles) {
       const withSubtitlesPath = path.join(
         env.EXPORT_DIRECTORY_IN_UNIX,
         `${outputFilename}-with-subtitles.mp4`
