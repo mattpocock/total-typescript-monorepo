@@ -1,26 +1,19 @@
 #!/usr/bin/env node
 
-import { Command } from "commander";
-import { commands } from "./commands.js";
-import {
-  execAsync,
-  toDashCase,
-  type AbsolutePath,
-} from "@total-typescript/shared";
-import packageJson from "../package.json" with { type: "json" };
-import { appendVideoToTimeline } from "./appendVideoToTimeline.js";
+import { env } from "@total-typescript/env";
 import {
   createSpeakingOnlyVideo,
-  createSubtitleFromAudio,
-  getFPS,
   renderSubtitles,
 } from "@total-typescript/ffmpeg";
-import path from "path";
-import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
-import { env } from "@total-typescript/env";
-import readline from "readline/promises";
+import { toDashCase, type AbsolutePath } from "@total-typescript/shared";
+import { Command } from "commander";
 import fs from "fs/promises";
-import { extractAudioFromVideo } from "@total-typescript/ffmpeg";
+import path from "path";
+import readline from "readline/promises";
+import packageJson from "../package.json" with { type: "json" };
+import { appendVideoToTimeline } from "./appendVideoToTimeline.js";
+import { commands } from "./commands.js";
+import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
 
 const program = new Command();
 
@@ -52,13 +45,14 @@ program
   });
 
 program
-  .command("create-short")
-  .aliases(["s", "short"])
+  .command("create-auto-edited-video")
+  .aliases(["v", "video"])
   .description(
-    "Create a new short video from the latest OBS recording and save it to the shorts export directory"
+    "Create a new auto-edited video from the latest OBS recording and save it to the export directory"
   )
   .option("-d, --dry-run", "Run without saving to Dropbox")
-  .action(async (options: { dryRun?: boolean }) => {
+  .option("-ns, --no-subtitles", "Disable subtitle rendering")
+  .action(async (options: { dryRun?: boolean; noSubtitles: boolean }) => {
     const latestVideoResult = await getLatestOBSVideo();
     if (latestVideoResult.isErr()) {
       console.error("Failed to get latest OBS video:", latestVideoResult.error);
@@ -74,8 +68,10 @@ program
     });
 
     const outputFilename = await rl.question(
-      "Enter the name for your short (without extension): "
+      "Enter the name for your video (without extension): "
     );
+
+    rl.close();
 
     // Ensure the readline interface is closed
     // when the process exits
@@ -92,16 +88,20 @@ program
     await createSpeakingOnlyVideo(latestVideo, tempOutputPath);
     console.log(`Video created successfully at: ${tempOutputPath}`);
 
-    const withSubtitlesPath = path.join(
-      env.EXPORT_DIRECTORY_IN_UNIX,
-      `${outputFilename}-with-subtitles.mp4`
-    ) as AbsolutePath;
+    let finalVideoPath = tempOutputPath;
 
-    await renderSubtitles(tempOutputPath, withSubtitlesPath);
+    if (!options.noSubtitles) {
+      const withSubtitlesPath = path.join(
+        env.EXPORT_DIRECTORY_IN_UNIX,
+        `${outputFilename}-with-subtitles.mp4`
+      ) as AbsolutePath;
+
+      await renderSubtitles(tempOutputPath, withSubtitlesPath);
+      finalVideoPath = withSubtitlesPath;
+    }
 
     if (options.dryRun) {
       console.log("Dry run mode: Skipping move to shorts directory");
-      rl.close();
       return;
     }
 
@@ -111,10 +111,8 @@ program
       `${outputFilename}.mp4`
     ) as AbsolutePath;
 
-    await fs.rename(withSubtitlesPath, finalOutputPath);
-    console.log(`Short moved to: ${finalOutputPath}`);
-
-    rl.close();
+    await fs.rename(finalVideoPath, finalOutputPath);
+    console.log(`Video moved to: ${finalOutputPath}`);
   });
 
 program.parse(process.argv);
