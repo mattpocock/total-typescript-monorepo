@@ -16,6 +16,7 @@ import {
 } from "./extractChaptersFromFile.js";
 import { findSilenceInVideo } from "./functions.js";
 import { getFPS } from "./getFPS.js";
+import pLimit from "p-limit";
 
 export class CouldNotCreateSpeakingOnlyVideoError extends Error {
   readonly _tag = "CouldNotCreateSpeakingOnlyVideoError";
@@ -36,6 +37,8 @@ export class FFMPegWithComplexFilterError extends Error {
     this.stderr = opts.stderr;
   }
 }
+
+const FFMPEG_CONCURRENCY_LIMIT = 6;
 
 export const createSpeakingOnlyVideo = (
   inputVideo: AbsolutePath,
@@ -108,26 +111,29 @@ export const createSpeakingOnlyVideo = (
     // Create individual clips
     console.log("🎬 Creating individual clips...");
     const clipsStart = Date.now();
+    const limit = pLimit(FFMPEG_CONCURRENCY_LIMIT); // Limit concurrency to 2
     const clipFiles = await Promise.all(
-      goodClips.map(async (clip, i) => {
-        const clipStart = Date.now();
-        const outputFile = join(tempDir, `clip-${i}.mp4`);
-        const duration =
-          i === goodClips.length - 1
-            ? clip.duration + AUTO_EDITED_VIDEO_FINAL_END_PADDING
-            : clip.duration;
+      goodClips.map((clip, i) =>
+        limit(async () => {
+          const clipStart = Date.now();
+          const outputFile = join(tempDir, `clip-${i}.mp4`);
+          const duration =
+            i === goodClips.length - 1
+              ? clip.duration + AUTO_EDITED_VIDEO_FINAL_END_PADDING
+              : clip.duration;
 
-        await execAsync(
-          `nice -n 19 ffmpeg -y -hide_banner -ss ${clip.startTime} -i "${inputVideo}" -t ${duration} -c:v libx264 -preset veryslow -crf 16 -b:v 8000k -maxrate 12000k -bufsize 16000k -c:a aac -b:a 384k "${outputFile}"`
-        ).mapErr((e) => {
-          throw e;
-        });
+          await execAsync(
+            `nice -n 19 ffmpeg -y -hide_banner -ss ${clip.startTime} -i "${inputVideo}" -t ${duration} -c:v h264_nvenc -preset slow -rc:v vbr -cq:v 19 -b:v 8000k -maxrate 12000k -bufsize 16000k -c:a aac -b:a 384k "${outputFile}"`
+          ).mapErr((e) => {
+            throw e;
+          });
 
-        console.log(
-          `✅ Created clip ${i + 1}/${goodClips.length} (took ${(Date.now() - clipStart) / 1000}s)`
-        );
-        return outputFile;
-      })
+          console.log(
+            `✅ Created clip ${i + 1}/${goodClips.length} (took ${(Date.now() - clipStart) / 1000}s)`
+          );
+          return outputFile;
+        })
+      )
     );
     console.log(
       `✅ Created all ${goodClips.length} clips (took ${(Date.now() - clipsStart) / 1000}s)`
@@ -135,14 +141,16 @@ export const createSpeakingOnlyVideo = (
 
     // Create a concat file
     const concatFile = join(tempDir, "concat.txt");
-    const concatContent = clipFiles.map((file) => `file '${file}'`).join("\n");
+    const concatContent = clipFiles
+      .map((file: string) => `file '${file}'`)
+      .join("\n");
     await writeFile(concatFile, concatContent);
 
     // Concatenate all clips
     console.log("🎥 Concatenating clips...");
     const concatStart = Date.now();
     yield* execAsync(
-      `nice -n 19 ffmpeg -y -hide_banner -f concat -safe 0 -i "${concatFile}" -c:v libx264 -preset veryslow -crf 16 -b:v 8000k -maxrate 12000k -bufsize 16000k -c:a aac -b:a 384k "${outputVideo}"`
+      `nice -n 19 ffmpeg -y -hide_banner -f concat -safe 0 -i "${concatFile}" -c:v h264_nvenc -preset slow -rc:v vbr -cq:v 19 -b:v 8000k -maxrate 12000k -bufsize 16000k -c:a aac -b:a 384k "${outputVideo}"`
     ).mapErr((e) => {
       console.log(e);
       return new FFMPegWithComplexFilterError({

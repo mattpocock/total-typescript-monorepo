@@ -14,6 +14,7 @@
     "@total-typescript/shared": "workspace:*",
     "ai": "4.3.16",
     "neverthrow": "^8.1.0",
-    "openai": "^5.0.1"
+    "openai": "^5.0.1",
+    "p-limit": "^6.2.0"
   }
 }
