@@ -13,5 +13,11 @@ Config.setPixelFormat("yuva444p10le");
 Config.setCodec("prores");
 Config.setProResProfile("4444");
 
+// WSL2-specific optimizations
+Config.setConcurrency(4); // Conservative for WSL2
 Config.setOverwriteOutput(true);
+Config.setChromiumHeadlessMode(true);
+Config.setChromiumOpenGlRenderer("swiftshader");
+Config.setChromiumDisableWebSecurity(true);
+
 Config.overrideWebpackConfig(enableTailwind);
