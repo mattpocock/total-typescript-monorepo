@@ -32,7 +32,7 @@
     "tsx": "^4.19.0",
     "turbo": "2.3.3",
     "typescript": "5.8.0-dev.20250124",
-    "vitest": "^2.0.5"
+    "vitest": "^3.2.1"
   },
   "resolutions": {
     "typescript": "5.8.0-dev.20250124"

@@ -19,12 +19,13 @@
   },
   "dependencies": {
     "@total-typescript/env": "workspace:*",
-    "@total-typescript/shared": "workspace:*",
     "@total-typescript/ffmpeg": "workspace:*",
+    "@total-typescript/shared": "workspace:*",
     "commander": "^12.0.0",
-    "zod": "^3.23.6",
-    "prompts": "^2.4.2",
     "fast-glob": "^3.3.2",
-    "neverthrow": "^8.1.0"
+    "neverthrow": "^8.1.0",
+    "obs-websocket-js": "^5.0.6",
+    "prompts": "^2.4.2",
+    "zod": "^3.23.6"
   }
 }

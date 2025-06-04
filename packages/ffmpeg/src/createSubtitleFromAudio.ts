@@ -39,3 +39,16 @@ export const createSubtitleFromAudio = async (
     text: segment.text,
   }));
 };
+
+export const transcribeAudio = async (
+  audioPath: AbsolutePath
+): Promise<string> => {
+  const audioBuffer = createReadStream(audioPath);
+
+  const response = await openai.audio.transcriptions.create({
+    file: audioBuffer,
+    model: "whisper-1",
+  });
+
+  return response.text;
+};

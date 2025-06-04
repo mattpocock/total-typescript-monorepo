@@ -1,0 +1,23 @@
+{
+  "name": "recordings-manager",
+  "version": "0.0.2",
+  "private": true,
+  "type": "module",
+  "files": [
+    "./dist/*"
+  ],
+  "scripts": {
+    "dev": "pnpm --watch tsx src/index.ts"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "dependencies": {
+    "@total-typescript/env": "workspace:*",
+    "@total-typescript/ffmpeg": "workspace:*",
+    "@types/node-media-server": "^2.3.7",
+    "chokidar": "^4.0.3",
+    "node-media-server": "^4.0.18",
+    "obs-websocket-js": "^5.0.6"
+  }
+}

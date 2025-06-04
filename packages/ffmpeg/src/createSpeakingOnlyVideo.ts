@@ -71,20 +71,11 @@ export const createSpeakingOnlyVideo = (
       `✅ Found ${speakingClips.length} speaking clips (took ${(Date.now() - speakingStart) / 1000}s)`
     );
 
-    // Then get all bad take markers
-    console.log("🎯 Extracting bad take markers...");
-    const markersStart = Date.now();
     const badTakeMarkers = yield* extractBadTakeMarkersFromFile(
       inputVideo,
       fps
     );
-    console.log(
-      `✅ Found ${badTakeMarkers.length} bad take markers (took ${(Date.now() - markersStart) / 1000}s)`
-    );
 
-    // Filter out bad takes
-    console.log("🔍 Filtering out bad takes...");
-    const filterStart = Date.now();
     const goodClips = speakingClips.filter((clip, index) => {
       const quality = isBadTake(
         clip,
@@ -95,9 +86,6 @@ export const createSpeakingOnlyVideo = (
       );
       return quality === "good";
     });
-    console.log(
-      `✅ Found ${goodClips.length} good clips (took ${(Date.now() - filterStart) / 1000}s)`
-    );
 
     if (goodClips.length === 0) {
       console.log("❌ No good clips found");

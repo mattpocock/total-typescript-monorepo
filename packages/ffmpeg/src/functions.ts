@@ -37,23 +37,25 @@ export const findSilenceInVideo = (
     startPadding: number;
     endPadding: number;
     fps: number;
+    log?: boolean;
   }
 ) => {
   return safeTry(async function* () {
     const processStartTime = Date.now();
-    console.log("🎥 Processing video:", inputVideo);
+    if (opts.log !== false) console.log("🎥 Processing video:", inputVideo);
 
     // First, find all speaking clips
-    console.log("🔍 Finding speaking clips...");
+    if (opts.log !== false) console.log("🔍 Finding speaking clips...");
     const speakingStart = Date.now();
     const { stdout } = yield* execAsync(
       `ffmpeg -hide_banner -vn -i "${inputVideo}" -af "silencedetect=n=${opts.threshold}dB:d=${opts.silenceDuration}" -f null - 2>&1`
     );
 
     const speakingClips = getClipsOfSpeakingFromFFmpeg(stdout, opts);
-    console.log(
-      `✅ Found ${speakingClips.length} speaking clips (took ${(Date.now() - speakingStart) / 1000}s)`
-    );
+    if (opts.log !== false)
+      console.log(
+        `✅ Found ${speakingClips.length} speaking clips (took ${(Date.now() - speakingStart) / 1000}s)`
+      );
 
     if (!speakingClips[0]) {
       return err(new CouldNotFindStartTimeError());
@@ -69,19 +71,23 @@ export const findSilenceInVideo = (
     const endTime = endClip.endTime;
 
     // Filter out clips that are too short
-    console.log("🔍 Filtering clips...");
+    if (opts.log !== false) console.log("🔍 Filtering clips...");
     const filterStart = Date.now();
 
     const filteredClips = speakingClips.filter(
       (clip) => clip.duration > MINIMUM_CLIP_LENGTH_IN_SECONDS
     );
 
-    console.log(
-      `✅ Filtered to ${filteredClips.length} clips (took ${(Date.now() - filterStart) / 1000}s)`
-    );
+    if (opts.log !== false)
+      console.log(
+        `✅ Filtered to ${filteredClips.length} clips (took ${(Date.now() - filterStart) / 1000}s)`
+      );
 
     const totalTime = (Date.now() - processStartTime) / 1000;
-    console.log(`✅ Successfully processed video! (Total time: ${totalTime}s)`);
+    if (opts.log !== false)
+      console.log(
+        `✅ Successfully processed video! (Total time: ${totalTime}s)`
+      );
 
     return ok({
       speakingClips: filteredClips,

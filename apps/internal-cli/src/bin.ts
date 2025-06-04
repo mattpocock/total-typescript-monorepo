@@ -2,10 +2,24 @@
 
 import { env } from "@total-typescript/env";
 import {
+  AUTO_EDITED_END_PADDING,
+  AUTO_EDITED_START_PADDING,
   createSpeakingOnlyVideo,
+  extractBadTakeMarkersFromFile,
+  findSilenceInVideo,
+  getFPS,
+  isBadTake,
   renderSubtitles,
+  SILENCE_DURATION,
+  THRESHOLD,
+  transcribeAudio,
+  type SpeakingClip,
 } from "@total-typescript/ffmpeg";
-import { toDashCase, type AbsolutePath } from "@total-typescript/shared";
+import {
+  execAsync,
+  toDashCase,
+  type AbsolutePath,
+} from "@total-typescript/shared";
 import { Command } from "commander";
 import fs from "fs/promises";
 import path from "path";
@@ -15,6 +29,8 @@ import { appendVideoToTimeline } from "./appendVideoToTimeline.js";
 import { commands } from "./commands.js";
 import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
 import { validateWindowsFilename } from "./validateWindowsFilename.js";
+import OBSWebSocket from "obs-websocket-js";
+import { ok, safeTry } from "neverthrow";
 
 const program = new Command();
 
@@ -120,6 +136,99 @@ program
 
     await fs.rename(finalVideoPath, finalOutputPath);
     console.log(`Video moved to: ${finalOutputPath}`);
+  });
+
+const waitForNewOBSVideo = async (obs: OBSWebSocket): Promise<AbsolutePath> => {
+  return await new Promise((resolve) => {
+    obs.on("RecordStateChanged", (data) => {
+      if (data.outputState === "OBS_WEBSOCKET_OUTPUT_STOPPED") {
+        const filename = path.win32.basename(data.outputPath);
+        resolve(
+          path.resolve(env.OBS_OUTPUT_DIRECTORY, filename) as AbsolutePath
+        );
+      }
+    });
+  });
+};
+
+program
+  .command("watch-obs-output")
+  .aliases(["w", "watch"])
+  .description(
+    "Watch the OBS output directory for new videos, and display the transcribed text on screen"
+  )
+  .action(async () => {
+    const obs = new OBSWebSocket();
+
+    await obs.connect("ws://192.168.1.55:4455"); // Default OBS WebSocket v5 URL
+    console.log("Connected to OBS WebSocket");
+
+    while (true) {
+      const inputVideo = await waitForNewOBSVideo(obs);
+      console.log(`New video: ${path.basename(inputVideo)}`);
+
+      await safeTry(async function* () {
+        const fps = yield* getFPS(inputVideo);
+
+        const { speakingClips } = yield* findSilenceInVideo(inputVideo, {
+          threshold: THRESHOLD,
+          silenceDuration: SILENCE_DURATION,
+          startPadding: AUTO_EDITED_START_PADDING,
+          endPadding: AUTO_EDITED_END_PADDING,
+          fps,
+          log: false,
+        });
+
+        const badTakeMarkers = yield* extractBadTakeMarkersFromFile(
+          inputVideo,
+          fps
+        );
+
+        const goodClips = speakingClips.filter((clip, index) => {
+          const quality = isBadTake(
+            clip,
+            badTakeMarkers,
+            index,
+            speakingClips,
+            fps
+          );
+          return quality === "good";
+        });
+
+        const clipsWithTranscription = await Promise.all(
+          goodClips.map(async (clip) => {
+            const outputAudioFile = path.join(
+              env.OBS_OUTPUT_DIRECTORY,
+              `clip-${clip.startTime.toFixed(2)}.mp3`
+            ) as AbsolutePath;
+
+            const audioCodec = "libmp3lame";
+
+            const cmd = `ffmpeg -y -hide_banner -ss ${clip.startTime.toFixed(2)} -i "${inputVideo}" -t ${clip.duration} -c:a ${audioCodec} -b:a 384k "${outputAudioFile}"`;
+
+            await execAsync(cmd).mapErr((e) => {
+              throw e;
+            });
+
+            const transcription = await transcribeAudio(outputAudioFile);
+
+            await fs.unlink(outputAudioFile);
+
+            return { transcription, clip };
+          })
+        );
+
+        console.log(
+          clipsWithTranscription
+            .map(({ transcription, clip }) => {
+              return `${clip.duration.toFixed(1).padStart(5, " ")}s: ${transcription}`;
+            })
+            .join("\n")
+        );
+
+        return ok(undefined);
+      });
+    }
   });
 
 program.parse(process.argv);
