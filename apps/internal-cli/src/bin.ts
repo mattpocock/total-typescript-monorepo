@@ -45,7 +45,7 @@ commands.forEach((command) => {
 program
   .command("append-video-to-timeline [video]")
   .aliases(["a", "append"])
-  .description("Append video to the current timeline")
+  .description("Append video to the current Davinci Resolve timeline")
   .action(async (video: string | undefined) => {
     await appendVideoToTimeline(video);
   });
@@ -54,7 +54,7 @@ program
   .command("create-auto-edited-video")
   .aliases(["v", "video"])
   .description(
-    "Create a new auto-edited video from the latest OBS recording and save it to the export directory"
+    `Create a new auto-edited video from the latest OBS recording and save it to the export directory`
   )
   .option("-d, --dry-run", "Run without saving to Dropbox")
   .option("-ns, --no-subtitles", "Disable subtitle rendering")
