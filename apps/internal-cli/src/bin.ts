@@ -3,18 +3,23 @@
 import { env } from "@total-typescript/env";
 import {
   createAutoEditedVideo,
+  extractAudioFromVideo,
   renderSubtitles,
+  transcribeAudio,
 } from "@total-typescript/ffmpeg";
 import { toDashCase, type AbsolutePath } from "@total-typescript/shared";
 import { Command } from "commander";
 import fs from "fs/promises";
 import path from "path";
 import readline from "readline/promises";
+import prompts from "prompts";
 import packageJson from "../package.json" with { type: "json" };
 import { appendVideoToTimeline } from "./appendVideoToTimeline.js";
 import { commands } from "./commands.js";
 import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
 import { validateWindowsFilename } from "./validateWindowsFilename.js";
+
+const { prompt } = prompts;
 
 const program = new Command();
 
@@ -92,15 +97,9 @@ program
       `${outputFilename}.mp4`
     ) as AbsolutePath;
 
-    const transcriptPath = path.join(
-      env.EXPORT_DIRECTORY_IN_UNIX,
-      `${outputFilename}.a.txt`
-    ) as AbsolutePath;
-
     await createAutoEditedVideo({
       inputVideo: latestVideo,
       outputVideo: tempOutputPath,
-      transcriptPath,
     });
     console.log(`Video created successfully at: ${tempOutputPath}`);
 
@@ -129,6 +128,90 @@ program
 
     await fs.rename(finalVideoPath, finalOutputPath);
     console.log(`Video moved to: ${finalOutputPath}`);
+  });
+
+program
+  .command("transcribe-video")
+  .aliases(["t", "transcribe"])
+  .description("Transcribe audio from a selected video file")
+  .action(async () => {
+    // Get all files from both directories
+    const [exportFiles, shortsFiles] = await Promise.all([
+      fs.readdir(env.EXPORT_DIRECTORY_IN_UNIX),
+      fs.readdir(env.SHORTS_EXPORT_DIRECTORY),
+    ]);
+
+    // Get stats for all files in parallel
+    const exportStats = await Promise.all(
+      exportFiles
+        .filter((file) => file.endsWith(".mp4"))
+        .map(async (file) => {
+          const fullPath = path.join(
+            env.EXPORT_DIRECTORY_IN_UNIX,
+            file
+          ) as AbsolutePath;
+          const stats = await fs.stat(fullPath);
+          return {
+            title: `Export: ${file}`,
+            value: fullPath,
+            mtime: stats.mtime,
+          };
+        })
+    );
+
+    const shortsStats = await Promise.all(
+      shortsFiles
+        .filter((file) => file.endsWith(".mp4"))
+        .map(async (file) => {
+          const fullPath = path.join(
+            env.SHORTS_EXPORT_DIRECTORY,
+            file
+          ) as AbsolutePath;
+          const stats = await fs.stat(fullPath);
+          return {
+            title: `Shorts: ${file}`,
+            value: fullPath,
+            mtime: stats.mtime,
+          };
+        })
+    );
+
+    // Combine and sort by modification time (newest first)
+    const videoFiles = [...exportStats, ...shortsStats].sort(
+      (a, b) => b.mtime.getTime() - a.mtime.getTime()
+    );
+
+    if (videoFiles.length === 0) {
+      console.error("No video files found in either directory");
+      process.exit(1);
+    }
+
+    const { selectedVideo } = await prompt({
+      type: "select",
+      name: "selectedVideo",
+      message: "Choose a video to transcribe:",
+      choices: videoFiles.map(({ title, value }) => ({ title, value })),
+    });
+
+    if (!selectedVideo) {
+      console.error("No video selected");
+      process.exit(1);
+    }
+
+    console.log("Transcribing video...");
+
+    const audioPath = path.join(
+      path.dirname(selectedVideo),
+      `${path.basename(selectedVideo)}.mp3`
+    ) as AbsolutePath;
+
+    await extractAudioFromVideo(selectedVideo, audioPath);
+
+    const transcript = await transcribeAudio(audioPath);
+
+    await fs.unlink(audioPath);
+    console.log("\nTranscript:");
+    console.log(transcript);
   });
 
 program.parse(process.argv);
