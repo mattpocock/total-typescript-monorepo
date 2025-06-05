@@ -7,7 +7,7 @@ export const extractAudioFromVideo = async (
   outputPath: AbsolutePath
 ): Promise<void> => {
   await execAsync(
-    `nice -n 19 ffmpeg -y -hide_banner -i "${inputPath}" -vn -acodec libmp3lame -q:a 2 "${outputPath}"`
+    `nice -n 19 ffmpeg -y -hide_banner -hwaccel cuda -i "${inputPath}" -vn -acodec libmp3lame -q:a 2 "${outputPath}"`
   ).mapErr((e) => {
     throw new Error(`Failed to extract audio: ${e.message}`);
   });
@@ -38,4 +38,19 @@ export const createSubtitleFromAudio = async (
     end: segment.end,
     text: segment.text,
   }));
+};
+
+export const transcribeAudio = async (audioPath: AbsolutePath) => {
+  if (!audioPath.endsWith(".mp3")) {
+    throw new Error("Audio path must end with .mp3");
+  }
+
+  const audioBuffer = createReadStream(audioPath);
+
+  const response = await openai.audio.transcriptions.create({
+    file: audioBuffer,
+    model: "whisper-1",
+  });
+
+  return response.text;
 };
