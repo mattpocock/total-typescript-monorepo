@@ -6,4 +6,4 @@ export * from "./normalizeAudio.js";
 export * from "./convertToWav.js";
 export * from "./createSubtitleFromAudio.js";
 export * from "./extractChaptersFromFile.js";
-export * from "./createSpeakingOnlyVideo.js";
+export * from "./createAutoEditedVideo.js";

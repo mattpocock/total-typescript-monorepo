@@ -40,10 +40,13 @@ export class FFMPegWithComplexFilterError extends Error {
 
 const FFMPEG_CONCURRENCY_LIMIT = 6;
 
-export const createSpeakingOnlyVideo = (
-  inputVideo: AbsolutePath,
-  outputVideo: AbsolutePath
-) => {
+export const createAutoEditedVideo = async ({
+  inputVideo,
+  outputVideo,
+}: {
+  inputVideo: AbsolutePath;
+  outputVideo: AbsolutePath;
+}) => {
   return safeTry(async function* () {
     const startTime = Date.now();
     console.log("🎥 Processing video:", inputVideo);

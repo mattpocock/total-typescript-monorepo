@@ -2,7 +2,7 @@
 
 import { env } from "@total-typescript/env";
 import {
-  createSpeakingOnlyVideo,
+  createAutoEditedVideo,
   renderSubtitles,
 } from "@total-typescript/ffmpeg";
 import { toDashCase, type AbsolutePath } from "@total-typescript/shared";
@@ -92,7 +92,16 @@ program
       `${outputFilename}.mp4`
     ) as AbsolutePath;
 
-    await createSpeakingOnlyVideo(latestVideo, tempOutputPath);
+    const transcriptPath = path.join(
+      env.EXPORT_DIRECTORY_IN_UNIX,
+      `${outputFilename}.a.txt`
+    ) as AbsolutePath;
+
+    await createAutoEditedVideo({
+      inputVideo: latestVideo,
+      outputVideo: tempOutputPath,
+      transcriptPath,
+    });
     console.log(`Video created successfully at: ${tempOutputPath}`);
 
     let finalVideoPath = tempOutputPath;
