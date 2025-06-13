@@ -56,6 +56,7 @@ export const getClipsOfSpeakingFromFFmpeg = (
     endTime: number;
     silenceEnd: number;
     duration: number;
+    durationInFrames: number;
   }[] = [];
 
   silence.forEach((currentSilence) => {
@@ -84,6 +85,7 @@ export const getClipsOfSpeakingFromFFmpeg = (
       endTime: resolvedEndFrame / opts.fps,
       silenceEnd: currentSilence.silenceEnd,
       duration: (resolvedEndFrame - resolvedStartFrame) / opts.fps,
+      durationInFrames: resolvedEndFrame - resolvedStartFrame,
     });
   });
 

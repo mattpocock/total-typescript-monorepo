@@ -1,6 +1,6 @@
 import { execAsync, type AbsolutePath } from "@total-typescript/shared";
 import { writeFile } from "fs/promises";
-import { err, ok, safeTry } from "neverthrow";
+import { err, ok, ResultAsync, safeTry } from "neverthrow";
 import { tmpdir } from "os";
 import { join } from "path";
 import {
@@ -13,6 +13,7 @@ import {
 import {
   extractBadTakeMarkersFromFile,
   isBadTake,
+  type SpeakingClip,
 } from "./extractChaptersFromFile.js";
 import { findSilenceInVideo } from "./functions.js";
 import { getFPS } from "./getFPS.js";
@@ -172,7 +173,7 @@ export const createAutoEditedVideo = async ({
     console.log(
       `✅ Successfully created speaking-only video! (Total time: ${totalTime}s)`
     );
-    return ok(undefined);
+    return ok({ speakingClips: goodClips });
   }).mapErr((e) => {
     if ("stdout" in e) {
       console.error("❌ FFmpeg error:");

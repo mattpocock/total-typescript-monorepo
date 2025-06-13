@@ -97,10 +97,16 @@ program
       `${outputFilename}.mp4`
     ) as AbsolutePath;
 
-    await createAutoEditedVideo({
+    const result = await createAutoEditedVideo({
       inputVideo: latestVideo,
       outputVideo: tempOutputPath,
     });
+
+    if (result.isErr()) {
+      console.error("Failed to create auto-edited video:", result.error);
+      process.exit(1);
+    }
+
     console.log(`Video created successfully at: ${tempOutputPath}`);
 
     let finalVideoPath = tempOutputPath;
@@ -111,7 +117,18 @@ program
         `${outputFilename}-with-subtitles.mp4`
       ) as AbsolutePath;
 
-      await renderSubtitles(tempOutputPath, withSubtitlesPath);
+      const firstClipLength = result.value.speakingClips[0]!.durationInFrames;
+
+      if (!firstClipLength) {
+        console.error("No speaking clips found");
+        process.exit(1);
+      }
+
+      await renderSubtitles({
+        inputPath: tempOutputPath,
+        outputPath: withSubtitlesPath,
+        ctaDurationInFrames: firstClipLength,
+      });
       finalVideoPath = withSubtitlesPath;
     }
 

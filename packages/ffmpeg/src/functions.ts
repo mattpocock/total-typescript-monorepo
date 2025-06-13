@@ -9,6 +9,9 @@ import {
   extractAudioFromVideo,
   getFPS,
 } from "./index.js";
+import { generateObject } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { figureOutWhichCTAToShow } from "./figure-out-which-cta-to-show.js";
 
 export const encodeVideo = (
   inputVideo: AbsolutePath,
@@ -171,10 +174,15 @@ const splitSubtitle = (subtitle: Subtitle): Subtitle[] => {
   return chunks;
 };
 
-export const renderSubtitles = (
-  inputPath: AbsolutePath,
-  outputPath: AbsolutePath
-) => {
+export const renderSubtitles = ({
+  inputPath,
+  outputPath,
+  ctaDurationInFrames,
+}: {
+  inputPath: AbsolutePath;
+  outputPath: AbsolutePath;
+  ctaDurationInFrames: number;
+}) => {
   return safeTry(async function* () {
     const startTime = Date.now();
     console.log("🎥 Processing video for subtitles:", inputPath);
@@ -221,9 +229,24 @@ export const renderSubtitles = (
         })
       );
 
-      const JSON_FILE_PATH = path.join(REMOTION_DIR, "src", "subtitle.json");
+      const fullTranscriptText = processedSubtitles
+        .map((subtitle) => subtitle.text)
+        .join(" ");
 
-      await fs.writeFile(JSON_FILE_PATH, JSON.stringify(subtitlesAsFrames));
+      console.log("🔍 Figuring out which CTA to show...");
+
+      const cta = await figureOutWhichCTAToShow(fullTranscriptText);
+
+      console.log(`✅ Decided on CTA: ${cta}`);
+
+      const meta = {
+        subtitles: subtitlesAsFrames,
+        cta,
+        ctaDurationInFrames,
+      };
+
+      const META_FILE_PATH = path.join(REMOTION_DIR, "src", "meta.json");
+      await fs.writeFile(META_FILE_PATH, JSON.stringify(meta));
 
       await fs.copyFile(
         inputPath,
