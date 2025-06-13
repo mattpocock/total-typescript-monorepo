@@ -19,10 +19,13 @@
     "@types/react": "^19.1.5"
   },
   "dependencies": {
+    "@effect/platform": "^0.84.9",
+    "@effect/platform-node": "^0.85.14",
     "@total-typescript/env": "workspace:*",
-    "@total-typescript/shared": "workspace:*",
     "@total-typescript/ffmpeg": "workspace:*",
+    "@total-typescript/shared": "workspace:*",
     "commander": "^12.0.0",
+    "effect": "^3.16.5",
     "fast-glob": "^3.3.2",
     "ink": "^6.0.0",
     "neverthrow": "^8.1.0",

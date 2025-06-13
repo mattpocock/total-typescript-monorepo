@@ -3,4 +3,4 @@ export * from "./types.js";
 export * from "./utils.js";
 export * from "./paths.js";
 export * from "./davinci-resolve.js";
-export * from "./getActiveEditorFilePath.js";
+export * from "./exec-service.js";

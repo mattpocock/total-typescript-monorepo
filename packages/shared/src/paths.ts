@@ -1,56 +1,55 @@
-import { err, ok, Result } from "neverthrow";
 import type { AnyPath } from "./types.js";
 import { execAsync } from "./utils.js";
 import { access, rm } from "fs/promises";
+import { Effect, pipe } from "effect";
 
-export class ExerciseNotFoundError {
-  message: string;
-  constructor(public path: string) {
-    this.message = `Path appears not to be an exercise: ${path}`;
+export class FailedToRemoveDirectoryError extends Error {
+  readonly _tag = "FailedToRemoveDirectoryError";
+  override message = "Failed to remove directory";
+  constructor(public override cause: Error) {
+    super();
   }
 }
 
-const regex = /^\d{1,}/;
-
-export const parseExercisePath = <T extends AnyPath>(
-  fullPathname: T
-): Result<
-  {
-    resolvedPath: T;
-    num: string;
-  },
-  ExerciseNotFoundError
-> => {
-  const splitPathname = fullPathname.split("/");
-
-  const exerciseLabelIndex = splitPathname.findLastIndex((pathPart) => {
-    return regex.test(pathPart);
-  });
-
-  if (exerciseLabelIndex === -1) {
-    return err(new ExerciseNotFoundError(fullPathname));
+export class FailedToCreateDirectoryError extends Error {
+  readonly _tag = "FailedToCreateDirectoryError";
+  override message = "Failed to create directory";
+  constructor(public override cause: Error) {
+    super();
   }
-
-  return ok({
-    resolvedPath: splitPathname.slice(0, exerciseLabelIndex + 1).join("/") as T,
-    num: splitPathname[exerciseLabelIndex]?.match(regex)?.[0] as string,
-  });
-};
+}
 
 export const ensureDir = (dir: string) => {
-  return execAsync(`mkdir -p "${dir}"`).then((r) => r._unsafeUnwrap());
+  return pipe(
+    execAsync(`mkdir -p "${dir}"`),
+    Effect.catchAll((e) => {
+      return Effect.fail(new FailedToCreateDirectoryError(e));
+    })
+  );
 };
 
 export const exists = (dir: string) => {
-  return access(dir).then(
-    () => true,
-    () => false
+  return pipe(
+    Effect.tryPromise(async () => {
+      await access(dir);
+      return true;
+    }),
+    Effect.catchAll(() => {
+      return Effect.succeed(false);
+    })
   );
 };
 
 export const rimraf = (dir: string) => {
-  return rm(dir, {
-    recursive: true,
-    force: true,
-  });
+  return pipe(
+    Effect.tryPromise(async () => {
+      await rm(dir, {
+        recursive: true,
+        force: true,
+      });
+    }),
+    Effect.catchAll((e) => {
+      return Effect.fail(new FailedToRemoveDirectoryError(e));
+    })
+  );
 };

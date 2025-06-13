@@ -1,5 +1,9 @@
-import { execAsync, type AbsolutePath } from "@total-typescript/shared";
-import { err } from "neverthrow";
+import {
+  execAsync,
+  ExecService,
+  type AbsolutePath,
+} from "@total-typescript/shared";
+import { Effect, pipe } from "effect";
 
 export class CouldNotGetFPSError extends Error {
   readonly _tag = "CouldNotGetFPSError";
@@ -7,15 +11,17 @@ export class CouldNotGetFPSError extends Error {
 }
 
 export const getFPS = (inputVideo: AbsolutePath) => {
-  return execAsync(
-    `ffprobe -v error -select_streams v:0 -show_entries stream=r_frame_rate -of default=noprint_wrappers=1:nokey=1 "${inputVideo}"`
-  )
-    .map((output) => {
+  return pipe(
+    execAsync(
+      `ffprobe -v error -select_streams v:0 -show_entries stream=r_frame_rate -of default=noprint_wrappers=1:nokey=1 "${inputVideo}"`
+    ),
+    Effect.map((output) => {
       const [numerator, denominator] = output.stdout.split("/");
 
       return Number(numerator) / Number(denominator);
+    }),
+    Effect.catchAll((e) => {
+      return Effect.fail(new CouldNotGetFPSError());
     })
-    .orElse((e) => {
-      return err(new CouldNotGetFPSError());
-    });
+  );
 };

@@ -9,6 +9,7 @@
     ".": "./dist/index.js"
   },
   "dependencies": {
+    "effect": "^3.16.5",
     "zod": "^3.23.8",
     "dotenv": "^16.4.5"
   }

@@ -12,12 +12,12 @@ import {
   runDavinciResolveScript,
   type AbsolutePath,
 } from "@total-typescript/shared";
-import { okAsync, safeTry } from "neverthrow";
 import { getLatestOBSVideo } from "./getLatestOBSVideo.js";
 import path from "path";
+import { Effect } from "effect";
 
 export const appendVideoToTimeline = async (video: string | undefined) => {
-  return safeTry(async function* () {
+  return Effect.gen(function* () {
     let inputVideo: AbsolutePath;
 
     if (video) {
@@ -41,9 +41,6 @@ export const appendVideoToTimeline = async (video: string | undefined) => {
       fps
     );
 
-    console.dir(badTakeMarkers, { depth: null });
-    console.dir(silenceResult.speakingClips, { depth: null });
-
     const serialisedClipsOfSpeaking = silenceResult.speakingClips
       .map((clip, index) => {
         const takeQuality = isBadTake(
@@ -63,20 +60,12 @@ export const appendVideoToTimeline = async (video: string | undefined) => {
       .map(({ serialized }) => serialized)
       .join(":::");
 
-    const { stdout, stderr } = yield* runDavinciResolveScript(
-      "clip-and-append.lua",
-      {
-        INPUT_VIDEO: inputVideo,
-        CLIPS_TO_APPEND: serialisedClipsOfSpeaking,
-        WSLENV: "INPUT_VIDEO/p:CLIPS_TO_APPEND",
-      }
-    );
+    yield* runDavinciResolveScript("clip-and-append.lua", {
+      INPUT_VIDEO: inputVideo,
+      CLIPS_TO_APPEND: serialisedClipsOfSpeaking,
+      WSLENV: "INPUT_VIDEO/p:CLIPS_TO_APPEND",
+    });
 
-    console.log(stdout, stderr);
-
-    return okAsync(void 0);
-  }).mapErr((e) => {
-    console.error(e);
-    process.exit(1);
+    return Effect.succeed(void 0);
   });
 };

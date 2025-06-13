@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { getClipsOfSpeakingFromFFmpeg } from "./getSpeakingClips.js";
 import { readFileSync } from "fs";
 import { join } from "path";
+import { Effect, pipe } from "effect";
 
 const FIXTURES_DIR = join(import.meta.dirname, "__fixtures__");
 
@@ -18,7 +19,10 @@ describe("getClipsOfSpeakingFromFFmpegNew", () => {
       fps: 60,
     };
 
-    const result = getClipsOfSpeakingFromFFmpeg(fixture, opts);
+    const result = pipe(
+      getClipsOfSpeakingFromFFmpeg(fixture, opts),
+      Effect.runSync
+    );
 
     // Basic validation of the result
     expect(result).toBeInstanceOf(Array);

@@ -1,3 +1,24 @@
+import { Effect } from "effect";
+
+export class CouldNotFindStartTimeError extends Error {
+  readonly _tag = "CouldNotFindStartTimeError";
+  override message = "Could not find video start time.";
+}
+
+export class CouldNotFindEndTimeError extends Error {
+  readonly _tag = "CouldNotFindEndTimeError";
+  override message = "Could not find video end time.";
+}
+
+export type GetSpeakingClipsResult = {
+  startFrame: number;
+  endFrame: number;
+  startTime: number;
+  endTime: number;
+  silenceEnd: number;
+  duration: number;
+}[];
+
 export const getClipsOfSpeakingFromFFmpeg = (
   stdout: string,
   opts: {
@@ -5,7 +26,10 @@ export const getClipsOfSpeakingFromFFmpeg = (
     endPadding: number;
     fps: number;
   }
-) => {
+): Effect.Effect<
+  GetSpeakingClipsResult,
+  CouldNotFindStartTimeError | CouldNotFindEndTimeError
+> => {
   // Parse the silence detection output
   const silenceLines = stdout
     .trim()
@@ -87,5 +111,15 @@ export const getClipsOfSpeakingFromFFmpeg = (
     });
   });
 
-  return clipsOfSpeaking;
+  if (!clipsOfSpeaking[0]) {
+    return Effect.fail(new CouldNotFindStartTimeError());
+  }
+
+  const endClip = clipsOfSpeaking[clipsOfSpeaking.length - 1];
+
+  if (!endClip) {
+    return Effect.fail(new CouldNotFindEndTimeError());
+  }
+
+  return Effect.succeed(clipsOfSpeaking);
 };

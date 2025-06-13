@@ -1,9 +1,13 @@
-import { execAsync, type AbsolutePath } from "@total-typescript/shared";
-import { ResultAsync } from "neverthrow";
+import {
+  execAsync,
+  ExecService,
+  type AbsolutePath,
+} from "@total-typescript/shared";
 import {
   DEFINITELY_BAD_TAKE_PADDING,
   MAX_BAD_TAKE_DISTANCE,
 } from "./constants.js";
+import { Effect, pipe } from "effect";
 
 export interface RawChapter {
   id: number;
@@ -101,11 +105,16 @@ export const isBadTake = (
 export const extractBadTakeMarkersFromFile = (
   inputVideo: AbsolutePath,
   fps: number
-): ResultAsync<BadTakeMarker[], CouldNotExtractChaptersError> => {
-  return execAsync(
-    `ffprobe -i "${inputVideo}" -show_chapters -v quiet -print_format json`
-  )
-    .map(({ stdout }) => {
+): Effect.Effect<
+  BadTakeMarker[],
+  CouldNotExtractChaptersError,
+  ExecService
+> => {
+  return pipe(
+    execAsync(
+      `ffprobe -i "${inputVideo}" -show_chapters -v quiet -print_format json`
+    ),
+    Effect.map(({ stdout }) => {
       const response = JSON.parse(stdout.trim()) as ChaptersResponse;
       return response.chapters
         .filter((chapter) => chapter.tags.title === "Bad Take")
@@ -113,6 +122,7 @@ export const extractBadTakeMarkersFromFile = (
           ...chapter,
           frame: Math.floor((chapter.start / 1000) * fps),
         }));
-    })
-    .mapErr(() => new CouldNotExtractChaptersError());
+    }),
+    Effect.catchAll(() => Effect.fail(new CouldNotExtractChaptersError()))
+  );
 };

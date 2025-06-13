@@ -1,9 +1,12 @@
 import { env } from "@total-typescript/env";
 import {
+  ExecService,
+  realExecService,
   runDavinciResolveScript,
   SKILL_RECORDINGS_REPO_LOCATION,
 } from "@total-typescript/shared";
 import { execSync } from "child_process";
+import { Effect, pipe } from "effect";
 
 export type Command<TArgs extends readonly string[]> = {
   cliCommand: string;
@@ -16,6 +19,24 @@ const createCommands = <TArgs extends string[][]>(args: {
   [K in keyof TArgs]: Command<TArgs[K]>;
 }) => {
   return args;
+};
+
+const runEffect = <T extends { stdout: string }, E>(
+  effect: Effect.Effect<T, E, ExecService>
+) => {
+  return pipe(
+    effect,
+    Effect.provideService(ExecService, realExecService),
+    Effect.map((r) => {
+      Effect.log(r.stdout);
+      return Effect.succeed(void 0);
+    }),
+    Effect.catchAll((e) => {
+      Effect.logError(e);
+      return Effect.die(e);
+    }),
+    Effect.runPromise
+  );
 };
 
 export const commands = createCommands([
@@ -32,29 +53,17 @@ export const commands = createCommands([
     cliCommand: "create-timeline",
     description: "Create a new empty timeline in the current project.",
     run: async () => {
-      await runDavinciResolveScript("create-timeline.lua", {}).match(
-        (r) => {
-          console.log(r.stdout);
-        },
-        (e) => {
-          console.error(e);
-        }
-      );
+      await runEffect(runDavinciResolveScript("create-timeline.lua", {}));
     },
   },
   {
     cliCommand: "add-current-timeline-to-render-queue",
     description: "Add the current timeline to the render queue.",
     run: async () => {
-      await runDavinciResolveScript("add-timeline-to-render-queue.lua", {
-        DAVINCI_EXPORT_DIRECTORY: env.DAVINCI_EXPORT_DIRECTORY,
-      }).match(
-        (r) => {
-          console.log(r.stdout);
-        },
-        (e) => {
-          console.error(e);
-        }
+      await runEffect(
+        runDavinciResolveScript("add-timeline-to-render-queue.lua", {
+          DAVINCI_EXPORT_DIRECTORY: env.DAVINCI_EXPORT_DIRECTORY,
+        })
       );
     },
   },
@@ -62,15 +71,10 @@ export const commands = createCommands([
     cliCommand: "export-subtitles",
     description: "Export subtitles from the current timeline as SRT.",
     run: async () => {
-      await runDavinciResolveScript("add-subtitles.lua", {
-        OUTPUT_FOLDER: env.DAVINCI_EXPORT_DIRECTORY,
-      }).match(
-        (r) => {
-          console.log(r.stdout);
-        },
-        (e) => {
-          console.error(e);
-        }
+      await runEffect(
+        runDavinciResolveScript("add-subtitles.lua", {
+          OUTPUT_FOLDER: env.DAVINCI_EXPORT_DIRECTORY,
+        })
       );
     },
   },
@@ -91,14 +95,7 @@ export const commands = createCommands([
     description:
       "Zoom and reposition the currently selected clip in the timeline.",
     run: async () => {
-      await runDavinciResolveScript("zoom-clip.lua", {}).match(
-        (r) => {
-          console.log(r.stdout);
-        },
-        (e) => {
-          console.error(e);
-        }
-      );
+      await runEffect(runDavinciResolveScript("zoom-clip.lua", {}));
     },
   },
 ]);

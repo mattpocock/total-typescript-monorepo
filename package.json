@@ -36,5 +36,8 @@
   },
   "resolutions": {
     "typescript": "5.8.0-dev.20250124"
+  },
+  "devDependencies": {
+    "@effect/language-service": "^0.20.1"
   }
 }

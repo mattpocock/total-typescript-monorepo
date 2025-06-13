@@ -25,3 +25,5 @@ if (!result.success) {
 }
 
 export const env = result.data;
+
+export * from "./env-service.js";

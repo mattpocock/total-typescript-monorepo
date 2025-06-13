@@ -13,6 +13,9 @@
     ".": "./dist/index.js"
   },
   "dependencies": {
+    "effect": "^3.16.5",
+    "@effect/platform": "^0.84.9",
+    "@effect/platform-node": "^0.85.14",
     "zod": "^3.23.8",
     "neverthrow": "^8.1.0"
   }

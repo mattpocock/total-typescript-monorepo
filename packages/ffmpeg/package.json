@@ -13,6 +13,9 @@
     "@ai-sdk/openai": "^1.3.22",
     "@total-typescript/shared": "workspace:*",
     "ai": "4.3.16",
+    "effect": "^3.16.5",
+    "@effect/platform": "^0.84.9",
+    "@effect/platform-node": "^0.85.14",
     "neverthrow": "^8.1.0",
     "openai": "^5.0.1",
     "p-limit": "^6.2.0"
