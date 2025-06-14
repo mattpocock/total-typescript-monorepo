@@ -1,28 +1,13 @@
-import { execAsync, type AbsolutePath } from "@total-typescript/shared";
+import { type AbsolutePath } from "@total-typescript/shared";
 import { ResultAsync } from "neverthrow";
 import {
   DEFINITELY_BAD_TAKE_PADDING,
   MAX_BAD_TAKE_DISTANCE,
 } from "./constants.js";
-
-export interface RawChapter {
-  id: number;
-  time_base: string;
-  start: number;
-  start_time: string;
-  end: number;
-  end_time: string;
-  tags: {
-    title: string;
-  };
-}
+import { getChapters, type RawChapter } from "./ffmpeg-commands.js";
 
 export interface BadTakeMarker {
   frame: number;
-}
-
-export interface ChaptersResponse {
-  chapters: RawChapter[];
 }
 
 export interface SpeakingClip {
@@ -102,17 +87,12 @@ export const extractBadTakeMarkersFromFile = (
   inputVideo: AbsolutePath,
   fps: number
 ): ResultAsync<BadTakeMarker[], CouldNotExtractChaptersError> => {
-  return execAsync(
-    `ffprobe -i "${inputVideo}" -show_chapters -v quiet -print_format json`
-  )
-    .map(({ stdout }) => {
-      const response = JSON.parse(stdout.trim()) as ChaptersResponse;
-      return response.chapters
-        .filter((chapter) => chapter.tags.title === "Bad Take")
-        .map((chapter) => ({
-          ...chapter,
-          frame: Math.floor((chapter.start / 1000) * fps),
-        }));
-    })
-    .mapErr(() => new CouldNotExtractChaptersError());
+  return getChapters(inputVideo).map((response) => {
+    return response.chapters
+      .filter((chapter) => chapter.tags.title === "Bad Take")
+      .map((chapter) => ({
+        ...chapter,
+        frame: Math.floor((chapter.start / 1000) * fps),
+      }));
+  });
 };

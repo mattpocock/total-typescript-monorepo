@@ -2,9 +2,13 @@ import path from "path";
 import fs from "fs/promises";
 import { execAsync, type AbsolutePath } from "@total-typescript/shared";
 import { safeTry, err, ok } from "neverthrow";
-import { extractAudioFromVideo, createSubtitleFromAudio } from "./audio-processing.js";
+import {
+  extractAudioFromVideo,
+  createSubtitleFromAudio,
+} from "./audio-processing.js";
 import { getFPS } from "./video-processing.js";
 import { figureOutWhichCTAToShow } from "./cta-detection.js";
+import { overlaySubtitles } from "./ffmpeg-commands.js";
 
 export type Subtitle = {
   start: number;
@@ -132,7 +136,11 @@ export const renderSubtitles = ({
       const META_FILE_PATH = path.join(REMOTION_DIR, "src", "meta.json");
       await fs.writeFile(META_FILE_PATH, JSON.stringify(meta));
 
-      const subtitlesOverlayPath = path.join(REMOTION_DIR, "out", "MyComp.mov");
+      const subtitlesOverlayPath = path.join(
+        REMOTION_DIR,
+        "out",
+        "MyComp.mov"
+      ) as AbsolutePath;
 
       console.log("🎬 Rendering subtitles...");
       const renderStart = Date.now();
@@ -150,8 +158,10 @@ export const renderSubtitles = ({
         `✅ Subtitles rendered (took ${(Date.now() - renderStart) / 1000}s)`
       );
 
-      const layeringResult = await execAsync(
-        `nice -n 19 ffmpeg -i "${inputPath}" -i "${subtitlesOverlayPath}" -filter_complex "[0:v][1:v]overlay" -c:a copy "${outputPath}"`
+      const layeringResult = await overlaySubtitles(
+        inputPath,
+        subtitlesOverlayPath,
+        outputPath
       );
 
       if (layeringResult.isErr()) {

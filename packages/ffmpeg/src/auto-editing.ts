@@ -1,8 +1,13 @@
 import { execAsync, type AbsolutePath } from "@total-typescript/shared";
 import { writeFile } from "fs/promises";
-import { err, ok, ResultAsync, safeTry } from "neverthrow";
+import { err, ok, safeTry } from "neverthrow";
 import { tmpdir } from "os";
+import pLimit from "p-limit";
 import { join } from "path";
+import {
+  extractBadTakeMarkersFromFile,
+  isBadTake,
+} from "./chapter-extraction.js";
 import {
   AUTO_EDITED_END_PADDING,
   AUTO_EDITED_START_PADDING,
@@ -10,13 +15,9 @@ import {
   SILENCE_DURATION,
   THRESHOLD,
 } from "./constants.js";
-import {
-  extractBadTakeMarkersFromFile,
-  isBadTake,
-} from "./chapter-extraction.js";
 import { findSilenceInVideo } from "./silence-detection.js";
 import { getFPS } from "./video-processing.js";
-import pLimit from "p-limit";
+import { createClip, concatenateClips } from "./ffmpeg-commands.js";
 
 export class CouldNotCreateSpeakingOnlyVideoError extends Error {
   readonly _tag = "CouldNotCreateSpeakingOnlyVideoError";
@@ -119,17 +120,13 @@ export const createAutoEditedVideo = async ({
       goodClips.map((clip, i) =>
         limit(async () => {
           const clipStart = Date.now();
-          const outputFile = join(tempDir, `clip-${i}.mp4`);
+          const outputFile = join(tempDir, `clip-${i}.mp4`) as AbsolutePath;
           const duration =
             i === goodClips.length - 1
               ? clip.duration + AUTO_EDITED_VIDEO_FINAL_END_PADDING
               : clip.duration;
 
-          await execAsync(
-            `nice -n 19 ffmpeg -y -hide_banner -ss ${clip.startTime} -i "${inputVideo}" -t ${duration} -c:v h264_nvenc -preset slow -rc:v vbr -cq:v 19 -b:v 8000k -maxrate 12000k -bufsize 16000k -c:a aac -b:a 384k "${outputFile}"`
-          ).mapErr((e) => {
-            throw e;
-          });
+          await createClip(inputVideo, outputFile, clip.startTime, duration);
 
           console.log(
             `✅ Created clip ${i + 1}/${goodClips.length} (took ${(Date.now() - clipStart) / 1000}s)`
@@ -143,7 +140,7 @@ export const createAutoEditedVideo = async ({
     );
 
     // Create a concat file
-    const concatFile = join(tempDir, "concat.txt");
+    const concatFile = join(tempDir, "concat.txt") as AbsolutePath;
     const concatContent = clipFiles
       .map((file: string) => `file '${file}'`)
       .join("\n");
@@ -152,15 +149,7 @@ export const createAutoEditedVideo = async ({
     // Concatenate all clips
     console.log("🎥 Concatenating clips...");
     const concatStart = Date.now();
-    yield* execAsync(
-      `nice -n 19 ffmpeg -y -hide_banner -f concat -safe 0 -i "${concatFile}" -c:v h264_nvenc -preset slow -rc:v vbr -cq:v 19 -b:v 8000k -maxrate 12000k -bufsize 16000k -c:a aac -b:a 384k "${outputVideo}"`
-    ).mapErr((e) => {
-      console.log(e);
-      return new FFMPegWithComplexFilterError({
-        stdout: e.stdout,
-        stderr: e.stderr,
-      });
-    });
+    yield* concatenateClips(concatFile, outputVideo);
     console.log(
       `✅ Concatenated all clips (took ${(Date.now() - concatStart) / 1000}s)`
     );
@@ -181,7 +170,7 @@ export const createAutoEditedVideo = async ({
       console.error("FFmpeg stderr:", e.stderr);
       process.exit(1);
     }
-    console.error("❌ Error:", e.message);
+    console.error("❌ Error:", e instanceof Error ? e.message : String(e));
     process.exit(1);
   });
 };

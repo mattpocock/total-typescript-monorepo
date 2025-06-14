@@ -1,30 +1,13 @@
-import { execAsync, type AbsolutePath } from "@total-typescript/shared";
+import { type AbsolutePath } from "@total-typescript/shared";
 import { createReadStream } from "fs";
 import { OpenAI } from "openai";
+import {
+  convertToWav,
+  normalizeAudio,
+  extractAudioFromVideo,
+} from "./ffmpeg-commands.js";
 
-export const convertToWav = (
-  inputPath: AbsolutePath,
-  outputPath: AbsolutePath
-) => {
-  return execAsync(
-    `ffmpeg -i ${inputPath} -ar 16000 -ac 1 -c:a pcm_s16le ${outputPath}`
-  );
-};
-
-export const normalizeAudio = (input: AbsolutePath, output: AbsolutePath) => {
-  return execAsync(`ffmpeg-normalize -f ${input} -o ${output}`);
-};
-
-export const extractAudioFromVideo = async (
-  inputPath: AbsolutePath,
-  outputPath: AbsolutePath
-): Promise<void> => {
-  await execAsync(
-    `nice -n 19 ffmpeg -y -hide_banner -hwaccel cuda -i "${inputPath}" -vn -acodec libmp3lame -q:a 2 "${outputPath}"`
-  ).mapErr((e) => {
-    throw new Error(`Failed to extract audio: ${e.message}`);
-  });
-};
+export { convertToWav, normalizeAudio, extractAudioFromVideo };
 
 const openai = new OpenAI();
 

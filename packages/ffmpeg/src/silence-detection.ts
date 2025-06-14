@@ -1,5 +1,6 @@
-import { execAsync, type AbsolutePath } from "@total-typescript/shared";
+import { type AbsolutePath } from "@total-typescript/shared";
 import { err, ok, safeTry } from "neverthrow";
+import { detectSilence } from "./ffmpeg-commands.js";
 
 export class CouldNotFindStartTimeError extends Error {
   readonly _tag = "CouldNotFindStartTimeError";
@@ -119,8 +120,10 @@ export const findSilenceInVideo = (
 
     console.log("🔍 Finding speaking clips...");
     const speakingStart = Date.now();
-    const { stdout } = yield* execAsync(
-      `ffmpeg -hide_banner -vn -i "${inputVideo}" -af "silencedetect=n=${opts.threshold}dB:d=${opts.silenceDuration}" -f null - 2>&1`
+    const { stdout } = yield* detectSilence(
+      inputVideo,
+      opts.threshold,
+      opts.silenceDuration
     );
 
     const speakingClips = getClipsOfSpeakingFromFFmpeg(stdout, opts);
