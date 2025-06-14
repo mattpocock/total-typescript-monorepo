@@ -405,6 +405,10 @@ importers:
       p-limit:
         specifier: ^6.2.0
         version: 6.2.0
+    devDependencies:
+      '@total-typescript/shoehorn':
+        specifier: ^0.1.2
+        version: 0.1.2
 
   packages/shared:
     dependencies:
@@ -3035,6 +3039,9 @@ packages:
 
   '@total-typescript/helpers@0.0.1':
     resolution: {integrity: sha512-90WHVlI4zDtfS9te1zZbvc69JFDv1SwsQqyc++7IP9HKhpRd/psMt6EhT0gxDqGgI0P+4z8tnjvCrUZCjn97gg==}
+
+  '@total-typescript/shoehorn@0.1.2':
+    resolution: {integrity: sha512-p7nNZbOZIofpDNyP0u1BctFbjxD44Qc+oO5jufgQdFdGIXJLc33QRloJpq7k5T59CTgLWfQSUxsuqLcmeurYRw==}
 
   '@total-typescript/ts-reset@0.5.1':
     resolution: {integrity: sha512-AqlrT8YA1o7Ff5wPfMOL0pvL+1X+sw60NN6CcOCqs658emD6RfiXhF7Gu9QcfKBH7ELY2nInLhKSCWVoNL70MQ==}
@@ -9909,6 +9916,8 @@ snapshots:
   '@tootallnate/quickjs-emscripten@0.23.0': {}
 
   '@total-typescript/helpers@0.0.1': {}
+
+  '@total-typescript/shoehorn@0.1.2': {}
 
   '@total-typescript/ts-reset@0.5.1': {}
 

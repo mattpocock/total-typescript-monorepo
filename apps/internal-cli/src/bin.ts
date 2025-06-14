@@ -9,13 +9,20 @@ import {
   getLatestOBSVideo,
   moveRawFootageToLongTermStorage,
   transcribeVideoWorkflow,
+  ffmpeg,
 } from "@total-typescript/ffmpeg";
+import * as fs from "fs/promises";
 import { type AbsolutePath } from "@total-typescript/shared";
 import { Command } from "commander";
 import packageJson from "../package.json" with { type: "json" };
 import { env } from "./env.js";
 import { promptForFilename, promptForVideoSelection } from "./utils.js";
 import { validateWindowsFilename } from "./validateWindowsFilename.js";
+
+const ctx = {
+  ffmpeg,
+  fs,
+};
 
 const program = new Command();
 
@@ -66,6 +73,7 @@ program
       inputVideo: video as AbsolutePath,
       getLatestOBSVideo: () =>
         getLatestOBSVideo(env.OBS_OUTPUT_DIRECTORY as AbsolutePath),
+      ctx,
     });
   });
 
@@ -87,6 +95,7 @@ program
       shortsExportDirectory: env.SHORTS_EXPORT_DIRECTORY,
       dryRun: options.dryRun,
       subtitles: options.subtitles,
+      ctx,
     });
   });
 
@@ -99,6 +108,7 @@ program
       exportDirectory: env.EXPORT_DIRECTORY_IN_UNIX,
       shortsExportDirectory: env.SHORTS_EXPORT_DIRECTORY,
       promptForVideoSelection,
+      ctx,
     });
   });
 

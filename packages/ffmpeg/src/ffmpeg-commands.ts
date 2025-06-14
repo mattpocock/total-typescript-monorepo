@@ -22,6 +22,51 @@
 
 import { execAsync, type AbsolutePath } from "@total-typescript/shared";
 import { err } from "neverthrow";
+import { createReadStream } from "fs";
+import { OpenAI } from "openai";
+
+export const createSubtitleFromAudio = async (
+  audioPath: AbsolutePath
+): Promise<
+  {
+    start: number;
+    end: number;
+    text: string;
+  }[]
+> => {
+  const openai = new OpenAI();
+
+  const audioBuffer = createReadStream(audioPath);
+
+  const response = await openai.audio.transcriptions.create({
+    file: audioBuffer,
+    model: "whisper-1",
+    response_format: "verbose_json",
+    timestamp_granularities: ["segment"],
+  });
+
+  return response.segments!.map((segment) => ({
+    start: segment.start,
+    end: segment.end,
+    text: segment.text,
+  }));
+};
+
+export const transcribeAudio = async (audioPath: AbsolutePath) => {
+  if (!audioPath.endsWith(".mp3")) {
+    throw new Error("Audio path must end with .mp3");
+  }
+  const openai = new OpenAI();
+
+  const audioBuffer = createReadStream(audioPath);
+
+  const response = await openai.audio.transcriptions.create({
+    file: audioBuffer,
+    model: "whisper-1",
+  });
+
+  return response.text;
+};
 
 export class CouldNotGetFPSError extends Error {
   readonly _tag = "CouldNotGetFPSError";
@@ -48,6 +93,8 @@ export interface RawChapter {
 export interface ChaptersResponse {
   chapters: RawChapter[];
 }
+
+export type FFMPeg = typeof import("./ffmpeg-commands.js");
 
 export const getFPS = (inputVideo: AbsolutePath) => {
   return execAsync(
@@ -170,4 +217,36 @@ export const detectSilence = (
   return execAsync(
     `ffmpeg -hide_banner -vn -i "${inputVideo}" -af "silencedetect=n=${threshold}dB:d=${silenceDuration}" -f null - 2>&1`
   );
+};
+
+import { openai } from "@ai-sdk/openai";
+import { generateObject } from "ai";
+
+export const figureOutWhichCTAToShow = async (transcript: string) => {
+  const { object } = await generateObject({
+    model: openai("gpt-4o-mini"),
+    output: "enum",
+    enum: ["ai", "typescript"],
+    system: `
+      You are deciding which call to action to use for a video.
+      The call to action will either point to totaltypescript.com, or aihero.dev.
+      Return "ai" if the video is best suited for aihero.dev, and "typescript" if the video is best suited for totaltypescript.com.
+      You will receive the full transcript of the video.
+
+      If the video mentions AI, return "ai".
+      Or if the video mentions TypeScript, return "typescript".
+      If the video mentions Node, return "typescript".
+      If the video mentions React, return "typescript".
+      
+    `,
+    prompt: transcript,
+  });
+
+  return object;
+};
+
+export const renderRemotion = (outputPath: AbsolutePath, cwd: string) => {
+  return execAsync(`nice -n 19 npx remotion render MyComp "${outputPath}"`, {
+    cwd,
+  });
 };

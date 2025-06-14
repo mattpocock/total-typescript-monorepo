@@ -16,5 +16,8 @@
     "neverthrow": "^8.1.0",
     "openai": "^5.0.1",
     "p-limit": "^6.2.0"
+  },
+  "devDependencies": {
+    "@total-typescript/shoehorn": "^0.1.2"
   }
 }

@@ -1,11 +1,11 @@
 export * from "./constants.js";
 export * from "./audio-processing.js";
-export * from "./video-processing.js";
 export * from "./silence-detection.js";
 export * from "./chapter-extraction.js";
 export * from "./cta-detection.js";
 export * from "./auto-editing.js";
 export * from "./subtitle-rendering.js";
-export * from "./workflow-automation.js";
+export * from "./workflows.js";
 export * from "./obs-integration.js";
 export * from "./davinci-integration.js";
+export * as ffmpeg from "./ffmpeg-commands.js";

@@ -1,14 +1,7 @@
+import { type AbsolutePath } from "@total-typescript/shared";
+import { err, ok, safeTry } from "neverthrow";
 import path from "path";
-import fs from "fs/promises";
-import { execAsync, type AbsolutePath } from "@total-typescript/shared";
-import { safeTry, err, ok } from "neverthrow";
-import {
-  extractAudioFromVideo,
-  createSubtitleFromAudio,
-} from "./audio-processing.js";
-import { getFPS } from "./video-processing.js";
-import { figureOutWhichCTAToShow } from "./cta-detection.js";
-import { overlaySubtitles } from "./ffmpeg-commands.js";
+import type { Context } from "./types.js";
 
 export type Subtitle = {
   start: number;
@@ -67,11 +60,13 @@ export const renderSubtitles = ({
   outputPath,
   ctaDurationInFrames,
   durationInFrames,
+  ctx,
 }: {
   inputPath: AbsolutePath;
   outputPath: AbsolutePath;
   ctaDurationInFrames: number;
   durationInFrames: number;
+  ctx: Context;
 }) => {
   return safeTry(async function* () {
     const startTime = Date.now();
@@ -83,14 +78,16 @@ export const renderSubtitles = ({
     try {
       console.log("🎵 Extracting audio...");
       const audioStart = Date.now();
-      await extractAudioFromVideo(inputPath, audioPath);
+      await ctx.ffmpeg.extractAudioFromVideo(inputPath, audioPath);
       console.log(
         `✅ Audio extracted successfully (took ${(Date.now() - audioStart) / 1000}s)`
       );
 
       console.log("🎙️ Transcribing audio...");
       const transcribeStart = Date.now();
-      const subtitles = await createSubtitleFromAudio(audioPath);
+      const subtitles = await ctx.ffmpeg.createSubtitleFromAudio(audioPath);
+
+      console.dir(subtitles, { depth: null });
       console.log(
         `✅ Audio transcribed successfully (took ${(Date.now() - transcribeStart) / 1000}s)`
       );
@@ -99,7 +96,7 @@ export const renderSubtitles = ({
 
       console.log("⏱️ Detecting video FPS...");
       const fpsStart = Date.now();
-      const fpsResult = await getFPS(inputPath);
+      const fpsResult = await ctx.ffmpeg.getFPS(inputPath);
       if (fpsResult.isErr()) {
         throw fpsResult.error;
       }
@@ -122,7 +119,7 @@ export const renderSubtitles = ({
 
       console.log("🔍 Figuring out which CTA to show...");
 
-      const cta = await figureOutWhichCTAToShow(fullTranscriptText);
+      const cta = await ctx.ffmpeg.figureOutWhichCTAToShow(fullTranscriptText);
 
       console.log(`✅ Decided on CTA: ${cta}`);
 
@@ -134,7 +131,7 @@ export const renderSubtitles = ({
       };
 
       const META_FILE_PATH = path.join(REMOTION_DIR, "src", "meta.json");
-      await fs.writeFile(META_FILE_PATH, JSON.stringify(meta));
+      await ctx.fs.writeFile(META_FILE_PATH, JSON.stringify(meta));
 
       const subtitlesOverlayPath = path.join(
         REMOTION_DIR,
@@ -144,11 +141,9 @@ export const renderSubtitles = ({
 
       console.log("🎬 Rendering subtitles...");
       const renderStart = Date.now();
-      const renderResult = await execAsync(
-        `nice -n 19 npx remotion render MyComp "${subtitlesOverlayPath}"`,
-        {
-          cwd: REMOTION_DIR,
-        }
+      const renderResult = await ctx.ffmpeg.renderRemotion(
+        subtitlesOverlayPath,
+        REMOTION_DIR
       );
 
       if (renderResult.isErr()) {
@@ -158,7 +153,7 @@ export const renderSubtitles = ({
         `✅ Subtitles rendered (took ${(Date.now() - renderStart) / 1000}s)`
       );
 
-      const layeringResult = await overlaySubtitles(
+      const layeringResult = await ctx.ffmpeg.overlaySubtitles(
         inputPath,
         subtitlesOverlayPath,
         outputPath
@@ -168,7 +163,7 @@ export const renderSubtitles = ({
         throw layeringResult.error;
       }
 
-      await fs.unlink(audioPath);
+      await ctx.fs.unlink(audioPath);
 
       const totalTime = (Date.now() - startTime) / 1000;
       console.log(
@@ -178,7 +173,7 @@ export const renderSubtitles = ({
       return ok(undefined);
     } catch (error) {
       try {
-        await fs.unlink(audioPath);
+        await ctx.fs.unlink(audioPath);
       } catch {
         // Ignore error if file doesn't exist
       }

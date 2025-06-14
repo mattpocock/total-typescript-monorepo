@@ -1,11 +1,10 @@
-import { execSync, type ExecException } from "child_process";
-import fs from "fs/promises";
-import path from "path";
 import { type AbsolutePath } from "@total-typescript/shared";
+import { execSync, type ExecException } from "child_process";
+import { errAsync, okAsync, ResultAsync, safeTry } from "neverthrow";
+import path from "path";
 import { createAutoEditedVideo } from "./auto-editing.js";
-import { extractAudioFromVideo, transcribeAudio } from "./audio-processing.js";
 import { renderSubtitles } from "./subtitle-rendering.js";
-import { ResultAsync } from "neverthrow";
+import type { Context } from "./types.js";
 
 export interface CreateAutoEditedVideoWorkflowOptions {
   getLatestVideo: () => ResultAsync<AbsolutePath, ExecException>;
@@ -15,89 +14,91 @@ export interface CreateAutoEditedVideoWorkflowOptions {
   shortsExportDirectory: string;
   dryRun?: boolean;
   subtitles?: boolean;
+  ctx: Context;
+}
+
+export class NoSpeakingClipsError extends Error {
+  readonly _tag = "NoSpeakingClipsError";
+  override message = "No speaking clips found";
 }
 
 export const createAutoEditedVideoWorkflow = async (
   options: CreateAutoEditedVideoWorkflowOptions
 ) => {
-  const latestVideoResult = await options.getLatestVideo();
-  if (latestVideoResult.isErr()) {
-    console.error("Failed to get latest video:", latestVideoResult.error);
-    process.exit(1);
-  }
+  return safeTry(async function* () {
+    const latestVideo = yield* options.getLatestVideo();
 
-  const latestVideo = latestVideoResult.value!;
+    const fps = yield* options.ctx.ffmpeg.getFPS(latestVideo);
 
-  const outputFilename = await options.promptForFilename();
+    const outputFilename = await options.promptForFilename();
 
-  const validationResult = options.validateFilename(outputFilename);
-  if (!validationResult.isValid) {
-    console.error("Error:", validationResult.error);
-    process.exit(1);
-  }
-
-  // First create in the export directory
-  const tempOutputPath = path.join(
-    options.exportDirectory,
-    `${outputFilename}.mp4`
-  ) as AbsolutePath;
-
-  const result = await createAutoEditedVideo({
-    inputVideo: latestVideo,
-    outputVideo: tempOutputPath,
-  });
-
-  if (result.isErr()) {
-    console.error("Failed to create auto-edited video:", result.error);
-    process.exit(1);
-  }
-
-  const speakingClips = result.value.speakingClips;
-
-  console.log(`Video created successfully at: ${tempOutputPath}`);
-
-  let finalVideoPath = tempOutputPath;
-
-  if (options.subtitles) {
-    const withSubtitlesPath = path.join(
-      options.exportDirectory,
-      `${outputFilename}-with-subtitles.mp4`
-    ) as AbsolutePath;
-
-    const firstClipLength = speakingClips[0]!.durationInFrames;
-
-    const totalDurationInFrames = speakingClips.reduce(
-      (acc, clip) => acc + clip.durationInFrames,
-      0
-    );
-
-    if (!firstClipLength) {
-      console.error("No speaking clips found");
+    const validationResult = options.validateFilename(outputFilename);
+    if (!validationResult.isValid) {
+      console.error("Error:", validationResult.error);
       process.exit(1);
     }
 
-    await renderSubtitles({
-      inputPath: tempOutputPath,
-      outputPath: withSubtitlesPath,
-      ctaDurationInFrames: firstClipLength,
-      durationInFrames: totalDurationInFrames,
+    // First create in the export directory
+    const tempOutputPath = path.join(
+      options.exportDirectory,
+      `${outputFilename}.mp4`
+    ) as AbsolutePath;
+
+    const result = yield* createAutoEditedVideo({
+      inputVideo: latestVideo,
+      outputVideo: tempOutputPath,
+      ctx: options.ctx,
     });
-    finalVideoPath = withSubtitlesPath;
-  }
 
-  if (options.dryRun) {
-    console.log("Dry run mode: Skipping move to shorts directory");
-    return;
-  }
+    const speakingClips = result.speakingClips;
 
-  // Then move to shorts directory
-  const finalOutputPath = path.join(
-    options.shortsExportDirectory,
-    `${outputFilename}.mp4`
-  ) as AbsolutePath;
+    console.log(`Video created successfully at: ${tempOutputPath}`);
 
-  await fs.rename(finalVideoPath, finalOutputPath);
-  console.log(`Video moved to: ${finalOutputPath}`);
+    let finalVideoPath = tempOutputPath;
+
+    if (options.subtitles) {
+      const withSubtitlesPath = path.join(
+        options.exportDirectory,
+        `${outputFilename}-with-subtitles.mp4`
+      ) as AbsolutePath;
+
+      const firstClipLength = speakingClips[0]!.duration * fps;
+
+      const totalDurationInFrames = speakingClips.reduce(
+        (acc, clip) => acc + clip.duration,
+        0
+      );
+
+      if (!firstClipLength) {
+        return errAsync(new NoSpeakingClipsError());
+      }
+
+      yield* renderSubtitles({
+        inputPath: tempOutputPath,
+        outputPath: withSubtitlesPath,
+        ctaDurationInFrames: firstClipLength,
+        durationInFrames: totalDurationInFrames * fps,
+        ctx: options.ctx,
+      });
+      finalVideoPath = withSubtitlesPath;
+    }
+
+    if (options.dryRun) {
+      console.log("Dry run mode: Skipping move to shorts directory");
+      return okAsync(finalVideoPath);
+    }
+
+    // Then move to shorts directory
+    const finalOutputPath = path.join(
+      options.shortsExportDirectory,
+      `${outputFilename}.mp4`
+    ) as AbsolutePath;
+
+    await options.ctx.fs.rename(finalVideoPath, finalOutputPath);
+    console.log(`Video moved to: ${finalOutputPath}`);
+
+    return okAsync(finalOutputPath);
+  });
 };
 
 export interface TranscribeVideoWorkflowOptions {
@@ -106,6 +107,7 @@ export interface TranscribeVideoWorkflowOptions {
   promptForVideoSelection: (
     videos: Array<{ title: string; value: AbsolutePath; mtime: Date }>
   ) => Promise<AbsolutePath | undefined>;
+  ctx: Context;
 }
 
 export const transcribeVideoWorkflow = async (
@@ -113,8 +115,8 @@ export const transcribeVideoWorkflow = async (
 ) => {
   // Get all files from both directories
   const [exportFiles, shortsFiles] = await Promise.all([
-    fs.readdir(options.exportDirectory),
-    fs.readdir(options.shortsExportDirectory),
+    options.ctx.fs.readdir(options.exportDirectory),
+    options.ctx.fs.readdir(options.shortsExportDirectory),
   ]);
 
   // Get stats for all files in parallel
@@ -126,7 +128,7 @@ export const transcribeVideoWorkflow = async (
           options.exportDirectory,
           file
         ) as AbsolutePath;
-        const stats = await fs.stat(fullPath);
+        const stats = await options.ctx.fs.stat(fullPath);
         return {
           title: `Export: ${file}`,
           value: fullPath,
@@ -143,7 +145,7 @@ export const transcribeVideoWorkflow = async (
           options.shortsExportDirectory,
           file
         ) as AbsolutePath;
-        const stats = await fs.stat(fullPath);
+        const stats = await options.ctx.fs.stat(fullPath);
         return {
           title: `Shorts: ${file}`,
           value: fullPath,
@@ -176,11 +178,11 @@ export const transcribeVideoWorkflow = async (
     `${path.basename(selectedVideo)}.mp3`
   ) as AbsolutePath;
 
-  await extractAudioFromVideo(selectedVideo, audioPath);
+  await options.ctx.ffmpeg.extractAudioFromVideo(selectedVideo, audioPath);
 
-  const transcript = await transcribeAudio(audioPath);
+  const transcript = await options.ctx.ffmpeg.transcribeAudio(audioPath);
 
-  await fs.unlink(audioPath);
+  await options.ctx.fs.unlink(audioPath);
   console.log("\nTranscript:");
   console.log(transcript);
 };

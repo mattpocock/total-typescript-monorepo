@@ -15,11 +15,13 @@ import {
   isBadTake,
 } from "./chapter-extraction.js";
 import { findSilenceInVideo } from "./silence-detection.js";
-import { getFPS } from "./video-processing.js";
+import type { FFMPeg } from "./ffmpeg-commands.js";
+import type { Context } from "./types.js";
 
 export interface AppendVideoToTimelineOptions {
   inputVideo?: AbsolutePath;
   getLatestOBSVideo: () => ResultAsync<AbsolutePath, Error>;
+  ctx: Context;
 }
 
 export const appendVideoToTimeline = async (
@@ -38,7 +40,7 @@ export const appendVideoToTimeline = async (
       inputVideo = result.value!;
     }
 
-    const fps = yield* getFPS(inputVideo);
+    const fps = yield* options.ctx.ffmpeg.getFPS(inputVideo);
 
     const silenceResult = yield* findSilenceInVideo(inputVideo, {
       threshold: THRESHOLD,
@@ -46,11 +48,13 @@ export const appendVideoToTimeline = async (
       startPadding: AUTO_EDITED_START_PADDING,
       endPadding: AUTO_EDITED_END_PADDING,
       silenceDuration: SILENCE_DURATION,
+      ctx: options.ctx,
     });
 
     const badTakeMarkers = yield* extractBadTakeMarkersFromFile(
       inputVideo,
-      fps
+      fps,
+      options.ctx
     );
 
     console.dir(badTakeMarkers, { depth: null });

@@ -4,7 +4,7 @@ import {
   DEFINITELY_BAD_TAKE_PADDING,
   MAX_BAD_TAKE_DISTANCE,
 } from "./constants.js";
-import { getChapters, type RawChapter } from "./ffmpeg-commands.js";
+import type { Context } from "./types.js";
 
 export interface BadTakeMarker {
   frame: number;
@@ -85,9 +85,10 @@ export const isBadTake = (
 
 export const extractBadTakeMarkersFromFile = (
   inputVideo: AbsolutePath,
-  fps: number
+  fps: number,
+  ctx: Context
 ): ResultAsync<BadTakeMarker[], CouldNotExtractChaptersError> => {
-  return getChapters(inputVideo).map((response) => {
+  return ctx.ffmpeg.getChapters(inputVideo).map((response) => {
     return response.chapters
       .filter((chapter) => chapter.tags.title === "Bad Take")
       .map((chapter) => ({

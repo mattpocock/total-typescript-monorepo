@@ -31,7 +31,7 @@ describe("getClipsOfSpeakingFromFFmpegNew", () => {
     expect(firstClip).toHaveProperty("startTime");
     expect(firstClip).toHaveProperty("endTime");
     expect(firstClip).toHaveProperty("silenceEnd");
-    expect(firstClip).toHaveProperty("duration");
+    expect(firstClip).toHaveProperty("durationInFrames");
 
     // Check that the values are numbers
     expect(typeof firstClip.startFrame).toBe("number");
@@ -39,6 +39,6 @@ describe("getClipsOfSpeakingFromFFmpegNew", () => {
     expect(typeof firstClip.startTime).toBe("number");
     expect(typeof firstClip.endTime).toBe("number");
     expect(typeof firstClip.silenceEnd).toBe("number");
-    expect(typeof firstClip.duration).toBe("number");
+    expect(typeof firstClip.durationInFrames).toBe("number");
   });
 });

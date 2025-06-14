@@ -1,6 +1,7 @@
 import { type AbsolutePath } from "@total-typescript/shared";
 import { err, ok, safeTry } from "neverthrow";
-import { detectSilence } from "./ffmpeg-commands.js";
+import type { Context } from "./types.js";
+import { MINIMUM_CLIP_LENGTH_IN_SECONDS } from "./constants.js";
 
 export class CouldNotFindStartTimeError extends Error {
   readonly _tag = "CouldNotFindStartTimeError";
@@ -67,7 +68,6 @@ export const getClipsOfSpeakingFromFFmpeg = (
     startTime: number;
     endTime: number;
     silenceEnd: number;
-    duration: number;
     durationInFrames: number;
   }[] = [];
 
@@ -96,7 +96,6 @@ export const getClipsOfSpeakingFromFFmpeg = (
       startTime: resolvedStartFrame / opts.fps,
       endTime: resolvedEndFrame / opts.fps,
       silenceEnd: currentSilence.silenceEnd,
-      duration: (resolvedEndFrame - resolvedStartFrame) / opts.fps,
       durationInFrames: resolvedEndFrame - resolvedStartFrame,
     });
   });
@@ -112,6 +111,7 @@ export const findSilenceInVideo = (
     startPadding: number;
     endPadding: number;
     fps: number;
+    ctx: Context;
   }
 ) => {
   return safeTry(async function* () {
@@ -120,7 +120,7 @@ export const findSilenceInVideo = (
 
     console.log("🔍 Finding speaking clips...");
     const speakingStart = Date.now();
-    const { stdout } = yield* detectSilence(
+    const { stdout } = yield* opts.ctx.ffmpeg.detectSilence(
       inputVideo,
       opts.threshold,
       opts.silenceDuration
@@ -147,9 +147,9 @@ export const findSilenceInVideo = (
     console.log("🔍 Filtering clips...");
     const filterStart = Date.now();
 
-    const MINIMUM_CLIP_LENGTH_IN_SECONDS = 1;
     const filteredClips = speakingClips.filter(
-      (clip) => clip.duration > MINIMUM_CLIP_LENGTH_IN_SECONDS
+      (clip) =>
+        clip.durationInFrames > MINIMUM_CLIP_LENGTH_IN_SECONDS * opts.fps
     );
 
     console.log(
