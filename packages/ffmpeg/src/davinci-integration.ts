@@ -9,11 +9,13 @@ import {
   THRESHOLD,
   AUTO_EDITED_END_PADDING,
   AUTO_EDITED_START_PADDING,
+} from "./constants.js";
+import {
   extractBadTakeMarkersFromFile,
-  findSilenceInVideo,
-  getFPS,
   isBadTake,
-} from "./index.js";
+} from "./chapter-extraction.js";
+import { findSilenceInVideo } from "./silence-detection.js";
+import { getFPS } from "./video-processing.js";
 
 export interface AppendVideoToTimelineOptions {
   inputVideo?: AbsolutePath;

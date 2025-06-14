@@ -13,9 +13,9 @@ import {
 import {
   extractBadTakeMarkersFromFile,
   isBadTake,
-} from "./extractChaptersFromFile.js";
-import { findSilenceInVideo } from "./functions.js";
-import { getFPS } from "./getFPS.js";
+} from "./chapter-extraction.js";
+import { findSilenceInVideo } from "./silence-detection.js";
+import { getFPS } from "./video-processing.js";
 import pLimit from "p-limit";
 
 export class CouldNotCreateSpeakingOnlyVideoError extends Error {

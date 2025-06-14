@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getClipsOfSpeakingFromFFmpeg } from "./getSpeakingClips.js";
+import { getClipsOfSpeakingFromFFmpeg } from "./silence-detection.js";
 import { readFileSync } from "fs";
 import { join } from "path";
 

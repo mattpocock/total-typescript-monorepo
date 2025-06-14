@@ -1,3 +1,16 @@
+import { execAsync, type AbsolutePath } from "@total-typescript/shared";
+import { err, ok, safeTry } from "neverthrow";
+
+export class CouldNotFindStartTimeError extends Error {
+  readonly _tag = "CouldNotFindStartTimeError";
+  override message = "Could not find video start time.";
+}
+
+export class CouldNotFindEndTimeError extends Error {
+  readonly _tag = "CouldNotFindEndTimeError";
+  override message = "Could not find video end time.";
+}
+
 export const getClipsOfSpeakingFromFFmpeg = (
   stdout: string,
   opts: {
@@ -6,7 +19,6 @@ export const getClipsOfSpeakingFromFFmpeg = (
     fps: number;
   }
 ) => {
-  // Parse the silence detection output
   const silenceLines = stdout
     .trim()
     .split("\n")
@@ -33,7 +45,6 @@ export const getClipsOfSpeakingFromFFmpeg = (
     })
     .filter((line): line is NonNullable<typeof line> => line !== null);
 
-  // Group silence starts and ends together
   const silence: { silenceEnd: number; duration: number }[] = [];
   let currentStart: number | undefined;
 
@@ -90,4 +101,66 @@ export const getClipsOfSpeakingFromFFmpeg = (
   });
 
   return clipsOfSpeaking;
+};
+
+export const findSilenceInVideo = (
+  inputVideo: AbsolutePath,
+  opts: {
+    threshold: number | string;
+    silenceDuration: number | string;
+    startPadding: number;
+    endPadding: number;
+    fps: number;
+  }
+) => {
+  return safeTry(async function* () {
+    const processStartTime = Date.now();
+    console.log("🎥 Processing video:", inputVideo);
+
+    console.log("🔍 Finding speaking clips...");
+    const speakingStart = Date.now();
+    const { stdout } = yield* execAsync(
+      `ffmpeg -hide_banner -vn -i "${inputVideo}" -af "silencedetect=n=${opts.threshold}dB:d=${opts.silenceDuration}" -f null - 2>&1`
+    );
+
+    const speakingClips = getClipsOfSpeakingFromFFmpeg(stdout, opts);
+    console.log(
+      `✅ Found ${speakingClips.length} speaking clips (took ${(Date.now() - speakingStart) / 1000}s)`
+    );
+
+    if (!speakingClips[0]) {
+      return err(new CouldNotFindStartTimeError());
+    }
+
+    const endClip = speakingClips[speakingClips.length - 1];
+
+    if (!endClip) {
+      return err(new CouldNotFindEndTimeError());
+    }
+
+    const clipStartTime = speakingClips[0].startTime;
+    const endTime = endClip.endTime;
+
+    console.log("🔍 Filtering clips...");
+    const filterStart = Date.now();
+
+    const MINIMUM_CLIP_LENGTH_IN_SECONDS = 1;
+    const filteredClips = speakingClips.filter(
+      (clip) => clip.duration > MINIMUM_CLIP_LENGTH_IN_SECONDS
+    );
+
+    console.log(
+      `✅ Filtered to ${filteredClips.length} clips (took ${(Date.now() - filterStart) / 1000}s)`
+    );
+
+    const totalTime = (Date.now() - processStartTime) / 1000;
+    console.log(`✅ Successfully processed video! (Total time: ${totalTime}s)`);
+
+    return ok({
+      speakingClips: filteredClips,
+      startTime: clipStartTime,
+      endTime,
+      rawStdout: stdout,
+    });
+  });
 };

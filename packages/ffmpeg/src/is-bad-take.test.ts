@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isBadTake } from "./extractChaptersFromFile.js";
+import { isBadTake } from "./chapter-extraction.js";
 import {
   DEFINITELY_BAD_TAKE_PADDING,
   MAX_BAD_TAKE_DISTANCE,

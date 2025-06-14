@@ -1,16 +1,14 @@
-import { execSync } from "child_process";
+import { execSync, type ExecException } from "child_process";
 import fs from "fs/promises";
 import path from "path";
 import { type AbsolutePath } from "@total-typescript/shared";
-import {
-  createAutoEditedVideo,
-  extractAudioFromVideo,
-  renderSubtitles,
-  transcribeAudio,
-} from "./index.js";
+import { createAutoEditedVideo } from "./auto-editing.js";
+import { extractAudioFromVideo, transcribeAudio } from "./audio-processing.js";
+import { renderSubtitles } from "./subtitle-rendering.js";
+import { ResultAsync } from "neverthrow";
 
 export interface CreateAutoEditedVideoWorkflowOptions {
-  getLatestVideo: () => any;
+  getLatestVideo: () => ResultAsync<AbsolutePath, ExecException>;
   promptForFilename: () => Promise<string>;
   validateFilename: (filename: string) => { isValid: boolean; error?: string };
   exportDirectory: string;
@@ -105,7 +103,9 @@ export const createAutoEditedVideoWorkflow = async (
 export interface TranscribeVideoWorkflowOptions {
   exportDirectory: string;
   shortsExportDirectory: string;
-  promptForVideoSelection: (videos: Array<{ title: string; value: AbsolutePath; mtime: Date }>) => Promise<AbsolutePath | undefined>;
+  promptForVideoSelection: (
+    videos: Array<{ title: string; value: AbsolutePath; mtime: Date }>
+  ) => Promise<AbsolutePath | undefined>;
 }
 
 export const transcribeVideoWorkflow = async (
@@ -190,7 +190,9 @@ export interface MoveRawFootageOptions {
   longTermStorageDirectory: string;
 }
 
-export const moveRawFootageToLongTermStorage = (options: MoveRawFootageOptions) => {
+export const moveRawFootageToLongTermStorage = (
+  options: MoveRawFootageOptions
+) => {
   execSync(
     `(cd "${options.longTermStorageDirectory}" && mv "${options.obsOutputDirectory}"/* .)`
   );

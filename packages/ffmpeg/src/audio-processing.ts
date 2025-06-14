@@ -2,6 +2,19 @@ import { execAsync, type AbsolutePath } from "@total-typescript/shared";
 import { createReadStream } from "fs";
 import { OpenAI } from "openai";
 
+export const convertToWav = (
+  inputPath: AbsolutePath,
+  outputPath: AbsolutePath
+) => {
+  return execAsync(
+    `ffmpeg -i ${inputPath} -ar 16000 -ac 1 -c:a pcm_s16le ${outputPath}`
+  );
+};
+
+export const normalizeAudio = (input: AbsolutePath, output: AbsolutePath) => {
+  return execAsync(`ffmpeg-normalize -f ${input} -o ${output}`);
+};
+
 export const extractAudioFromVideo = async (
   inputPath: AbsolutePath,
   outputPath: AbsolutePath
