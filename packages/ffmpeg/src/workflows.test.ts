@@ -33,13 +33,13 @@ it("createAutoEditedVideoWorkflow with subtitles and no dry run should work", as
         getFPS: () => okAsync(60),
         detectSilence: () =>
           okAsync({
-            // Speaking clips are 3-6, 10-12
+            // Speaking clips are 3-6, 10-15
             stdout: `[silencedetect @ 0x55791a4e4680] silence_start: 0d=N/A
   [silencedetect @ 0x55791a4e4680] silence_end: 3.0 | silence_duration: 3.00
   [silencedetect @ 0x55791a4e4680] silence_start: 6.0
   [silencedetect @ 0x55791a4e4680] silence_end: 10.0 | silence_duration: 4.0
-  [silencedetect @ 0x55791a4e4680] silence_start: 12.0
-  [silencedetect @ 0x55791a4e4680] silence_end: 16.0 | silence_duration: 4.0`,
+  [silencedetect @ 0x55791a4e4680] silence_start: 15.0
+  [silencedetect @ 0x55791a4e4680] silence_end: 19.0 | silence_duration: 4.0`,
           }),
         getChapters: () =>
           okAsync({
@@ -56,7 +56,7 @@ it("createAutoEditedVideoWorkflow with subtitles and no dry run should work", as
           },
           {
             start: 3,
-            end: 5,
+            end: 8,
             text: "Test",
           },
         ],
@@ -92,7 +92,7 @@ it("createAutoEditedVideoWorkflow with subtitles and no dry run should work", as
    * for the end of the last clip.
    */
   expect(metaFile.durationInFrames).toEqual(
-    (5 + AUTO_EDITED_END_PADDING + AUTO_EDITED_VIDEO_FINAL_END_PADDING) * 60
+    (8 + AUTO_EDITED_END_PADDING + AUTO_EDITED_VIDEO_FINAL_END_PADDING) * 60
   );
 
   /**
@@ -102,14 +102,10 @@ it("createAutoEditedVideoWorkflow with subtitles and no dry run should work", as
 
   /**
    * The CTA duration should be the duration of the first clip,
-   * plus padding, plus HALF the duration of the next clip (including
-   * end padding).
+   * plus padding.
    */
   expect(metaFile.ctaDurationInFrames).toEqual(
-    (3 +
-      AUTO_EDITED_END_PADDING +
-      (2 + AUTO_EDITED_VIDEO_FINAL_END_PADDING) / 2) *
-      60
+    (3 + AUTO_EDITED_END_PADDING) * 60
   );
 
   /**
@@ -123,7 +119,7 @@ it("createAutoEditedVideoWorkflow with subtitles and no dry run should work", as
     },
     {
       startFrame: 3 * 60,
-      endFrame: 5 * 60,
+      endFrame: 8 * 60,
     },
   ]);
 
@@ -146,7 +142,7 @@ it("createAutoEditedVideoWorkflow with subtitles and no dry run should work", as
     "/path/to/latest/video.mp4",
     expect.stringContaining("clip-1.mp4"),
     10,
-    2 + AUTO_EDITED_VIDEO_FINAL_END_PADDING
+    5 + AUTO_EDITED_VIDEO_FINAL_END_PADDING
   );
 
   /**
