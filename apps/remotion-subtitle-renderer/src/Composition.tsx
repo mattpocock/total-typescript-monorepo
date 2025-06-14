@@ -35,7 +35,7 @@ export const MyComposition = ({
           </AbsoluteFill>
         </Sequence>
       ))}
-      <Sequence>
+      <Sequence durationInFrames={ctaDurationInFrames}>
         <AbsoluteFill className="flex flex-col">
           <CTAPill cta={cta} durationInFrames={ctaDurationInFrames} />
         </AbsoluteFill>
