@@ -44,9 +44,6 @@ importers:
 
   apps/internal-cli:
     dependencies:
-      '@total-typescript/env':
-        specifier: workspace:*
-        version: link:../../packages/env
       '@total-typescript/ffmpeg':
         specifier: workspace:*
         version: link:../../packages/ffmpeg
@@ -56,6 +53,9 @@ importers:
       commander:
         specifier: ^12.0.0
         version: 12.1.0
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.4.7
       fast-glob:
         specifier: ^3.3.2
         version: 3.3.2

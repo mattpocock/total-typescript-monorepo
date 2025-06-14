@@ -19,10 +19,10 @@
     "@types/react": "^19.1.5"
   },
   "dependencies": {
-    "@total-typescript/env": "workspace:*",
     "@total-typescript/shared": "workspace:*",
     "@total-typescript/ffmpeg": "workspace:*",
     "commander": "^12.0.0",
+    "dotenv": "^16.4.5",
     "fast-glob": "^3.3.2",
     "ink": "^6.0.0",
     "neverthrow": "^8.1.0",

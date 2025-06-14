@@ -1,4 +1,4 @@
-import { env } from "@total-typescript/env";
+import { env } from "./env.js";
 import {
   ExternalDriveNotFoundError,
   pathExists,
