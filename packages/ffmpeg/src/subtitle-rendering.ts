@@ -87,7 +87,6 @@ export const renderSubtitles = ({
       const transcribeStart = Date.now();
       const subtitles = await ctx.ffmpeg.createSubtitleFromAudio(audioPath);
 
-      console.dir(subtitles, { depth: null });
       console.log(
         `✅ Audio transcribed successfully (took ${(Date.now() - transcribeStart) / 1000}s)`
       );

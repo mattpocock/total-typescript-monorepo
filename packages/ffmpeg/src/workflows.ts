@@ -63,6 +63,7 @@ export const createAutoEditedVideoWorkflow = async (
       ) as AbsolutePath;
 
       const firstClipLength = speakingClips[0]!.duration * fps;
+      const secondClipLength = speakingClips[1]!.duration * fps;
 
       const totalDurationInFrames = speakingClips.reduce(
         (acc, clip) => acc + clip.duration,
@@ -76,7 +77,7 @@ export const createAutoEditedVideoWorkflow = async (
       yield* renderSubtitles({
         inputPath: tempOutputPath,
         outputPath: withSubtitlesPath,
-        ctaDurationInFrames: firstClipLength,
+        ctaDurationInFrames: firstClipLength + secondClipLength / 2,
         durationInFrames: totalDurationInFrames * fps,
         ctx: options.ctx,
       });

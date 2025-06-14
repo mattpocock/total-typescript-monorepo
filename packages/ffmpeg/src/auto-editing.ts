@@ -175,7 +175,7 @@ export const createAutoEditedVideo = ({
     );
 
     // Clean up temporary files
-    yield* execAsync(`rm -rf "${tempDir}"`);
+    await ctx.fs.rm(tempDir, { recursive: true, force: true });
 
     const totalTime = (Date.now() - startTime) / 1000;
     console.log(

@@ -12,6 +12,7 @@ it("createAutoEditedVideoWorkflow with subtitles and no dry run should work", as
   const writeFile = vi.fn();
   const rename = vi.fn();
   const unlink = vi.fn();
+  const rm = vi.fn();
 
   const createClip = vi.fn();
   const concatenateClips = vi.fn().mockReturnValue(okAsync({}));
@@ -67,6 +68,7 @@ it("createAutoEditedVideoWorkflow with subtitles and no dry run should work", as
         writeFile,
         rename,
         unlink,
+        rm,
       },
     }),
   });
@@ -100,10 +102,14 @@ it("createAutoEditedVideoWorkflow with subtitles and no dry run should work", as
 
   /**
    * The CTA duration should be the duration of the first clip,
-   * plus the padding for the end of the clip.
+   * plus padding, plus HALF the duration of the next clip (including
+   * end padding).
    */
   expect(metaFile.ctaDurationInFrames).toEqual(
-    (3 + AUTO_EDITED_END_PADDING) * 60
+    (3 +
+      AUTO_EDITED_END_PADDING +
+      (2 + AUTO_EDITED_VIDEO_FINAL_END_PADDING) / 2) *
+      60
   );
 
   /**
@@ -192,12 +198,22 @@ it("createAutoEditedVideoWorkflow with subtitles and no dry run should work", as
     expect.stringContaining("Test-with-subtitles.mp4"),
     expect.stringContaining("shorts/Test.mp4")
   );
+
+  /**
+   * Expect that the temporary directory should have been
+   * removed.
+   */
+  expect(rm).toHaveBeenCalledWith(expect.stringContaining("tmp"), {
+    recursive: true,
+    force: true,
+  });
 });
 
 it("createAutoEditedVideoWorkflow with no subtitles", async () => {
   const writeFile = vi.fn();
   const rename = vi.fn();
   const unlink = vi.fn();
+  const rm = vi.fn();
 
   const createClip = vi.fn();
   const concatenateClips = vi.fn().mockReturnValue(okAsync({}));
@@ -253,6 +269,7 @@ it("createAutoEditedVideoWorkflow with no subtitles", async () => {
         writeFile,
         rename,
         unlink,
+        rm,
       },
     }),
   });
@@ -271,6 +288,7 @@ it("createAutoEditedVideoWorkflow with dry run", async () => {
   const writeFile = vi.fn();
   const rename = vi.fn();
   const unlink = vi.fn();
+  const rm = vi.fn();
 
   const createClip = vi.fn();
   const concatenateClips = vi.fn().mockReturnValue(okAsync({}));
@@ -326,6 +344,7 @@ it("createAutoEditedVideoWorkflow with dry run", async () => {
         writeFile,
         rename,
         unlink,
+        rm,
       },
     }),
   });

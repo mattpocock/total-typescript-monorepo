@@ -2,7 +2,6 @@ export * from "./constants.js";
 export * from "./audio-processing.js";
 export * from "./silence-detection.js";
 export * from "./chapter-extraction.js";
-export * from "./cta-detection.js";
 export * from "./auto-editing.js";
 export * from "./subtitle-rendering.js";
 export * from "./workflows.js";

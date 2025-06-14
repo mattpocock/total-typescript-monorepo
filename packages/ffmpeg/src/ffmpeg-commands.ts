@@ -21,9 +21,11 @@
  */
 
 import { execAsync, type AbsolutePath } from "@total-typescript/shared";
-import { err } from "neverthrow";
 import { createReadStream } from "fs";
+import { err } from "neverthrow";
 import { OpenAI } from "openai";
+import { openai } from "@ai-sdk/openai";
+import { generateObject } from "ai";
 
 export const createSubtitleFromAudio = async (
   audioPath: AbsolutePath
@@ -205,7 +207,7 @@ export const overlaySubtitles = (
   outputPath: AbsolutePath
 ) => {
   return execAsync(
-    `nice -n 19 ffmpeg -i "${inputPath}" -i "${subtitlesOverlayPath}" -filter_complex "[0:v][1:v]overlay" -c:a copy "${outputPath}"`
+    `nice -n 19 ffmpeg -y -i "${inputPath}" -i "${subtitlesOverlayPath}" -filter_complex "[0:v][1:v]overlay" -c:a copy "${outputPath}"`
   );
 };
 
@@ -218,9 +220,6 @@ export const detectSilence = (
     `ffmpeg -hide_banner -vn -i "${inputVideo}" -af "silencedetect=n=${threshold}dB:d=${silenceDuration}" -f null - 2>&1`
   );
 };
-
-import { openai } from "@ai-sdk/openai";
-import { generateObject } from "ai";
 
 export const figureOutWhichCTAToShow = async (transcript: string) => {
   const { object } = await generateObject({
