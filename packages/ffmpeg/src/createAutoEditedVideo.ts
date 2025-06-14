@@ -13,7 +13,6 @@ import {
 import {
   extractBadTakeMarkersFromFile,
   isBadTake,
-  type SpeakingClip,
 } from "./extractChaptersFromFile.js";
 import { findSilenceInVideo } from "./functions.js";
 import { getFPS } from "./getFPS.js";
