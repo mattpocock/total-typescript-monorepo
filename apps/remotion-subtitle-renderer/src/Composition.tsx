@@ -3,7 +3,6 @@ import {
   Easing,
   Img,
   interpolate,
-  OffthreadVideo,
   Sequence,
   staticFile,
   useCurrentFrame,
@@ -17,6 +16,7 @@ export const MyComposition = ({
   subtitles: { startFrame: number; endFrame: number; text: string }[];
   ctaDurationInFrames: number;
   cta: "ai" | "typescript";
+  durationInFrames: number;
 }) => {
   return (
     <>

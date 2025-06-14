@@ -1,21 +1,9 @@
-import "./index.css";
-import { Composition, staticFile } from "remotion";
-import { MyComposition } from "./Composition";
+import { Composition } from "remotion";
 import { z } from "zod";
+import { MyComposition } from "./Composition";
+import "./index.css";
 import meta from "./meta.json";
-import { parseMedia } from "@remotion/media-parser";
-
-const schema = z.object({
-  subtitles: z.array(
-    z.object({
-      startFrame: z.number(),
-      endFrame: z.number(),
-      text: z.string(),
-    }),
-  ),
-  ctaDurationInFrames: z.number(),
-  cta: z.enum(["ai", "typescript"]),
-});
+import { schema } from "./schema";
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -24,26 +12,20 @@ export const RemotionRoot: React.FC = () => {
         id="MyComp"
         component={MyComposition}
         schema={schema as any}
-        calculateMetadata={async () => {
-          const video = await parseMedia({
-            src: staticFile("/input.mp4"),
-            fields: {
-              durationInSeconds: true,
-              fps: true,
-            },
-          });
+        calculateMetadata={async ({ props }) => {
           return {
-            durationInFrames: Math.floor(
-              (video.durationInSeconds ?? 0) * (video.fps ?? 60),
-            ),
-            fps: video.fps ?? 60,
+            durationInFrames: Math.floor(props.durationInFrames),
+            fps: 60,
           };
         }}
-        defaultProps={{
-          subtitles: meta.subtitles,
-          ctaDurationInFrames: Math.ceil(meta.ctaDurationInFrames),
-          cta: meta.cta as "ai" | "typescript",
-        }}
+        defaultProps={
+          {
+            subtitles: meta.subtitles,
+            ctaDurationInFrames: Math.ceil(meta.ctaDurationInFrames),
+            cta: meta.cta as "ai" | "typescript",
+            durationInFrames: meta.durationInFrames,
+          } satisfies z.infer<typeof schema>
+        }
         width={1080}
         height={1920}
       />

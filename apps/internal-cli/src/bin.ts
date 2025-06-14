@@ -107,6 +107,8 @@ program
       process.exit(1);
     }
 
+    const speakingClips = result.value.speakingClips;
+
     console.log(`Video created successfully at: ${tempOutputPath}`);
 
     let finalVideoPath = tempOutputPath;
@@ -117,7 +119,12 @@ program
         `${outputFilename}-with-subtitles.mp4`
       ) as AbsolutePath;
 
-      const firstClipLength = result.value.speakingClips[0]!.durationInFrames;
+      const firstClipLength = speakingClips[0]!.durationInFrames;
+
+      const totalDurationInFrames = speakingClips.reduce(
+        (acc, clip) => acc + clip.durationInFrames,
+        0
+      );
 
       if (!firstClipLength) {
         console.error("No speaking clips found");
@@ -128,6 +135,7 @@ program
         inputPath: tempOutputPath,
         outputPath: withSubtitlesPath,
         ctaDurationInFrames: firstClipLength,
+        durationInFrames: totalDurationInFrames,
       });
       finalVideoPath = withSubtitlesPath;
     }

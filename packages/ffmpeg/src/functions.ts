@@ -178,10 +178,12 @@ export const renderSubtitles = ({
   inputPath,
   outputPath,
   ctaDurationInFrames,
+  durationInFrames,
 }: {
   inputPath: AbsolutePath;
   outputPath: AbsolutePath;
   ctaDurationInFrames: number;
+  durationInFrames: number;
 }) => {
   return safeTry(async function* () {
     const startTime = Date.now();
@@ -243,15 +245,11 @@ export const renderSubtitles = ({
         subtitles: subtitlesAsFrames,
         cta,
         ctaDurationInFrames,
+        durationInFrames,
       };
 
       const META_FILE_PATH = path.join(REMOTION_DIR, "src", "meta.json");
       await fs.writeFile(META_FILE_PATH, JSON.stringify(meta));
-
-      await fs.copyFile(
-        inputPath,
-        path.join(REMOTION_DIR, "public", "input.mp4") as AbsolutePath
-      );
 
       const subtitlesOverlayPath = path.join(REMOTION_DIR, "out", "MyComp.mov");
 
