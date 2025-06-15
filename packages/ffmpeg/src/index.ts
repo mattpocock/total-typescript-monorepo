@@ -1,5 +1,4 @@
 export * from "./constants.js";
-export * from "./audio-processing.js";
 export * from "./silence-detection.js";
 export * from "./chapter-extraction.js";
 export * from "./auto-editing.js";
@@ -8,4 +7,5 @@ export * from "./workflows.js";
 export * from "./obs-integration.js";
 export * from "./davinci-integration.js";
 export * from "./types.js";
+export * from "./queue/queue.js";
 export * as ffmpeg from "./ffmpeg-commands.js";

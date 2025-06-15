@@ -22,14 +22,14 @@ it("createAutoEditedVideoWorkflow with subtitles and no dry run should work", as
   const overlaySubtitles = vi.fn().mockReturnValue(okAsync({}));
 
   const result = await createAutoEditedVideoWorkflow({
-    exportDirectory: "/path/to/export",
-    shortsExportDirectory: "/path/to/shorts",
     getLatestVideo: () =>
       okAsync("/path/latest-video-filename.mp4" as AbsolutePath),
     promptForFilename: () => Promise.resolve("Test"),
     subtitles: true,
     dryRun: false,
     ctx: fromPartial({
+      exportDirectory: "/path/to/export",
+      shortsExportDirectory: "/path/to/shorts",
       transcriptionDirectory: "/path/to/transcriptions",
       ffmpeg: {
         getFPS: () => okAsync(60),
@@ -232,14 +232,14 @@ it("createAutoEditedVideoWorkflow with no subtitles", async () => {
   const overlaySubtitles = vi.fn().mockReturnValue(okAsync({}));
 
   const result = await createAutoEditedVideoWorkflow({
-    exportDirectory: "/path/to/export",
-    shortsExportDirectory: "/path/to/shorts",
     getLatestVideo: () =>
       okAsync("/path/latest-video-filename.mp4" as AbsolutePath),
     promptForFilename: () => Promise.resolve("Test"),
     subtitles: false,
     dryRun: false,
     ctx: fromPartial({
+      exportDirectory: "/path/to/export",
+      shortsExportDirectory: "/path/to/shorts",
       transcriptionDirectory: "/path/to/transcriptions",
       ffmpeg: {
         getFPS: () => okAsync(60),
@@ -326,14 +326,14 @@ it("createAutoEditedVideoWorkflow with dry run", async () => {
   const overlaySubtitles = vi.fn().mockReturnValue(okAsync({}));
 
   const result = await createAutoEditedVideoWorkflow({
-    exportDirectory: "/path/to/export",
-    shortsExportDirectory: "/path/to/shorts",
     getLatestVideo: () =>
       okAsync("/path/latest-video-filename.mp4" as AbsolutePath),
     promptForFilename: () => Promise.resolve("Test"),
     subtitles: false,
     dryRun: true,
     ctx: fromPartial({
+      exportDirectory: "/path/to/export",
+      shortsExportDirectory: "/path/to/shorts",
       transcriptionDirectory: "/path/to/transcriptions",
 
       ffmpeg: {
@@ -400,12 +400,13 @@ test("createAutoEditedVideoWorkflow returns an error if the filename already exi
   });
 
   const result = await createAutoEditedVideoWorkflow({
-    exportDirectory: "/path/to/export",
-    shortsExportDirectory: "/path/to/shorts",
     getLatestVideo: () =>
       okAsync("/path/latest-video-filename.mp4" as AbsolutePath),
     promptForFilename: () => Promise.resolve("Test"),
-    ctx: fromPartial({}),
+    ctx: fromPartial({
+      exportDirectory: "/path/to/export",
+      shortsExportDirectory: "/path/to/shorts",
+    }),
   });
 
   expect(result.isErr()).toBe(true);
@@ -424,12 +425,13 @@ test("createAutoEditedVideoWorkflow returns an error if the filename already exi
   });
 
   const result = await createAutoEditedVideoWorkflow({
-    exportDirectory: "/path/to/export",
-    shortsExportDirectory: "/path/to/shorts",
     getLatestVideo: () =>
       okAsync("/path/latest-video-filename.mp4" as AbsolutePath),
     promptForFilename: () => Promise.resolve("Test"),
-    ctx: fromPartial({}),
+    ctx: fromPartial({
+      exportDirectory: "/path/to/export",
+      shortsExportDirectory: "/path/to/shorts",
+    }),
   });
 
   expect(result.isErr()).toBe(true);

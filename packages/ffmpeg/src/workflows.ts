@@ -10,8 +10,6 @@ import { validateWindowsFilename } from "./validate-windows-filename.js";
 export interface CreateAutoEditedVideoWorkflowOptions {
   getLatestVideo: () => ResultAsync<AbsolutePath, ExecException>;
   promptForFilename: () => Promise<string>;
-  exportDirectory: string;
-  shortsExportDirectory: string;
   dryRun?: boolean;
   subtitles?: boolean;
   ctx: Context;
@@ -34,9 +32,9 @@ export const createAutoEditedVideoWorkflow = (
 
     const [alreadyExistsInExportDirectory, alreadyExistsInShortsDirectory] =
       await Promise.all([
-        exists(path.join(options.exportDirectory, `${outputFilename}.mp4`)),
+        exists(path.join(options.ctx.exportDirectory, `${outputFilename}.mp4`)),
         exists(
-          path.join(options.shortsExportDirectory, `${outputFilename}.mp4`)
+          path.join(options.ctx.shortsExportDirectory, `${outputFilename}.mp4`)
         ),
       ]);
 
@@ -52,7 +50,7 @@ export const createAutoEditedVideoWorkflow = (
 
     // First create in the export directory
     const videoInExportDirectoryPath = path.join(
-      options.exportDirectory,
+      options.ctx.exportDirectory,
       `${outputFilename}.mp4`
     ) as AbsolutePath;
 
@@ -70,7 +68,7 @@ export const createAutoEditedVideoWorkflow = (
 
     if (options.subtitles) {
       const withSubtitlesPath = path.join(
-        options.exportDirectory,
+        options.ctx.exportDirectory,
         `${outputFilename}-with-subtitles.mp4`
       ) as AbsolutePath;
 
@@ -128,7 +126,7 @@ export const createAutoEditedVideoWorkflow = (
 
     // Then move to shorts directory
     const finalOutputPath = path.join(
-      options.shortsExportDirectory,
+      options.ctx.shortsExportDirectory,
       `${outputFilename}.mp4`
     ) as AbsolutePath;
 

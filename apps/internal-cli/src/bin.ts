@@ -3,7 +3,6 @@
 import {
   addCurrentTimelineToRenderQueue,
   appendVideoToTimeline,
-  createAutoEditedVideoWorkflow,
   createTimeline,
   exportSubtitles,
   getLatestOBSVideo,
@@ -11,6 +10,8 @@ import {
   transcribeVideoWorkflow,
   ffmpeg,
   type Context,
+  processQueue,
+  writeToQueue,
 } from "@total-typescript/ffmpeg";
 import * as fs from "fs/promises";
 import { type AbsolutePath } from "@total-typescript/shared";
@@ -18,11 +19,17 @@ import { Command } from "commander";
 import packageJson from "../package.json" with { type: "json" };
 import { env } from "./env.js";
 import { promptForFilename, promptForVideoSelection } from "./utils.js";
+import path from "path";
+import { okAsync, safeTry } from "neverthrow";
 
 const ctx: Context = {
   ffmpeg,
   fs,
   transcriptionDirectory: env.TRANSCRIPTION_DIRECTORY,
+  queueLocation: path.join(import.meta.dirname, "..", "queue.json"),
+  queueLockfileLocation: path.join(import.meta.dirname, "..", "queue.lock"),
+  exportDirectory: env.EXPORT_DIRECTORY_IN_UNIX,
+  shortsExportDirectory: env.SHORTS_EXPORT_DIRECTORY,
 };
 
 const program = new Command();
@@ -87,15 +94,34 @@ program
   .option("-d, --dry-run", "Run without saving to Dropbox")
   .option("-ns, --no-subtitles", "Disable subtitle rendering")
   .action(async (options: { dryRun?: boolean; subtitles?: boolean }) => {
-    await createAutoEditedVideoWorkflow({
-      getLatestVideo: () =>
-        getLatestOBSVideo(env.OBS_OUTPUT_DIRECTORY as AbsolutePath),
-      promptForFilename,
-      exportDirectory: env.EXPORT_DIRECTORY_IN_UNIX,
-      shortsExportDirectory: env.SHORTS_EXPORT_DIRECTORY,
-      dryRun: options.dryRun,
-      subtitles: options.subtitles,
-      ctx,
+    const videoName = await promptForFilename();
+
+    await safeTry(async function* () {
+      const inputVideo = yield* getLatestOBSVideo(
+        env.OBS_OUTPUT_DIRECTORY as AbsolutePath
+      );
+
+      console.log("Adding to queue...");
+
+      await writeToQueue(
+        [
+          {
+            id: crypto.randomUUID(),
+            createdAt: Date.now(),
+            action: {
+              type: "create-auto-edited-video",
+              inputVideo,
+              videoName: videoName,
+              subtitles: Boolean(options.subtitles),
+              dryRun: Boolean(options.dryRun),
+            },
+            status: "idle",
+          },
+        ],
+        ctx
+      );
+
+      return okAsync(undefined);
     }).mapErr(async (err) => {
       console.error(err);
 
@@ -115,6 +141,14 @@ program
       promptForVideoSelection,
       ctx,
     });
+  });
+
+program
+  .command("process-queue")
+  .aliases(["p", "process"])
+  .description("Process the queue.")
+  .action(async () => {
+    await processQueue(ctx);
   });
 
 program.parse(process.argv);
