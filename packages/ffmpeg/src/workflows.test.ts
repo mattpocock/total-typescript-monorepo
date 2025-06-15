@@ -1,4 +1,4 @@
-import { expect, it, vi } from "vitest";
+import { expect, it, test, vi } from "vitest";
 import { createAutoEditedVideoWorkflow } from "./workflows.js";
 import { okAsync } from "neverthrow";
 import type { AbsolutePath } from "@total-typescript/shared";
@@ -7,6 +7,7 @@ import {
   AUTO_EDITED_END_PADDING,
   AUTO_EDITED_VIDEO_FINAL_END_PADDING,
 } from "./constants.js";
+import * as shared from "@total-typescript/shared";
 
 it("createAutoEditedVideoWorkflow with subtitles and no dry run should work", async () => {
   const writeFile = vi.fn();
@@ -26,7 +27,6 @@ it("createAutoEditedVideoWorkflow with subtitles and no dry run should work", as
     getLatestVideo: () =>
       okAsync("/path/latest-video-filename.mp4" as AbsolutePath),
     promptForFilename: () => Promise.resolve("Test"),
-    validateFilename: () => ({ isValid: true }),
     subtitles: true,
     dryRun: false,
     ctx: fromPartial({
@@ -237,7 +237,6 @@ it("createAutoEditedVideoWorkflow with no subtitles", async () => {
     getLatestVideo: () =>
       okAsync("/path/latest-video-filename.mp4" as AbsolutePath),
     promptForFilename: () => Promise.resolve("Test"),
-    validateFilename: () => ({ isValid: true }),
     subtitles: false,
     dryRun: false,
     ctx: fromPartial({
@@ -332,7 +331,6 @@ it("createAutoEditedVideoWorkflow with dry run", async () => {
     getLatestVideo: () =>
       okAsync("/path/latest-video-filename.mp4" as AbsolutePath),
     promptForFilename: () => Promise.resolve("Test"),
-    validateFilename: () => ({ isValid: true }),
     subtitles: false,
     dryRun: true,
     ctx: fromPartial({
@@ -391,4 +389,52 @@ it("createAutoEditedVideoWorkflow with dry run", async () => {
     expect.any(String),
     expect.stringMatching("shorts")
   );
+});
+
+test("createAutoEditedVideoWorkflow returns an error if the filename already exists in the shorts directory", async () => {
+  const exists = vi.spyOn(shared, "exists").mockImplementation(async (dir) => {
+    if (dir.includes("shorts")) {
+      return true;
+    }
+    return false;
+  });
+
+  const result = await createAutoEditedVideoWorkflow({
+    exportDirectory: "/path/to/export",
+    shortsExportDirectory: "/path/to/shorts",
+    getLatestVideo: () =>
+      okAsync("/path/latest-video-filename.mp4" as AbsolutePath),
+    promptForFilename: () => Promise.resolve("Test"),
+    ctx: fromPartial({}),
+  });
+
+  expect(result.isErr()).toBe(true);
+  expect(result._unsafeUnwrapErr()).toMatchObject({
+    message: "File already exists in shorts directory",
+  });
+  expect(exists).toHaveBeenCalledWith("/path/to/shorts/Test.mp4");
+});
+
+test("createAutoEditedVideoWorkflow returns an error if the filename already exists in the shorts directory", async () => {
+  const exists = vi.spyOn(shared, "exists").mockImplementation(async (dir) => {
+    if (dir.includes("export")) {
+      return true;
+    }
+    return false;
+  });
+
+  const result = await createAutoEditedVideoWorkflow({
+    exportDirectory: "/path/to/export",
+    shortsExportDirectory: "/path/to/shorts",
+    getLatestVideo: () =>
+      okAsync("/path/latest-video-filename.mp4" as AbsolutePath),
+    promptForFilename: () => Promise.resolve("Test"),
+    ctx: fromPartial({}),
+  });
+
+  expect(result.isErr()).toBe(true);
+  expect(result._unsafeUnwrapErr()).toMatchObject({
+    message: "File already exists in export directory",
+  });
+  expect(exists).toHaveBeenCalledWith("/path/to/export/Test.mp4");
 });

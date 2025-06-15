@@ -18,7 +18,6 @@ import { Command } from "commander";
 import packageJson from "../package.json" with { type: "json" };
 import { env } from "./env.js";
 import { promptForFilename, promptForVideoSelection } from "./utils.js";
-import { validateWindowsFilename } from "./validateWindowsFilename.js";
 
 const ctx: Context = {
   ffmpeg,
@@ -92,12 +91,16 @@ program
       getLatestVideo: () =>
         getLatestOBSVideo(env.OBS_OUTPUT_DIRECTORY as AbsolutePath),
       promptForFilename,
-      validateFilename: validateWindowsFilename,
       exportDirectory: env.EXPORT_DIRECTORY_IN_UNIX,
       shortsExportDirectory: env.SHORTS_EXPORT_DIRECTORY,
       dryRun: options.dryRun,
       subtitles: options.subtitles,
       ctx,
+    }).mapErr(async (err) => {
+      console.error(err);
+
+      await new Promise((res) => setTimeout(res, 5000));
+      process.exit(1);
     });
   });
 

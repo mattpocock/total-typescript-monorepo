@@ -1,15 +1,15 @@
-import { type AbsolutePath } from "@total-typescript/shared";
+import { exists, type AbsolutePath } from "@total-typescript/shared";
 import { execSync, type ExecException } from "child_process";
 import { errAsync, okAsync, ResultAsync, safeTry } from "neverthrow";
 import path from "path";
 import { createAutoEditedVideo } from "./auto-editing.js";
 import { renderSubtitles } from "./subtitle-rendering.js";
 import type { Context } from "./types.js";
+import { validateWindowsFilename } from "./validate-windows-filename.js";
 
 export interface CreateAutoEditedVideoWorkflowOptions {
   getLatestVideo: () => ResultAsync<AbsolutePath, ExecException>;
   promptForFilename: () => Promise<string>;
-  validateFilename: (filename: string) => { isValid: boolean; error?: string };
   exportDirectory: string;
   shortsExportDirectory: string;
   dryRun?: boolean;
@@ -22,39 +22,51 @@ export class NoSpeakingClipsError extends Error {
   override message = "No speaking clips found";
 }
 
-export const createAutoEditedVideoWorkflow = async (
+export const createAutoEditedVideoWorkflow = (
   options: CreateAutoEditedVideoWorkflowOptions
 ) => {
   return safeTry(async function* () {
-    const latestVideo = yield* options.getLatestVideo();
-
-    const fps = yield* options.ctx.ffmpeg.getFPS(latestVideo);
+    const latestObsRawVideo = yield* options.getLatestVideo();
 
     const outputFilename = await options.promptForFilename();
 
-    const validationResult = options.validateFilename(outputFilename);
-    if (!validationResult.isValid) {
-      console.error("Error:", validationResult.error);
-      process.exit(1);
+    yield* validateWindowsFilename(outputFilename);
+
+    const [alreadyExistsInExportDirectory, alreadyExistsInShortsDirectory] =
+      await Promise.all([
+        exists(path.join(options.exportDirectory, `${outputFilename}.mp4`)),
+        exists(
+          path.join(options.shortsExportDirectory, `${outputFilename}.mp4`)
+        ),
+      ]);
+
+    if (alreadyExistsInExportDirectory) {
+      return errAsync(new Error("File already exists in export directory"));
     }
 
+    if (alreadyExistsInShortsDirectory) {
+      return errAsync(new Error("File already exists in shorts directory"));
+    }
+
+    const fps = yield* options.ctx.ffmpeg.getFPS(latestObsRawVideo);
+
     // First create in the export directory
-    const tempOutputPath = path.join(
+    const videoInExportDirectoryPath = path.join(
       options.exportDirectory,
       `${outputFilename}.mp4`
     ) as AbsolutePath;
 
     const result = yield* createAutoEditedVideo({
-      inputVideo: latestVideo,
-      outputVideo: tempOutputPath,
+      inputVideo: latestObsRawVideo,
+      outputVideo: videoInExportDirectoryPath,
       ctx: options.ctx,
     });
 
     const speakingClips = result.speakingClips;
 
-    console.log(`Video created successfully at: ${tempOutputPath}`);
+    console.log(`Video created successfully at: ${videoInExportDirectoryPath}`);
 
-    let finalVideoPath = tempOutputPath;
+    let finalVideoPath = videoInExportDirectoryPath;
 
     if (options.subtitles) {
       const withSubtitlesPath = path.join(
@@ -74,23 +86,26 @@ export const createAutoEditedVideoWorkflow = async (
       }
 
       yield* renderSubtitles({
-        inputPath: tempOutputPath,
+        inputPath: videoInExportDirectoryPath,
         outputPath: withSubtitlesPath,
         ctaDurationInFrames: firstClipLength,
         durationInFrames: totalDurationInFrames * fps,
         ctx: options.ctx,
-        originalFileName: path.parse(latestVideo).name,
+        originalFileName: path.parse(latestObsRawVideo).name,
       });
       finalVideoPath = withSubtitlesPath;
     } else {
       const transcriptionPath = path.join(
         options.ctx.transcriptionDirectory,
-        `${path.parse(latestVideo).name}.txt`
+        `${path.parse(latestObsRawVideo).name}.txt`
       ) as AbsolutePath;
 
-      const audioPath = `${tempOutputPath}.mp3` as AbsolutePath;
+      const audioPath = `${videoInExportDirectoryPath}.mp3` as AbsolutePath;
 
-      await options.ctx.ffmpeg.extractAudioFromVideo(tempOutputPath, audioPath);
+      await options.ctx.ffmpeg.extractAudioFromVideo(
+        videoInExportDirectoryPath,
+        audioPath
+      );
 
       const subtitles =
         await options.ctx.ffmpeg.createSubtitleFromAudio(audioPath);
