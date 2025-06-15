@@ -23,12 +23,14 @@ it("createAutoEditedVideoWorkflow with subtitles and no dry run should work", as
   const result = await createAutoEditedVideoWorkflow({
     exportDirectory: "/path/to/export",
     shortsExportDirectory: "/path/to/shorts",
-    getLatestVideo: () => okAsync("/path/to/latest/video.mp4" as AbsolutePath),
+    getLatestVideo: () =>
+      okAsync("/path/latest-video-filename.mp4" as AbsolutePath),
     promptForFilename: () => Promise.resolve("Test"),
     validateFilename: () => ({ isValid: true }),
     subtitles: true,
     dryRun: false,
     ctx: fromPartial({
+      transcriptionDirectory: "/path/to/transcriptions",
       ffmpeg: {
         getFPS: () => okAsync(60),
         detectSilence: () =>
@@ -52,7 +54,7 @@ it("createAutoEditedVideoWorkflow with subtitles and no dry run should work", as
           {
             start: 0,
             end: 3,
-            text: "Test",
+            text: " Test",
           },
           {
             start: 3,
@@ -76,6 +78,14 @@ it("createAutoEditedVideoWorkflow with subtitles and no dry run should work", as
   expect(result.isOk()).toBe(true);
 
   /**
+   * Expect that the transcription was written to the transcription directory.
+   */
+  expect(writeFile).toHaveBeenCalledWith(
+    expect.stringContaining("latest-video-filename.txt"),
+    "TestTest"
+  );
+
+  /**
    * Expect that a meta.json file should have been
    * created in the remotion directory.
    */
@@ -84,7 +94,11 @@ it("createAutoEditedVideoWorkflow with subtitles and no dry run should work", as
     expect.any(String)
   );
 
-  const metaFile = JSON.parse(writeFile.mock.calls[1]![1]);
+  const metaJson = writeFile.mock.calls.find(([path]) =>
+    path.endsWith("meta.json")
+  )![1];
+
+  const metaFile = JSON.parse(metaJson);
 
   /**
    * The duration of the video should be the sum of the durations of the clips,
@@ -128,7 +142,7 @@ it("createAutoEditedVideoWorkflow with subtitles and no dry run should work", as
    * plus the padding for the end of the clip.
    */
   expect(createClip).toHaveBeenCalledWith(
-    "/path/to/latest/video.mp4",
+    "/path/latest-video-filename.mp4",
     expect.stringContaining("clip-0.mp4"),
     3,
     3 + AUTO_EDITED_END_PADDING
@@ -139,7 +153,7 @@ it("createAutoEditedVideoWorkflow with subtitles and no dry run should work", as
    * plus the padding for the FINAL end of the clip.
    */
   expect(createClip).toHaveBeenCalledWith(
-    "/path/to/latest/video.mp4",
+    "/path/latest-video-filename.mp4",
     expect.stringContaining("clip-1.mp4"),
     10,
     5 + AUTO_EDITED_VIDEO_FINAL_END_PADDING
@@ -220,12 +234,14 @@ it("createAutoEditedVideoWorkflow with no subtitles", async () => {
   const result = await createAutoEditedVideoWorkflow({
     exportDirectory: "/path/to/export",
     shortsExportDirectory: "/path/to/shorts",
-    getLatestVideo: () => okAsync("/path/to/latest/video.mp4" as AbsolutePath),
+    getLatestVideo: () =>
+      okAsync("/path/latest-video-filename.mp4" as AbsolutePath),
     promptForFilename: () => Promise.resolve("Test"),
     validateFilename: () => ({ isValid: true }),
     subtitles: false,
     dryRun: false,
     ctx: fromPartial({
+      transcriptionDirectory: "/path/to/transcriptions",
       ffmpeg: {
         getFPS: () => okAsync(60),
         detectSilence: () =>
@@ -273,6 +289,24 @@ it("createAutoEditedVideoWorkflow with no subtitles", async () => {
   expect(result.isOk()).toBe(true);
 
   /**
+   * Expect that the transcription was written to the
+   * transcription directory, even though subtitles are
+   * disabled.
+   */
+  expect(writeFile).toHaveBeenCalledWith(
+    expect.stringContaining("latest-video-filename.txt"),
+    "TestTest"
+  );
+
+  /**
+   * An audio file should have been created.
+   */
+  expect(extractAudioFromVideo).toHaveBeenCalledWith(
+    expect.stringContaining("Test.mp4"),
+    expect.stringContaining("Test.mp4.mp3")
+  );
+
+  /**
    * Expect that renderRemotion and overlaySubtitles
    * should not have been called.
    */
@@ -295,12 +329,15 @@ it("createAutoEditedVideoWorkflow with dry run", async () => {
   const result = await createAutoEditedVideoWorkflow({
     exportDirectory: "/path/to/export",
     shortsExportDirectory: "/path/to/shorts",
-    getLatestVideo: () => okAsync("/path/to/latest/video.mp4" as AbsolutePath),
+    getLatestVideo: () =>
+      okAsync("/path/latest-video-filename.mp4" as AbsolutePath),
     promptForFilename: () => Promise.resolve("Test"),
     validateFilename: () => ({ isValid: true }),
     subtitles: false,
     dryRun: true,
     ctx: fromPartial({
+      transcriptionDirectory: "/path/to/transcriptions",
+
       ffmpeg: {
         getFPS: () => okAsync(60),
         detectSilence: () =>

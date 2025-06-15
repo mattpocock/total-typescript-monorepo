@@ -7,4 +7,5 @@ export * from "./subtitle-rendering.js";
 export * from "./workflows.js";
 export * from "./obs-integration.js";
 export * from "./davinci-integration.js";
+export * from "./types.js";
 export * as ffmpeg from "./ffmpeg-commands.js";

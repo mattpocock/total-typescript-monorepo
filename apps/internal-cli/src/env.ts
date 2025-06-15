@@ -14,6 +14,7 @@ const envSchema = z.object({
   DROPBOX_DIRECTORY: z.string(),
   SHORTS_EXPORT_DIRECTORY: z.string(),
   OPENAI_API_KEY: z.string(),
+  TRANSCRIPTION_DIRECTORY: z.string(),
 });
 
 const result = envSchema.safeParse(process.env);

@@ -61,12 +61,14 @@ export const renderSubtitles = ({
   ctaDurationInFrames,
   durationInFrames,
   ctx,
+  originalFileName,
 }: {
   inputPath: AbsolutePath;
   outputPath: AbsolutePath;
   ctaDurationInFrames: number;
   durationInFrames: number;
   ctx: Context;
+  originalFileName: string;
 }) => {
   return safeTry(async function* () {
     const startTime = Date.now();
@@ -91,6 +93,18 @@ export const renderSubtitles = ({
         `✅ Audio transcribed successfully (took ${(Date.now() - transcribeStart) / 1000}s)`
       );
 
+      const transcriptionPath = path.join(
+        ctx.transcriptionDirectory,
+        `${originalFileName}.txt`
+      ) as AbsolutePath;
+
+      const fullTranscriptText = subtitles
+        .map((s) => s.text)
+        .join("")
+        .trim();
+
+      await ctx.fs.writeFile(transcriptionPath, fullTranscriptText);
+
       const processedSubtitles = subtitles.flatMap(splitSubtitle);
 
       console.log("⏱️ Detecting video FPS...");
@@ -111,10 +125,6 @@ export const renderSubtitles = ({
           text: subtitle.text.trim(),
         })
       );
-
-      const fullTranscriptText = processedSubtitles
-        .map((subtitle) => subtitle.text)
-        .join(" ");
 
       console.log("🔍 Figuring out which CTA to show...");
 

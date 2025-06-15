@@ -10,6 +10,7 @@ import {
   moveRawFootageToLongTermStorage,
   transcribeVideoWorkflow,
   ffmpeg,
+  type Context,
 } from "@total-typescript/ffmpeg";
 import * as fs from "fs/promises";
 import { type AbsolutePath } from "@total-typescript/shared";
@@ -19,9 +20,10 @@ import { env } from "./env.js";
 import { promptForFilename, promptForVideoSelection } from "./utils.js";
 import { validateWindowsFilename } from "./validateWindowsFilename.js";
 
-const ctx = {
+const ctx: Context = {
   ffmpeg,
   fs,
+  transcriptionDirectory: env.TRANSCRIPTION_DIRECTORY,
 };
 
 const program = new Command();

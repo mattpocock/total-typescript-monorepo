@@ -79,8 +79,31 @@ export const createAutoEditedVideoWorkflow = async (
         ctaDurationInFrames: firstClipLength,
         durationInFrames: totalDurationInFrames * fps,
         ctx: options.ctx,
+        originalFileName: path.parse(latestVideo).name,
       });
       finalVideoPath = withSubtitlesPath;
+    } else {
+      const transcriptionPath = path.join(
+        options.ctx.transcriptionDirectory,
+        `${path.parse(latestVideo).name}.txt`
+      ) as AbsolutePath;
+
+      const audioPath = `${tempOutputPath}.mp3` as AbsolutePath;
+
+      await options.ctx.ffmpeg.extractAudioFromVideo(tempOutputPath, audioPath);
+
+      const subtitles =
+        await options.ctx.ffmpeg.createSubtitleFromAudio(audioPath);
+
+      await options.ctx.fs.writeFile(
+        transcriptionPath,
+        subtitles
+          .map((s) => s.text)
+          .join("")
+          .trim()
+      );
+
+      await options.ctx.fs.unlink(audioPath);
     }
 
     if (options.dryRun) {
