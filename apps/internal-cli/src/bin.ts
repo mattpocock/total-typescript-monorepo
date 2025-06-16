@@ -14,6 +14,7 @@ import {
   writeToQueue,
   getQueueState,
   type QueueItem,
+  doesQueueLockfileExist,
 } from "@total-typescript/ffmpeg";
 import * as fs from "fs/promises";
 import { type AbsolutePath } from "@total-typescript/shared";
@@ -23,6 +24,7 @@ import { env } from "./env.js";
 import { promptForFilename, promptForVideoSelection } from "./utils.js";
 import path from "path";
 import { okAsync, safeTry } from "neverthrow";
+import { styleText } from "node:util";
 
 const ctx: Context = {
   ffmpeg,
@@ -167,9 +169,7 @@ program
       return;
     }
     queueState.queue.forEach((item: QueueItem, idx: number) => {
-      const completed = item.completedAt
-        ? new Date(item.completedAt).toLocaleString()
-        : "-";
+      const completed = formatRelativeDate(item.completedAt);
       const isAutoEdit = item.action.type === "create-auto-edited-video";
       let statusIcon = "";
       switch (item.status) {
@@ -188,13 +188,17 @@ program
         if (item.action.subtitles) options.push("Subtitles");
       }
       console.log(
-        `#${idx + 1} ${statusIcon}\n` +
+        `${styleText("bold", `#${idx + 1}`)} ${statusIcon}\n` +
           (isAutoEdit
-            ? `  Title      ${item.action.videoName}\n` +
-              (options.length > 0 ? `  Options    ${options.join(", ")}\n` : "")
+            ? `  ${styleText("dim", "Title")}      ${item.action.videoName}\n` +
+              (options.length > 0
+                ? `  ${styleText("dim", "Options")}    ${options.join(", ")}\n`
+                : "")
             : "") +
-          `  Completed  ${completed}` +
-          (item.error ? `\n  Error      ${item.error}` : "") +
+          `  ${styleText("dim", "Completed")}  ${completed}` +
+          (item.error
+            ? `\n  ${styleText("dim", "Error")}      ${item.error}`
+            : "") +
           "\n"
       );
     });
@@ -204,7 +208,37 @@ program
       console.log(
         `⏳ There are ${uncompleted.length} uncompleted item(s) in the queue.`
       );
+      const isProcessing = await doesQueueLockfileExist(ctx);
+      if (isProcessing) {
+        console.log("🔄 Queue processor is currently running.");
+      } else {
+        console.log("⏹️  Queue processor is NOT running.");
+      }
     }
   });
+
+// Utility to format a date as 'today', 'yesterday', or a formatted date
+function formatRelativeDate(dateInput: number | Date | undefined): string {
+  if (!dateInput) return "-";
+  const completedDate = new Date(dateInput);
+  const now = new Date();
+  const isToday =
+    completedDate.getFullYear() === now.getFullYear() &&
+    completedDate.getMonth() === now.getMonth() &&
+    completedDate.getDate() === now.getDate();
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  const isYesterday =
+    completedDate.getFullYear() === yesterday.getFullYear() &&
+    completedDate.getMonth() === yesterday.getMonth() &&
+    completedDate.getDate() === yesterday.getDate();
+  const time = completedDate.toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  if (isToday) return `Today, ${time}`;
+  if (isYesterday) return `Yesterday, ${time}`;
+  return completedDate.toLocaleString();
+}
 
 program.parse(process.argv);

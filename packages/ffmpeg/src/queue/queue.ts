@@ -77,7 +77,7 @@ const writeQueueLockfile = async (ctx: Context) => {
   await ctx.fs.writeFile(ctx.queueLockfileLocation, "");
 };
 
-const doesLockfileExist = async (ctx: Context) => {
+export const doesQueueLockfileExist = async (ctx: Context) => {
   return await exists(ctx.queueLockfileLocation);
 };
 
@@ -86,7 +86,7 @@ const deleteQueueLockfile = async (ctx: Context) => {
 };
 
 export const processQueue = async (ctx: Context) => {
-  if (await doesLockfileExist(ctx)) {
+  if (await doesQueueLockfileExist(ctx)) {
     console.log("Queue is locked, skipping");
     return;
   }
