@@ -171,5 +171,6 @@ export const processQueue = async (ctx: Context) => {
     }
   }
 
+  await cleanup();
   process.exit(0);
 };
