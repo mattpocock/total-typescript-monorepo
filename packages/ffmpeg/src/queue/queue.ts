@@ -51,7 +51,10 @@ export const writeToQueue = async (items: QueueItem[], ctx: Context) => {
 
   queueState.queue.push(...items);
 
-  await ctx.fs.writeFile(ctx.queueLocation, JSON.stringify(queueState));
+  await ctx.fs.writeFile(
+    ctx.queueLocation,
+    JSON.stringify(queueState, null, 2)
+  );
 };
 
 export const getQueueState = async (ctx: Context) => {
