@@ -54,7 +54,7 @@ export const writeToQueue = async (items: QueueItem[], ctx: Context) => {
   await ctx.fs.writeFile(ctx.queueLocation, JSON.stringify(queueState));
 };
 
-const getQueueState = async (ctx: Context) => {
+export const getQueueState = async (ctx: Context) => {
   await ensureQueueExists(ctx);
   const existingQueue = await ctx.fs.readFile(ctx.queueLocation);
   const queueState = JSON.parse(existingQueue.toString()) as QueueState;

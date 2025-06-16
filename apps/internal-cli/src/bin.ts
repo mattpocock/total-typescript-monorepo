@@ -12,6 +12,8 @@ import {
   type Context,
   processQueue,
   writeToQueue,
+  getQueueState,
+  type QueueItem,
 } from "@total-typescript/ffmpeg";
 import * as fs from "fs/promises";
 import { type AbsolutePath } from "@total-typescript/shared";
@@ -149,6 +151,60 @@ program
   .description("Process the queue.")
   .action(async () => {
     await processQueue(ctx);
+  });
+
+program
+  .command("queue-status")
+  .aliases(["qs", "status"])
+  .description("Show the status of the render queue.")
+  .action(async () => {
+    const queueState = await getQueueState(ctx);
+    const uncompleted = queueState.queue.filter(
+      (q: QueueItem) => q.status !== "completed"
+    );
+    if (queueState.queue.length === 0) {
+      console.log("(Queue is empty)");
+      return;
+    }
+    queueState.queue.forEach((item: QueueItem, idx: number) => {
+      const completed = item.completedAt
+        ? new Date(item.completedAt).toLocaleString()
+        : "-";
+      const isAutoEdit = item.action.type === "create-auto-edited-video";
+      let statusIcon = "";
+      switch (item.status) {
+        case "completed":
+          statusIcon = "✅";
+          break;
+        case "failed":
+          statusIcon = "❌";
+          break;
+        default:
+          statusIcon = "⏳";
+      }
+      let options = [];
+      if (isAutoEdit) {
+        if (item.action.dryRun) options.push("Dry Run");
+        if (item.action.subtitles) options.push("Subtitles");
+      }
+      console.log(
+        `#${idx + 1} ${statusIcon}\n` +
+          (isAutoEdit
+            ? `  Title      ${item.action.videoName}\n` +
+              (options.length > 0 ? `  Options    ${options.join(", ")}\n` : "")
+            : "") +
+          `  Completed  ${completed}` +
+          (item.error ? `\n  Error      ${item.error}` : "") +
+          "\n"
+      );
+    });
+    if (uncompleted.length === 0) {
+      console.log("✅ All queue items are completed!");
+    } else {
+      console.log(
+        `⏳ There are ${uncompleted.length} uncompleted item(s) in the queue.`
+      );
+    }
   });
 
 program.parse(process.argv);
