@@ -46,7 +46,7 @@ export const MyComposition = ({
 
 const FADE_DURATION = 8;
 const MOVE_DISTANCE = 30;
-const FADE_OUT_BUFFER_BEFORE_END = 12;
+const FADE_OUT_BUFFER_BEFORE_END = 4;
 
 const CTAPill = ({
   cta,
@@ -84,17 +84,29 @@ const CTAPill = ({
     <>
       <div className="flex-1"></div>
       <div className="flex flex-1 items-center justify-center">
-        <Img
-          src={
-            cta === "ai"
-              ? staticFile("/ai-cta.png")
-              : staticFile("/typescript-cta.png")
-          }
-          style={{
-            opacity,
-            transform: `translateY(${translateY}px)`,
-          }}
-        />
+        {cta === "ai" ? (
+          <div className="w-full h-full flex items-center justify-center px-24">
+            <Img
+              src={staticFile("/ai-cta.png")}
+              className="w-full h-full object-contain"
+              style={{
+                opacity,
+                transform: `translateY(${translateY}px)`,
+              }}
+            />
+          </div>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center px-6">
+            <Img
+              src={staticFile("/typescript-cta.png")}
+              className="w-full h-full object-contain"
+              style={{
+                opacity,
+                transform: `translateY(${translateY}px)`,
+              }}
+            />
+          </div>
+        )}
       </div>
     </>
   );
