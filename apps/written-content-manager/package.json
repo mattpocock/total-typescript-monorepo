@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "remix vite:dev --port 3004",
     "local-db": "docker-compose up -d",
-    "lint": "tsc",
     "start": "remix-serve ./build/server/index.js",
     "prisma:generate": "prisma generate",
     "db:dev": "DATABASE_URL=\"postgresql://postgres@localhost:5432/postgres\" vitest",

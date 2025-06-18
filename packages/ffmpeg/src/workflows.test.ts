@@ -50,18 +50,20 @@ it("createAutoEditedVideoWorkflow with subtitles and no dry run should work", as
         concatenateClips,
         createClip,
         extractAudioFromVideo,
-        createSubtitleFromAudio: () => [
-          {
-            start: 0,
-            end: 3,
-            text: " Test",
-          },
-          {
-            start: 3,
-            end: 8,
-            text: "Test",
-          },
-        ],
+        createSubtitleFromAudio: () => ({
+          segments: [
+            {
+              start: 0,
+              end: 3,
+              text: " Test",
+            },
+            {
+              start: 3,
+              end: 8,
+              text: "Test",
+            },
+          ],
+        }),
         figureOutWhichCTAToShow: () => "ai",
         renderRemotion,
         overlaySubtitles,
@@ -260,18 +262,20 @@ it("createAutoEditedVideoWorkflow with no subtitles", async () => {
         concatenateClips,
         createClip,
         extractAudioFromVideo,
-        createSubtitleFromAudio: () => [
-          {
-            start: 0,
-            end: 3,
-            text: "Test",
-          },
-          {
-            start: 3,
-            end: 5,
-            text: "Test",
-          },
-        ],
+        createSubtitleFromAudio: () => ({
+          segments: [
+            {
+              start: 0,
+              end: 3,
+              text: "Test",
+            },
+            {
+              start: 3,
+              end: 5,
+              text: "Test",
+            },
+          ],
+        }),
         figureOutWhichCTAToShow: () => "ai",
         renderRemotion,
         overlaySubtitles,
@@ -355,18 +359,20 @@ it("createAutoEditedVideoWorkflow with dry run", async () => {
         concatenateClips,
         createClip,
         extractAudioFromVideo,
-        createSubtitleFromAudio: () => [
-          {
-            start: 0,
-            end: 3,
-            text: "Test",
-          },
-          {
-            start: 3,
-            end: 5,
-            text: "Test",
-          },
-        ],
+        createSubtitleFromAudio: () => ({
+          segments: [
+            {
+              start: 0,
+              end: 3,
+              text: "Test",
+            },
+            {
+              start: 3,
+              end: 5,
+              text: "Test",
+            },
+          ],
+        }),
         figureOutWhichCTAToShow: () => "ai",
         renderRemotion,
         overlaySubtitles,

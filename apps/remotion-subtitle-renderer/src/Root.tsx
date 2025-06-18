@@ -11,7 +11,7 @@ export const RemotionRoot: React.FC = () => {
       <Composition
         id="MyComp"
         component={MyComposition}
-        schema={schema as any}
+        schema={schema}
         calculateMetadata={async ({ props }) => {
           return {
             durationInFrames: Math.floor(props.durationInFrames),

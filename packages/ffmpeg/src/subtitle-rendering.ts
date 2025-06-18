@@ -20,7 +20,7 @@ const REMOTION_DIR = path.join(
 
 const MAXIMUM_SUBTITLE_LENGTH_IN_CHARS = 32;
 
-const splitSubtitle = (subtitle: Subtitle): Subtitle[] => {
+const splitSubtitleSegments = (subtitle: Subtitle): Subtitle[] => {
   if (subtitle.text.length <= MAXIMUM_SUBTITLE_LENGTH_IN_CHARS) {
     return [subtitle];
   }
@@ -98,14 +98,16 @@ export const renderSubtitles = ({
         `${originalFileName}.txt`
       ) as AbsolutePath;
 
-      const fullTranscriptText = subtitles
+      const fullTranscriptText = subtitles.segments
         .map((s) => s.text)
         .join("")
         .trim();
 
       await ctx.fs.writeFile(transcriptionPath, fullTranscriptText);
 
-      const processedSubtitles = subtitles.flatMap(splitSubtitle);
+      const processedSubtitles = subtitles.segments.flatMap(
+        splitSubtitleSegments
+      );
 
       console.log("⏱️ Detecting video FPS...");
       const fpsStart = Date.now();

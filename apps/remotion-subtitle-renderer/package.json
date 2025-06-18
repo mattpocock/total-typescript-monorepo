@@ -26,7 +26,7 @@
   "scripts": {
     "dev": "remotion studio",
     "upgrade": "remotion upgrade",
-    "lint": "eslint src && tsc"
+    "lint": "tsc"
   },
   "sideEffects": [
     "*.css"

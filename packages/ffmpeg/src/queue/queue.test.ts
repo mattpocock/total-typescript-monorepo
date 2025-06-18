@@ -4,7 +4,7 @@ import * as fs from "node:fs/promises";
 import path from "node:path";
 import { expect, it, vitest } from "vitest";
 import type { Context } from "../types.js";
-import { processQueue, writeToQueue, type QueueState } from "./queue.js";
+import { processQueue, writeToQueue } from "./queue.js";
 
 const { okAsync } = await vitest.hoisted(async () => ({
   okAsync: await import("neverthrow").then((m) => m.okAsync),

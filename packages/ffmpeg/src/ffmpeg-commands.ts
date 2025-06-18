@@ -27,15 +27,7 @@ import { OpenAI } from "openai";
 import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 
-export const createSubtitleFromAudio = async (
-  audioPath: AbsolutePath
-): Promise<
-  {
-    start: number;
-    end: number;
-    text: string;
-  }[]
-> => {
+export const createSubtitleFromAudio = async (audioPath: AbsolutePath) => {
   const openai = new OpenAI();
 
   const audioBuffer = createReadStream(audioPath);
@@ -44,14 +36,21 @@ export const createSubtitleFromAudio = async (
     file: audioBuffer,
     model: "whisper-1",
     response_format: "verbose_json",
-    timestamp_granularities: ["segment"],
+    timestamp_granularities: ["segment", "word"],
   });
 
-  return response.segments!.map((segment) => ({
-    start: segment.start,
-    end: segment.end,
-    text: segment.text,
-  }));
+  return {
+    segments: response.segments!.map((segment) => ({
+      start: segment.start,
+      end: segment.end,
+      text: segment.text,
+    })),
+    words: response.words!.map((word) => ({
+      start: word.start,
+      end: word.end,
+      text: word.word,
+    })),
+  };
 };
 
 export const transcribeAudio = async (audioPath: AbsolutePath) => {

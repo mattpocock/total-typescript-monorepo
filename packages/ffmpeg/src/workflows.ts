@@ -110,7 +110,7 @@ export const createAutoEditedVideoWorkflow = (
 
       await options.ctx.fs.writeFile(
         transcriptionPath,
-        subtitles
+        subtitles.segments
           .map((s) => s.text)
           .join("")
           .trim()
