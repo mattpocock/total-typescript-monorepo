@@ -175,4 +175,7 @@ export const processQueue = async (ctx: Context) => {
   }
 
   await cleanup();
+  if (process.env.NODE_ENV !== "test") {
+    process.exit(0);
+  }
 };
