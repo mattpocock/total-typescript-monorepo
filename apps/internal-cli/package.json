@@ -25,6 +25,8 @@
     "fast-glob": "^3.3.2",
     "neverthrow": "^8.1.0",
     "prompts": "^2.4.2",
-    "zod": "^3.23.6"
+    "zod": "^3.23.6",
+    "effect": "^3.16.8",
+    "@effect/platform": "^0.85.2"
   }
 }

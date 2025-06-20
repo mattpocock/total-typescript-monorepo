@@ -3,38 +3,29 @@
 import {
   addCurrentTimelineToRenderQueue,
   appendVideoToTimeline,
+  AppLayerLive,
+  createAutoEditedVideoWorkflow,
   createTimeline,
-  exportSubtitles,
-  getLatestOBSVideo,
-  moveRawFootageToLongTermStorage,
-  transcribeVideoWorkflow,
-  ffmpeg,
-  type Context,
-  processQueue,
-  writeToQueue,
-  getQueueState,
-  type QueueItem,
   doesQueueLockfileExist,
+  exportSubtitles,
+  getQueueState,
+  moveRawFootageToLongTermStorage,
+  processQueue,
+  QueueRunnerService,
+  transcribeVideoWorkflow,
+  writeToQueue,
+  type QueueItem,
 } from "@total-typescript/ffmpeg";
-import * as fs from "fs/promises";
 import { type AbsolutePath } from "@total-typescript/shared";
 import { Command } from "commander";
+import { ConfigProvider, Effect, Layer } from "effect";
+import { styleText } from "node:util";
+import {
+  AskQuestionService,
+  OBSIntegrationService,
+} from "../../../packages/ffmpeg/dist/services.js";
 import packageJson from "../package.json" with { type: "json" };
 import { env } from "./env.js";
-import { promptForFilename, promptForVideoSelection } from "./utils.js";
-import path from "path";
-import { okAsync, safeTry } from "neverthrow";
-import { styleText } from "node:util";
-
-const ctx: Context = {
-  ffmpeg,
-  fs,
-  transcriptionDirectory: env.TRANSCRIPTION_DIRECTORY,
-  queueLocation: path.join(import.meta.dirname, "..", "queue.json"),
-  queueLockfileLocation: path.join(import.meta.dirname, "..", "queue.lock"),
-  exportDirectory: env.EXPORT_DIRECTORY_IN_UNIX,
-  shortsExportDirectory: env.SHORTS_EXPORT_DIRECTORY,
-};
 
 const program = new Command();
 
@@ -44,49 +35,59 @@ program.version(packageJson.version);
 program
   .command("move-raw-footage-to-long-term-storage")
   .description("Move raw footage to long term storage.")
-  .action(async () => {
-    moveRawFootageToLongTermStorage({
-      obsOutputDirectory: env.OBS_OUTPUT_DIRECTORY,
-      longTermStorageDirectory: env.LONG_TERM_FOOTAGE_STORAGE_DIRECTORY,
-    });
+  .action(() => {
+    moveRawFootageToLongTermStorage().pipe(
+      Effect.withConfigProvider(ConfigProvider.fromEnv()),
+      Effect.provide(AppLayerLive),
+      Effect.runFork
+    );
   });
 
 program
   .command("create-timeline")
   .description("Create a new empty timeline in the current project.")
-  .action(async () => {
-    await createTimeline();
+  .action(() => {
+    createTimeline().pipe(
+      Effect.withConfigProvider(ConfigProvider.fromEnv()),
+      Effect.provide(AppLayerLive),
+      Effect.runFork
+    );
   });
 
 program
   .command("add-current-timeline-to-render-queue")
   .description("Add the current timeline to the render queue.")
-  .action(async () => {
-    await addCurrentTimelineToRenderQueue({
-      davinciExportDirectory: env.DAVINCI_EXPORT_DIRECTORY,
-    });
+  .action(() => {
+    addCurrentTimelineToRenderQueue().pipe(
+      Effect.withConfigProvider(ConfigProvider.fromEnv()),
+      Effect.provide(AppLayerLive),
+      Effect.runFork
+    );
   });
 
 program
   .command("export-subtitles")
   .description("Export subtitles from the current timeline as SRT.")
-  .action(async () => {
-    await exportSubtitles({
-      davinciExportDirectory: env.DAVINCI_EXPORT_DIRECTORY,
-    });
+  .action(() => {
+    exportSubtitles().pipe(
+      Effect.withConfigProvider(ConfigProvider.fromEnv()),
+      Effect.provide(AppLayerLive),
+      Effect.runFork
+    );
   });
 
 program
   .command("append-video-to-timeline [video]")
   .aliases(["a", "append"])
   .description("Append video to the current Davinci Resolve timeline")
-  .action(async (video: string | undefined) => {
-    await appendVideoToTimeline({
+  .action((video: string | undefined) => {
+    appendVideoToTimeline({
       inputVideo: video as AbsolutePath,
-      getLatestOBSVideo: () =>
-        getLatestOBSVideo(env.OBS_OUTPUT_DIRECTORY as AbsolutePath),
-      ctx,
-    });
+    }).pipe(
+      Effect.withConfigProvider(ConfigProvider.fromEnv()),
+      Effect.provide(AppLayerLive),
+      Effect.runFork
+    );
   });
 
 program
@@ -97,124 +98,144 @@ program
   )
   .option("-d, --dry-run", "Run without saving to Dropbox")
   .option("-ns, --no-subtitles", "Disable subtitle rendering")
-  .action(async (options: { dryRun?: boolean; subtitles?: boolean }) => {
-    const videoName = await promptForFilename();
+  .action((options: { dryRun?: boolean; subtitles?: boolean }) => {
+    Effect.gen(function* () {
+      const obs = yield* OBSIntegrationService;
+      const askQuestion = yield* AskQuestionService;
 
-    await safeTry(async function* () {
-      const inputVideo = yield* getLatestOBSVideo(
-        env.OBS_OUTPUT_DIRECTORY as AbsolutePath
-      );
+      const inputVideo = yield* obs.getLatestOBSVideo();
 
       console.log("Adding to queue...");
 
-      await writeToQueue(
-        [
-          {
-            id: crypto.randomUUID(),
-            createdAt: Date.now(),
-            action: {
-              type: "create-auto-edited-video",
-              inputVideo,
-              videoName: videoName,
-              subtitles: Boolean(options.subtitles),
-              dryRun: Boolean(options.dryRun),
-            },
-            status: "idle",
+      yield* writeToQueue([
+        {
+          id: crypto.randomUUID(),
+          createdAt: Date.now(),
+          action: {
+            type: "create-auto-edited-video",
+            inputVideo,
+            videoName: yield* askQuestion.askQuestion(
+              "What is the name of the video?"
+            ),
+            subtitles: Boolean(options.subtitles),
+            dryRun: Boolean(options.dryRun),
           },
-        ],
-        ctx
-      );
-
-      return okAsync(undefined);
-    }).mapErr(async (err) => {
-      console.error(err);
-
-      await new Promise((res) => setTimeout(res, 5000));
-      process.exit(1);
-    });
+          status: "idle",
+        },
+      ]);
+    }).pipe(
+      Effect.catchAll((e) => {
+        return Effect.gen(function* () {
+          yield* Effect.logError(e);
+          yield* Effect.sleep(5000);
+          return yield* Effect.die(e);
+        });
+      }),
+      Effect.withConfigProvider(ConfigProvider.fromEnv()),
+      Effect.provide(AppLayerLive),
+      Effect.runFork
+    );
   });
 
 program
   .command("transcribe-video")
   .aliases(["t", "transcribe"])
   .description("Transcribe audio from a selected video file")
-  .action(async () => {
-    await transcribeVideoWorkflow({
-      exportDirectory: env.EXPORT_DIRECTORY_IN_UNIX,
-      shortsExportDirectory: env.SHORTS_EXPORT_DIRECTORY,
-      promptForVideoSelection,
-      ctx,
-    });
+  .action(() => {
+    transcribeVideoWorkflow();
   });
+
+const QueueLayerLive = Layer.merge(
+  AppLayerLive,
+  Layer.succeed(QueueRunnerService, {
+    createAutoEditedVideoWorkflow: (params) => {
+      return createAutoEditedVideoWorkflow(params).pipe(
+        Effect.provide(AppLayerLive)
+      );
+    },
+  })
+);
 
 program
   .command("process-queue")
   .aliases(["p", "process"])
   .description("Process the queue.")
-  .action(async () => {
-    await processQueue(ctx);
+  .action(() => {
+    processQueue().pipe(
+      Effect.withConfigProvider(ConfigProvider.fromEnv()),
+      Effect.provide(QueueLayerLive),
+      Effect.runFork
+    );
   });
 
 program
   .command("queue-status")
   .aliases(["qs", "status"])
   .description("Show the status of the render queue.")
-  .action(async () => {
-    const queueState = await getQueueState(ctx);
-    const uncompleted = queueState.queue.filter(
-      (q: QueueItem) => q.status !== "completed"
-    );
-    if (queueState.queue.length === 0) {
-      console.log("(Queue is empty)");
-      return;
-    }
-    queueState.queue.forEach((item: QueueItem, idx: number) => {
-      const completed = formatRelativeDate(item.completedAt);
-      const isAutoEdit = item.action.type === "create-auto-edited-video";
-      let statusIcon = "";
-      switch (item.status) {
-        case "completed":
-          statusIcon = "✅";
-          break;
-        case "failed":
-          statusIcon = "❌";
-          break;
-        default:
-          statusIcon = "⏳";
-      }
-      let options = [];
-      if (isAutoEdit) {
-        if (item.action.dryRun) options.push("Dry Run");
-        if (item.action.subtitles) options.push("Subtitles");
-      }
-      console.log(
-        `${styleText("bold", `#${idx + 1}`)} ${statusIcon}\n` +
-          (isAutoEdit
-            ? `  ${styleText("dim", "Title")}      ${item.action.videoName}\n` +
-              (options.length > 0
-                ? `  ${styleText("dim", "Options")}    ${options.join(", ")}\n`
-                : "")
-            : "") +
-          `  ${styleText("dim", "Completed")}  ${completed}` +
-          (item.error
-            ? `\n  ${styleText("dim", "Error")}      ${item.error}`
-            : "") +
-          "\n"
+  .action(() => {
+    Effect.gen(function* () {
+      const queueState = yield* getQueueState();
+
+      const uncompleted = queueState.queue.filter(
+        (q: QueueItem) => q.status !== "completed"
       );
-    });
-    if (uncompleted.length === 0) {
-      console.log("✅ All queue items are completed!");
-    } else {
-      console.log(
-        `⏳ There are ${uncompleted.length} uncompleted item(s) in the queue.`
-      );
-      const isProcessing = await doesQueueLockfileExist(ctx);
-      if (isProcessing) {
-        console.log("🔄 Queue processor is currently running.");
+      if (queueState.queue.length === 0) {
+        yield* Effect.log("(Queue is empty)");
+        return;
+      }
+      queueState.queue.forEach((item: QueueItem, idx: number) => {
+        const completed = formatRelativeDate(item.completedAt);
+        const isAutoEdit = item.action.type === "create-auto-edited-video";
+        let statusIcon = "";
+        switch (item.status) {
+          case "completed":
+            statusIcon = "✅";
+            break;
+          case "failed":
+            statusIcon = "❌";
+            break;
+          default:
+            statusIcon = "⏳";
+        }
+        let options = [];
+        if (isAutoEdit) {
+          if (item.action.dryRun) options.push("Dry Run");
+          if (item.action.subtitles) options.push("Subtitles");
+        }
+
+        Effect.log(
+          `${styleText("bold", `#${idx + 1}`)} ${statusIcon}\n` +
+            (isAutoEdit
+              ? `  ${styleText("dim", "Title")}      ${item.action.videoName}\n` +
+                (options.length > 0
+                  ? `  ${styleText("dim", "Options")}    ${options.join(", ")}\n`
+                  : "")
+              : "") +
+            `  ${styleText("dim", "Completed")}  ${completed}` +
+            (item.error
+              ? `\n  ${styleText("dim", "Error")}      ${item.error}`
+              : "") +
+            "\n"
+        );
+      });
+      if (uncompleted.length === 0) {
+        yield* Effect.log("✅ All queue items are completed!");
       } else {
-        console.log("⏹️  Queue processor is NOT running.");
+        yield* Effect.log(
+          `⏳ There are ${uncompleted.length} uncompleted item(s) in the queue.`
+        );
+        const isProcessing = yield* doesQueueLockfileExist();
+        if (isProcessing) {
+          yield* Effect.log("🔄 Queue processor is currently running.");
+        } else {
+          yield* Effect.log("⏹️  Queue processor is NOT running.");
+        }
       }
-    }
+    }).pipe(
+      Effect.withConfigProvider(ConfigProvider.fromEnv()),
+      Effect.provide(QueueLayerLive),
+      Effect.runFork
+    );
   });
 
 // Utility to format a date as 'today', 'yesterday', or a formatted date

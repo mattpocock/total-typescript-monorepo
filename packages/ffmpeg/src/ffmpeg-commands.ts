@@ -20,54 +20,97 @@
  * 4. Document any non-obvious command parameters
  */
 
-import { execAsync, type AbsolutePath } from "@total-typescript/shared";
-import { createReadStream } from "fs";
-import { err } from "neverthrow";
-import { OpenAI } from "openai";
 import { openai } from "@ai-sdk/openai";
+import { FileSystem } from "@effect/platform/FileSystem";
+import { execAsync, type AbsolutePath } from "@total-typescript/shared";
 import { generateObject } from "ai";
+import { Config, Effect } from "effect";
+import { OpenAIService, ReadStreamService } from "./services.js";
 
-export const createSubtitleFromAudio = async (audioPath: AbsolutePath) => {
-  const openai = new OpenAI();
-
-  const audioBuffer = createReadStream(audioPath);
-
-  const response = await openai.audio.transcriptions.create({
-    file: audioBuffer,
-    model: "whisper-1",
-    response_format: "verbose_json",
-    timestamp_granularities: ["segment", "word"],
-  });
-
-  return {
-    segments: response.segments!.map((segment) => ({
-      start: segment.start,
-      end: segment.end,
-      text: segment.text,
-    })),
-    words: response.words!.map((word) => ({
-      start: word.start,
-      end: word.end,
-      text: word.word,
-    })),
-  };
-};
-
-export const transcribeAudio = async (audioPath: AbsolutePath) => {
-  if (!audioPath.endsWith(".mp3")) {
-    throw new Error("Audio path must end with .mp3");
+export class CouldNotTranscribeAudioError extends Error {
+  readonly _tag = "CouldNotTranscribeAudioError";
+  override message = "Could not transcribe audio.";
+  constructor(public override cause: Error) {
+    super("Could not transcribe audio.");
   }
-  const openai = new OpenAI();
+}
 
-  const audioBuffer = createReadStream(audioPath);
+export const createSubtitleFromAudio = (audioPath: AbsolutePath) => {
+  return Effect.gen(function* () {
+    const openai = yield* OpenAIService;
+    const fs = yield* FileSystem;
 
-  const response = await openai.audio.transcriptions.create({
-    file: audioBuffer,
-    model: "whisper-1",
+    const { createReadStream } = yield* ReadStreamService;
+
+    const stream = yield* createReadStream(audioPath);
+
+    const response = yield* Effect.tryPromise(async () => {
+      return openai.audio.transcriptions.create({
+        file: stream as any,
+        model: "whisper-1",
+        response_format: "verbose_json",
+        timestamp_granularities: ["segment", "word"],
+      });
+    }).pipe(
+      Effect.mapError((e) => {
+        return new CouldNotTranscribeAudioError(e);
+      })
+    );
+
+    return {
+      segments: response.segments!.map((segment) => ({
+        start: segment.start,
+        end: segment.end,
+        text: segment.text,
+      })),
+      words: response.words!.map((word) => ({
+        start: word.start,
+        end: word.end,
+        text: word.word,
+      })),
+    };
   });
-
-  return response.text;
 };
+
+export class WrongAudioFileExtensionError extends Error {
+  readonly _tag = "WrongAudioFileExtensionError";
+  override message = "Incorrect audio file.";
+}
+
+export const transcribeAudio = (audioPath: AbsolutePath) => {
+  return Effect.gen(function* () {
+    const openai = yield* OpenAIService;
+    const audioExtension = yield* Config.string("AUDIO_FILE_EXTENSION");
+    const { createReadStream } = yield* ReadStreamService;
+
+    if (!audioPath.endsWith(audioExtension)) {
+      return yield* Effect.fail(new WrongAudioFileExtensionError());
+    }
+
+    const stream = yield* createReadStream(audioPath);
+
+    const response = yield* Effect.tryPromise(async () => {
+      return openai.audio.transcriptions.create({
+        file: stream as any,
+        model: "whisper-1",
+      });
+    }).pipe(
+      Effect.mapError((e) => {
+        return new CouldNotTranscribeAudioError(e);
+      })
+    );
+
+    return response.text;
+  });
+};
+
+export class CouldNotEncodeVideoError extends Error {
+  readonly _tag = "CouldNotEncodeVideoError";
+  override message = "Could not encode video.";
+  constructor(public override cause: Error) {
+    super("Could not encode video.");
+  }
+}
 
 export class CouldNotGetFPSError extends Error {
   readonly _tag = "CouldNotGetFPSError";
@@ -100,32 +143,36 @@ export type FFMPeg = typeof import("./ffmpeg-commands.js");
 export const getFPS = (inputVideo: AbsolutePath) => {
   return execAsync(
     `ffprobe -v error -select_streams v:0 -show_entries stream=r_frame_rate -of default=noprint_wrappers=1:nokey=1 "${inputVideo}"`
-  )
-    .map((output) => {
+  ).pipe(
+    Effect.map((output) => {
       const [numerator, denominator] = output.stdout.split("/");
       return Number(numerator) / Number(denominator);
+    }),
+    Effect.mapError(() => {
+      return new CouldNotGetFPSError();
     })
-    .orElse(() => {
-      return err(new CouldNotGetFPSError());
-    });
+  );
 };
 
 export const getVideoDuration = (inputVideo: AbsolutePath) => {
   return execAsync(
     `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${inputVideo}"`
-  ).map((output) => {
-    return Number(output.stdout);
-  });
+  ).pipe(
+    Effect.map((output) => {
+      return Number(output.stdout);
+    })
+  );
 };
 
 export const getChapters = (inputVideo: AbsolutePath) => {
   return execAsync(
     `ffprobe -i "${inputVideo}" -show_chapters -v quiet -print_format json`
-  )
-    .map(({ stdout }) => {
+  ).pipe(
+    Effect.map(({ stdout }) => {
       return JSON.parse(stdout.trim()) as ChaptersResponse;
-    })
-    .mapErr(() => new CouldNotExtractChaptersError());
+    }),
+    Effect.mapError(() => new CouldNotExtractChaptersError())
+  );
 };
 
 export const encodeVideo = (
@@ -134,6 +181,10 @@ export const encodeVideo = (
 ) => {
   return execAsync(
     `ffmpeg -y -hide_banner -i "${inputVideo}" -c:v libx264 -profile high -b:v 7000k -pix_fmt yuv420p -maxrate 16000k "${outputVideoPath}"`
+  ).pipe(
+    Effect.mapError((e) => {
+      return new CouldNotEncodeVideoError(e);
+    })
   );
 };
 
@@ -175,10 +226,20 @@ export const extractAudioFromVideo = (
 ) => {
   return execAsync(
     `nice -n 19 ffmpeg -y -hide_banner -hwaccel cuda -i "${inputPath}" -vn -acodec libmp3lame -q:a 2 "${outputPath}"`
-  ).mapErr((e) => {
-    throw new Error(`Failed to extract audio: ${e.message}`);
-  });
+  ).pipe(
+    Effect.mapError((e) => {
+      return new CouldNotExtractAudioError(e);
+    })
+  );
 };
+
+export class CouldNotExtractAudioError extends Error {
+  readonly _tag = "CouldNotExtractAudioError";
+  override message = "Could not extract audio from video.";
+  constructor(public override cause: Error) {
+    super("Could not extract audio from video.");
+  }
+}
 
 export const createClip = (
   inputVideo: AbsolutePath,
@@ -188,8 +249,20 @@ export const createClip = (
 ) => {
   return execAsync(
     `nice -n 19 ffmpeg -y -hide_banner -ss ${startTime} -i "${inputVideo}" -t ${duration} -c:v h264_nvenc -preset slow -rc:v vbr -cq:v 19 -b:v 8000k -maxrate 12000k -bufsize 16000k -c:a aac -b:a 384k "${outputFile}"`
+  ).pipe(
+    Effect.mapError((e) => {
+      return new CouldNotCreateClipError(e);
+    })
   );
 };
+
+export class CouldNotCreateClipError extends Error {
+  readonly _tag = "CouldNotCreateClipError";
+  override message = "Could not create clip.";
+  constructor(public override cause: Error) {
+    super("Could not create clip.");
+  }
+}
 
 export const concatenateClips = (
   concatFile: AbsolutePath,
@@ -210,6 +283,14 @@ export const overlaySubtitles = (
   );
 };
 
+export class CouldNotDetectSilenceError extends Error {
+  readonly _tag = "CouldNotDetectSilenceError";
+  override message = "Could not detect silence.";
+  constructor(public override cause: Error) {
+    super("Could not detect silence.");
+  }
+}
+
 export const detectSilence = (
   inputVideo: AbsolutePath,
   threshold: number | string,
@@ -217,31 +298,51 @@ export const detectSilence = (
 ) => {
   return execAsync(
     `ffmpeg -hide_banner -vn -i "${inputVideo}" -af "silencedetect=n=${threshold}dB:d=${silenceDuration}" -f null - 2>&1`
+  ).pipe(
+    Effect.mapError((e) => {
+      return new CouldNotDetectSilenceError(e);
+    })
   );
 };
 
-export const figureOutWhichCTAToShow = async (transcript: string) => {
-  const { object } = await generateObject({
-    model: openai("gpt-4o-mini"),
-    output: "enum",
-    enum: ["ai", "typescript"],
-    system: `
-      You are deciding which call to action to use for a video.
-      The call to action will either point to totaltypescript.com, or aihero.dev.
-      Return "ai" if the video is best suited for aihero.dev, and "typescript" if the video is best suited for totaltypescript.com.
-      You will receive the full transcript of the video.
+export const figureOutWhichCTAToShow = (transcript: string) => {
+  return Effect.tryPromise({
+    try: async (signal) => {
+      const { object } = await generateObject({
+        model: openai("gpt-4o-mini"),
+        output: "enum",
+        enum: ["ai", "typescript"],
+        system: `
+          You are deciding which call to action to use for a video.
+          The call to action will either point to totaltypescript.com, or aihero.dev.
+          Return "ai" if the video is best suited for aihero.dev, and "typescript" if the video is best suited for totaltypescript.com.
+          You will receive the full transcript of the video.
+    
+          If the video mentions AI, return "ai".
+          Or if the video mentions TypeScript, return "typescript".
+          If the video mentions Node, return "typescript".
+          If the video mentions React, return "typescript".
+          
+        `,
+        prompt: transcript,
+        abortSignal: signal,
+      });
 
-      If the video mentions AI, return "ai".
-      Or if the video mentions TypeScript, return "typescript".
-      If the video mentions Node, return "typescript".
-      If the video mentions React, return "typescript".
-      
-    `,
-    prompt: transcript,
+      return object;
+    },
+    catch: (e) => {
+      return new CouldNotFigureOutWhichCTAToShowError(e as Error);
+    },
   });
-
-  return object;
 };
+
+export class CouldNotFigureOutWhichCTAToShowError extends Error {
+  readonly _tag = "CouldNotFigureOutWhichCTAToShowError";
+  override message = "Could not figure out which CTA to show.";
+  constructor(public override cause: Error) {
+    super("Could not figure out which CTA to show.");
+  }
+}
 
 export const renderRemotion = (outputPath: AbsolutePath, cwd: string) => {
   return execAsync(`nice -n 19 npx remotion render MyComp "${outputPath}"`, {

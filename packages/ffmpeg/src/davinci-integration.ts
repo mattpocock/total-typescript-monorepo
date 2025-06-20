@@ -2,45 +2,42 @@ import {
   runDavinciResolveScript,
   type AbsolutePath,
 } from "@total-typescript/shared";
-import { okAsync, ResultAsync, safeTry } from "neverthrow";
+import { Config, Console, Effect } from "effect";
 import path from "path";
-import {
-  SILENCE_DURATION,
-  THRESHOLD,
-  AUTO_EDITED_END_PADDING,
-  AUTO_EDITED_START_PADDING,
-} from "./constants.js";
 import {
   extractBadTakeMarkersFromFile,
   isBadTake,
 } from "./chapter-extraction.js";
+import {
+  AUTO_EDITED_END_PADDING,
+  AUTO_EDITED_START_PADDING,
+  SILENCE_DURATION,
+  THRESHOLD,
+} from "./constants.js";
+import { FFmpegCommandsService, OBSIntegrationService } from "./services.js";
 import { findSilenceInVideo } from "./silence-detection.js";
-import type { FFMPeg } from "./ffmpeg-commands.js";
-import type { Context } from "./types.js";
 
 export interface AppendVideoToTimelineOptions {
   inputVideo?: AbsolutePath;
-  getLatestOBSVideo: () => ResultAsync<AbsolutePath, Error>;
-  ctx: Context;
 }
 
-export const appendVideoToTimeline = async (
+export const appendVideoToTimeline = (
   options: AppendVideoToTimelineOptions
 ) => {
-  return safeTry(async function* () {
+  return Effect.gen(function* () {
     let inputVideo: AbsolutePath;
+
+    const obs = yield* OBSIntegrationService;
 
     if (options.inputVideo) {
       inputVideo = path.resolve(options.inputVideo) as AbsolutePath;
     } else {
-      const result = await options.getLatestOBSVideo();
-      if (result.isErr()) {
-        throw result.error;
-      }
-      inputVideo = result.value!;
+      inputVideo = yield* obs.getLatestOBSVideo();
     }
 
-    const fps = yield* options.ctx.ffmpeg.getFPS(inputVideo);
+    const ffmpeg = yield* FFmpegCommandsService;
+
+    const fps = yield* ffmpeg.getFPS(inputVideo);
 
     const silenceResult = yield* findSilenceInVideo(inputVideo, {
       threshold: THRESHOLD,
@@ -48,17 +45,12 @@ export const appendVideoToTimeline = async (
       startPadding: AUTO_EDITED_START_PADDING,
       endPadding: AUTO_EDITED_END_PADDING,
       silenceDuration: SILENCE_DURATION,
-      ctx: options.ctx,
     });
 
     const badTakeMarkers = yield* extractBadTakeMarkersFromFile(
       inputVideo,
-      fps,
-      options.ctx
+      fps
     );
-
-    console.dir(badTakeMarkers, { depth: null });
-    console.dir(silenceResult.speakingClips, { depth: null });
 
     const serialisedClipsOfSpeaking = silenceResult.speakingClips
       .map((clip, index) => {
@@ -87,66 +79,66 @@ export const appendVideoToTimeline = async (
         WSLENV: "INPUT_VIDEO/p:CLIPS_TO_APPEND",
       }
     );
-
-    console.log(stdout, stderr);
-
-    return okAsync(void 0);
-  }).mapErr((e) => {
-    console.error(e);
-    process.exit(1);
   });
 };
 
-export interface DavinciWorkflowOptions {
-  davinciExportDirectory: string;
-}
+export const createTimeline = () => {
+  return Effect.gen(function* () {
+    const { stdout } = yield* runDavinciResolveScript(
+      "create-timeline.lua",
+      {}
+    );
 
-export const createTimeline = async () => {
-  return runDavinciResolveScript("create-timeline.lua", {}).match(
-    (r) => {
-      console.log(r.stdout);
-    },
-    (e) => {
-      console.error(e);
-    }
+    yield* Console.log(stdout);
+  }).pipe(
+    Effect.catchAll((e) => {
+      return Console.error(e);
+    })
   );
 };
 
-export const addCurrentTimelineToRenderQueue = async (
-  options: DavinciWorkflowOptions
-) => {
-  return runDavinciResolveScript("add-timeline-to-render-queue.lua", {
-    DAVINCI_EXPORT_DIRECTORY: options.davinciExportDirectory,
-  }).match(
-    (r) => {
-      console.log(r.stdout);
-    },
-    (e) => {
-      console.error(e);
-    }
+export const addCurrentTimelineToRenderQueue = () => {
+  return Effect.gen(function* () {
+    const { stdout } = yield* runDavinciResolveScript(
+      "add-timeline-to-render-queue.lua",
+      {
+        DAVINCI_EXPORT_DIRECTORY: yield* Config.string(
+          "DAVINCI_EXPORT_DIRECTORY"
+        ),
+      }
+    );
+
+    yield* Effect.log(stdout);
+  }).pipe(
+    Effect.catchAll((e) => {
+      return Effect.logError(e);
+    })
   );
 };
 
-export const exportSubtitles = async (options: DavinciWorkflowOptions) => {
-  return runDavinciResolveScript("add-subtitles.lua", {
-    OUTPUT_FOLDER: options.davinciExportDirectory,
-  }).match(
-    (r) => {
-      console.log(r.stdout);
-    },
-    (e) => {
-      console.error(e);
-    }
+export const exportSubtitles = () => {
+  return Effect.gen(function* () {
+    const { stdout } = yield* runDavinciResolveScript("add-subtitles.lua", {
+      OUTPUT_FOLDER: yield* Config.string("DAVINCI_EXPORT_DIRECTORY"),
+    });
+
+    yield* Effect.log(stdout);
+  }).pipe(
+    Effect.catchAll((e) => {
+      return Effect.logError(e);
+    })
   );
 };
 
-export const zoomClip = async () => {
-  return runDavinciResolveScript("zoom-clip.lua", {}).match(
-    (r) => {
-      console.log(r.stdout);
-    },
-    (e) => {
-      console.error(e);
-    }
+export const zoomClip = () => {
+  return runDavinciResolveScript("zoom-clip.lua", {}).pipe(
+    Effect.match({
+      onSuccess: (r) => {
+        console.log(r.stdout);
+      },
+      onFailure: (e) => {
+        console.error(e);
+      },
+    })
   );
 };

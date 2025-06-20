@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "zod": "^3.23.8",
-    "neverthrow": "^8.1.0"
+    "effect": "^3.16.8",
+    "@effect/platform": "^0.85.2"
   }
 }

@@ -1,38 +1,30 @@
 import readline from "readline/promises";
-import prompts from "prompts";
 import { type AbsolutePath } from "@total-typescript/shared";
+import { Context, Effect } from "effect";
+import { AskQuestionService } from "@total-typescript/ffmpeg";
 
-const { prompt } = prompts;
+export const promptForFilename = () => {
+  return Effect.gen(function* () {
+    const askQuestionService = yield* AskQuestionService;
 
-export const promptForFilename = async (): Promise<string> => {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
+    const question = "Enter the name for your video (without extension): ";
+
+    const answer = yield* askQuestionService.askQuestion(question);
+
+    return answer;
   });
-
-  const outputFilename = await rl.question(
-    "Enter the name for your video (without extension): "
-  );
-
-  rl.close();
-
-  // Ensure the readline interface is closed when the process exits
-  process.on("beforeExit", () => {
-    rl.close();
-  });
-
-  return outputFilename;
 };
 
-export const promptForVideoSelection = async (
+export const promptForVideoSelection = (
   videos: Array<{ title: string; value: AbsolutePath; mtime: Date }>
-): Promise<AbsolutePath | undefined> => {
-  const { selectedVideo } = await prompt({
-    type: "select",
-    name: "selectedVideo",
-    message: "Choose a video to transcribe:",
-    choices: videos.map(({ title, value }) => ({ title, value })),
-  });
+) => {
+  return Effect.gen(function* () {
+    const askQuestionService = yield* AskQuestionService;
 
-  return selectedVideo;
+    const question = "Choose a video to transcribe:";
+
+    const answer = yield* askQuestionService.select(question, videos);
+
+    return answer;
+  });
 };

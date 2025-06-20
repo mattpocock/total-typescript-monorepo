@@ -1,7 +1,7 @@
+import { FileSystem } from "@effect/platform/FileSystem";
 import { execAsync, type AbsolutePath } from "@total-typescript/shared";
-import { err, ok, safeTry } from "neverthrow";
+import { Effect } from "effect";
 import { tmpdir } from "os";
-import pLimit from "p-limit";
 import { join } from "path";
 import {
   extractBadTakeMarkersFromFile,
@@ -14,8 +14,8 @@ import {
   SILENCE_DURATION,
   THRESHOLD,
 } from "./constants.js";
+import { FFmpegCommandsService } from "./services.js";
 import { findSilenceInVideo } from "./silence-detection.js";
-import type { Context } from "./types.js";
 
 export class CouldNotCreateSpeakingOnlyVideoError extends Error {
   readonly _tag = "CouldNotCreateSpeakingOnlyVideoError";
@@ -42,13 +42,11 @@ const FFMPEG_CONCURRENCY_LIMIT = 6;
 export const createAutoEditedVideo = ({
   inputVideo,
   outputVideo,
-  ctx,
 }: {
   inputVideo: AbsolutePath;
   outputVideo: AbsolutePath;
-  ctx: Context;
 }) => {
-  return safeTry(async function* () {
+  return Effect.gen(function* () {
     const startTime = Date.now();
     console.log("🎥 Processing video:", inputVideo);
     console.log("📝 Output will be saved to:", outputVideo);
@@ -56,7 +54,8 @@ export const createAutoEditedVideo = ({
     // Get the video's FPS
     console.log("⏱️  Detecting video FPS...");
     const fpsStart = Date.now();
-    const fps = yield* ctx.ffmpeg.getFPS(inputVideo);
+    const ffmpeg = yield* FFmpegCommandsService;
+    const fps = yield* ffmpeg.getFPS(inputVideo);
     console.log(
       `✅ Detected FPS: ${fps} (took ${(Date.now() - fpsStart) / 1000}s)`
     );
@@ -70,7 +69,6 @@ export const createAutoEditedVideo = ({
       startPadding: AUTO_EDITED_START_PADDING,
       endPadding: AUTO_EDITED_END_PADDING,
       fps,
-      ctx,
     });
     console.log(
       `✅ Found ${speakingClips.length} speaking clips (took ${(Date.now() - speakingStart) / 1000}s)`
@@ -81,8 +79,7 @@ export const createAutoEditedVideo = ({
     const markersStart = Date.now();
     const badTakeMarkers = yield* extractBadTakeMarkersFromFile(
       inputVideo,
-      fps,
-      ctx
+      fps
     );
     console.log(
       `✅ Found ${badTakeMarkers.length} bad take markers (took ${(Date.now() - markersStart) / 1000}s)`
@@ -107,7 +104,7 @@ export const createAutoEditedVideo = ({
 
     if (goodClips.length === 0) {
       console.log("❌ No good clips found");
-      yield* err(new CouldNotCreateSpeakingOnlyVideoError());
+      return yield* Effect.fail(new CouldNotCreateSpeakingOnlyVideoError());
     }
 
     const clips = goodClips.map((clip, i, clips) => {
@@ -134,14 +131,14 @@ export const createAutoEditedVideo = ({
     // Create individual clips
     console.log("🎬 Creating individual clips...");
     const clipsStart = Date.now();
-    const limit = pLimit(FFMPEG_CONCURRENCY_LIMIT); // Limit concurrency to 2
-    const clipFiles = await Promise.all(
+    const clipFiles = yield* Effect.all(
       clips.map((clip, i) =>
-        limit(async () => {
+        Effect.gen(function* () {
+          const ffmpeg = yield* FFmpegCommandsService;
           const clipStart = Date.now();
           const outputFile = join(tempDir, `clip-${i}.mp4`) as AbsolutePath;
 
-          await ctx.ffmpeg.createClip(
+          yield* ffmpeg.createClip(
             inputVideo,
             outputFile,
             clip.startTime,
@@ -153,7 +150,10 @@ export const createAutoEditedVideo = ({
           );
           return outputFile;
         })
-      )
+      ),
+      {
+        concurrency: FFMPEG_CONCURRENCY_LIMIT,
+      }
     );
     console.log(
       `✅ Created all ${goodClips.length} clips (took ${(Date.now() - clipsStart) / 1000}s)`
@@ -164,24 +164,26 @@ export const createAutoEditedVideo = ({
     const concatContent = clipFiles
       .map((file: string) => `file '${file}'`)
       .join("\n");
-    await ctx.fs.writeFile(concatFile, concatContent);
+
+    const fs = yield* FileSystem;
+    yield* fs.writeFileString(concatFile, concatContent);
 
     // Concatenate all clips
     console.log("🎥 Concatenating clips...");
     const concatStart = Date.now();
-    yield* ctx.ffmpeg.concatenateClips(concatFile, outputVideo);
+    yield* ffmpeg.concatenateClips(concatFile, outputVideo);
     console.log(
       `✅ Concatenated all clips (took ${(Date.now() - concatStart) / 1000}s)`
     );
 
     // Clean up temporary files
-    await ctx.fs.rm(tempDir, { recursive: true, force: true });
+    yield* fs.remove(tempDir, { recursive: true, force: true });
 
     const totalTime = (Date.now() - startTime) / 1000;
     console.log(
       `✅ Successfully created speaking-only video! (Total time: ${totalTime}s)`
     );
-    return ok({ speakingClips: clips });
+    return { speakingClips: clips };
   });
 };
 

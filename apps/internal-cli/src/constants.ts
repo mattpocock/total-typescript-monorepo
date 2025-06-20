@@ -1,21 +1,7 @@
+import { type AbsolutePath } from "@total-typescript/shared";
 import { env } from "./env.js";
-import {
-  ExternalDriveNotFoundError,
-  pathExists,
-  type AbsolutePath,
-} from "@total-typescript/shared";
-import { err, ok } from "neverthrow";
 
 export const OBS_OUTPUT_DIRECTORY = env.OBS_OUTPUT_DIRECTORY as AbsolutePath;
-
-export const getExternalDrive = () => {
-  return pathExists(OBS_OUTPUT_DIRECTORY).andThen((exists) => {
-    if (exists) {
-      return ok(OBS_OUTPUT_DIRECTORY);
-    }
-    return err(new ExternalDriveNotFoundError(OBS_OUTPUT_DIRECTORY));
-  });
-};
 
 /**
  * Places where unencoded footage might be located.

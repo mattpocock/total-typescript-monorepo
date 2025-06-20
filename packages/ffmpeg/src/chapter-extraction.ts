@@ -1,10 +1,10 @@
 import { type AbsolutePath } from "@total-typescript/shared";
-import { ResultAsync } from "neverthrow";
+import { Effect } from "effect";
 import {
   DEFINITELY_BAD_TAKE_PADDING,
   MAX_BAD_TAKE_DISTANCE,
 } from "./constants.js";
-import type { Context } from "./types.js";
+import { FFmpegCommandsService } from "./services.js";
 
 export interface BadTakeMarker {
   frame: number;
@@ -85,11 +85,14 @@ export const isBadTake = (
 
 export const extractBadTakeMarkersFromFile = (
   inputVideo: AbsolutePath,
-  fps: number,
-  ctx: Context
-): ResultAsync<BadTakeMarker[], CouldNotExtractChaptersError> => {
-  return ctx.ffmpeg.getChapters(inputVideo).map((response) => {
-    return response.chapters
+  fps: number
+) => {
+  return Effect.gen(function* () {
+    const ffmpeg = yield* FFmpegCommandsService;
+
+    const chapters = yield* ffmpeg.getChapters(inputVideo);
+
+    return chapters.chapters
       .filter((chapter) => chapter.tags.title === "Bad Take")
       .map((chapter) => ({
         ...chapter,

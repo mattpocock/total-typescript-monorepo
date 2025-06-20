@@ -1,18 +1,20 @@
-import { exists, type AbsolutePath } from "@total-typescript/shared";
-import { execSync, type ExecException } from "child_process";
-import { errAsync, okAsync, ResultAsync, safeTry } from "neverthrow";
+import { FileSystem } from "@effect/platform/FileSystem";
+import { execAsync, type AbsolutePath } from "@total-typescript/shared";
+import { execSync } from "child_process";
+import { Config, Effect } from "effect";
 import path from "path";
 import { createAutoEditedVideo } from "./auto-editing.js";
+import {
+  AskQuestionService,
+  FFmpegCommandsService,
+  OBSIntegrationService,
+} from "./services.js";
 import { renderSubtitles } from "./subtitle-rendering.js";
-import type { Context } from "./types.js";
 import { validateWindowsFilename } from "./validate-windows-filename.js";
 
 export interface CreateAutoEditedVideoWorkflowOptions {
-  getLatestVideo: () => ResultAsync<AbsolutePath, ExecException>;
-  promptForFilename: () => Promise<string>;
   dryRun?: boolean;
   subtitles?: boolean;
-  ctx: Context;
 }
 
 export class NoSpeakingClipsError extends Error {
@@ -20,44 +22,63 @@ export class NoSpeakingClipsError extends Error {
   override message = "No speaking clips found";
 }
 
+export class FileAlreadyExistsError extends Error {
+  readonly _tag = "FileAlreadyExistsError";
+}
+
 export const createAutoEditedVideoWorkflow = (
   options: CreateAutoEditedVideoWorkflowOptions
 ) => {
-  return safeTry(async function* () {
-    const latestObsRawVideo = yield* options.getLatestVideo();
+  return Effect.gen(function* () {
+    const obs = yield* OBSIntegrationService;
+    const askQuestion = yield* AskQuestionService;
 
-    const outputFilename = await options.promptForFilename();
+    const latestObsRawVideo = yield* obs.getLatestOBSVideo();
+
+    const outputFilename = yield* askQuestion.askQuestion(
+      "Enter a filename for the video"
+    );
 
     yield* validateWindowsFilename(outputFilename);
 
+    const fs = yield* FileSystem;
+
+    const exportDirectory = yield* Config.string("EXPORT_DIRECTORY");
+    const shortsExportDirectory = yield* Config.string(
+      "SHORTS_EXPORT_DIRECTORY"
+    );
+
     const [alreadyExistsInExportDirectory, alreadyExistsInShortsDirectory] =
-      await Promise.all([
-        exists(path.join(options.ctx.exportDirectory, `${outputFilename}.mp4`)),
-        exists(
-          path.join(options.ctx.shortsExportDirectory, `${outputFilename}.mp4`)
-        ),
+      yield* Effect.all([
+        fs.exists(path.join(exportDirectory, `${outputFilename}.mp4`)),
+        fs.exists(path.join(shortsExportDirectory, `${outputFilename}.mp4`)),
       ]);
 
     if (alreadyExistsInExportDirectory) {
-      return errAsync(new Error("File already exists in export directory"));
+      return yield* Effect.fail(
+        new FileAlreadyExistsError("File already exists in export directory")
+      );
     }
 
     if (alreadyExistsInShortsDirectory) {
-      return errAsync(new Error("File already exists in shorts directory"));
+      return yield* Effect.fail(
+        new FileAlreadyExistsError("File already exists in shorts directory")
+      );
     }
 
-    const fps = yield* options.ctx.ffmpeg.getFPS(latestObsRawVideo);
+    const ffmpeg = yield* FFmpegCommandsService;
+
+    const fps = yield* ffmpeg.getFPS(latestObsRawVideo);
 
     // First create in the export directory
     const videoInExportDirectoryPath = path.join(
-      options.ctx.exportDirectory,
+      exportDirectory,
       `${outputFilename}.mp4`
     ) as AbsolutePath;
 
     const result = yield* createAutoEditedVideo({
       inputVideo: latestObsRawVideo,
       outputVideo: videoInExportDirectoryPath,
-      ctx: options.ctx,
     });
 
     const speakingClips = result.speakingClips;
@@ -68,7 +89,7 @@ export const createAutoEditedVideoWorkflow = (
 
     if (options.subtitles) {
       const withSubtitlesPath = path.join(
-        options.ctx.exportDirectory,
+        exportDirectory,
         `${outputFilename}-with-subtitles.mp4`
       ) as AbsolutePath;
 
@@ -80,7 +101,7 @@ export const createAutoEditedVideoWorkflow = (
       );
 
       if (!firstClipLength) {
-        return errAsync(new NoSpeakingClipsError());
+        return yield* Effect.fail(new NoSpeakingClipsError());
       }
 
       yield* renderSubtitles({
@@ -88,27 +109,25 @@ export const createAutoEditedVideoWorkflow = (
         outputPath: withSubtitlesPath,
         ctaDurationInFrames: firstClipLength,
         durationInFrames: totalDurationInFrames * fps,
-        ctx: options.ctx,
         originalFileName: path.parse(latestObsRawVideo).name,
       });
       finalVideoPath = withSubtitlesPath;
     } else {
       const transcriptionPath = path.join(
-        options.ctx.transcriptionDirectory,
+        yield* Config.string("TRANSCRIPTION_DIRECTORY"),
         `${path.parse(latestObsRawVideo).name}.txt`
       ) as AbsolutePath;
 
       const audioPath = `${videoInExportDirectoryPath}.mp3` as AbsolutePath;
 
-      await options.ctx.ffmpeg.extractAudioFromVideo(
+      yield* ffmpeg.extractAudioFromVideo(
         videoInExportDirectoryPath,
         audioPath
       );
 
-      const subtitles =
-        await options.ctx.ffmpeg.createSubtitleFromAudio(audioPath);
+      const subtitles = yield* ffmpeg.createSubtitleFromAudio(audioPath);
 
-      await options.ctx.fs.writeFile(
+      yield* fs.writeFileString(
         transcriptionPath,
         subtitles.segments
           .map((s) => s.text)
@@ -116,122 +135,133 @@ export const createAutoEditedVideoWorkflow = (
           .trim()
       );
 
-      await options.ctx.fs.unlink(audioPath);
+      yield* fs.remove(audioPath);
     }
 
     if (options.dryRun) {
       console.log("Dry run mode: Skipping move to shorts directory");
-      return okAsync(finalVideoPath);
+      return finalVideoPath;
     }
 
     // Then move to shorts directory
     const finalOutputPath = path.join(
-      options.ctx.shortsExportDirectory,
+      yield* Config.string("SHORTS_EXPORT_DIRECTORY"),
       `${outputFilename}.mp4`
     ) as AbsolutePath;
 
-    await options.ctx.fs.rename(finalVideoPath, finalOutputPath);
+    yield* fs.rename(finalVideoPath, finalOutputPath);
     console.log(`Video moved to: ${finalOutputPath}`);
 
-    return okAsync(finalOutputPath);
+    return finalOutputPath;
   });
 };
 
-export interface TranscribeVideoWorkflowOptions {
-  exportDirectory: string;
-  shortsExportDirectory: string;
-  promptForVideoSelection: (
-    videos: Array<{ title: string; value: AbsolutePath; mtime: Date }>
-  ) => Promise<AbsolutePath | undefined>;
-  ctx: Context;
-}
+export const transcribeVideoWorkflow = () => {
+  return Effect.gen(function* () {
+    const fs = yield* FileSystem;
+    const ffmpeg = yield* FFmpegCommandsService;
 
-export const transcribeVideoWorkflow = async (
-  options: TranscribeVideoWorkflowOptions
-) => {
-  // Get all files from both directories
-  const [exportFiles, shortsFiles] = await Promise.all([
-    options.ctx.fs.readdir(options.exportDirectory),
-    options.ctx.fs.readdir(options.shortsExportDirectory),
-  ]);
+    const exportDirectory = yield* Config.string("EXPORT_DIRECTORY");
+    const shortsExportDirectory = yield* Config.string(
+      "SHORTS_EXPORT_DIRECTORY"
+    );
 
-  // Get stats for all files in parallel
-  const exportStats = await Promise.all(
-    exportFiles
-      .filter((file) => file.endsWith(".mp4"))
-      .map(async (file) => {
-        const fullPath = path.join(
-          options.exportDirectory,
-          file
-        ) as AbsolutePath;
-        const stats = await options.ctx.fs.stat(fullPath);
-        return {
-          title: `Export: ${file}`,
-          value: fullPath,
-          mtime: stats.mtime,
-        };
-      })
-  );
+    // Get all files from both directories
+    const [exportFiles, shortsFiles] = yield* Effect.all([
+      fs.readDirectory(exportDirectory),
+      fs.readDirectory(shortsExportDirectory),
+    ]);
 
-  const shortsStats = await Promise.all(
-    shortsFiles
-      .filter((file) => file.endsWith(".mp4"))
-      .map(async (file) => {
-        const fullPath = path.join(
-          options.shortsExportDirectory,
-          file
-        ) as AbsolutePath;
-        const stats = await options.ctx.fs.stat(fullPath);
-        return {
-          title: `Shorts: ${file}`,
-          value: fullPath,
-          mtime: stats.mtime,
-        };
-      })
-  );
+    // Get stats for all files in parallel
+    const exportStats = yield* Effect.all(
+      exportFiles
+        .filter((file) => file.endsWith(".mp4"))
+        .map((file) => {
+          return Effect.gen(function* () {
+            const fullPath = path.join(exportDirectory, file) as AbsolutePath;
+            const stats = yield* fs.stat(fullPath);
+            const mtime = yield* stats.mtime;
+            return {
+              title: `Export: ${file}`,
+              value: fullPath,
+              mtime,
+            };
+          });
+        })
+    );
 
-  // Combine and sort by modification time (newest first)
-  const videoFiles = [...exportStats, ...shortsStats].sort(
-    (a, b) => b.mtime.getTime() - a.mtime.getTime()
-  );
+    const shortsStats = yield* Effect.all(
+      shortsFiles
+        .filter((file) => file.endsWith(".mp4"))
+        .map((file) => {
+          return Effect.gen(function* () {
+            const fullPath = path.join(
+              shortsExportDirectory,
+              file
+            ) as AbsolutePath;
+            const stats = yield* fs.stat(fullPath);
+            const mtime = yield* stats.mtime;
+            return {
+              title: `Shorts: ${file}`,
+              value: fullPath,
+              mtime,
+            };
+          });
+        })
+    );
 
-  if (videoFiles.length === 0) {
-    console.error("No video files found in either directory");
-    process.exit(1);
-  }
+    // Combine and sort by modification time (newest first)
+    const videoFiles = [...exportStats, ...shortsStats].sort(
+      (a, b) => b.mtime.getTime() - a.mtime.getTime()
+    );
 
-  const selectedVideo = await options.promptForVideoSelection(videoFiles);
+    if (videoFiles.length === 0) {
+      console.error("No video files found in either directory");
+      process.exit(1);
+    }
 
-  if (!selectedVideo) {
-    console.error("No video selected");
-    process.exit(1);
-  }
+    const askQuestion = yield* AskQuestionService;
 
-  console.log("Transcribing video...");
+    const selectedVideo = yield* askQuestion.select(
+      "Select a video to transcribe",
+      videoFiles.map((file) => ({
+        title: file.title,
+        value: file.value,
+      }))
+    );
 
-  const audioPath = path.join(
-    path.dirname(selectedVideo),
-    `${path.basename(selectedVideo)}.mp3`
-  ) as AbsolutePath;
+    if (!selectedVideo) {
+      console.error("No video selected");
+      process.exit(1);
+    }
 
-  await options.ctx.ffmpeg.extractAudioFromVideo(selectedVideo, audioPath);
+    console.log("Transcribing video...");
 
-  const transcript = await options.ctx.ffmpeg.transcribeAudio(audioPath);
+    const audioPath = path.join(
+      path.dirname(selectedVideo),
+      `${path.basename(selectedVideo)}.${yield* Config.string("AUDIO_FILE_EXTENSION")}`
+    ) as AbsolutePath;
 
-  await options.ctx.fs.unlink(audioPath);
-  console.log("\nTranscript:");
-  console.log(transcript);
+    yield* ffmpeg.extractAudioFromVideo(selectedVideo, audioPath);
+
+    const transcript = yield* ffmpeg.transcribeAudio(audioPath);
+
+    yield* fs.remove(audioPath);
+    console.log("\nTranscript:");
+    console.log(transcript);
+  });
 };
 
-export interface MoveRawFootageOptions {
-  obsOutputDirectory: string;
-  longTermStorageDirectory: string;
-}
+export const moveRawFootageToLongTermStorage = () => {
+  return Effect.gen(function* () {
+    const longTermStorageDirectory = yield* Config.string(
+      "LONG_TERM_FOOTAGE_STORAGE_DIRECTORY"
+    );
 
-export const moveRawFootageToLongTermStorage = (
-  options: MoveRawFootageOptions
-) => {
-  execSync(
-    `(cd "${options.longTermStorageDirectory}" && mv "${options.obsOutputDirectory}"/* .)`
-  );
+    const obsOutputDirectory = yield* Config.string("OBS_OUTPUT_DIRECTORY");
+
+    yield* execAsync(
+      `(cd "${longTermStorageDirectory}" && mv "${obsOutputDirectory}"/* .)`
+    );
+  });
 };

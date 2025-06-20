@@ -1,6 +1,6 @@
-import { safeTry } from "neverthrow";
 import type { EmptyObject } from "./types.js";
 import { execAsync } from "./utils.js";
+import { Effect } from "effect";
 
 type Scripts = {
   "clip-and-append.lua": {
@@ -29,7 +29,7 @@ export const runDavinciResolveScript = <TScript extends keyof Scripts>(
   script: TScript,
   env: Scripts[TScript]
 ) => {
-  return safeTry(async function* () {
+  return Effect.gen(function* () {
     yield* checkFuscriptIsInstalled();
 
     const scriptPath = `\\\\\\wsl.localhost\\Ubuntu-24.04\\home\\mattpocock\\repos\\ts\\total-typescript-monorepo\\packages\\resolve-scripts\\scripts\\${script}`;
@@ -40,14 +40,30 @@ export const runDavinciResolveScript = <TScript extends keyof Scripts>(
       })
       .join(" ");
 
-    return execAsync(`${envString} ${FUSCRIPT_LOCATION} -q "${scriptPath}"`);
+    return yield* execAsync(
+      `${envString} ${FUSCRIPT_LOCATION} -q "${scriptPath}"`
+    ).pipe(Effect.mapError((e) => new CouldNotRunDavinciResolveScriptError(e)));
   });
 };
 
+class CouldNotRunDavinciResolveScriptError extends Error {
+  readonly _tag = "CouldNotRunDavinciResolveScriptError";
+  constructor(public override cause: Error) {
+    super("Could not run Davinci Resolve script.");
+  }
+}
+
+class FuscriptNotInstalledError extends Error {
+  readonly _tag = "FuscriptNotInstalledError";
+  constructor(public override cause: Error) {
+    super("fuscript is not installed");
+  }
+}
+
 const checkFuscriptIsInstalled = () => {
-  return execAsync(`${FUSCRIPT_LOCATION} --version`).mapErr((e) => {
-    return new Error("fuscript is not installed", {
-      cause: e,
-    });
-  });
+  return execAsync(`${FUSCRIPT_LOCATION} --version`).pipe(
+    Effect.mapError((e) => {
+      return new FuscriptNotInstalledError(e);
+    })
+  );
 };

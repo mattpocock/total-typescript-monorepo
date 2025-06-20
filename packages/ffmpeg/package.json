@@ -13,9 +13,11 @@
     "@ai-sdk/openai": "^1.3.22",
     "@total-typescript/shared": "workspace:*",
     "ai": "4.3.16",
-    "neverthrow": "^8.1.0",
     "openai": "^5.0.1",
-    "p-limit": "^6.2.0"
+    "p-limit": "^6.2.0",
+    "effect": "^3.16.8",
+    "@effect/platform": "^0.85.2",
+    "@effect/platform-node": "^0.86.4"
   },
   "devDependencies": {
     "@total-typescript/shoehorn": "^0.1.2"

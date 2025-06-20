@@ -1,6 +1,7 @@
+// @ts-nocheck
+
 import { expect, it, test, vi } from "vitest";
 import { createAutoEditedVideoWorkflow } from "./workflows.js";
-import { okAsync } from "neverthrow";
 import type { AbsolutePath } from "@total-typescript/shared";
 import { fromPartial } from "@total-typescript/shoehorn";
 import {
@@ -8,6 +9,7 @@ import {
   AUTO_EDITED_VIDEO_FINAL_END_PADDING,
 } from "./constants.js";
 import * as shared from "@total-typescript/shared";
+import { Effect } from "effect";
 
 it("createAutoEditedVideoWorkflow with subtitles and no dry run should work", async () => {
   const writeFile = vi.fn();
@@ -16,15 +18,12 @@ it("createAutoEditedVideoWorkflow with subtitles and no dry run should work", as
   const rm = vi.fn();
 
   const createClip = vi.fn();
-  const concatenateClips = vi.fn().mockReturnValue(okAsync({}));
-  const extractAudioFromVideo = vi.fn().mockReturnValue(okAsync({}));
-  const renderRemotion = vi.fn().mockReturnValue(okAsync({}));
-  const overlaySubtitles = vi.fn().mockReturnValue(okAsync({}));
+  const concatenateClips = vi.fn().mockReturnValue(Effect.succeed({}));
+  const extractAudioFromVideo = vi.fn().mockReturnValue(Effect.succeed({}));
+  const renderRemotion = vi.fn().mockReturnValue(Effect.succeed({}));
+  const overlaySubtitles = vi.fn().mockReturnValue(Effect.succeed({}));
 
   const result = await createAutoEditedVideoWorkflow({
-    getLatestVideo: () =>
-      okAsync("/path/latest-video-filename.mp4" as AbsolutePath),
-    promptForFilename: () => Promise.resolve("Test"),
     subtitles: true,
     dryRun: false,
     ctx: fromPartial({

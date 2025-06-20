@@ -1,7 +1,7 @@
 import { type AbsolutePath } from "@total-typescript/shared";
-import { err, ok, safeTry } from "neverthrow";
-import type { Context } from "./types.js";
+import { Effect } from "effect";
 import { MINIMUM_CLIP_LENGTH_IN_SECONDS } from "./constants.js";
+import { FFmpegCommandsService } from "./services.js";
 
 export class CouldNotFindStartTimeError extends Error {
   readonly _tag = "CouldNotFindStartTimeError";
@@ -111,16 +111,18 @@ export const findSilenceInVideo = (
     startPadding: number;
     endPadding: number;
     fps: number;
-    ctx: Context;
   }
 ) => {
-  return safeTry(async function* () {
+  return Effect.gen(function* () {
+    const ffmpeg = yield* FFmpegCommandsService;
+
     const processStartTime = Date.now();
     console.log("🎥 Processing video:", inputVideo);
 
     console.log("🔍 Finding speaking clips...");
+
     const speakingStart = Date.now();
-    const { stdout } = yield* opts.ctx.ffmpeg.detectSilence(
+    const { stdout } = yield* ffmpeg.detectSilence(
       inputVideo,
       opts.threshold,
       opts.silenceDuration
@@ -132,13 +134,13 @@ export const findSilenceInVideo = (
     );
 
     if (!speakingClips[0]) {
-      return err(new CouldNotFindStartTimeError());
+      return yield* Effect.fail(new CouldNotFindStartTimeError());
     }
 
     const endClip = speakingClips[speakingClips.length - 1];
 
     if (!endClip) {
-      return err(new CouldNotFindEndTimeError());
+      return yield* Effect.fail(new CouldNotFindEndTimeError());
     }
 
     const clipStartTime = speakingClips[0].startTime;
@@ -159,11 +161,11 @@ export const findSilenceInVideo = (
     const totalTime = (Date.now() - processStartTime) / 1000;
     console.log(`✅ Successfully processed video! (Total time: ${totalTime}s)`);
 
-    return ok({
+    return {
       speakingClips: filteredClips,
       startTime: clipStartTime,
       endTime,
       rawStdout: stdout,
-    });
+    };
   });
 };

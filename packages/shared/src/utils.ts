@@ -1,54 +1,26 @@
 import { exec, type ExecException, type ExecOptions } from "child_process";
-import { stat } from "fs/promises";
-import { errAsync, ok, ResultAsync } from "neverthrow";
-import type { AbsolutePath } from "./types.js";
+import { Effect } from "effect";
 import type { ObjectEncodingOptions } from "fs";
-
-export const pathExists = (path: string) => {
-  return ResultAsync.fromPromise(stat(path), (e) => e)
-    .map(() => true)
-    .orElse(() => ok(false));
-};
 
 export const execAsync = (
   command: string,
   opts?: ExecOptions & ObjectEncodingOptions
 ) => {
-  return ResultAsync.fromPromise(
-    new Promise<{
-      stdout: string;
-      stderr: string;
-    }>((resolve, reject) => {
-      exec(command, opts, (e, stdout, stderr) => {
-        if (e) {
-          reject(e);
-        }
+  return Effect.tryPromise(
+    (signal) =>
+      new Promise<{
+        stdout: string;
+        stderr: string;
+      }>((resolve, reject) => {
+        exec(command, opts, (e, stdout, stderr) => {
+          if (e) {
+            reject(e);
+          }
 
-        resolve({ stdout: stdout.toString(), stderr: stderr.toString() });
-      });
-    }),
-    (e) => {
-      return e as ExecException;
-    }
-  );
-};
-
-export const revealInFileExplorer = (
-  file: AbsolutePath
-): ResultAsync<
-  {
-    stdout: string;
-    stderr: string;
-  },
-  Error
-> => {
-  if (process.platform === "win32") {
-    return execAsync(`explorer /select,${file}`);
-  } else if (process.platform === "darwin") {
-    return execAsync(`open -R "${file}"`);
-  } else {
-    return errAsync(new Error("Unsupported platform"));
-  }
+          resolve({ stdout: stdout.toString(), stderr: stderr.toString() });
+        });
+      })
+  ).pipe(Effect.mapError((e) => e as ExecException));
 };
 
 export const exitProcessWithError = (message: string) => {

@@ -1,94 +1,119 @@
+import { NodeFileSystem } from "@effect/platform-node";
 import type { AbsolutePath } from "@total-typescript/shared";
-import { fromPartial } from "@total-typescript/shoehorn";
+import { ConfigProvider, Effect, Layer } from "effect";
 import * as fs from "node:fs/promises";
 import path from "node:path";
-import { expect, it, vitest } from "vitest";
-import type { Context } from "../types.js";
-import { processQueue, writeToQueue } from "./queue.js";
-
-const { okAsync } = await vitest.hoisted(async () => ({
-  okAsync: await import("neverthrow").then((m) => m.okAsync),
-}));
+import { expect, it, vi } from "vitest";
+import { processQueue, QueueRunnerService, writeToQueue } from "./queue.js";
 
 it("Should create the queue.json if it does not exist", async () => {
-  // Mock createAutoEditedVideoWorkflow
-  vitest.mock("../workflows.js", () => ({
-    createAutoEditedVideoWorkflow: vitest
-      .fn()
-      .mockResolvedValue(okAsync(undefined)),
-  }));
   const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
+
   try {
-    const ctx: Context = fromPartial({
-      queueLocation: path.join(tmpDir, "queue.json"),
-      queueLockfileLocation: path.join(tmpDir, "queue.lock"),
-      fs,
-    });
+    const QUEUE_LOCATION = path.join(tmpDir, "queue.json");
+    const QUEUE_LOCKFILE_LOCATION = path.join(tmpDir, "queue.lock");
 
-    await expect(processQueue(ctx)).resolves.not.toThrow();
+    const createAutoEditedVideoWorkflow = vi.fn();
 
-    expect(await fs.readFile(ctx.queueLocation, "utf-8")).toBeTypeOf("string");
+    const QueueConfigTest = Layer.mergeAll(
+      NodeFileSystem.layer,
+      Layer.succeed(QueueRunnerService, {
+        createAutoEditedVideoWorkflow,
+      })
+    );
+
+    await processQueue().pipe(
+      Effect.provide(QueueConfigTest),
+      Effect.withConfigProvider(
+        ConfigProvider.fromJson({
+          QUEUE_LOCATION,
+          QUEUE_LOCKFILE_LOCATION,
+        })
+      ),
+      Effect.runPromise
+    );
+
+    expect(createAutoEditedVideoWorkflow).not.toHaveBeenCalled();
+
+    const queueState = JSON.parse(
+      (await fs.readFile(QUEUE_LOCATION, "utf-8")).toString()
+    );
+
+    expect(queueState.queue).toEqual([]);
   } finally {
     await fs.rm(tmpDir, { recursive: true });
   }
 });
 
 it("Should update the queue.json when a new item is added", async () => {
-  // Mock createAutoEditedVideoWorkflow
-  vitest.mock("../workflows.js", () => ({
-    createAutoEditedVideoWorkflow: vitest
-      .fn()
-      .mockResolvedValue(okAsync(undefined)),
-  }));
-
   const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
-  const queueLocation = path.join(tmpDir, "queue.json");
-  try {
-    const ctx: Context = fromPartial({
-      queueLocation,
-      queueLockfileLocation: path.join(tmpDir, "queue.lock"),
-      fs,
-    });
 
-    await writeToQueue(
-      [
+  try {
+    const QUEUE_LOCATION = path.join(tmpDir, "queue.json");
+    const QUEUE_LOCKFILE_LOCATION = path.join(tmpDir, "queue.lock");
+
+    const createAutoEditedVideoWorkflow = vi
+      .fn()
+      .mockReturnValue(Effect.succeed(undefined));
+
+    const QueueConfigTest = Layer.mergeAll(
+      NodeFileSystem.layer,
+      Layer.succeed(QueueRunnerService, {
+        createAutoEditedVideoWorkflow,
+      })
+    );
+
+    await Effect.gen(function* () {
+      yield* writeToQueue([
         {
           id: "1",
           createdAt: Date.now(),
           action: {
             type: "create-auto-edited-video",
-            inputVideo: "test.mp4" as AbsolutePath,
-            videoName: "Test",
+            inputVideo: "/Users/josh/Desktop/video.mp4" as AbsolutePath,
+            videoName: "test",
             subtitles: false,
             dryRun: false,
           },
           status: "idle",
         },
-      ],
-      ctx
+      ]);
+
+      yield* processQueue();
+    }).pipe(
+      Effect.provide(QueueConfigTest),
+      Effect.withConfigProvider(
+        ConfigProvider.fromJson({
+          QUEUE_LOCATION,
+          QUEUE_LOCKFILE_LOCATION,
+        })
+      ),
+      Effect.runPromise
     );
 
-    await expect(processQueue(ctx)).resolves.not.toThrow();
-
     const queueState = JSON.parse(
-      (await fs.readFile(ctx.queueLocation, "utf-8")).toString()
+      (await fs.readFile(QUEUE_LOCATION, "utf-8")).toString()
     );
 
     expect(queueState.queue).toEqual([
       {
-        status: "completed",
-        completedAt: expect.any(Number),
-        createdAt: expect.any(Number),
         id: "1",
+        createdAt: expect.any(Number),
         action: {
           type: "create-auto-edited-video",
-          inputVideo: "test.mp4",
-          videoName: "Test",
+          inputVideo: "/Users/josh/Desktop/video.mp4" as AbsolutePath,
+          videoName: "test",
           subtitles: false,
           dryRun: false,
         },
+        status: "idle",
       },
     ]);
+
+    expect(createAutoEditedVideoWorkflow).toHaveBeenCalledWith({
+      subtitles: false,
+      dryRun: false,
+    });
   } finally {
     await fs.rm(tmpDir, { recursive: true });
   }

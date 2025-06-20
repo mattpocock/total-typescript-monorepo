@@ -1,7 +1,8 @@
+import { FileSystem } from "@effect/platform/FileSystem";
 import { type AbsolutePath } from "@total-typescript/shared";
-import { err, ok, safeTry } from "neverthrow";
+import { Config, Effect } from "effect";
 import path from "path";
-import type { Context } from "./types.js";
+import { FFmpegCommandsService } from "./services.js";
 
 export type Subtitle = {
   start: number;
@@ -60,135 +61,105 @@ export const renderSubtitles = ({
   outputPath,
   ctaDurationInFrames,
   durationInFrames,
-  ctx,
   originalFileName,
 }: {
   inputPath: AbsolutePath;
   outputPath: AbsolutePath;
   ctaDurationInFrames: number;
   durationInFrames: number;
-  ctx: Context;
   originalFileName: string;
 }) => {
-  return safeTry(async function* () {
+  return Effect.gen(function* () {
     const startTime = Date.now();
     console.log("🎥 Processing video for subtitles:", inputPath);
     console.log("📝 Output will be saved to:", outputPath);
 
     const audioPath = `${inputPath}.mp3` as AbsolutePath;
+    const ffmpeg = yield* FFmpegCommandsService;
 
-    try {
-      console.log("🎵 Extracting audio...");
-      const audioStart = Date.now();
-      await ctx.ffmpeg.extractAudioFromVideo(inputPath, audioPath);
-      console.log(
-        `✅ Audio extracted successfully (took ${(Date.now() - audioStart) / 1000}s)`
-      );
+    const fs = yield* FileSystem;
 
-      console.log("🎙️ Transcribing audio...");
-      const transcribeStart = Date.now();
-      const subtitles = await ctx.ffmpeg.createSubtitleFromAudio(audioPath);
+    console.log("🎵 Extracting audio...");
+    const audioStart = Date.now();
+    yield* ffmpeg.extractAudioFromVideo(inputPath, audioPath);
+    console.log(
+      `✅ Audio extracted successfully (took ${(Date.now() - audioStart) / 1000}s)`
+    );
 
-      console.log(
-        `✅ Audio transcribed successfully (took ${(Date.now() - transcribeStart) / 1000}s)`
-      );
+    console.log("🎙️ Transcribing audio...");
+    const transcribeStart = Date.now();
+    const subtitles = yield* ffmpeg.createSubtitleFromAudio(audioPath);
 
-      const transcriptionPath = path.join(
-        ctx.transcriptionDirectory,
-        `${originalFileName}.txt`
-      ) as AbsolutePath;
+    console.log(
+      `✅ Audio transcribed successfully (took ${(Date.now() - transcribeStart) / 1000}s)`
+    );
 
-      const fullTranscriptText = subtitles.segments
-        .map((s) => s.text)
-        .join("")
-        .trim();
+    const transcriptionPath = path.join(
+      yield* Config.string("TRANSCRIPTION_DIRECTORY"),
+      `${originalFileName}.txt`
+    ) as AbsolutePath;
 
-      await ctx.fs.writeFile(transcriptionPath, fullTranscriptText);
+    const fullTranscriptText = subtitles.segments
+      .map((s) => s.text)
+      .join("")
+      .trim();
 
-      const processedSubtitles = subtitles.segments.flatMap(
-        splitSubtitleSegments
-      );
+    yield* fs.writeFileString(transcriptionPath, fullTranscriptText);
 
-      console.log("⏱️ Detecting video FPS...");
-      const fpsStart = Date.now();
-      const fpsResult = await ctx.ffmpeg.getFPS(inputPath);
-      if (fpsResult.isErr()) {
-        throw fpsResult.error;
-      }
-      const fps = fpsResult.value;
-      console.log(
-        `✅ Detected FPS: ${fps} (took ${(Date.now() - fpsStart) / 1000}s)`
-      );
+    const processedSubtitles = subtitles.segments.flatMap(
+      splitSubtitleSegments
+    );
 
-      const subtitlesAsFrames = processedSubtitles.map(
-        (subtitle: Subtitle) => ({
-          startFrame: Math.floor(subtitle.start * fps),
-          endFrame: Math.floor(subtitle.end * fps),
-          text: subtitle.text.trim(),
-        })
-      );
+    console.log("⏱️ Detecting video FPS...");
+    const fpsStart = Date.now();
+    const fps = yield* ffmpeg.getFPS(inputPath);
+    console.log(
+      `✅ Detected FPS: ${fps} (took ${(Date.now() - fpsStart) / 1000}s)`
+    );
 
-      console.log("🔍 Figuring out which CTA to show...");
+    const subtitlesAsFrames = processedSubtitles.map((subtitle: Subtitle) => ({
+      startFrame: Math.floor(subtitle.start * fps),
+      endFrame: Math.floor(subtitle.end * fps),
+      text: subtitle.text.trim(),
+    }));
 
-      const cta = await ctx.ffmpeg.figureOutWhichCTAToShow(fullTranscriptText);
+    console.log("🔍 Figuring out which CTA to show...");
 
-      console.log(`✅ Decided on CTA: ${cta}`);
+    const cta = yield* ffmpeg.figureOutWhichCTAToShow(fullTranscriptText);
 
-      const meta = {
-        subtitles: subtitlesAsFrames,
-        cta,
-        ctaDurationInFrames,
-        durationInFrames,
-      };
+    console.log(`✅ Decided on CTA: ${cta}`);
 
-      const META_FILE_PATH = path.join(REMOTION_DIR, "src", "meta.json");
-      await ctx.fs.writeFile(META_FILE_PATH, JSON.stringify(meta));
+    const meta = {
+      subtitles: subtitlesAsFrames,
+      cta,
+      ctaDurationInFrames,
+      durationInFrames,
+    };
 
-      const subtitlesOverlayPath = path.join(
-        REMOTION_DIR,
-        "out",
-        "MyComp.mov"
-      ) as AbsolutePath;
+    const META_FILE_PATH = path.join(REMOTION_DIR, "src", "meta.json");
+    yield* fs.writeFileString(META_FILE_PATH, JSON.stringify(meta));
 
-      console.log("🎬 Rendering subtitles...");
-      const renderStart = Date.now();
-      const renderResult = await ctx.ffmpeg.renderRemotion(
-        subtitlesOverlayPath,
-        REMOTION_DIR
-      );
+    const subtitlesOverlayPath = path.join(
+      REMOTION_DIR,
+      "out",
+      "MyComp.mov"
+    ) as AbsolutePath;
 
-      if (renderResult.isErr()) {
-        throw renderResult.error;
-      }
-      console.log(
-        `✅ Subtitles rendered (took ${(Date.now() - renderStart) / 1000}s)`
-      );
+    console.log("🎬 Rendering subtitles...");
+    const renderStart = Date.now();
+    yield* ffmpeg.renderRemotion(subtitlesOverlayPath, REMOTION_DIR);
 
-      const layeringResult = await ctx.ffmpeg.overlaySubtitles(
-        inputPath,
-        subtitlesOverlayPath,
-        outputPath
-      );
+    console.log(
+      `✅ Subtitles rendered (took ${(Date.now() - renderStart) / 1000}s)`
+    );
 
-      if (layeringResult.isErr()) {
-        throw layeringResult.error;
-      }
+    yield* ffmpeg.overlaySubtitles(inputPath, subtitlesOverlayPath, outputPath);
 
-      await ctx.fs.unlink(audioPath);
+    yield* fs.remove(audioPath);
 
-      const totalTime = (Date.now() - startTime) / 1000;
-      console.log(
-        `✅ Successfully rendered subtitles! (Total time: ${totalTime}s)`
-      );
-
-      return ok(undefined);
-    } catch (error) {
-      try {
-        await ctx.fs.unlink(audioPath);
-      } catch {
-        // Ignore error if file doesn't exist
-      }
-      return err(error);
-    }
+    const totalTime = (Date.now() - startTime) / 1000;
+    console.log(
+      `✅ Successfully rendered subtitles! (Total time: ${totalTime}s)`
+    );
   });
 };

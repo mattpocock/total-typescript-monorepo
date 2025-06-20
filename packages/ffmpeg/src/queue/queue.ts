@@ -1,7 +1,7 @@
-import { exists, type AbsolutePath } from "@total-typescript/shared";
-import { okAsync } from "neverthrow";
-import type { Context } from "../types.js";
-import { createAutoEditedVideoWorkflow } from "../workflows.js";
+import { FileSystem } from "@effect/platform/FileSystem";
+import { type AbsolutePath } from "@total-typescript/shared";
+import { Config, Context, Effect } from "effect";
+import type { createAutoEditedVideoWorkflow } from "../workflows.js";
 
 export type QueueItemAction = {
   type: "create-auto-edited-video";
@@ -35,147 +35,162 @@ const defaultQueueState: QueueState = {
   queue: [],
 };
 
-const ensureQueueExists = async (ctx: Context) => {
-  if (!(await exists(ctx.queueLocation))) {
-    await ctx.fs.writeFile(
-      ctx.queueLocation,
-      JSON.stringify(defaultQueueState)
-    );
-  }
-};
+const ensureQueueExists = () => {
+  return Effect.gen(function* () {
+    const queueLocation = yield* Config.string("QUEUE_LOCATION");
+    const fs = yield* FileSystem;
+    const exists = yield* fs.exists(queueLocation);
 
-export const writeToQueue = async (items: QueueItem[], ctx: Context) => {
-  await ensureQueueExists(ctx);
-  const existingQueue = await ctx.fs.readFile(ctx.queueLocation);
-  const queueState = JSON.parse(existingQueue.toString()) as QueueState;
-
-  queueState.queue.push(...items);
-
-  await ctx.fs.writeFile(
-    ctx.queueLocation,
-    JSON.stringify(queueState, null, 2)
-  );
-};
-
-export const getQueueState = async (ctx: Context) => {
-  await ensureQueueExists(ctx);
-  const existingQueue = await ctx.fs.readFile(ctx.queueLocation);
-  const queueState = JSON.parse(existingQueue.toString()) as QueueState;
-
-  return queueState;
-};
-
-const updateQueueItem = async (item: QueueItem, ctx: Context) => {
-  await ensureQueueExists(ctx);
-  const queueState = await getQueueState(ctx);
-  const index = queueState.queue.findIndex((i) => i.id === item.id);
-  queueState.queue[index] = item;
-  await ctx.fs.writeFile(ctx.queueLocation, JSON.stringify(queueState));
-};
-
-const writeQueueLockfile = async (ctx: Context) => {
-  await ctx.fs.writeFile(ctx.queueLockfileLocation, "");
-};
-
-export const doesQueueLockfileExist = async (ctx: Context) => {
-  return await exists(ctx.queueLockfileLocation);
-};
-
-const deleteQueueLockfile = async (ctx: Context) => {
-  await ctx.fs.unlink(ctx.queueLockfileLocation);
-};
-
-export const processQueue = async (ctx: Context) => {
-  if (await doesQueueLockfileExist(ctx)) {
-    console.log("Queue is locked, skipping");
-    return;
-  }
-
-  await writeQueueLockfile(ctx);
-
-  const cleanup = async () => {
-    try {
-      await deleteQueueLockfile(ctx);
-    } catch (e) {
-      // Ignore cleanup errors
+    if (!exists) {
+      yield* fs.writeFileString(
+        queueLocation,
+        JSON.stringify(defaultQueueState)
+      );
     }
-  };
-
-  // Handle normal process exit
-  process.on("beforeExit", cleanup);
-
-  // Handle termination signals
-  process.on("SIGTERM", async () => {
-    await cleanup();
-    process.exit(0);
   });
+};
 
-  process.on("SIGINT", async () => {
-    await cleanup();
-    process.exit(0);
+export const writeToQueue = (items: QueueItem[]) => {
+  return Effect.gen(function* () {
+    yield* ensureQueueExists();
+    const queueLocation = yield* Config.string("QUEUE_LOCATION");
+    const fs = yield* FileSystem;
+    const existingQueue = yield* fs.readFileString(queueLocation);
+    const queueState = JSON.parse(existingQueue) as QueueState;
+
+    queueState.queue.push(...items);
+
+    yield* fs.writeFileString(
+      queueLocation,
+      JSON.stringify(queueState, null, 2)
+    );
   });
+};
 
-  // Handle uncaught exceptions
-  process.on("uncaughtException", async (error) => {
-    console.error("Uncaught exception:", error);
-    await cleanup();
-    process.exit(1);
+export const getQueueState = () => {
+  return Effect.gen(function* () {
+    yield* ensureQueueExists();
+    const queueLocation = yield* Config.string("QUEUE_LOCATION");
+    const fs = yield* FileSystem;
+    const existingQueue = yield* fs.readFileString(queueLocation);
+    const queueState = JSON.parse(existingQueue) as QueueState;
+
+    return queueState;
   });
+};
 
-  // Handle unhandled promise rejections
-  process.on("unhandledRejection", async (reason) => {
-    console.error("Unhandled rejection:", reason);
-    await cleanup();
-    process.exit(1);
+const updateQueueItem = (item: QueueItem) => {
+  return Effect.gen(function* () {
+    yield* ensureQueueExists();
+    const queueLocation = yield* Config.string("QUEUE_LOCATION");
+    const fs = yield* FileSystem;
+
+    const queueState = yield* getQueueState();
+    const index = queueState.queue.findIndex((i) => i.id === item.id);
+    queueState.queue[index] = item;
+    yield* fs.writeFileString(queueLocation, JSON.stringify(queueState));
   });
+};
 
-  while (true) {
-    const queueState = await getQueueState(ctx);
+const writeQueueLockfile = () => {
+  return Effect.gen(function* () {
+    const queueLockfileLocation = yield* Config.string(
+      "QUEUE_LOCKFILE_LOCATION"
+    );
+    const fs = yield* FileSystem;
+    yield* fs.writeFileString(queueLockfileLocation, "");
+  });
+};
+
+export const doesQueueLockfileExist = () => {
+  return Effect.gen(function* () {
+    const queueLockfileLocation = yield* Config.string(
+      "QUEUE_LOCKFILE_LOCATION"
+    );
+    const fs = yield* FileSystem;
+    const exists = yield* fs.exists(queueLockfileLocation);
+
+    return exists;
+  });
+};
+
+const deleteQueueLockfile = () => {
+  return Effect.gen(function* () {
+    const queueLockfileLocation = yield* Config.string(
+      "QUEUE_LOCKFILE_LOCATION"
+    );
+    const fs = yield* FileSystem;
+    yield* fs.remove(queueLockfileLocation);
+  });
+};
+
+export class QueueRunnerService extends Context.Tag("QueueRunnerService")<
+  QueueRunnerService,
+  {
+    createAutoEditedVideoWorkflow: (
+      params: Parameters<typeof createAutoEditedVideoWorkflow>[0]
+    ) => Effect.Effect<
+      AbsolutePath,
+      Effect.Effect.Error<ReturnType<typeof createAutoEditedVideoWorkflow>>
+    >;
+  }
+>() {}
+
+export const processQueue = () => {
+  return Effect.gen(function* () {
+    if (yield* doesQueueLockfileExist()) {
+      return Effect.succeed("Queue is locked, skipping");
+    }
+
+    yield* writeQueueLockfile();
+
+    const queueRunners = yield* QueueRunnerService;
+
+    const queueState = yield* getQueueState();
     const queueItem = queueState.queue.find((i) => i.status === "idle");
 
     if (!queueItem) {
-      break;
+      return Effect.succeed("No idle queue items found");
     }
 
     switch (queueItem.action.type) {
       case "create-auto-edited-video":
-        const result = await createAutoEditedVideoWorkflow({
-          ctx,
-          getLatestVideo: () => okAsync(queueItem.action.inputVideo),
-          promptForFilename: () => Promise.resolve(queueItem.action.videoName),
-          subtitles: queueItem.action.subtitles,
-          dryRun: queueItem.action.dryRun,
-        });
+        yield* queueRunners
+          .createAutoEditedVideoWorkflow({
+            subtitles: queueItem.action.subtitles,
+            dryRun: queueItem.action.dryRun,
+          })
+          .pipe(
+            Effect.match({
+              onSuccess: () => {
+                return updateQueueItem({
+                  ...queueItem,
+                  status: "completed",
+                  completedAt: Date.now(),
+                });
+              },
+              onFailure: (error) => {
+                return updateQueueItem({
+                  ...queueItem,
+                  status: "failed",
+                  error: error.message,
+                });
+              },
+            })
+          );
 
-        if (result.isErr()) {
-          console.error(result.error);
-          await updateQueueItem(
-            {
-              ...queueItem,
-              status: "failed",
-              error:
-                result.error instanceof Error
-                  ? result.error.message
-                  : String(result.error),
-            },
-            ctx
-          );
-        } else {
-          await updateQueueItem(
-            {
-              ...queueItem,
-              status: "completed",
-              completedAt: Date.now(),
-            },
-            ctx
-          );
-        }
         break;
+      default:
+        return Effect.succeed("Unknown queue item type");
     }
-  }
 
-  await cleanup();
-  if (process.env.NODE_ENV !== "test") {
-    process.exit(0);
-  }
+    return Effect.succeed("Queue item processed");
+  }).pipe(
+    Effect.ensuring(
+      deleteQueueLockfile().pipe(
+        // Fail silently
+        Effect.catchAll(() => Effect.succeed(undefined))
+      )
+    )
+  );
 };
