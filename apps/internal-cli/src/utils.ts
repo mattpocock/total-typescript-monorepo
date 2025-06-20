@@ -1,7 +1,6 @@
-import readline from "readline/promises";
-import { type AbsolutePath } from "@total-typescript/shared";
-import { Context, Effect } from "effect";
 import { AskQuestionService } from "@total-typescript/ffmpeg";
+import { type AbsolutePath } from "@total-typescript/shared";
+import { Effect } from "effect";
 
 export const promptForFilename = () => {
   return Effect.gen(function* () {

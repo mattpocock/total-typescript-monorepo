@@ -25,7 +25,6 @@ import {
   OBSIntegrationService,
 } from "../../../packages/ffmpeg/dist/services.js";
 import packageJson from "../package.json" with { type: "json" };
-import { env } from "./env.js";
 
 const program = new Command();
 
@@ -105,7 +104,7 @@ program
 
       const inputVideo = yield* obs.getLatestOBSVideo();
 
-      console.log("Adding to queue...");
+      yield* Effect.log("Adding to queue...");
 
       yield* writeToQueue([
         {
@@ -142,7 +141,11 @@ program
   .aliases(["t", "transcribe"])
   .description("Transcribe audio from a selected video file")
   .action(() => {
-    transcribeVideoWorkflow();
+    transcribeVideoWorkflow().pipe(
+      Effect.withConfigProvider(ConfigProvider.fromEnv()),
+      Effect.provide(AppLayerLive),
+      Effect.runFork
+    );
   });
 
 const QueueLayerLive = Layer.merge(
@@ -183,52 +186,58 @@ program
         yield* Effect.log("(Queue is empty)");
         return;
       }
-      queueState.queue.forEach((item: QueueItem, idx: number) => {
-        const completed = formatRelativeDate(item.completedAt);
-        const isAutoEdit = item.action.type === "create-auto-edited-video";
-        let statusIcon = "";
-        switch (item.status) {
-          case "completed":
-            statusIcon = "✅";
-            break;
-          case "failed":
-            statusIcon = "❌";
-            break;
-          default:
-            statusIcon = "⏳";
-        }
-        let options = [];
-        if (isAutoEdit) {
-          if (item.action.dryRun) options.push("Dry Run");
-          if (item.action.subtitles) options.push("Subtitles");
-        }
+      yield* Effect.forEach(
+        queueState.queue,
+        (item: QueueItem, idx: number) => {
+          return Effect.gen(function* () {
+            const completed = formatRelativeDate(item.completedAt);
+            const isAutoEdit = item.action.type === "create-auto-edited-video";
+            let statusIcon = "";
+            switch (item.status) {
+              case "completed":
+                statusIcon = "✅";
+                break;
+              case "failed":
+                statusIcon = "❌";
+                break;
+              default:
+                statusIcon = "⏳";
+            }
+            let options = [];
+            if (isAutoEdit) {
+              if (item.action.dryRun) options.push("Dry Run");
+              if (item.action.subtitles) options.push("Subtitles");
+            }
 
-        Effect.log(
-          `${styleText("bold", `#${idx + 1}`)} ${statusIcon}\n` +
-            (isAutoEdit
-              ? `  ${styleText("dim", "Title")}      ${item.action.videoName}\n` +
-                (options.length > 0
-                  ? `  ${styleText("dim", "Options")}    ${options.join(", ")}\n`
-                  : "")
-              : "") +
-            `  ${styleText("dim", "Completed")}  ${completed}` +
-            (item.error
-              ? `\n  ${styleText("dim", "Error")}      ${item.error}`
-              : "") +
-            "\n"
-        );
-      });
+            console.log(
+              `${styleText("bold", `#${idx + 1}`)} ${statusIcon}\n` +
+                (isAutoEdit
+                  ? `  ${styleText("dim", "Title")}      ${item.action.videoName}\n` +
+                    (options.length > 0
+                      ? `  ${styleText("dim", "Options")}    ${options.join(", ")}\n`
+                      : "")
+                  : "") +
+                `  ${styleText("dim", "Completed")}  ${completed}` +
+                (item.error
+                  ? `\n  ${styleText("dim", "Error")}      ${item.error}`
+                  : "") +
+                "\n"
+            );
+          });
+        }
+      );
+
       if (uncompleted.length === 0) {
-        yield* Effect.log("✅ All queue items are completed!");
+        console.log("✅ All queue items are completed!");
       } else {
-        yield* Effect.log(
+        console.log(
           `⏳ There are ${uncompleted.length} uncompleted item(s) in the queue.`
         );
         const isProcessing = yield* doesQueueLockfileExist();
         if (isProcessing) {
-          yield* Effect.log("🔄 Queue processor is currently running.");
+          console.log("🔄 Queue processor is currently running.");
         } else {
-          yield* Effect.log("⏹️  Queue processor is NOT running.");
+          console.log("⏹️  Queue processor is NOT running.");
         }
       }
     }).pipe(
