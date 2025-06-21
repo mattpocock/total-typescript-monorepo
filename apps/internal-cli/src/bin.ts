@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { config } from "dotenv";
 import {
   addCurrentTimelineToRenderQueue,
   appendVideoToTimeline,
@@ -25,6 +26,12 @@ import {
   OBSIntegrationService,
 } from "../../../packages/ffmpeg/dist/services.js";
 import packageJson from "../package.json" with { type: "json" };
+import { Console } from "effect";
+import path from "node:path";
+
+config({
+  path: path.resolve(import.meta.dirname, "../../../.env"),
+});
 
 const program = new Command();
 
@@ -34,44 +41,44 @@ program.version(packageJson.version);
 program
   .command("move-raw-footage-to-long-term-storage")
   .description("Move raw footage to long term storage.")
-  .action(() => {
-    moveRawFootageToLongTermStorage().pipe(
+  .action(async () => {
+    await moveRawFootageToLongTermStorage().pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(AppLayerLive),
-      Effect.runFork
+      Effect.runPromise
     );
   });
 
 program
   .command("create-timeline")
   .description("Create a new empty timeline in the current project.")
-  .action(() => {
-    createTimeline().pipe(
+  .action(async () => {
+    await createTimeline().pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(AppLayerLive),
-      Effect.runFork
+      Effect.runPromise
     );
   });
 
 program
   .command("add-current-timeline-to-render-queue")
   .description("Add the current timeline to the render queue.")
-  .action(() => {
-    addCurrentTimelineToRenderQueue().pipe(
+  .action(async () => {
+    await addCurrentTimelineToRenderQueue().pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(AppLayerLive),
-      Effect.runFork
+      Effect.runPromise
     );
   });
 
 program
   .command("export-subtitles")
   .description("Export subtitles from the current timeline as SRT.")
-  .action(() => {
-    exportSubtitles().pipe(
+  .action(async () => {
+    await exportSubtitles().pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(AppLayerLive),
-      Effect.runFork
+      Effect.runPromise
     );
   });
 
@@ -79,13 +86,13 @@ program
   .command("append-video-to-timeline [video]")
   .aliases(["a", "append"])
   .description("Append video to the current Davinci Resolve timeline")
-  .action((video: string | undefined) => {
-    appendVideoToTimeline({
+  .action(async (video: string | undefined) => {
+    await appendVideoToTimeline({
       inputVideo: video as AbsolutePath,
     }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(AppLayerLive),
-      Effect.runFork
+      Effect.runPromise
     );
   });
 
@@ -97,8 +104,8 @@ program
   )
   .option("-d, --dry-run", "Run without saving to Dropbox")
   .option("-ns, --no-subtitles", "Disable subtitle rendering")
-  .action((options: { dryRun?: boolean; subtitles?: boolean }) => {
-    Effect.gen(function* () {
+  .action(async (options: { dryRun?: boolean; subtitles?: boolean }) => {
+    await Effect.gen(function* () {
       const obs = yield* OBSIntegrationService;
       const askQuestion = yield* AskQuestionService;
 
@@ -132,7 +139,7 @@ program
       }),
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(AppLayerLive),
-      Effect.runFork
+      Effect.runPromise
     );
   });
 
@@ -140,11 +147,11 @@ program
   .command("transcribe-video")
   .aliases(["t", "transcribe"])
   .description("Transcribe audio from a selected video file")
-  .action(() => {
-    transcribeVideoWorkflow().pipe(
+  .action(async () => {
+    await transcribeVideoWorkflow().pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(AppLayerLive),
-      Effect.runFork
+      Effect.runPromise
     );
   });
 
@@ -163,11 +170,11 @@ program
   .command("process-queue")
   .aliases(["p", "process"])
   .description("Process the queue.")
-  .action(() => {
-    processQueue().pipe(
+  .action(async () => {
+    await processQueue().pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(QueueLayerLive),
-      Effect.runFork
+      Effect.runPromise
     );
   });
 
@@ -175,8 +182,8 @@ program
   .command("queue-status")
   .aliases(["qs", "status"])
   .description("Show the status of the render queue.")
-  .action(() => {
-    Effect.gen(function* () {
+  .action(async () => {
+    await Effect.gen(function* () {
       const queueState = yield* getQueueState();
 
       const uncompleted = queueState.queue.filter(
@@ -209,7 +216,7 @@ program
               if (item.action.subtitles) options.push("Subtitles");
             }
 
-            console.log(
+            yield* Console.log(
               `${styleText("bold", `#${idx + 1}`)} ${statusIcon}\n` +
                 (isAutoEdit
                   ? `  ${styleText("dim", "Title")}      ${item.action.videoName}\n` +
@@ -228,22 +235,22 @@ program
       );
 
       if (uncompleted.length === 0) {
-        console.log("✅ All queue items are completed!");
+        yield* Console.log("✅ All queue items are completed!");
       } else {
-        console.log(
+        yield* Console.log(
           `⏳ There are ${uncompleted.length} uncompleted item(s) in the queue.`
         );
         const isProcessing = yield* doesQueueLockfileExist();
         if (isProcessing) {
-          console.log("🔄 Queue processor is currently running.");
+          yield* Console.log("🔄 Queue processor is currently running.");
         } else {
-          console.log("⏹️  Queue processor is NOT running.");
+          yield* Console.log("⏹️  Queue processor is NOT running.");
         }
       }
     }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(QueueLayerLive),
-      Effect.runFork
+      Effect.runPromise
     );
   });
 
