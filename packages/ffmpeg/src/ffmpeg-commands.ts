@@ -23,16 +23,14 @@
 import { openai } from "@ai-sdk/openai";
 import { execAsync, type AbsolutePath } from "@total-typescript/shared";
 import { generateObject } from "ai";
-import { Config, Effect } from "effect";
+import { Config, Data, Effect } from "effect";
 import { OpenAIService, ReadStreamService } from "./services.js";
 
-export class CouldNotTranscribeAudioError extends Error {
-  readonly _tag = "CouldNotTranscribeAudioError";
-  override message = "Could not transcribe audio.";
-  constructor(public override cause: Error) {
-    super("Could not transcribe audio.");
-  }
-}
+export const CouldNotTranscribeAudioError = Data.TaggedError(
+  "CouldNotTranscribeAudioError"
+)<{
+  cause: Error;
+}>;
 
 export const createSubtitleFromAudio = (audioPath: AbsolutePath) => {
   return Effect.gen(function* () {
@@ -51,7 +49,9 @@ export const createSubtitleFromAudio = (audioPath: AbsolutePath) => {
       });
     }).pipe(
       Effect.mapError((e) => {
-        return new CouldNotTranscribeAudioError(e);
+        return new CouldNotTranscribeAudioError({
+          cause: e,
+        });
       })
     );
 
@@ -70,10 +70,11 @@ export const createSubtitleFromAudio = (audioPath: AbsolutePath) => {
   });
 };
 
-export class WrongAudioFileExtensionError extends Error {
-  readonly _tag = "WrongAudioFileExtensionError";
-  override message = "Incorrect audio file.";
-}
+export const WrongAudioFileExtensionError = Data.TaggedError(
+  "WrongAudioFileExtensionError"
+)<{
+  message: string;
+}>;
 
 export const transcribeAudio = (audioPath: AbsolutePath) => {
   return Effect.gen(function* () {
@@ -82,7 +83,11 @@ export const transcribeAudio = (audioPath: AbsolutePath) => {
     const { createReadStream } = yield* ReadStreamService;
 
     if (!audioPath.endsWith(audioExtension)) {
-      return yield* Effect.fail(new WrongAudioFileExtensionError());
+      return yield* Effect.fail(
+        new WrongAudioFileExtensionError({
+          message: `Audio file extension must be ${audioExtension}`,
+        })
+      );
     }
 
     const stream = yield* createReadStream(audioPath);
@@ -94,7 +99,9 @@ export const transcribeAudio = (audioPath: AbsolutePath) => {
       });
     }).pipe(
       Effect.mapError((e) => {
-        return new CouldNotTranscribeAudioError(e);
+        return new CouldNotTranscribeAudioError({
+          cause: e,
+        });
       })
     );
 
@@ -102,23 +109,21 @@ export const transcribeAudio = (audioPath: AbsolutePath) => {
   });
 };
 
-export class CouldNotEncodeVideoError extends Error {
-  readonly _tag = "CouldNotEncodeVideoError";
-  override message = "Could not encode video.";
-  constructor(public override cause: Error) {
-    super("Could not encode video.");
-  }
-}
+export const CouldNotEncodeVideoError = Data.TaggedError(
+  "CouldNotEncodeVideoError"
+)<{
+  cause: Error;
+}>;
 
-export class CouldNotGetFPSError extends Error {
-  readonly _tag = "CouldNotGetFPSError";
-  override message = "Could not get FPS.";
-}
+export const CouldNotGetFPSError = Data.TaggedError("CouldNotGetFPSError")<{
+  cause: Error;
+}>;
 
-export class CouldNotExtractChaptersError extends Error {
-  readonly _tag = "CouldNotExtractChaptersError";
-  override message = "Could not extract chapters from video file.";
-}
+export const CouldNotExtractChaptersError = Data.TaggedError(
+  "CouldNotExtractChaptersError"
+)<{
+  cause: Error;
+}>;
 
 export interface RawChapter {
   id: number;
@@ -146,8 +151,10 @@ export const getFPS = (inputVideo: AbsolutePath) => {
       const [numerator, denominator] = output.stdout.split("/");
       return Number(numerator) / Number(denominator);
     }),
-    Effect.mapError(() => {
-      return new CouldNotGetFPSError();
+    Effect.mapError((e) => {
+      return new CouldNotGetFPSError({
+        cause: e,
+      });
     })
   );
 };
@@ -169,7 +176,7 @@ export const getChapters = (inputVideo: AbsolutePath) => {
     Effect.map(({ stdout }) => {
       return JSON.parse(stdout.trim()) as ChaptersResponse;
     }),
-    Effect.mapError(() => new CouldNotExtractChaptersError())
+    Effect.mapError((e) => new CouldNotExtractChaptersError({ cause: e }))
   );
 };
 
@@ -181,7 +188,9 @@ export const encodeVideo = (
     `ffmpeg -y -hide_banner -i "${inputVideo}" -c:v libx264 -profile high -b:v 7000k -pix_fmt yuv420p -maxrate 16000k "${outputVideoPath}"`
   ).pipe(
     Effect.mapError((e) => {
-      return new CouldNotEncodeVideoError(e);
+      return new CouldNotEncodeVideoError({
+        cause: e,
+      });
     })
   );
 };
@@ -226,18 +235,18 @@ export const extractAudioFromVideo = (
     `nice -n 19 ffmpeg -y -hide_banner -hwaccel cuda -i "${inputPath}" -vn -acodec libmp3lame -q:a 2 "${outputPath}"`
   ).pipe(
     Effect.mapError((e) => {
-      return new CouldNotExtractAudioError(e);
+      return new CouldNotExtractAudioError({
+        cause: e,
+      });
     })
   );
 };
 
-export class CouldNotExtractAudioError extends Error {
-  readonly _tag = "CouldNotExtractAudioError";
-  override message = "Could not extract audio from video.";
-  constructor(public override cause: Error) {
-    super("Could not extract audio from video.");
-  }
-}
+export const CouldNotExtractAudioError = Data.TaggedError(
+  "CouldNotExtractAudioError"
+)<{
+  cause: Error;
+}>;
 
 export const createClip = (
   inputVideo: AbsolutePath,
@@ -249,18 +258,18 @@ export const createClip = (
     `nice -n 19 ffmpeg -y -hide_banner -ss ${startTime} -i "${inputVideo}" -t ${duration} -c:v h264_nvenc -preset slow -rc:v vbr -cq:v 19 -b:v 8000k -maxrate 12000k -bufsize 16000k -c:a aac -b:a 384k "${outputFile}"`
   ).pipe(
     Effect.mapError((e) => {
-      return new CouldNotCreateClipError(e);
+      return new CouldNotCreateClipError({
+        cause: e,
+      });
     })
   );
 };
 
-export class CouldNotCreateClipError extends Error {
-  readonly _tag = "CouldNotCreateClipError";
-  override message = "Could not create clip.";
-  constructor(public override cause: Error) {
-    super("Could not create clip.");
-  }
-}
+export const CouldNotCreateClipError = Data.TaggedError(
+  "CouldNotCreateClipError"
+)<{
+  cause: Error;
+}>;
 
 export const concatenateClips = (
   concatFile: AbsolutePath,
@@ -281,14 +290,6 @@ export const overlaySubtitles = (
   );
 };
 
-export class CouldNotDetectSilenceError extends Error {
-  readonly _tag = "CouldNotDetectSilenceError";
-  override message = "Could not detect silence.";
-  constructor(public override cause: Error) {
-    super("Could not detect silence.");
-  }
-}
-
 export const detectSilence = (
   inputVideo: AbsolutePath,
   threshold: number | string,
@@ -298,10 +299,18 @@ export const detectSilence = (
     `ffmpeg -hide_banner -vn -i "${inputVideo}" -af "silencedetect=n=${threshold}dB:d=${silenceDuration}" -f null - 2>&1`
   ).pipe(
     Effect.mapError((e) => {
-      return new CouldNotDetectSilenceError(e);
+      return new CouldNotDetectSilenceError({
+        cause: e,
+      });
     })
   );
 };
+
+export const CouldNotDetectSilenceError = Data.TaggedError(
+  "CouldNotDetectSilenceError"
+)<{
+  cause: Error;
+}>;
 
 export const figureOutWhichCTAToShow = (transcript: string) => {
   return Effect.tryPromise({
@@ -329,18 +338,18 @@ export const figureOutWhichCTAToShow = (transcript: string) => {
       return object;
     },
     catch: (e) => {
-      return new CouldNotFigureOutWhichCTAToShowError(e as Error);
+      return new CouldNotFigureOutWhichCTAToShowError({
+        cause: e as Error,
+      });
     },
   });
 };
 
-export class CouldNotFigureOutWhichCTAToShowError extends Error {
-  readonly _tag = "CouldNotFigureOutWhichCTAToShowError";
-  override message = "Could not figure out which CTA to show.";
-  constructor(public override cause: Error) {
-    super("Could not figure out which CTA to show.");
-  }
-}
+export const CouldNotFigureOutWhichCTAToShowError = Data.TaggedError(
+  "CouldNotFigureOutWhichCTAToShowError"
+)<{
+  cause: Error;
+}>;
 
 export const renderRemotion = (outputPath: AbsolutePath, cwd: string) => {
   return execAsync(`nice -n 19 npx remotion render MyComp "${outputPath}"`, {

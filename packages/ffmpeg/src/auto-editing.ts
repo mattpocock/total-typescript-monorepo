@@ -1,6 +1,6 @@
 import { FileSystem } from "@effect/platform/FileSystem";
 import { execAsync, type AbsolutePath } from "@total-typescript/shared";
-import { Effect } from "effect";
+import { Console, Data, Effect } from "effect";
 import { tmpdir } from "os";
 import { join } from "path";
 import {
@@ -17,25 +17,18 @@ import {
 import { FFmpegCommandsService } from "./services.js";
 import { findSilenceInVideo } from "./silence-detection.js";
 
-export class CouldNotCreateSpeakingOnlyVideoError extends Error {
-  readonly _tag = "CouldNotCreateSpeakingOnlyVideoError";
-  override message = "Could not create speaking-only video.";
-}
+export const CouldNotCreateSpeakingOnlyVideoError = Data.TaggedError(
+  "CouldNotCreateSpeakingOnlyVideoError"
+)<{
+  cause: Error;
+}>;
 
-export class FFMPegWithComplexFilterError extends Error {
-  readonly _tag = "FFMPegWithComplexFilterError";
-  override message = "FFMPEG with complex filter failed.";
-  readonly stdout: string | undefined;
-  readonly stderr: string | undefined;
-  constructor(opts: {
-    stdout: string | undefined;
-    stderr: string | undefined;
-  }) {
-    super();
-    this.stdout = opts.stdout;
-    this.stderr = opts.stderr;
-  }
-}
+export const FFMPegWithComplexFilterError = Data.TaggedError(
+  "FFMPegWithComplexFilterError"
+)<{
+  stdout: string | undefined;
+  stderr: string | undefined;
+}>;
 
 const FFMPEG_CONCURRENCY_LIMIT = 6;
 
@@ -47,21 +40,22 @@ export const createAutoEditedVideo = ({
   outputVideo: AbsolutePath;
 }) => {
   return Effect.gen(function* () {
+    const console = yield* Console.Console;
     const startTime = Date.now();
-    console.log("🎥 Processing video:", inputVideo);
-    console.log("📝 Output will be saved to:", outputVideo);
+    yield* console.log("🎥 Processing video:", inputVideo);
+    yield* console.log("📝 Output will be saved to:", outputVideo);
 
     // Get the video's FPS
-    console.log("⏱️  Detecting video FPS...");
+    yield* console.log("⏱️  Detecting video FPS...");
     const fpsStart = Date.now();
     const ffmpeg = yield* FFmpegCommandsService;
     const fps = yield* ffmpeg.getFPS(inputVideo);
-    console.log(
+    yield* console.log(
       `✅ Detected FPS: ${fps} (took ${(Date.now() - fpsStart) / 1000}s)`
     );
 
     // First, find all speaking clips
-    console.log("🔍 Finding speaking clips...");
+    yield* console.log("🔍 Finding speaking clips...");
     const speakingStart = Date.now();
     const { speakingClips } = yield* findSilenceInVideo(inputVideo, {
       threshold: THRESHOLD,
@@ -70,23 +64,23 @@ export const createAutoEditedVideo = ({
       endPadding: AUTO_EDITED_END_PADDING,
       fps,
     });
-    console.log(
+    yield* console.log(
       `✅ Found ${speakingClips.length} speaking clips (took ${(Date.now() - speakingStart) / 1000}s)`
     );
 
     // Then get all bad take markers
-    console.log("🎯 Extracting bad take markers...");
+    yield* console.log("🎯 Extracting bad take markers...");
     const markersStart = Date.now();
     const badTakeMarkers = yield* extractBadTakeMarkersFromFile(
       inputVideo,
       fps
     );
-    console.log(
+    yield* console.log(
       `✅ Found ${badTakeMarkers.length} bad take markers (took ${(Date.now() - markersStart) / 1000}s)`
     );
 
     // Filter out bad takes
-    console.log("🔍 Filtering out bad takes...");
+    yield* console.log("🔍 Filtering out bad takes...");
     const filterStart = Date.now();
     const goodClips = speakingClips.filter((clip, index) => {
       const quality = isBadTake(
@@ -98,13 +92,17 @@ export const createAutoEditedVideo = ({
       );
       return quality === "good";
     });
-    console.log(
+    yield* console.log(
       `✅ Found ${goodClips.length} good clips (took ${(Date.now() - filterStart) / 1000}s)`
     );
 
     if (goodClips.length === 0) {
-      console.log("❌ No good clips found");
-      return yield* Effect.fail(new CouldNotCreateSpeakingOnlyVideoError());
+      yield* console.log("❌ No good clips found");
+      return yield* Effect.fail(
+        new CouldNotCreateSpeakingOnlyVideoError({
+          cause: new Error("No good clips found"),
+        })
+      );
     }
 
     const clips = goodClips.map((clip, i, clips) => {
@@ -129,7 +127,7 @@ export const createAutoEditedVideo = ({
     yield* execAsync(`mkdir -p "${tempDir}"`);
 
     // Create individual clips
-    console.log("🎬 Creating individual clips...");
+    yield* console.log("🎬 Creating individual clips...");
     const clipsStart = Date.now();
     const clipFiles = yield* Effect.all(
       clips.map((clip, i) =>
@@ -145,7 +143,7 @@ export const createAutoEditedVideo = ({
             clip.duration
           );
 
-          console.log(
+          yield* console.log(
             `✅ Created clip ${i + 1}/${goodClips.length} (took ${(Date.now() - clipStart) / 1000}s)`
           );
           return outputFile;
@@ -155,7 +153,7 @@ export const createAutoEditedVideo = ({
         concurrency: FFMPEG_CONCURRENCY_LIMIT,
       }
     );
-    console.log(
+    yield* console.log(
       `✅ Created all ${goodClips.length} clips (took ${(Date.now() - clipsStart) / 1000}s)`
     );
 
@@ -169,10 +167,10 @@ export const createAutoEditedVideo = ({
     yield* fs.writeFileString(concatFile, concatContent);
 
     // Concatenate all clips
-    console.log("🎥 Concatenating clips...");
+    yield* console.log("🎥 Concatenating clips...");
     const concatStart = Date.now();
     yield* ffmpeg.concatenateClips(concatFile, outputVideo);
-    console.log(
+    yield* console.log(
       `✅ Concatenated all clips (took ${(Date.now() - concatStart) / 1000}s)`
     );
 
@@ -180,7 +178,7 @@ export const createAutoEditedVideo = ({
     yield* fs.remove(tempDir, { recursive: true, force: true });
 
     const totalTime = (Date.now() - startTime) / 1000;
-    console.log(
+    yield* console.log(
       `✅ Successfully created speaking-only video! (Total time: ${totalTime}s)`
     );
     return { speakingClips: clips };

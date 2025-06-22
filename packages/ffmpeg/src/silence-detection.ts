@@ -1,17 +1,15 @@
 import { type AbsolutePath } from "@total-typescript/shared";
-import { Effect } from "effect";
+import { Data, Effect } from "effect";
 import { MINIMUM_CLIP_LENGTH_IN_SECONDS } from "./constants.js";
 import { FFmpegCommandsService } from "./services.js";
 
-export class CouldNotFindStartTimeError extends Error {
-  readonly _tag = "CouldNotFindStartTimeError";
-  override message = "Could not find video start time.";
-}
+export const CouldNotFindStartTimeError = Data.TaggedError(
+  "CouldNotFindStartTimeError"
+);
 
-export class CouldNotFindEndTimeError extends Error {
-  readonly _tag = "CouldNotFindEndTimeError";
-  override message = "Could not find video end time.";
-}
+export const CouldNotFindEndTimeError = Data.TaggedError(
+  "CouldNotFindEndTimeError"
+);
 
 export const getClipsOfSpeakingFromFFmpeg = (
   stdout: string,
@@ -134,13 +132,13 @@ export const findSilenceInVideo = (
     );
 
     if (!speakingClips[0]) {
-      return yield* Effect.fail(new CouldNotFindStartTimeError());
+      return yield* Effect.fail(new CouldNotFindStartTimeError(void 0));
     }
 
     const endClip = speakingClips[speakingClips.length - 1];
 
     if (!endClip) {
-      return yield* Effect.fail(new CouldNotFindEndTimeError());
+      return yield* Effect.fail(new CouldNotFindEndTimeError(void 0));
     }
 
     const clipStartTime = speakingClips[0].startTime;

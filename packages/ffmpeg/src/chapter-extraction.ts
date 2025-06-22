@@ -1,5 +1,5 @@
 import { type AbsolutePath } from "@total-typescript/shared";
-import { Effect } from "effect";
+import { Data, Effect } from "effect";
 import {
   DEFINITELY_BAD_TAKE_PADDING,
   MAX_BAD_TAKE_DISTANCE,
@@ -17,11 +17,6 @@ export interface SpeakingClip {
   endTime: number;
   silenceEnd: number;
   duration: number;
-}
-
-export class CouldNotExtractChaptersError extends Error {
-  readonly _tag = "CouldNotExtractChaptersError";
-  override message = "Could not extract chapters from video file.";
 }
 
 export type TakeQuality = "good" | "maybe-bad" | "definitely-bad";
