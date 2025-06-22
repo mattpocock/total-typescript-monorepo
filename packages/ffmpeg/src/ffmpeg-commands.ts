@@ -21,7 +21,6 @@
  */
 
 import { openai } from "@ai-sdk/openai";
-import { FileSystem } from "@effect/platform/FileSystem";
 import { execAsync, type AbsolutePath } from "@total-typescript/shared";
 import { generateObject } from "ai";
 import { Config, Effect } from "effect";
@@ -38,7 +37,6 @@ export class CouldNotTranscribeAudioError extends Error {
 export const createSubtitleFromAudio = (audioPath: AbsolutePath) => {
   return Effect.gen(function* () {
     const openai = yield* OpenAIService;
-    const fs = yield* FileSystem;
 
     const { createReadStream } = yield* ReadStreamService;
 
@@ -46,7 +44,7 @@ export const createSubtitleFromAudio = (audioPath: AbsolutePath) => {
 
     const response = yield* Effect.tryPromise(async () => {
       return openai.audio.transcriptions.create({
-        file: stream as any,
+        file: stream,
         model: "whisper-1",
         response_format: "verbose_json",
         timestamp_granularities: ["segment", "word"],
@@ -91,7 +89,7 @@ export const transcribeAudio = (audioPath: AbsolutePath) => {
 
     const response = yield* Effect.tryPromise(async () => {
       return openai.audio.transcriptions.create({
-        file: stream as any,
+        file: stream,
         model: "whisper-1",
       });
     }).pipe(
