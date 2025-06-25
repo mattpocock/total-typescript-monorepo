@@ -39,18 +39,16 @@ export const appendVideoToTimeline = (
 
     const fps = yield* ffmpeg.getFPS(inputVideo);
 
-    const silenceResult = yield* findSilenceInVideo(inputVideo, {
-      threshold: THRESHOLD,
-      fps,
-      startPadding: AUTO_EDITED_START_PADDING,
-      endPadding: AUTO_EDITED_END_PADDING,
-      silenceDuration: SILENCE_DURATION,
-    });
-
-    const badTakeMarkers = yield* extractBadTakeMarkersFromFile(
-      inputVideo,
-      fps
-    );
+    const [silenceResult, badTakeMarkers] = yield* Effect.all([
+      findSilenceInVideo(inputVideo, {
+        threshold: THRESHOLD,
+        fps,
+        startPadding: AUTO_EDITED_START_PADDING,
+        endPadding: AUTO_EDITED_END_PADDING,
+        silenceDuration: SILENCE_DURATION,
+      }),
+      extractBadTakeMarkersFromFile(inputVideo, fps),
+    ]);
 
     const serialisedClipsOfSpeaking = silenceResult.speakingClips
       .map((clip, index) => {
@@ -71,14 +69,11 @@ export const appendVideoToTimeline = (
       .map(({ serialized }) => serialized)
       .join(":::");
 
-    const { stdout, stderr } = yield* runDavinciResolveScript(
-      "clip-and-append.lua",
-      {
-        INPUT_VIDEO: inputVideo,
-        CLIPS_TO_APPEND: serialisedClipsOfSpeaking,
-        WSLENV: "INPUT_VIDEO/p:CLIPS_TO_APPEND",
-      }
-    );
+    yield* runDavinciResolveScript("clip-and-append.lua", {
+      INPUT_VIDEO: inputVideo,
+      CLIPS_TO_APPEND: serialisedClipsOfSpeaking,
+      WSLENV: "INPUT_VIDEO/p:CLIPS_TO_APPEND",
+    });
   });
 };
 
