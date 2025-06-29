@@ -1,7 +1,7 @@
 import { FileSystem } from "@effect/platform";
 import { NodeFileSystem } from "@effect/platform-node";
 import { toDashCase, type AbsolutePath } from "@total-typescript/shared";
-import { Config, Context, Data, Effect } from "effect";
+import { Config, Console, Context, Data, Effect } from "effect";
 import type { ReadStream } from "node:fs";
 import * as realFs from "node:fs/promises";
 import path from "node:path";
@@ -210,9 +210,9 @@ export class ArticleStorageService extends Effect.Service<ArticleStorageService>
             path.join(ARTICLE_STORAGE_PATH, article.filename),
             [
               "---",
-              `date: ${article.date.toISOString()}`,
-              `originalVideoPath: ${article.originalVideoPath}`,
-              `title: ${article.title}`,
+              `date: "${article.date.toISOString()}"`,
+              `originalVideoPath: "${article.originalVideoPath}"`,
+              `title: "${article.title}"`,
               "---",
               "",
               article.content,
@@ -299,6 +299,11 @@ export class AIService extends Effect.Service<AIService>()("AIService", {
         transcript: string,
         mostRecentArticles: Article[]
       ) {
+        yield* Effect.logDebug(
+          "Generating article from transcript",
+          transcript
+        );
+
         const system = yield* fs
           .readFileString(
             path.resolve(
@@ -331,6 +336,8 @@ export class AIService extends Effect.Service<AIService>()("AIService", {
       titleFromTranscript: Effect.fn("titleFromTranscript")(function* (
         transcript: string
       ) {
+        yield* Effect.logDebug("Generating title from transcript", transcript);
+
         const system = yield* fs.readFileString(
           path.resolve(import.meta.dirname, "../prompts", "generate-title.md")
         );

@@ -18,6 +18,7 @@ import {
   writeToQueue,
   type QueueItem,
 } from "@total-typescript/ffmpeg";
+import { FileSystem } from "@effect/platform";
 import { type AbsolutePath } from "@total-typescript/shared";
 import { Command } from "commander";
 import { ConfigProvider, Effect, Layer } from "effect";
@@ -190,8 +191,9 @@ program
       const transcriptStorage = yield* TranscriptStorageService;
       const askQuestion = yield* AskQuestionService;
       const transcripts = yield* transcriptStorage.getTranscripts();
+      const fs = yield* FileSystem.FileSystem;
 
-      const transcript = yield* askQuestion.select(
+      const transcriptPath = yield* askQuestion.select(
         "Select a transcript",
         transcripts.map((p) => ({
           title: path.basename(p),
@@ -199,14 +201,16 @@ program
         }))
       );
 
+      const transcriptContent = yield* fs.readFileString(transcriptPath);
+
       const originalVideoPath =
         yield* transcriptStorage.getOriginalVideoPathFromTranscript({
-          transcriptPath: transcript,
+          transcriptPath: transcriptPath,
         });
 
       yield* generateArticleFromTranscript({
         originalVideoPath,
-        transcript,
+        transcript: transcriptContent,
       });
     });
 
