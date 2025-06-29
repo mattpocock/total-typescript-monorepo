@@ -1,12 +1,13 @@
 import { FileSystem } from "@effect/platform/FileSystem";
 import { execAsync, type AbsolutePath } from "@total-typescript/shared";
-import { Config, Data, Effect } from "effect";
+import { Config, Console, Data, Effect } from "effect";
 import path from "path";
 import { createAutoEditedVideo } from "./auto-editing.js";
 import {
   AskQuestionService,
   FFmpegCommandsService,
   OBSIntegrationService,
+  TranscriptStorageService,
 } from "./services.js";
 import { renderSubtitles } from "./subtitle-rendering.js";
 import { validateWindowsFilename } from "./validate-windows-filename.js";
@@ -83,7 +84,9 @@ export const createAutoEditedVideoWorkflow = (
 
     const speakingClips = result.speakingClips;
 
-    console.log(`Video created successfully at: ${videoInExportDirectoryPath}`);
+    yield* Console.log(
+      `Video created successfully at: ${videoInExportDirectoryPath}`
+    );
 
     let finalVideoPath = videoInExportDirectoryPath;
 
@@ -113,10 +116,7 @@ export const createAutoEditedVideoWorkflow = (
       });
       finalVideoPath = withSubtitlesPath;
     } else {
-      const transcriptionPath = path.join(
-        yield* Config.string("TRANSCRIPTION_DIRECTORY"),
-        `${path.parse(latestObsRawVideo).name}.txt`
-      ) as AbsolutePath;
+      const transcriptStorage = yield* TranscriptStorageService;
 
       const audioPath = `${videoInExportDirectoryPath}.mp3` as AbsolutePath;
 
@@ -127,19 +127,19 @@ export const createAutoEditedVideoWorkflow = (
 
       const subtitles = yield* ffmpeg.createSubtitleFromAudio(audioPath);
 
-      yield* fs.writeFileString(
-        transcriptionPath,
-        subtitles.segments
+      yield* transcriptStorage.storeTranscript({
+        transcript: subtitles.segments
           .map((s) => s.text)
           .join("")
-          .trim()
-      );
+          .trim(),
+        filename: path.parse(latestObsRawVideo).name,
+      });
 
       yield* fs.remove(audioPath);
     }
 
     if (options.dryRun) {
-      console.log("Dry run mode: Skipping move to shorts directory");
+      yield* Console.log("Dry run mode: Skipping move to shorts directory");
       return finalVideoPath;
     }
 
@@ -150,7 +150,7 @@ export const createAutoEditedVideoWorkflow = (
     ) as AbsolutePath;
 
     yield* fs.rename(finalVideoPath, finalOutputPath);
-    console.log(`Video moved to: ${finalOutputPath}`);
+    yield* Console.log(`Video moved to: ${finalOutputPath}`);
 
     return finalOutputPath;
   });
@@ -216,7 +216,7 @@ export const transcribeVideoWorkflow = () => {
     );
 
     if (videoFiles.length === 0) {
-      console.error("No video files found in either directory");
+      yield* Console.error("No video files found in either directory");
       process.exit(1);
     }
 
@@ -231,11 +231,11 @@ export const transcribeVideoWorkflow = () => {
     );
 
     if (!selectedVideo) {
-      console.error("No video selected");
+      yield* Console.error("No video selected");
       process.exit(1);
     }
 
-    console.log("Transcribing video...");
+    yield* Console.log("Transcribing video...");
 
     const audioPath = path.join(
       path.dirname(selectedVideo),
@@ -247,8 +247,8 @@ export const transcribeVideoWorkflow = () => {
     const transcript = yield* ffmpeg.transcribeAudio(audioPath);
 
     yield* fs.remove(audioPath);
-    console.log("\nTranscript:");
-    console.log(transcript);
+    yield* Console.log("\nTranscript:");
+    yield* Console.log(transcript);
   });
 };
 

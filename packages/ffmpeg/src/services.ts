@@ -1,6 +1,6 @@
 import { FileSystem } from "@effect/platform";
 import { NodeFileSystem } from "@effect/platform-node";
-import type { AbsolutePath } from "@total-typescript/shared";
+import { toDashCase, type AbsolutePath } from "@total-typescript/shared";
 import { Config, Context, Data, Effect } from "effect";
 import type { ReadStream } from "node:fs";
 import * as realFs from "node:fs/promises";
@@ -8,6 +8,8 @@ import path from "node:path";
 import type { OpenAI } from "openai";
 import type { FFMPeg } from "./ffmpeg-commands.js";
 import fm from "front-matter";
+import { openai } from "@ai-sdk/openai";
+import { generateText } from "ai";
 
 export class FFmpegCommandsService extends Context.Tag("FFmpegCommandsService")<
   FFmpegCommandsService,
@@ -48,6 +50,7 @@ export type Article = {
   originalVideoPath: AbsolutePath;
   date: Date;
   title: string;
+  filename: string;
 };
 
 export class ReadDirectoryError extends Data.TaggedError("ReadDirectoryError")<{
@@ -143,6 +146,54 @@ export class CouldNotParseArticleError extends Data.TaggedError(
   filePath: AbsolutePath;
 }> {}
 
+export class TranscriptStorageService extends Effect.Service<TranscriptStorageService>()(
+  "TranscriptStorageService",
+  {
+    effect: Effect.gen(function* () {
+      const fs = yield* FileSystem.FileSystem;
+
+      const TRANSCRIPTION_DIRECTORY = yield* Config.string(
+        "TRANSCRIPTION_DIRECTORY"
+      );
+
+      const OBS_OUTPUT_DIRECTORY = yield* Config.string("OBS_OUTPUT_DIRECTORY");
+
+      return {
+        storeTranscript: Effect.fn("storeTranscript")(function* (opts: {
+          transcript: string;
+          // The name of the file, without the extension
+          filename: string;
+        }) {
+          const transcriptPath = path.join(
+            TRANSCRIPTION_DIRECTORY,
+            opts.filename + ".txt"
+          ) as AbsolutePath;
+
+          yield* fs.writeFileString(transcriptPath, opts.transcript);
+        }),
+        getTranscripts: Effect.fn("getTranscripts")(function* () {
+          const files = yield* fs.readDirectory(TRANSCRIPTION_DIRECTORY);
+          return files
+            .map(
+              (file) => path.join(TRANSCRIPTION_DIRECTORY, file) as AbsolutePath
+            )
+            .sort((a, b) => b.localeCompare(a));
+        }),
+        getOriginalVideoPathFromTranscript: Effect.fn(
+          "getOriginalVideoPathFromTranscript"
+        )(function* (opts: { transcriptPath: AbsolutePath }) {
+          const parsed = path.parse(opts.transcriptPath);
+          return path.join(
+            OBS_OUTPUT_DIRECTORY,
+            parsed.name + ".mp4"
+          ) as AbsolutePath;
+        }),
+      };
+    }),
+    dependencies: [NodeFileSystem.layer],
+  }
+) {}
+
 export class ArticleStorageService extends Effect.Service<ArticleStorageService>()(
   "ArticleStorageService",
   {
@@ -156,16 +207,21 @@ export class ArticleStorageService extends Effect.Service<ArticleStorageService>
       return {
         storeArticle: Effect.fn("storeArticle")(function* (article: Article) {
           yield* fs.writeFileString(
-            path.join(ARTICLE_STORAGE_PATH, `${article.title}.md`),
+            path.join(ARTICLE_STORAGE_PATH, article.filename),
             [
               "---",
               `date: ${article.date.toISOString()}`,
               `originalVideoPath: ${article.originalVideoPath}`,
+              `title: ${article.title}`,
               "---",
               "",
               article.content,
             ].join("\n")
           );
+        }),
+        countArticles: Effect.fn("countArticles")(function* () {
+          const files = yield* fs.readDirectory(ARTICLE_STORAGE_PATH);
+          return files.length;
         }),
         getLatestArticles: Effect.fn("getLatestArticles")(function* (opts: {
           take?: number;
@@ -184,6 +240,7 @@ export class ArticleStorageService extends Effect.Service<ArticleStorageService>
                     attributes: {
                       date: string;
                       originalVideoPath: string;
+                      title: string;
                     };
                     body: string;
                   } => (fm as any)(content)
@@ -195,7 +252,11 @@ export class ArticleStorageService extends Effect.Service<ArticleStorageService>
                     });
                   }),
                   Effect.andThen(({ attributes, body }) => {
-                    if (!attributes?.date || !attributes?.originalVideoPath) {
+                    if (
+                      !attributes?.date ||
+                      !attributes?.originalVideoPath ||
+                      !attributes?.title
+                    ) {
                       return Effect.fail(
                         new CouldNotParseArticleError({
                           cause: new Error("Invalid article format"),
@@ -211,7 +272,8 @@ export class ArticleStorageService extends Effect.Service<ArticleStorageService>
                   originalVideoPath:
                     attributes.originalVideoPath as AbsolutePath,
                   date: new Date(attributes.date),
-                  title: path.basename(file, ".md"),
+                  title: attributes.title,
+                  filename: path.basename(file),
                 };
               });
             })
@@ -229,13 +291,61 @@ export class ArticleStorageService extends Effect.Service<ArticleStorageService>
 
 export class AIService extends Effect.Service<AIService>()("AIService", {
   effect: Effect.gen(function* () {
+    const model = openai("gpt-4o");
+    const fs = yield* FileSystem.FileSystem;
+
     return {
       articleFromTranscript: Effect.fn("articleFromTranscript")(function* (
         transcript: string,
         mostRecentArticles: Article[]
       ) {
-        return "test";
+        const system = yield* fs
+          .readFileString(
+            path.resolve(
+              import.meta.dirname,
+              "../prompts",
+              "generate-article.md"
+            )
+          )
+          .pipe(
+            Effect.map((content) =>
+              content.replace(
+                "{{articles}}",
+                mostRecentArticles
+                  .map((a) => `# ${a.title}\n\n${a.content}`)
+                  .join("\n\n")
+              )
+            )
+          );
+
+        const article = yield* Effect.tryPromise(() => {
+          return generateText({
+            model,
+            system,
+            prompt: transcript,
+          });
+        });
+
+        return article.text;
+      }),
+      titleFromTranscript: Effect.fn("titleFromTranscript")(function* (
+        transcript: string
+      ) {
+        const system = yield* fs.readFileString(
+          path.resolve(import.meta.dirname, "../prompts", "generate-title.md")
+        );
+
+        const title = yield* Effect.tryPromise(() => {
+          return generateText({
+            model,
+            system,
+            prompt: transcript,
+          });
+        });
+
+        return title.text;
       }),
     };
   }),
+  dependencies: [NodeFileSystem.layer],
 }) {}

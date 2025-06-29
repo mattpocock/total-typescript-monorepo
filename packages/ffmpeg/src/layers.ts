@@ -4,13 +4,16 @@ import { createReadStream } from "node:fs";
 import { createInterface } from "node:readline/promises";
 import OpenAI from "openai";
 import * as ffmpeg from "./ffmpeg-commands.js";
+import prompts from "prompts";
 import {
+  AIService,
   ArticleStorageService,
   AskQuestionService,
   FFmpegCommandsService,
   OBSIntegrationService,
   OpenAIService,
   ReadStreamService,
+  TranscriptStorageService,
 } from "./services.js";
 
 export const FFmpegCommandsLayerLive = Layer.succeed(
@@ -43,8 +46,17 @@ export const AskQuestionLayerLive = Layer.succeed(AskQuestionService, {
       rl.close();
       return answer;
     }),
+
   select: (question, choices) => {
-    throw new Error("Not implemented");
+    return Effect.promise(async () => {
+      const response = await prompts({
+        type: "select",
+        name: "value",
+        message: question,
+        choices,
+      });
+      return response.value;
+    });
   },
 });
 
@@ -55,5 +67,7 @@ export const AppLayerLive = Layer.mergeAll(
   AskQuestionLayerLive,
   ArticleStorageService.Default,
   OBSIntegrationService.Default,
+  TranscriptStorageService.Default,
+  AIService.Default,
   NodeFileSystem.layer
 );

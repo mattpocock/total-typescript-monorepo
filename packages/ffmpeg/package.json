@@ -18,9 +18,11 @@
     "effect": "^3.16.8",
     "front-matter": "^4.0.2",
     "openai": "^5.0.1",
-    "p-limit": "^6.2.0"
+    "p-limit": "^6.2.0",
+    "prompts": "^2.4.2"
   },
   "devDependencies": {
-    "@total-typescript/shoehorn": "^0.1.2"
+    "@total-typescript/shoehorn": "^0.1.2",
+    "@types/prompts": "^2.4.9"
   }
 }

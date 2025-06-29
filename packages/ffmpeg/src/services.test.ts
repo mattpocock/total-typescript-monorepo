@@ -17,6 +17,7 @@ it("should store an article", async () => {
     content: "Hello, world!",
     originalVideoPath: "path/to/video.mp4" as AbsolutePath,
     date: new Date(),
+    filename: "001-hello-world.md",
   };
 
   const writeFileString = vi.fn().mockReturnValue(Effect.succeed(undefined));
@@ -41,11 +42,12 @@ it("should store an article", async () => {
   );
 
   expect(writeFileString).toHaveBeenCalledWith(
-    "/mnt/d/articles/hello-world.md",
+    "/mnt/d/articles/001-hello-world.md",
     [
       "---",
       `date: ${article.date.toISOString()}`,
       `originalVideoPath: ${article.originalVideoPath}`,
+      `title: ${article.title}`,
       "---",
       "",
       article.content,
@@ -59,9 +61,11 @@ it("should get the latest articles", async () => {
   const files = [
     {
       filePath: path.join(tmpdir, "001-me-second.md"),
+      title: "me-second",
     },
     {
       filePath: path.join(tmpdir, "999-me-first.md"),
+      title: "me-first",
     },
   ];
 
@@ -72,6 +76,7 @@ it("should get the latest articles", async () => {
         "---",
         `date: "${new Date().toISOString()}"`,
         `originalVideoPath: "${file.filePath}"`,
+        `title: "${file.title}"`,
         "---",
         "",
         "Hello, world!",
@@ -99,13 +104,13 @@ it("should get the latest articles", async () => {
 
     expect(articles).toEqual([
       expect.objectContaining({
-        title: "999-me-first",
+        title: "me-first",
         content: "Hello, world!",
         originalVideoPath: expect.stringContaining("999-me-first.md"),
         date: expect.any(Date),
       }),
       expect.objectContaining({
-        title: "001-me-second",
+        title: "me-second",
         content: "Hello, world!",
         originalVideoPath: expect.stringContaining("001-me-second.md"),
         date: expect.any(Date),

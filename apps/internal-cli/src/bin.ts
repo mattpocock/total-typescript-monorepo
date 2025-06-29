@@ -9,6 +9,7 @@ import {
   createTimeline,
   doesQueueLockfileExist,
   exportSubtitles,
+  generateArticleFromTranscript,
   getQueueState,
   moveRawFootageToLongTermStorage,
   processQueue,
@@ -22,8 +23,10 @@ import { Command } from "commander";
 import { ConfigProvider, Effect, Layer } from "effect";
 import { styleText } from "node:util";
 import {
+  ArticleStorageService,
   AskQuestionService,
   OBSIntegrationService,
+  TranscriptStorageService,
 } from "../../../packages/ffmpeg/dist/services.js";
 import packageJson from "../package.json" with { type: "json" };
 import { Console } from "effect";
@@ -174,6 +177,42 @@ program
     await processQueue().pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(QueueLayerLive),
+      Effect.runPromise
+    );
+  });
+
+program
+  .command("article-from-transcript")
+  .aliases(["aft", "article"])
+  .description("Generate an article from a transcript")
+  .action(async () => {
+    const program = Effect.gen(function* () {
+      const transcriptStorage = yield* TranscriptStorageService;
+      const askQuestion = yield* AskQuestionService;
+      const transcripts = yield* transcriptStorage.getTranscripts();
+
+      const transcript = yield* askQuestion.select(
+        "Select a transcript",
+        transcripts.map((p) => ({
+          title: path.basename(p),
+          value: p,
+        }))
+      );
+
+      const originalVideoPath =
+        yield* transcriptStorage.getOriginalVideoPathFromTranscript({
+          transcriptPath: transcript,
+        });
+
+      yield* generateArticleFromTranscript({
+        originalVideoPath,
+        transcript,
+      });
+    });
+
+    await program.pipe(
+      Effect.withConfigProvider(ConfigProvider.fromEnv()),
+      Effect.provide(AppLayerLive),
       Effect.runPromise
     );
   });

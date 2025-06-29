@@ -417,10 +417,16 @@ importers:
       p-limit:
         specifier: ^6.2.0
         version: 6.2.0
+      prompts:
+        specifier: ^2.4.2
+        version: 2.4.2
     devDependencies:
       '@total-typescript/shoehorn':
         specifier: ^0.1.2
         version: 0.1.2
+      '@types/prompts':
+        specifier: ^2.4.9
+        version: 2.4.9
 
   packages/shared:
     dependencies:

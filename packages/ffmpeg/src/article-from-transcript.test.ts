@@ -12,14 +12,18 @@ it("Should generate an article given a transcript", async () => {
   const articleStorageService = {
     storeArticle: vi.fn().mockReturnValue(Effect.succeed(void 0)),
     getLatestArticles: vi.fn().mockReturnValue(Effect.succeed([])),
+    countArticles: vi.fn().mockReturnValue(Effect.succeed(0)),
   };
 
-  const article = await generateArticleFromTranscript({
+  await generateArticleFromTranscript({
     originalVideoPath: "test/fixtures/video.mp4" as AbsolutePath,
     transcript: "test/fixtures/transcript.txt",
   }).pipe(
     Effect.provideService(AIService, {
       articleFromTranscript,
+      titleFromTranscript: vi
+        .fn()
+        .mockReturnValue(Effect.succeed("My Wonderful Article")),
     }),
     Effect.provideService(ArticleStorageService, articleStorageService),
     Effect.runPromise
@@ -34,7 +38,7 @@ it("Should generate an article given a transcript", async () => {
     content: "test",
     originalVideoPath: "test/fixtures/video.mp4",
     date: expect.any(Date),
+    title: "My Wonderful Article",
+    filename: "001-my-wonderful-article.md",
   });
-
-  expect(article).toBe("test");
 });

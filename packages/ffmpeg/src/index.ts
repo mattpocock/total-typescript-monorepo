@@ -9,3 +9,4 @@ export * from "./services.js";
 export * from "./queue/queue.js";
 export * as ffmpeg from "./ffmpeg-commands.js";
 export * from "./layers.js";
+export * from "./article-from-transcript.js";
