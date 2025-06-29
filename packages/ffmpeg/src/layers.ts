@@ -38,13 +38,12 @@ export const ReadStreamLayerLive = Layer.succeed(ReadStreamService, {
 export const AskQuestionLayerLive = Layer.succeed(AskQuestionService, {
   askQuestion: (question) =>
     Effect.promise(async () => {
-      const rl = createInterface({
-        input: process.stdin,
-        output: process.stdout,
+      const response = await prompts({
+        type: "text",
+        name: "value",
+        message: question,
       });
-      const answer = await rl.question(question);
-      rl.close();
-      return answer;
+      return response.value;
     }),
 
   select: (question, choices) => {

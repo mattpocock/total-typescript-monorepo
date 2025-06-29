@@ -1,15 +1,16 @@
+import { openai } from "@ai-sdk/openai";
 import { FileSystem } from "@effect/platform";
 import { NodeFileSystem } from "@effect/platform-node";
-import { toDashCase, type AbsolutePath } from "@total-typescript/shared";
-import { Config, Console, Context, Data, Effect } from "effect";
+import { type AbsolutePath } from "@total-typescript/shared";
+import { generateText } from "ai";
+import { Config, Context, Data, Effect } from "effect";
+import fm from "front-matter";
 import type { ReadStream } from "node:fs";
 import * as realFs from "node:fs/promises";
 import path from "node:path";
 import type { OpenAI } from "openai";
 import type { FFMPeg } from "./ffmpeg-commands.js";
-import fm from "front-matter";
-import { openai } from "@ai-sdk/openai";
-import { generateText } from "ai";
+import { anthropic } from "@ai-sdk/anthropic";
 
 export class FFmpegCommandsService extends Context.Tag("FFmpegCommandsService")<
   FFmpegCommandsService,
@@ -212,7 +213,7 @@ export class ArticleStorageService extends Effect.Service<ArticleStorageService>
               "---",
               `date: "${article.date.toISOString()}"`,
               `originalVideoPath: "${article.originalVideoPath}"`,
-              `title: "${article.title}"`,
+              `title: "${article.title.replaceAll('"', "")}"`,
               "---",
               "",
               article.content,
@@ -291,62 +292,78 @@ export class ArticleStorageService extends Effect.Service<ArticleStorageService>
 
 export class AIService extends Effect.Service<AIService>()("AIService", {
   effect: Effect.gen(function* () {
-    const model = openai("gpt-4o");
+    const model = anthropic("claude-3-7-sonnet-20250219");
     const fs = yield* FileSystem.FileSystem;
 
     return {
-      articleFromTranscript: Effect.fn("articleFromTranscript")(function* (
-        transcript: string,
-        mostRecentArticles: Article[]
-      ) {
-        yield* Effect.logDebug(
-          "Generating article from transcript",
-          transcript
-        );
+      articleFromTranscript: Effect.fn("articleFromTranscript")(
+        function* (opts: {
+          transcript: string;
+          mostRecentArticles: Article[];
+          code?: string;
+        }) {
+          yield* Effect.logDebug("Generating article from transcript", opts);
 
-        const system = yield* fs
-          .readFileString(
+          const systemRaw = yield* fs.readFileString(
             path.resolve(
               import.meta.dirname,
               "../prompts",
               "generate-article.md"
             )
-          )
-          .pipe(
-            Effect.map((content) =>
-              content.replace(
-                "{{articles}}",
-                mostRecentArticles
-                  .map((a) => `# ${a.title}\n\n${a.content}`)
-                  .join("\n\n")
-              )
-            )
           );
 
-        const article = yield* Effect.tryPromise(() => {
-          return generateText({
-            model,
-            system,
-            prompt: transcript,
+          let system = systemRaw.replace(
+            "{{articles}}",
+            opts.mostRecentArticles
+              .map((a) => `# ${a.title}\n\n${a.content}`)
+              .join("\n\n")
+          );
+
+          yield* Effect.log("System", system);
+
+          if (opts.code) {
+            system = system.replace(
+              "{{code}}",
+              `\`\`\`ts\n${opts.code}\n\`\`\``
+            );
+          } else {
+            system = system.replace("{{code}}", "No code provided");
+          }
+
+          const article = yield* Effect.tryPromise(() => {
+            return generateText({
+              model,
+              system,
+              prompt: opts.transcript,
+            });
           });
-        });
 
-        return article.text;
-      }),
-      titleFromTranscript: Effect.fn("titleFromTranscript")(function* (
-        transcript: string
-      ) {
-        yield* Effect.logDebug("Generating title from transcript", transcript);
+          return article.text;
+        }
+      ),
+      titleFromTranscript: Effect.fn("titleFromTranscript")(function* (opts: {
+        transcript: string;
+        code?: string;
+      }) {
+        yield* Effect.logDebug("Generating title from transcript", opts);
 
-        const system = yield* fs.readFileString(
+        const systemRaw = yield* fs.readFileString(
           path.resolve(import.meta.dirname, "../prompts", "generate-title.md")
         );
+
+        let system = systemRaw;
+
+        if (opts.code) {
+          system = system.replace("{{code}}", `\`\`\`ts\n${opts.code}\n\`\`\``);
+        } else {
+          system = system.replace("{{code}}", "No code provided");
+        }
 
         const title = yield* Effect.tryPromise(() => {
           return generateText({
             model,
             system,
-            prompt: transcript,
+            prompt: opts.transcript,
           });
         });
 

@@ -21,7 +21,7 @@ import {
 import { FileSystem } from "@effect/platform";
 import { type AbsolutePath } from "@total-typescript/shared";
 import { Command } from "commander";
-import { ConfigProvider, Effect, Layer } from "effect";
+import { ConfigProvider, Effect, Layer, LogLevel } from "effect";
 import { styleText } from "node:util";
 import {
   ArticleStorageService,
@@ -201,6 +201,17 @@ program
         }))
       );
 
+      let code: string | undefined;
+
+      const codePath = yield* askQuestion.askQuestion(
+        "Enter the file path containing any code for the article (optional)"
+      );
+
+      if (codePath) {
+        const codeContent = yield* fs.readFileString(codePath);
+        code = codeContent;
+      }
+
       const transcriptContent = yield* fs.readFileString(transcriptPath);
 
       const originalVideoPath =
@@ -211,6 +222,7 @@ program
       yield* generateArticleFromTranscript({
         originalVideoPath,
         transcript: transcriptContent,
+        code,
       });
     });
 

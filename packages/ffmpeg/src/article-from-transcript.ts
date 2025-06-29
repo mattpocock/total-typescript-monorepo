@@ -4,8 +4,12 @@ import { AIService, ArticleStorageService } from "./services.js";
 
 export const generateArticleFromTranscript = Effect.fn(
   "generateArticleFromTranscript"
-)(function* (opts: { originalVideoPath: AbsolutePath; transcript: string }) {
-  const { originalVideoPath, transcript } = opts;
+)(function* (opts: {
+  originalVideoPath: AbsolutePath;
+  transcript: string;
+  code?: string;
+}) {
+  const { originalVideoPath, transcript, code } = opts;
 
   const ai = yield* AIService;
   const articleStorage = yield* ArticleStorageService;
@@ -26,15 +30,21 @@ export const generateArticleFromTranscript = Effect.fn(
 
   const countArticlesFiber = yield* Effect.fork(articleStorage.countArticles());
 
-  const titleFiber = yield* Effect.fork(ai.titleFromTranscript(transcript));
+  const titleFiber = yield* Effect.fork(
+    ai.titleFromTranscript({
+      transcript,
+      code,
+    })
+  );
 
   const articleFiber = yield* Effect.fork(
     Effect.gen(function* () {
       const mostRecentArticles = yield* mostRecentArticlesFiber;
-      const article = yield* ai.articleFromTranscript(
+      const article = yield* ai.articleFromTranscript({
         transcript,
-        mostRecentArticles
-      );
+        mostRecentArticles,
+        code,
+      });
       return article;
     })
   );
