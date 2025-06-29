@@ -24,6 +24,7 @@ import { Command } from "commander";
 import { ConfigProvider, Effect, Layer, LogLevel } from "effect";
 import { styleText } from "node:util";
 import {
+  AIService,
   ArticleStorageService,
   AskQuestionService,
   OBSIntegrationService,
@@ -190,6 +191,7 @@ program
     const program = Effect.gen(function* () {
       const transcriptStorage = yield* TranscriptStorageService;
       const askQuestion = yield* AskQuestionService;
+      const ai = yield* AIService;
       const transcripts = yield* transcriptStorage.getTranscripts();
       const fs = yield* FileSystem.FileSystem;
 
@@ -219,10 +221,22 @@ program
           transcriptPath: transcriptPath,
         });
 
+      const urls: { request: string; url: string }[] = [];
+
+      const urlRequests = yield* ai.askForLinks({
+        transcript: transcriptContent,
+      });
+
+      for (const urlRequest of urlRequests) {
+        const url = yield* askQuestion.askQuestion(urlRequest);
+        urls.push({ request: urlRequest, url });
+      }
+
       yield* generateArticleFromTranscript({
         originalVideoPath,
         transcript: transcriptContent,
         code,
+        urls,
       });
     });
 

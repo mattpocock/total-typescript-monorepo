@@ -7,9 +7,10 @@ export const generateArticleFromTranscript = Effect.fn(
 )(function* (opts: {
   originalVideoPath: AbsolutePath;
   transcript: string;
+  urls: { request: string; url: string }[];
   code?: string;
 }) {
-  const { originalVideoPath, transcript, code } = opts;
+  const { originalVideoPath, transcript, code, urls } = opts;
 
   const ai = yield* AIService;
   const articleStorage = yield* ArticleStorageService;
@@ -44,6 +45,7 @@ export const generateArticleFromTranscript = Effect.fn(
         transcript,
         mostRecentArticles,
         code,
+        urls,
       });
       return article;
     })

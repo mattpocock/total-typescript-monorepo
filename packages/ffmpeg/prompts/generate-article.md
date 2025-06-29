@@ -25,3 +25,11 @@ Here is the code for the article (if it exists):
 {{code}}
 
 Use the code as the source of truth for the article.
+
+## Links
+
+Here are some links that have been requested for the article:
+
+{{urls}}
+
+You MUST include these links somewhere in the article.

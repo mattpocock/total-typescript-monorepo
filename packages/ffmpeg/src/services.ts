@@ -2,7 +2,7 @@ import { openai } from "@ai-sdk/openai";
 import { FileSystem } from "@effect/platform";
 import { NodeFileSystem } from "@effect/platform-node";
 import { type AbsolutePath } from "@total-typescript/shared";
-import { generateText } from "ai";
+import { generateObject, generateText } from "ai";
 import { Config, Context, Data, Effect } from "effect";
 import fm from "front-matter";
 import type { ReadStream } from "node:fs";
@@ -11,6 +11,7 @@ import path from "node:path";
 import type { OpenAI } from "openai";
 import type { FFMPeg } from "./ffmpeg-commands.js";
 import { anthropic } from "@ai-sdk/anthropic";
+import { z } from "zod";
 
 export class FFmpegCommandsService extends Context.Tag("FFmpegCommandsService")<
   FFmpegCommandsService,
@@ -296,11 +297,34 @@ export class AIService extends Effect.Service<AIService>()("AIService", {
     const fs = yield* FileSystem.FileSystem;
 
     return {
+      askForLinks: Effect.fn("askForLinks")(function* (opts: {
+        transcript: string;
+      }) {
+        const systemRaw = yield* fs.readFileString(
+          path.resolve(import.meta.dirname, "../prompts", "ask-for-links.md")
+        );
+
+        const links = yield* Effect.tryPromise(() => {
+          return generateObject({
+            model,
+            schema: z.object({
+              linkRequests: z
+                .array(z.string())
+                .describe("The links you want to request"),
+            }),
+            system: systemRaw,
+            prompt: opts.transcript,
+          });
+        });
+
+        return links.object?.linkRequests;
+      }),
       articleFromTranscript: Effect.fn("articleFromTranscript")(
         function* (opts: {
           transcript: string;
           mostRecentArticles: Article[];
           code?: string;
+          urls: { request: string; url: string }[];
         }) {
           yield* Effect.logDebug("Generating article from transcript", opts);
 
@@ -319,7 +343,16 @@ export class AIService extends Effect.Service<AIService>()("AIService", {
               .join("\n\n")
           );
 
-          yield* Effect.log("System", system);
+          if (opts.urls.length > 0) {
+            system = system.replace(
+              "{{urls}}",
+              opts.urls.map((u) => `- ${u.request}: ${u.url}`).join("\n")
+            );
+          } else {
+            system = system.replace("{{urls}}", "No links provided");
+          }
+
+          yield* Effect.logDebug("System", system);
 
           if (opts.code) {
             system = system.replace(
