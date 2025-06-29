@@ -3,6 +3,11 @@
   "compilerOptions": {
     "target": "ESNext",
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "plugins": [
+      {
+        "name": "@effect/language-service"
+      }
+    ]
   }
 }

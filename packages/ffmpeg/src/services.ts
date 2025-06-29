@@ -1,9 +1,13 @@
-import { ConfigError, Context, Effect } from "effect";
-import type { FFMPeg } from "./ffmpeg-commands.js";
-import type { OpenAI } from "openai";
+import { FileSystem } from "@effect/platform";
+import { NodeFileSystem } from "@effect/platform-node";
 import type { AbsolutePath } from "@total-typescript/shared";
+import { Config, ConfigError, Context, Data, Effect } from "effect";
 import type { ReadStream } from "node:fs";
-import type { NoOBSFilesFoundError, TakeValueTooHighError } from "./layers.js";
+import * as realFs from "node:fs/promises";
+import path from "node:path";
+import type { OpenAI } from "openai";
+import type { FFMPeg } from "./ffmpeg-commands.js";
+import type { NoOBSFilesFoundError } from "./layers.js";
 
 export class FFmpegCommandsService extends Context.Tag("FFmpegCommandsService")<
   FFmpegCommandsService,
@@ -43,37 +47,115 @@ export class OBSIntegrationService extends Context.Tag("OBSIntegrationService")<
   }
 >() {}
 
-export class ArticleStorageService extends Context.Tag("ArticleStorageService")<
-  ArticleStorageService,
-  {
-    storeArticle: (article: {
-      content: string;
-      originalVideoPath: AbsolutePath;
-      date: Date;
-    }) => Effect.Effect<void>;
-    getLatestArticles: (
-      take: number
-    ) => Effect.Effect<Array<string>, TakeValueTooHighError>;
-  }
->() {}
+export type Article = {
+  content: string;
+  originalVideoPath: AbsolutePath;
+  date: Date;
+  title: string;
+};
 
-export class AIService extends Context.Tag("AIService")<
-  AIService,
-  {
-    articleFromTranscript: (
-      transcript: string,
-      lastFiveArticles: Array<string>
-    ) => Effect.Effect<string>;
-  }
->() {}
+export class ReadDirectoryError extends Data.TaggedError("ReadDirectoryError")<{
+  cause: Error;
+}> {}
 
-export class GetLatestFilesInDirectoryService extends Context.Tag(
-  "GetLatestFilesInDirectoryService"
-)<
-  GetLatestFilesInDirectoryService,
-  (opts: {
-    dir: AbsolutePath;
-    extension?: string;
-    take?: number;
-  }) => Effect.Effect<Array<AbsolutePath>>
->() {}
+export class GetLatestFilesInDirectoryService extends Effect.Service<GetLatestFilesInDirectoryService>()(
+  "GetLatestFilesInDirectoryService",
+  {
+    succeed: Effect.fn("readDirectory")(function* (opts: {
+      dir: AbsolutePath;
+      recursive?: boolean;
+    }) {
+      const fs = yield* FileSystem.FileSystem;
+
+      const files = yield* Effect.tryPromise(() =>
+        realFs.readdir(opts.dir, {
+          recursive: opts.recursive,
+        })
+      ).pipe(Effect.mapError((e) => new ReadDirectoryError({ cause: e })));
+
+      const filesWithStats = yield* Effect.all(
+        files.map((file) => {
+          return Effect.gen(function* () {
+            const filePath = path.join(opts.dir, file) as AbsolutePath;
+
+            const stats = yield* fs.stat(filePath);
+
+            const mtime = yield* stats.mtime.pipe(
+              Effect.mapError(
+                (e) => new CouldNotGetMTimeError({ cause: e, filePath })
+              )
+            );
+
+            return {
+              filePath,
+              mtime,
+            };
+          });
+        })
+      );
+
+      return (
+        filesWithStats
+          // Sort by mtime descending
+          .sort((a, b) => b.mtime.getTime() - a.mtime.getTime())
+          // Sort by filePath ascending
+          .map((file) => file.filePath)
+      );
+    }),
+  }
+) {}
+
+export class CouldNotGetMTimeError extends Data.TaggedError(
+  "CouldNotGetMTimeError"
+)<{
+  cause: Error;
+  filePath: AbsolutePath;
+}> {}
+
+export class ArticleStorageService extends Effect.Service<ArticleStorageService>()(
+  "ArticleStorageService",
+  {
+    effect: Effect.gen(function* () {
+      const fs = yield* FileSystem.FileSystem;
+
+      const getLatestFilesInDirectory = yield* GetLatestFilesInDirectoryService;
+
+      const ARTICLE_STORAGE_PATH = yield* Config.string("ARTICLE_STORAGE_PATH");
+
+      return {
+        storeArticle: Effect.fn("storeArticle")(function* (article: Article) {
+          yield* fs.writeFileString(
+            path.join(ARTICLE_STORAGE_PATH, `${article.title}.md`),
+            [
+              "---",
+              `date: ${article.date.toISOString()}`,
+              `originalVideoPath: ${article.originalVideoPath}`,
+              "---",
+              "",
+              article.content,
+            ].join("\n")
+          );
+        }),
+        getLatestArticles: Effect.fn("getLatestArticles")(function* (opts: {
+          take?: number;
+        }) {
+          const files = yield* getLatestFilesInDirectory({
+            dir: ARTICLE_STORAGE_PATH as AbsolutePath,
+          });
+
+          return files.slice(0, opts.take);
+        }),
+      };
+    }),
+    dependencies: [
+      NodeFileSystem.layer,
+      GetLatestFilesInDirectoryService.Default,
+    ],
+  }
+) {}
+
+export class AIService extends Effect.Service<AIService>()("AIService", {
+  effect: Effect.gen(function* () {
+    return {};
+  }),
+}) {}

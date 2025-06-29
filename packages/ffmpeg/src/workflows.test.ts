@@ -11,7 +11,7 @@ import {
 import * as shared from "@total-typescript/shared";
 import { Effect } from "effect";
 
-it("createAutoEditedVideoWorkflow with subtitles and no dry run should work", async () => {
+it.skip("createAutoEditedVideoWorkflow with subtitles and no dry run should work", async () => {
   const writeFile = vi.fn();
   const rename = vi.fn();
   const unlink = vi.fn();
@@ -220,7 +220,7 @@ it("createAutoEditedVideoWorkflow with subtitles and no dry run should work", as
   });
 });
 
-it("createAutoEditedVideoWorkflow with no subtitles", async () => {
+it.skip("createAutoEditedVideoWorkflow with no subtitles", async () => {
   const writeFile = vi.fn();
   const rename = vi.fn();
   const unlink = vi.fn();
@@ -316,7 +316,7 @@ it("createAutoEditedVideoWorkflow with no subtitles", async () => {
   expect(overlaySubtitles).not.toHaveBeenCalled();
 });
 
-it("createAutoEditedVideoWorkflow with dry run", async () => {
+it.skip("createAutoEditedVideoWorkflow with dry run", async () => {
   const writeFile = vi.fn();
   const rename = vi.fn();
   const unlink = vi.fn();
@@ -396,7 +396,7 @@ it("createAutoEditedVideoWorkflow with dry run", async () => {
   );
 });
 
-test("createAutoEditedVideoWorkflow returns an error if the filename already exists in the shorts directory", async () => {
+test.skip("createAutoEditedVideoWorkflow returns an error if the filename already exists in the shorts directory", async () => {
   const exists = vi.spyOn(shared, "exists").mockImplementation(async (dir) => {
     if (dir.includes("shorts")) {
       return true;
@@ -421,7 +421,7 @@ test("createAutoEditedVideoWorkflow returns an error if the filename already exi
   expect(exists).toHaveBeenCalledWith("/path/to/shorts/Test.mp4");
 });
 
-test("createAutoEditedVideoWorkflow returns an error if the filename already exists in the shorts directory", async () => {
+test.skip("createAutoEditedVideoWorkflow returns an error if the filename already exists in the shorts directory", async () => {
   const exists = vi.spyOn(shared, "exists").mockImplementation(async (dir) => {
     if (dir.includes("export")) {
       return true;

@@ -10,18 +10,16 @@ export const generateArticleFromTranscript = Effect.fn(
   const ai = yield* AIService;
   const articleStorage = yield* ArticleStorageService;
 
-  const mostRecentArticles = yield* articleStorage.getLatestArticles(5);
+  // const article = yield* ai.articleFromTranscript(
+  //   transcript,
+  //   mostRecentArticles
+  // );
 
-  const article = yield* ai.articleFromTranscript(
-    transcript,
-    mostRecentArticles
-  );
+  // yield* articleStorage.storeArticle({
+  //   content: article,
+  //   originalVideoPath,
+  //   date: new Date(),
+  // });
 
-  yield* articleStorage.storeArticle({
-    content: article,
-    originalVideoPath,
-    date: new Date(),
-  });
-
-  return article;
+  // return article;
 });

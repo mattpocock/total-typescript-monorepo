@@ -32,7 +32,8 @@
     "tsx": "^4.19.0",
     "turbo": "2.3.3",
     "typescript": "5.8.0-dev.20250124",
-    "vitest": "^3.2.1"
+    "vitest": "^3.2.1",
+    "@effect/language-service": "0.23.3"
   },
   "resolutions": {
     "typescript": "5.8.0-dev.20250124"

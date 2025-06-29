@@ -1,7 +1,6 @@
 import { FileSystem } from "@effect/platform/FileSystem";
 import { execAsync, type AbsolutePath } from "@total-typescript/shared";
-import { execSync } from "child_process";
-import { Config, Effect } from "effect";
+import { Config, Data, Effect } from "effect";
 import path from "path";
 import { createAutoEditedVideo } from "./auto-editing.js";
 import {
@@ -17,14 +16,15 @@ export interface CreateAutoEditedVideoWorkflowOptions {
   subtitles?: boolean;
 }
 
-export class NoSpeakingClipsError extends Error {
-  readonly _tag = "NoSpeakingClipsError";
-  override message = "No speaking clips found";
-}
+export class NoSpeakingClipsError extends Data.TaggedError(
+  "NoSpeakingClipsError"
+) {}
 
-export class FileAlreadyExistsError extends Error {
-  readonly _tag = "FileAlreadyExistsError";
-}
+export class FileAlreadyExistsError extends Data.TaggedError(
+  "FileAlreadyExistsError"
+)<{
+  message: string;
+}> {}
 
 export const createAutoEditedVideoWorkflow = (
   options: CreateAutoEditedVideoWorkflowOptions
@@ -55,15 +55,15 @@ export const createAutoEditedVideoWorkflow = (
       ]);
 
     if (alreadyExistsInExportDirectory) {
-      return yield* Effect.fail(
-        new FileAlreadyExistsError("File already exists in export directory")
-      );
+      return yield* new FileAlreadyExistsError({
+        message: "File already exists in export directory",
+      });
     }
 
     if (alreadyExistsInShortsDirectory) {
-      return yield* Effect.fail(
-        new FileAlreadyExistsError("File already exists in shorts directory")
-      );
+      return yield* new FileAlreadyExistsError({
+        message: "File already exists in shorts directory",
+      });
     }
 
     const ffmpeg = yield* FFmpegCommandsService;
@@ -101,7 +101,7 @@ export const createAutoEditedVideoWorkflow = (
       );
 
       if (!firstClipLength) {
-        return yield* Effect.fail(new NoSpeakingClipsError());
+        return yield* new NoSpeakingClipsError();
       }
 
       yield* renderSubtitles({
