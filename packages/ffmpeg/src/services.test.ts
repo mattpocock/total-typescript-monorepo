@@ -2,6 +2,7 @@ import { ConfigProvider, Effect } from "effect";
 import { expect, it, vi } from "vitest";
 import {
   ArticleStorageService,
+  CouldNotParseArticleError,
   GetLatestFilesInDirectoryService,
 } from "./services.js";
 import type { AbsolutePath } from "@total-typescript/shared";
@@ -65,7 +66,17 @@ it("should get the latest articles", async () => {
   ];
 
   for (const file of files) {
-    writeFileSync(file.filePath, "hello");
+    writeFileSync(
+      file.filePath,
+      [
+        "---",
+        `date: "${new Date().toISOString()}"`,
+        `originalVideoPath: "${file.filePath}"`,
+        "---",
+        "",
+        "Hello, world!",
+      ].join("\n")
+    );
     await new Promise((resolve) => setTimeout(resolve, 20));
   }
 
@@ -87,9 +98,58 @@ it("should get the latest articles", async () => {
     );
 
     expect(articles).toEqual([
-      expect.stringContaining("999-me-first.md"),
-      expect.stringContaining("001-me-second.md"),
+      expect.objectContaining({
+        title: "999-me-first",
+        content: "Hello, world!",
+        originalVideoPath: expect.stringContaining("999-me-first.md"),
+        date: expect.any(Date),
+      }),
+      expect.objectContaining({
+        title: "001-me-second",
+        content: "Hello, world!",
+        originalVideoPath: expect.stringContaining("001-me-second.md"),
+        date: expect.any(Date),
+      }),
     ]);
+  } finally {
+    rmSync(tmpdir, { recursive: true });
+  }
+});
+
+it("should fail when the article is not in a valid format", async () => {
+  const tmpdir = mkdtempSync(path.join(import.meta.dirname, "tmp"));
+
+  const files = [
+    {
+      filePath: path.join(tmpdir, "001-me-second.md"),
+      content: "",
+    },
+  ];
+
+  for (const file of files) {
+    writeFileSync(file.filePath, file.content);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+
+  try {
+    const error = await Effect.gen(function* () {
+      const articleStorage = yield* ArticleStorageService;
+      const articles = yield* articleStorage.getLatestArticles({ take: 5 });
+
+      return articles;
+    }).pipe(
+      Effect.provide(ArticleStorageService.Default),
+      Effect.provide(NodeFileSystem.layer),
+      Effect.withConfigProvider(
+        ConfigProvider.fromJson({
+          ARTICLE_STORAGE_PATH: tmpdir,
+        })
+      ),
+      Effect.flip,
+      Effect.runPromise
+    );
+
+    expect(error).toBeInstanceOf(CouldNotParseArticleError);
   } finally {
     rmSync(tmpdir, { recursive: true });
   }

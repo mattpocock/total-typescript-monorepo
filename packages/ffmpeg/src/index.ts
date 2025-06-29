@@ -4,7 +4,6 @@ export * from "./chapter-extraction.js";
 export * from "./auto-editing.js";
 export * from "./subtitle-rendering.js";
 export * from "./workflows.js";
-export * from "./obs-integration.js";
 export * from "./davinci-integration.js";
 export * from "./services.js";
 export * from "./queue/queue.js";

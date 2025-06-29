@@ -6,7 +6,7 @@ import { expect, it, vi } from "vitest";
 import { generateArticleFromTranscript } from "./article-from-transcript.js";
 import { AIService, ArticleStorageService } from "./services.js";
 
-it.skip("Should generate an article given a transcript", async () => {
+it("Should generate an article given a transcript", async () => {
   const articleFromTranscript = vi.fn().mockReturnValue(Effect.succeed("test"));
 
   const articleStorageService = {

@@ -7,6 +7,7 @@ import * as realFs from "node:fs/promises";
 import path from "node:path";
 import type { OpenAI } from "openai";
 import type { FFMPeg } from "./ffmpeg-commands.js";
+import fm from "front-matter";
 
 export class FFmpegCommandsService extends Context.Tag("FFmpegCommandsService")<
   FFmpegCommandsService,
@@ -93,7 +94,6 @@ export class GetLatestFilesInDirectoryService extends Effect.Service<GetLatestFi
         filesWithStats
           // Sort by mtime descending
           .sort((a, b) => b.mtime.getTime() - a.mtime.getTime())
-          // Sort by filePath ascending
           .map((file) => file.filePath)
       );
     }),
@@ -136,6 +136,13 @@ export class CouldNotGetMTimeError extends Data.TaggedError(
   filePath: AbsolutePath;
 }> {}
 
+export class CouldNotParseArticleError extends Data.TaggedError(
+  "CouldNotParseArticleError"
+)<{
+  cause: Error;
+  filePath: AbsolutePath;
+}> {}
+
 export class ArticleStorageService extends Effect.Service<ArticleStorageService>()(
   "ArticleStorageService",
   {
@@ -167,7 +174,49 @@ export class ArticleStorageService extends Effect.Service<ArticleStorageService>
             dir: ARTICLE_STORAGE_PATH as AbsolutePath,
           });
 
-          return files.slice(0, opts.take);
+          const articles: Article[] = yield* Effect.all(
+            files.slice(0, opts.take).map((file) => {
+              return Effect.gen(function* () {
+                const content = yield* fs.readFileString(file);
+
+                const { attributes, body } = yield* Effect.try(
+                  (): {
+                    attributes: {
+                      date: string;
+                      originalVideoPath: string;
+                    };
+                    body: string;
+                  } => (fm as any)(content)
+                ).pipe(
+                  Effect.mapError((e) => {
+                    return new CouldNotParseArticleError({
+                      cause: e.cause as Error,
+                      filePath: file,
+                    });
+                  }),
+                  Effect.andThen(({ attributes, body }) => {
+                    if (!attributes?.date || !attributes?.originalVideoPath) {
+                      return Effect.fail(
+                        new CouldNotParseArticleError({
+                          cause: new Error("Invalid article format"),
+                          filePath: file,
+                        })
+                      );
+                    }
+                    return Effect.succeed({ attributes, body });
+                  })
+                );
+                return {
+                  content: body,
+                  originalVideoPath:
+                    attributes.originalVideoPath as AbsolutePath,
+                  date: new Date(attributes.date),
+                  title: path.basename(file, ".md"),
+                };
+              });
+            })
+          );
+          return articles;
         }),
       };
     }),
@@ -180,6 +229,13 @@ export class ArticleStorageService extends Effect.Service<ArticleStorageService>
 
 export class AIService extends Effect.Service<AIService>()("AIService", {
   effect: Effect.gen(function* () {
-    return {};
+    return {
+      articleFromTranscript: Effect.fn("articleFromTranscript")(function* (
+        transcript: string,
+        mostRecentArticles: Article[]
+      ) {
+        return "test";
+      }),
+    };
   }),
 }) {}
