@@ -6,7 +6,9 @@ class InvalidFilenameError extends Error {
   readonly _tag = "InvalidFilenameError";
 }
 
-export function validateWindowsFilename(filename: string) {
+export function validateWindowsFilename(
+  filename: string
+): Effect.Effect<string, InvalidFilenameError> {
   // Check for invalid characters
   if (invalidChars.test(filename)) {
     return Effect.fail(

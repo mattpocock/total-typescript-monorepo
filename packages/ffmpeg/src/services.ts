@@ -1,13 +1,12 @@
 import { FileSystem } from "@effect/platform";
 import { NodeFileSystem } from "@effect/platform-node";
 import type { AbsolutePath } from "@total-typescript/shared";
-import { Config, ConfigError, Context, Data, Effect } from "effect";
+import { Config, Context, Data, Effect } from "effect";
 import type { ReadStream } from "node:fs";
 import * as realFs from "node:fs/promises";
 import path from "node:path";
 import type { OpenAI } from "openai";
 import type { FFMPeg } from "./ffmpeg-commands.js";
-import type { NoOBSFilesFoundError } from "./layers.js";
 
 export class FFmpegCommandsService extends Context.Tag("FFmpegCommandsService")<
   FFmpegCommandsService,
@@ -37,15 +36,11 @@ export class AskQuestionService extends Context.Tag("AskQuestionService")<
   }
 >() {}
 
-export class OBSIntegrationService extends Context.Tag("OBSIntegrationService")<
-  OBSIntegrationService,
-  {
-    getLatestOBSVideo: () => Effect.Effect<
-      AbsolutePath,
-      ConfigError.ConfigError | NoOBSFilesFoundError
-    >;
-  }
->() {}
+export class NoOBSFilesFoundError extends Data.TaggedError(
+  "NoOBSFilesFoundError"
+)<{
+  dir: string;
+}> {}
 
 export type Article = {
   content: string;
@@ -102,6 +97,35 @@ export class GetLatestFilesInDirectoryService extends Effect.Service<GetLatestFi
           .map((file) => file.filePath)
       );
     }),
+  }
+) {}
+
+export class OBSIntegrationService extends Effect.Service<OBSIntegrationService>()(
+  "OBSIntegrationService",
+  {
+    effect: Effect.gen(function* () {
+      const getLatestFilesInDirectory = yield* GetLatestFilesInDirectoryService;
+
+      return {
+        getLatestOBSVideo: Effect.fn("getLatestOBSVideo")(function* () {
+          const obsOutputDirectory = yield* Config.string(
+            "OBS_OUTPUT_DIRECTORY"
+          );
+          const files = yield* getLatestFilesInDirectory({
+            dir: obsOutputDirectory as AbsolutePath,
+          });
+
+          if (!files[0]) {
+            return yield* new NoOBSFilesFoundError({
+              dir: obsOutputDirectory,
+            });
+          }
+
+          return files[0]!;
+        }),
+      };
+    }),
+    dependencies: [GetLatestFilesInDirectoryService.Default],
   }
 ) {}
 
