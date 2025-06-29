@@ -17,18 +17,18 @@ import {
 import { FFmpegCommandsService } from "./services.js";
 import { findSilenceInVideo } from "./silence-detection.js";
 
-export const CouldNotCreateSpeakingOnlyVideoError = Data.TaggedError(
+export class CouldNotCreateSpeakingOnlyVideoError extends Data.TaggedError(
   "CouldNotCreateSpeakingOnlyVideoError"
 )<{
   cause: Error;
-}>;
+}> {}
 
-export const FFMPegWithComplexFilterError = Data.TaggedError(
+export class FFMPegWithComplexFilterError extends Data.TaggedError(
   "FFMPegWithComplexFilterError"
 )<{
   stdout: string | undefined;
   stderr: string | undefined;
-}>;
+}> {}
 
 const FFMPEG_CONCURRENCY_LIMIT = 6;
 

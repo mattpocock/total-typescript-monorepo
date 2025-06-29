@@ -3,13 +3,13 @@ import { Data, Effect } from "effect";
 import { MINIMUM_CLIP_LENGTH_IN_SECONDS } from "./constants.js";
 import { FFmpegCommandsService } from "./services.js";
 
-export const CouldNotFindStartTimeError = Data.TaggedError(
+export class CouldNotFindStartTimeError extends Data.TaggedError(
   "CouldNotFindStartTimeError"
-);
+) {}
 
-export const CouldNotFindEndTimeError = Data.TaggedError(
+export class CouldNotFindEndTimeError extends Data.TaggedError(
   "CouldNotFindEndTimeError"
-);
+) {}
 
 export const getClipsOfSpeakingFromFFmpeg = (
   stdout: string,

@@ -26,11 +26,11 @@ import { generateObject } from "ai";
 import { Config, Data, Effect } from "effect";
 import { OpenAIService, ReadStreamService } from "./services.js";
 
-export const CouldNotTranscribeAudioError = Data.TaggedError(
+export class CouldNotTranscribeAudioError extends Data.TaggedError(
   "CouldNotTranscribeAudioError"
 )<{
   cause: Error;
-}>;
+}> {}
 
 export const createSubtitleFromAudio = (audioPath: AbsolutePath) => {
   return Effect.gen(function* () {
@@ -70,11 +70,11 @@ export const createSubtitleFromAudio = (audioPath: AbsolutePath) => {
   });
 };
 
-export const WrongAudioFileExtensionError = Data.TaggedError(
+export class WrongAudioFileExtensionError extends Data.TaggedError(
   "WrongAudioFileExtensionError"
 )<{
   message: string;
-}>;
+}> {}
 
 export const transcribeAudio = (audioPath: AbsolutePath) => {
   return Effect.gen(function* () {
@@ -109,21 +109,23 @@ export const transcribeAudio = (audioPath: AbsolutePath) => {
   });
 };
 
-export const CouldNotEncodeVideoError = Data.TaggedError(
+export class CouldNotEncodeVideoError extends Data.TaggedError(
   "CouldNotEncodeVideoError"
 )<{
   cause: Error;
-}>;
+}> {}
 
-export const CouldNotGetFPSError = Data.TaggedError("CouldNotGetFPSError")<{
+export class CouldNotGetFPSError extends Data.TaggedError(
+  "CouldNotGetFPSError"
+)<{
   cause: Error;
-}>;
+}> {}
 
-export const CouldNotExtractChaptersError = Data.TaggedError(
+export class CouldNotExtractChaptersError extends Data.TaggedError(
   "CouldNotExtractChaptersError"
 )<{
   cause: Error;
-}>;
+}> {}
 
 export interface RawChapter {
   id: number;
@@ -242,11 +244,11 @@ export const extractAudioFromVideo = (
   );
 };
 
-export const CouldNotExtractAudioError = Data.TaggedError(
+export class CouldNotExtractAudioError extends Data.TaggedError(
   "CouldNotExtractAudioError"
 )<{
   cause: Error;
-}>;
+}> {}
 
 export const createClip = (
   inputVideo: AbsolutePath,
@@ -265,11 +267,11 @@ export const createClip = (
   );
 };
 
-export const CouldNotCreateClipError = Data.TaggedError(
+export class CouldNotCreateClipError extends Data.TaggedError(
   "CouldNotCreateClipError"
 )<{
   cause: Error;
-}>;
+}> {}
 
 export const concatenateClips = (
   concatFile: AbsolutePath,
@@ -306,11 +308,11 @@ export const detectSilence = (
   );
 };
 
-export const CouldNotDetectSilenceError = Data.TaggedError(
+export class CouldNotDetectSilenceError extends Data.TaggedError(
   "CouldNotDetectSilenceError"
 )<{
   cause: Error;
-}>;
+}> {}
 
 export const figureOutWhichCTAToShow = (transcript: string) => {
   return Effect.tryPromise({
@@ -345,11 +347,11 @@ export const figureOutWhichCTAToShow = (transcript: string) => {
   });
 };
 
-export const CouldNotFigureOutWhichCTAToShowError = Data.TaggedError(
+export class CouldNotFigureOutWhichCTAToShowError extends Data.TaggedError(
   "CouldNotFigureOutWhichCTAToShowError"
 )<{
   cause: Error;
-}>;
+}> {}
 
 export const renderRemotion = (outputPath: AbsolutePath, cwd: string) => {
   return execAsync(`nice -n 19 npx remotion render MyComp "${outputPath}"`, {
