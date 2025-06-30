@@ -36,7 +36,7 @@ I analyzed the `packages/ffmpeg` codebase and identified comprehensive Effect-TS
 
 ## Created Cursor Rules Files
 
-I created 8 comprehensive Cursor rules files in `.cursor-rules/` (as `.mdc` files):
+I created 8 comprehensive Cursor rules files in `.cursor/rules/` (as `.mdc` files):
 
 1. **`effect-overview.mdc`** - Main overview tying all patterns together
 2. **`effect-tagged-errors.mdc`** - Data.TaggedError patterns and naming conventions
