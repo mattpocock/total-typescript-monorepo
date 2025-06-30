@@ -1,0 +1,80 @@
+# Effect TaggedError Pattern
+
+## When to use Data.TaggedError
+
+Use `Data.TaggedError` to create typed error classes that can be used in Effect workflows. This provides better error handling with type safety and structured error information.
+
+## Pattern Structure
+
+```typescript
+import { Data } from "effect";
+
+export class SomeOperationError extends Data.TaggedError("SomeOperationError")<{
+  cause: Error;
+  additionalInfo?: string;
+}> {}
+
+export class ValidationError extends Data.TaggedError("ValidationError")<{
+  message: string;
+  field?: string;
+}> {}
+```
+
+## Usage Examples
+
+### Basic Error Creation
+```typescript
+// In your Effect function
+return yield* Effect.fail(new SomeOperationError({ 
+  cause: error,
+  additionalInfo: "Additional context" 
+}));
+```
+
+### Error with Configuration
+```typescript
+export class NoFilesFoundError extends Data.TaggedError("NoFilesFoundError")<{
+  dir: string;
+}> {}
+
+// Usage
+if (!files[0]) {
+  return yield* new NoFilesFoundError({
+    dir: directoryPath,
+  });
+}
+```
+
+### Error Handling in Effects
+```typescript
+yield* Effect.tryPromise(() => someAsyncOperation())
+  .pipe(
+    Effect.mapError((e) => new SomeOperationError({ cause: e }))
+  );
+```
+
+## Naming Convention
+
+- Use descriptive names that clearly indicate what went wrong
+- End error class names with "Error"
+- Use PascalCase for class names
+- Use camelCase for error properties
+
+## Error Properties
+
+- Always include a `cause: Error` property when wrapping existing errors
+- Include relevant context information as additional properties
+- Use optional properties (`?`) for non-essential context
+- Keep property names descriptive and concise
+
+## Integration with Effect.mapError
+
+```typescript
+yield* fs.readFile(path)
+  .pipe(
+    Effect.mapError((e) => new CouldNotReadFileError({ 
+      cause: e, 
+      filePath: path 
+    }))
+  );
+```

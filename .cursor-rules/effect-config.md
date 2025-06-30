@@ -1,0 +1,286 @@
+# Effect Configuration Patterns
+
+## Basic Configuration Access
+
+Use `Config` to access environment variables and configuration values in a type-safe way.
+
+### String Configuration
+
+```typescript
+import { Config, Effect } from "effect";
+
+const workflow = Effect.gen(function* () {
+  // Required string configuration
+  const apiUrl = yield* Config.string("API_URL");
+  
+  // String with default value
+  const environment = yield* Config.string("NODE_ENV").pipe(
+    Config.withDefault("development")
+  );
+  
+  return { apiUrl, environment };
+});
+```
+
+### Number Configuration
+
+```typescript
+const numericConfig = Effect.gen(function* () {
+  // Required number
+  const port = yield* Config.number("PORT");
+  
+  // Number with default
+  const timeout = yield* Config.number("TIMEOUT").pipe(
+    Config.withDefault(5000)
+  );
+  
+  // Number with validation
+  const workers = yield* Config.number("WORKER_COUNT").pipe(
+    Config.withDefault(4),
+    Config.validate({
+      message: "Worker count must be between 1 and 16",
+      validation: (n) => n >= 1 && n <= 16
+    })
+  );
+  
+  return { port, timeout, workers };
+});
+```
+
+### Boolean Configuration
+
+```typescript
+const booleanConfig = Effect.gen(function* () {
+  // Boolean configuration
+  const debugMode = yield* Config.boolean("DEBUG_MODE").pipe(
+    Config.withDefault(false)
+  );
+  
+  const enableFeature = yield* Config.boolean("ENABLE_FEATURE");
+  
+  return { debugMode, enableFeature };
+});
+```
+
+## Sensitive Configuration
+
+Use `Config.redacted` for sensitive values like API keys, passwords, etc.:
+
+```typescript
+const sensitiveConfig = Effect.gen(function* () {
+  // Redacted configuration for sensitive data
+  const apiKey = yield* Config.redacted(Config.string("API_KEY"));
+  const dbPassword = yield* Config.redacted(Config.string("DB_PASSWORD"));
+  
+  // Use Redacted.value() to access the actual value
+  const client = new ApiClient({
+    apiKey: Redacted.value(apiKey),
+  });
+  
+  return client;
+});
+```
+
+## Configuration in Services
+
+```typescript
+export class ConfigurableService extends Effect.Service<ConfigurableService>()(
+  "ConfigurableService",
+  {
+    effect: Effect.gen(function* () {
+      // Load configuration during service initialization
+      const baseUrl = yield* Config.string("API_BASE_URL");
+      const timeout = yield* Config.number("API_TIMEOUT").pipe(
+        Config.withDefault(10000)
+      );
+      const retries = yield* Config.number("API_RETRIES").pipe(
+        Config.withDefault(3)
+      );
+      
+      return {
+        makeRequest: Effect.fn("makeRequest")(function* (endpoint: string) {
+          const url = `${baseUrl}/${endpoint}`;
+          // Use configuration in implementation
+          return yield* httpRequest(url, { timeout, retries });
+        }),
+      };
+    }),
+  }
+) {}
+```
+
+## Configuration Validation
+
+```typescript
+const validatedConfig = Effect.gen(function* () {
+  // Custom validation
+  const port = yield* Config.number("PORT").pipe(
+    Config.validate({
+      message: "Port must be between 1000 and 65535",
+      validation: (port) => port >= 1000 && port <= 65535
+    })
+  );
+  
+  // URL validation
+  const apiUrl = yield* Config.string("API_URL").pipe(
+    Config.validate({
+      message: "Must be a valid URL",
+      validation: (url) => {
+        try {
+          new URL(url);
+          return true;
+        } catch {
+          return false;
+        }
+      }
+    })
+  );
+  
+  return { port, apiUrl };
+});
+```
+
+## Array Configuration
+
+```typescript
+const arrayConfig = Effect.gen(function* () {
+  // Comma-separated values
+  const allowedOrigins = yield* Config.string("ALLOWED_ORIGINS").pipe(
+    Config.map((str) => str.split(",").map(s => s.trim())),
+    Config.withDefault([])
+  );
+  
+  // JSON array configuration
+  const features = yield* Config.string("ENABLED_FEATURES").pipe(
+    Config.map((str) => JSON.parse(str) as string[]),
+    Config.withDefault([])
+  );
+  
+  return { allowedOrigins, features };
+});
+```
+
+## Nested Configuration Objects
+
+```typescript
+const complexConfig = Effect.gen(function* () {
+  // Build configuration object
+  const databaseConfig = {
+    host: yield* Config.string("DB_HOST"),
+    port: yield* Config.number("DB_PORT").pipe(Config.withDefault(5432)),
+    database: yield* Config.string("DB_NAME"),
+    username: yield* Config.string("DB_USER"),
+    password: yield* Config.redacted(Config.string("DB_PASSWORD")),
+  };
+  
+  const redisConfig = {
+    host: yield* Config.string("REDIS_HOST").pipe(
+      Config.withDefault("localhost")
+    ),
+    port: yield* Config.number("REDIS_PORT").pipe(
+      Config.withDefault(6379)
+    ),
+  };
+  
+  return { database: databaseConfig, redis: redisConfig };
+});
+```
+
+## Environment-Specific Configuration
+
+```typescript
+const environmentConfig = Effect.gen(function* () {
+  const env = yield* Config.string("NODE_ENV").pipe(
+    Config.withDefault("development")
+  );
+  
+  // Different configs based on environment
+  const logLevel = yield* Config.string("LOG_LEVEL").pipe(
+    Config.withDefault(env === "production" ? "info" : "debug")
+  );
+  
+  const enableMetrics = yield* Config.boolean("ENABLE_METRICS").pipe(
+    Config.withDefault(env === "production")
+  );
+  
+  return { env, logLevel, enableMetrics };
+});
+```
+
+## Configuration Error Handling
+
+```typescript
+const safeConfig = Effect.gen(function* () {
+  const config = yield* Effect.all({
+    apiUrl: Config.string("API_URL"),
+    timeout: Config.number("TIMEOUT").pipe(Config.withDefault(5000)),
+    retries: Config.number("RETRIES").pipe(Config.withDefault(3)),
+  }).pipe(
+    Effect.mapError((configError) => 
+      new ConfigurationError({ 
+        message: "Failed to load configuration",
+        cause: configError 
+      })
+    )
+  );
+  
+  return config;
+});
+```
+
+## Configuration Constants
+
+```typescript
+// Define configuration keys as constants
+const CONFIG_KEYS = {
+  API_URL: "API_URL",
+  API_TIMEOUT: "API_TIMEOUT",
+  DATABASE_URL: "DATABASE_URL",
+  REDIS_URL: "REDIS_URL",
+} as const;
+
+const typedConfig = Effect.gen(function* () {
+  const apiUrl = yield* Config.string(CONFIG_KEYS.API_URL);
+  const timeout = yield* Config.number(CONFIG_KEYS.API_TIMEOUT).pipe(
+    Config.withDefault(10000)
+  );
+  
+  return { apiUrl, timeout };
+});
+```
+
+## Testing with Configuration
+
+```typescript
+// Test configuration layer
+const TestConfigLayer = Layer.succeed(
+  Config.Tag,
+  Config.make(new Map([
+    ["API_URL", "http://localhost:3000"],
+    ["TIMEOUT", "1000"],
+    ["DEBUG_MODE", "true"],
+  ]))
+);
+
+// Use in tests
+test("should work with test config", async () => {
+  const result = await Effect.runPromise(
+    myConfigurableFunction().pipe(
+      Effect.provide(TestConfigLayer)
+    )
+  );
+  
+  expect(result).toBe("expected");
+});
+```
+
+## Best Practices
+
+1. **Use Defaults**: Provide sensible defaults with `Config.withDefault`
+2. **Validate Early**: Validate configuration at application startup
+3. **Redact Secrets**: Always use `Config.redacted` for sensitive values
+4. **Document Required**: Document which environment variables are required
+5. **Group Related**: Group related configuration into objects
+6. **Environment Aware**: Use different defaults for different environments
+7. **Fail Fast**: Let configuration errors fail the application startup
+8. **Test Configuration**: Test with different configuration values

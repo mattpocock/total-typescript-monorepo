@@ -1,0 +1,326 @@
+# Effect Workflow Patterns
+
+## What are Workflows
+
+Workflows orchestrate multiple services and operations to achieve complex business logic. They typically use `Effect.gen` and coordinate between different services.
+
+## Basic Workflow Structure
+
+```typescript
+const myWorkflow = Effect.gen(function* () {
+  // 1. Get required services
+  const serviceA = yield* ServiceA;
+  const serviceB = yield* ServiceB;
+  const config = yield* Config.string("WORKFLOW_CONFIG");
+  
+  // 2. Perform operations in sequence
+  const step1Result = yield* serviceA.doFirstStep(config);
+  
+  const step2Result = yield* serviceB.doSecondStep(step1Result).pipe(
+    Effect.mapError((e) => new Step2Error({ cause: e, input: step1Result }))
+  );
+  
+  // 3. Final processing
+  const finalResult = yield* processFinalResult(step2Result);
+  
+  yield* Effect.logInfo("Workflow completed successfully", { finalResult });
+  
+  return finalResult;
+});
+```
+
+## File Processing Workflow
+
+```typescript
+const processFileWorkflow = (inputPath: AbsolutePath) => 
+  Effect.gen(function* () {
+    const fs = yield* FileSystem.FileSystem;
+    const processor = yield* FileProcessorService;
+    
+    // Validate input exists
+    const exists = yield* fs.exists(inputPath);
+    if (!exists) {
+      return yield* Effect.fail(new FileNotFoundError({ path: inputPath }));
+    }
+    
+    // Read and process file
+    const content = yield* fs.readFileString(inputPath).pipe(
+      Effect.mapError((e) => new FileReadError({ cause: e, path: inputPath }))
+    );
+    
+    const processed = yield* processor.processContent(content);
+    
+    // Save result
+    const outputPath = generateOutputPath(inputPath);
+    yield* fs.writeFileString(outputPath, processed);
+    
+    yield* Effect.logInfo("File processed successfully", { 
+      input: inputPath, 
+      output: outputPath 
+    });
+    
+    return outputPath;
+  });
+```
+
+## Parallel Processing Workflow
+
+```typescript
+const parallelProcessingWorkflow = (items: string[]) =>
+  Effect.gen(function* () {
+    const processor = yield* ProcessorService;
+    
+    // Process items in parallel with limited concurrency
+    const results = yield* Effect.all(
+      items.map((item) => 
+        processor.processItem(item).pipe(
+          Effect.mapError((e) => new ItemProcessingError({ cause: e, item }))
+        )
+      ),
+      { concurrency: 5 } // Limit concurrent operations
+    );
+    
+    // Collect successful results
+    const successfulResults = results.filter(Boolean);
+    
+    yield* Effect.logInfo("Parallel processing completed", {
+      total: items.length,
+      successful: successfulResults.length,
+    });
+    
+    return successfulResults;
+  });
+```
+
+## Conditional Workflow
+
+```typescript
+const conditionalWorkflow = (inputType: "video" | "audio") =>
+  Effect.gen(function* () {
+    const videoService = yield* VideoService;
+    const audioService = yield* AudioService;
+    
+    switch (inputType) {
+      case "video":
+        const videoResult = yield* videoService.processVideo();
+        return { type: "video", result: videoResult };
+        
+      case "audio":
+        const audioResult = yield* audioService.processAudio();
+        return { type: "audio", result: audioResult };
+        
+      default:
+        return yield* Effect.fail(
+          new UnsupportedInputTypeError({ inputType })
+        );
+    }
+  });
+```
+
+## Resource Management Workflow
+
+```typescript
+const resourceWorkflow = Effect.gen(function* () {
+  // Acquire resources
+  const resource1 = yield* acquireResource1();
+  const resource2 = yield* acquireResource2();
+  
+  try {
+    // Use resources
+    const result = yield* processWithResources(resource1, resource2);
+    return result;
+  } catch (error) {
+    yield* Effect.logError("Workflow failed", { error });
+    throw error;
+  }
+}).pipe(
+  // Ensure cleanup happens regardless of success/failure
+  Effect.ensuring(
+    Effect.all([
+      releaseResource1().pipe(Effect.orElse(() => Effect.unit)),
+      releaseResource2().pipe(Effect.orElse(() => Effect.unit)),
+    ])
+  )
+);
+```
+
+## Error Recovery Workflow
+
+```typescript
+const robustWorkflow = (input: string) =>
+  Effect.gen(function* () {
+    const primaryService = yield* PrimaryService;
+    const fallbackService = yield* FallbackService;
+    
+    // Try primary approach
+    const primaryResult = yield* primaryService.process(input).pipe(
+      Effect.either
+    );
+    
+    if (Either.isRight(primaryResult)) {
+      yield* Effect.logInfo("Primary processing succeeded");
+      return primaryResult.right;
+    }
+    
+    // Fallback on error
+    yield* Effect.logWarning("Primary processing failed, trying fallback", {
+      error: primaryResult.left
+    });
+    
+    const fallbackResult = yield* fallbackService.process(input).pipe(
+      Effect.mapError((e) => new FallbackFailedError({ 
+        cause: e, 
+        originalError: primaryResult.left 
+      }))
+    );
+    
+    return fallbackResult;
+  });
+```
+
+## Batch Processing Workflow
+
+```typescript
+const batchWorkflow = (items: string[], batchSize = 10) =>
+  Effect.gen(function* () {
+    const processor = yield* BatchProcessorService;
+    
+    // Split into batches
+    const batches = chunkArray(items, batchSize);
+    
+    yield* Effect.logInfo("Starting batch processing", {
+      totalItems: items.length,
+      batchCount: batches.length,
+      batchSize,
+    });
+    
+    const results: string[] = [];
+    
+    // Process batches sequentially to avoid overwhelming resources
+    for (const [index, batch] of batches.entries()) {
+      yield* Effect.logDebug(`Processing batch ${index + 1}/${batches.length}`);
+      
+      const batchResults = yield* Effect.all(
+        batch.map((item) => processor.processItem(item)),
+        { concurrency: batchSize }
+      );
+      
+      results.push(...batchResults);
+      
+      // Optional: delay between batches
+      if (index < batches.length - 1) {
+        yield* Effect.sleep("1 second");
+      }
+    }
+    
+    yield* Effect.logInfo("Batch processing completed", {
+      processedItems: results.length,
+    });
+    
+    return results;
+  });
+```
+
+## Configuration-Driven Workflow
+
+```typescript
+const configurableWorkflow = Effect.gen(function* () {
+  // Load configuration
+  const config = {
+    inputDir: yield* Config.string("INPUT_DIRECTORY"),
+    outputDir: yield* Config.string("OUTPUT_DIRECTORY"),
+    enableParallel: yield* Config.boolean("ENABLE_PARALLEL_PROCESSING").pipe(
+      Config.withDefault(true)
+    ),
+    maxConcurrency: yield* Config.number("MAX_CONCURRENCY").pipe(
+      Config.withDefault(5)
+    ),
+  };
+  
+  const fs = yield* FileSystem.FileSystem;
+  const processor = yield* ProcessorService;
+  
+  // Get input files
+  const files = yield* fs.readDirectory(config.inputDir);
+  
+  // Process based on configuration
+  if (config.enableParallel) {
+    yield* Effect.logInfo("Using parallel processing");
+    const results = yield* Effect.all(
+      files.map((file) => processor.processFile(file)),
+      { concurrency: config.maxConcurrency }
+    );
+    return results;
+  } else {
+    yield* Effect.logInfo("Using sequential processing");
+    const results: string[] = [];
+    for (const file of files) {
+      const result = yield* processor.processFile(file);
+      results.push(result);
+    }
+    return results;
+  }
+});
+```
+
+## Testing Workflows
+
+```typescript
+// Test with mocked services
+test("workflow should process files correctly", async () => {
+  const mockProcessor = Layer.succeed(ProcessorService, {
+    processFile: Effect.succeed("processed-content"),
+  });
+  
+  const mockFs = Layer.succeed(FileSystem.FileSystem, {
+    readDirectory: Effect.succeed(["file1.txt", "file2.txt"]),
+    exists: Effect.succeed(true),
+  });
+  
+  const result = await Effect.runPromise(
+    myWorkflow().pipe(
+      Effect.provide(Layer.mergeAll(mockProcessor, mockFs))
+    )
+  );
+  
+  expect(result).toEqual(["processed-content", "processed-content"]);
+});
+```
+
+## Workflow Service Pattern
+
+```typescript
+export class WorkflowsService extends Effect.Service<WorkflowsService>()(
+  "WorkflowsService",
+  {
+    effect: Effect.gen(function* () {
+      // Dependencies
+      const serviceA = yield* ServiceA;
+      const serviceB = yield* ServiceB;
+      
+      return {
+        // Expose workflows as service methods
+        processFile: Effect.fn("processFile")(processFileWorkflow),
+        
+        batchProcess: Effect.fn("batchProcess")(function* (items: string[]) {
+          return yield* batchWorkflow(items);
+        }),
+        
+        robustProcess: Effect.fn("robustProcess")(robustWorkflow),
+      };
+    }),
+    dependencies: [ServiceA.Default, ServiceB.Default],
+  }
+) {}
+```
+
+## Best Practices
+
+1. **Single Responsibility**: Each workflow should have one clear purpose
+2. **Error Boundaries**: Transform errors at appropriate boundaries
+3. **Logging**: Log important steps and completion status
+4. **Resource Cleanup**: Use `Effect.ensuring` for cleanup
+5. **Configuration**: Make workflows configurable when appropriate
+6. **Testing**: Create test layers for workflow dependencies
+7. **Documentation**: Document workflow inputs, outputs, and side effects
+8. **Idempotency**: Design workflows to be idempotent when possible
