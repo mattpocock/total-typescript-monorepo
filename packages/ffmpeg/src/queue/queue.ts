@@ -160,6 +160,76 @@ export const getNextQueueItem = (
   });
 };
 
+export const getOutstandingInformationRequests = () => {
+  return Effect.gen(function* () {
+    const queueState = yield* getQueueState();
+    
+    const informationRequests = queueState.queue.filter(
+      (item) => item.action.type === "links-request" && 
+               item.status === "requires-user-input"
+    );
+    
+    return informationRequests;
+  });
+};
+
+export const processInformationRequests = () => {
+  return Effect.gen(function* () {
+    if (yield* doesQueueLockfileExist()) {
+      return yield* Console.log("Queue is locked, skipping");
+    }
+
+    const informationRequests = yield* getOutstandingInformationRequests();
+    
+    if (informationRequests.length === 0) {
+      return yield* Console.log("No outstanding information requests found");
+    }
+
+    yield* Console.log(`Found ${informationRequests.length} outstanding information request(s)`);
+    yield* writeQueueLockfile();
+
+    const askQuestion = yield* AskQuestionService;
+    const linkStorage = yield* LinksStorageService;
+
+    for (const queueItem of informationRequests) {
+      if (queueItem.action.type === "links-request") {
+        yield* Console.log(`Processing information request: ${queueItem.id}`);
+        
+        const links: { description: string; url: string }[] = [];
+        for (const linkRequest of queueItem.action.linkRequests) {
+          const link = yield* askQuestion.askQuestion(
+            `Link request: ${linkRequest}`
+          );
+
+          links.push({
+            description: linkRequest,
+            url: link,
+          });
+        }
+
+        yield* linkStorage.addLinks(links);
+
+        yield* updateQueueItem({
+          ...queueItem,
+          status: "completed",
+          completedAt: Date.now(),
+        });
+        
+        yield* Console.log(`Information request ${queueItem.id} completed`);
+      }
+    }
+    
+    yield* Console.log("All information requests processed");
+  }).pipe(
+    Effect.ensuring(
+      deleteQueueLockfile().pipe(
+        // Fail silently
+        Effect.catchAll(() => Effect.succeed(undefined))
+      )
+    )
+  );
+};
+
 export const processQueue = (opts: { hasUserInput: boolean }) => {
   return Effect.gen(function* () {
     if (yield* doesQueueLockfileExist()) {
