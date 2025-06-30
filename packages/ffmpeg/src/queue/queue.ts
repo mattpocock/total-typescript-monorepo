@@ -39,7 +39,7 @@ export type QueueItem = {
    * before this item can be processed.
    */
   dependencies?: string[];
-  status: "idle" | "completed" | "failed" | "requires-user-input";
+  status: "ready-to-run" | "completed" | "failed" | "requires-user-input";
   error?: string;
 };
 
@@ -140,20 +140,15 @@ const deleteQueueLockfile = () => {
   });
 };
 
-export const getNextQueueItem = (
-  queueState: QueueState,
-  opts: { hasUserInput: boolean }
-) => {
+export const getNextQueueItem = (queueState: QueueState) => {
   const queueItemsAsMap = new Map(queueState.queue.map((i) => [i.id, i]));
   return queueState.queue.find((i) => {
-    // Skip information requests - they should only be processed by processInformationRequests()
-    if (i.action.type === "links-request") {
+    // Skip items that require user input - they should only be processed by processInformationRequests()
+    if (i.status === "requires-user-input") {
       return false;
     }
 
-    const canBeRun =
-      i.status === "idle" ||
-      (opts.hasUserInput && i.status === "requires-user-input");
+    const canBeRun = i.status === "ready-to-run";
 
     const dependenciesAreMet =
       !i.dependencies ||
@@ -235,7 +230,7 @@ export const processInformationRequests = () => {
   );
 };
 
-export const processQueue = (opts: { hasUserInput: boolean }) => {
+export const processQueue = () => {
   return Effect.gen(function* () {
     if (yield* doesQueueLockfileExist()) {
       return yield* Console.log("Queue is locked, skipping");
@@ -244,25 +239,13 @@ export const processQueue = (opts: { hasUserInput: boolean }) => {
     yield* writeQueueLockfile();
 
     const workflows = yield* WorkflowsService;
-    const askQuestion = yield* AskQuestionService;
-    const linkStorage = yield* LinksStorageService;
 
     while (true) {
       const queueState = yield* getQueueState();
-      const queueItem = queueState.queue.find(
-        (i) => {
-          // Skip information requests - they should only be processed by processInformationRequests()
-          if (i.action.type === "links-request") {
-            return false;
-          }
-          
-          return i.status === "idle" ||
-            (opts.hasUserInput && i.status === "requires-user-input");
-        }
-      );
+      const queueItem = getNextQueueItem(queueState);
 
       if (!queueItem) {
-        return yield* Console.log("No idle queue items found");
+        return yield* Console.log("No ready-to-run queue items found");
       }
 
       switch (queueItem.action.type) {
@@ -294,9 +277,8 @@ export const processQueue = (opts: { hasUserInput: boolean }) => {
 
           break;
         case "links-request":
-          // Information requests should not be processed here
-          // They should only be processed by processInformationRequests()
-          yield* Console.log("Skipping information request - use process-information-requests command");
+          // This should never happen since getNextQueueItem filters out requires-user-input items
+          yield* Console.log("ERROR: Links request found in processQueue - this should not happen");
           continue;
         default:
           queueItem.action satisfies never;

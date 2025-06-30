@@ -17,7 +17,7 @@ it("Should create the queue.json if it does not exist", async () => {
 
     const createAutoEditedVideoWorkflow = vi.fn();
 
-    await processQueue({ hasUserInput: false }).pipe(
+    await processQueue().pipe(
       Effect.provide(NodeFileSystem.layer),
       Effect.provideService(
         WorkflowsService,
@@ -83,7 +83,7 @@ it("Should update the queue.json when a new item is added", async () => {
             subtitles: false,
             dryRun: false,
           },
-          status: "idle",
+          status: "ready-to-run",
         },
       ]);
     }).pipe(
@@ -118,7 +118,7 @@ it("Should update the queue.json when a new item is added", async () => {
           subtitles: false,
           dryRun: false,
         },
-        status: "idle",
+        status: "ready-to-run",
       },
     ]);
   } finally {
@@ -242,8 +242,8 @@ it("Should not process links requests (processQueue ignores information requests
         },
       ]);
 
-      // processQueue should ignore information requests regardless of hasUserInput
-      yield* processQueue({ hasUserInput: true });
+      // processQueue should ignore information requests 
+      yield* processQueue();
     }).pipe(
       Effect.provide(NodeFileSystem.layer),
       Effect.provideService(
@@ -330,7 +330,7 @@ it("Should return outstanding information requests", async () => {
             subtitles: false,
             dryRun: false,
           },
-          status: "idle",
+          status: "ready-to-run",
         },
         {
           id: "3",
@@ -402,7 +402,7 @@ it("Should process only information requests", async () => {
             subtitles: false,
             dryRun: false,
           },
-          status: "idle",
+          status: "ready-to-run",
         },
       ]);
 
@@ -454,7 +454,7 @@ it("Should process only information requests", async () => {
       status: "completed",
     });
 
-    // The video creation job should remain idle (not processed)
+    // The video creation job should remain ready-to-run (not processed)
     expect(queueState.queue[1]).toEqual({
       id: "2",
       createdAt: expect.any(Number),
@@ -465,7 +465,7 @@ it("Should process only information requests", async () => {
         subtitles: false,
         dryRun: false,
       },
-      status: "idle",
+      status: "ready-to-run",
     });
 
     // Links should have been added

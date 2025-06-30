@@ -134,7 +134,7 @@ program
             subtitles: Boolean(options.subtitles),
             dryRun: Boolean(options.dryRun),
           },
-          status: "idle",
+          status: "ready-to-run",
         },
       ]);
     }).pipe(
@@ -168,9 +168,7 @@ program
   .aliases(["p", "process"])
   .description("Process the queue.")
   .action(async () => {
-    await processQueue({
-      hasUserInput: process.stdout.isTTY,
-    }).pipe(
+    await processQueue().pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(AppLayerLive),
       Effect.runPromise

@@ -44,8 +44,9 @@ pnpm cli pir
 3. **User Interaction**: Prompts user for each link request and stores the responses in the links storage service
 4. **Queue Locking**: Uses the existing queue lock mechanism to prevent concurrent processing
 5. **Error Handling**: Properly handles cases where no information requests are found
-6. **Modified `processQueue`**: The main `processQueue` function now **ignores** information requests entirely, leaving them only for the dedicated `processInformationRequests` function
-7. **Modified `getNextQueueItem`**: Also updated to skip `"links-request"` items to maintain consistency
+6. **Modified `processQueue`**: The main `processQueue` function now **ignores** items with `"requires-user-input"` status entirely, leaving them only for the dedicated `processInformationRequests` function
+7. **Modified `getNextQueueItem`**: Also updated to skip items with `"requires-user-input"` status to maintain consistency
+8. **Status-based Filtering**: Exclusion is now based on status (`"requires-user-input"`) rather than action type, making it more general and future-proof
 
 ## Testing
 
@@ -68,14 +69,25 @@ The new functions are automatically exported through the existing `export * from
 5. Responses are stored and queue items are marked as completed
 6. Other queue items (like video processing) remain untouched
 
-## Important Behavior Change
+## Important Behavior Changes
 
+### 1. Queue Processing Logic
 **Before**: The `processQueue` function would process information requests when `hasUserInput: true` was set.
 
-**After**: The `processQueue` function now **completely ignores** information requests regardless of the `hasUserInput` setting. Information requests can only be processed using the dedicated `process-information-requests` CLI command.
+**After**: The `processQueue` function now **completely ignores** items with `"requires-user-input"` status. These items can only be processed using the dedicated `process-information-requests` CLI command.
+
+### 2. Status Terminology
+**Before**: Queue items used `"idle"` status for items ready to process.
+
+**After**: Queue items now use `"ready-to-run"` status for items ready to process (more descriptive).
+
+### 3. Function Signatures
+**Before**: `processQueue({ hasUserInput: boolean })` and `getNextQueueItem(queueState, { hasUserInput: boolean })`
+
+**After**: `processQueue()` and `getNextQueueItem(queueState)` - no longer need hasUserInput parameter.
 
 This ensures clear separation of concerns:
-- `processQueue` handles video processing and other non-information-request items
-- `processInformationRequests` handles only information requests
+- `processQueue` handles video processing and other items with `"ready-to-run"` status
+- `processInformationRequests` handles only items with `"requires-user-input"` status
 
 This implementation provides exactly what was requested: a way to check for and process only information requests in the queue, without affecting other queue items.

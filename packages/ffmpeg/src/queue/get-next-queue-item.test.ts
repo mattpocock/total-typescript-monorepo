@@ -21,16 +21,16 @@ describe("getNextQueueItem", () => {
     dependencies,
   });
 
-  it("should return the first idle item when no dependencies", () => {
+  it("should return the first ready-to-run item when no dependencies", () => {
     const queueState: QueueState = {
       queue: [
         createQueueItem("1", "completed"),
-        createQueueItem("2", "idle"),
-        createQueueItem("3", "idle"),
+        createQueueItem("2", "ready-to-run"),
+        createQueueItem("3", "ready-to-run"),
       ],
     };
 
-    const result = getNextQueueItem(queueState, { hasUserInput: false });
+    const result = getNextQueueItem(queueState);
 
     expect(result).toEqual(queueState.queue[1]);
   });
@@ -40,11 +40,11 @@ describe("getNextQueueItem", () => {
       queue: [
         createQueueItem("1", "completed"),
         createQueueItem("2", "requires-user-input"),
-        createQueueItem("3", "idle"),
+        createQueueItem("3", "ready-to-run"),
       ],
     };
 
-    const result = getNextQueueItem(queueState, { hasUserInput: true });
+    const result = getNextQueueItem(queueState);
 
     expect(result).toEqual(queueState.queue[1]);
   });
@@ -54,11 +54,11 @@ describe("getNextQueueItem", () => {
       queue: [
         createQueueItem("1", "completed"),
         createQueueItem("2", "requires-user-input"),
-        createQueueItem("3", "idle"),
+        createQueueItem("3", "ready-to-run"),
       ],
     };
 
-    const result = getNextQueueItem(queueState, { hasUserInput: false });
+    const result = getNextQueueItem(queueState);
 
     expect(result).toEqual(queueState.queue[2]);
   });
@@ -67,12 +67,12 @@ describe("getNextQueueItem", () => {
     const queueState: QueueState = {
       queue: [
         createQueueItem("1", "completed"),
-        createQueueItem("2", "idle", ["1"]),
-        createQueueItem("3", "idle", ["1", "2"]),
+        createQueueItem("2", "ready-to-run", ["1"]),
+        createQueueItem("3", "ready-to-run", ["1", "2"]),
       ],
     };
 
-    const result = getNextQueueItem(queueState, { hasUserInput: false });
+    const result = getNextQueueItem(queueState);
 
     expect(result).toEqual(queueState.queue[1]);
   });
@@ -80,13 +80,13 @@ describe("getNextQueueItem", () => {
   it("should not return item with unsatisfied dependencies", () => {
     const queueState: QueueState = {
       queue: [
-        createQueueItem("1", "idle"),
-        createQueueItem("2", "idle", ["1"]),
-        createQueueItem("3", "idle", ["1", "2"]),
+        createQueueItem("1", "ready-to-run"),
+        createQueueItem("2", "ready-to-run", ["1"]),
+        createQueueItem("3", "ready-to-run", ["1", "2"]),
       ],
     };
 
-    const result = getNextQueueItem(queueState, { hasUserInput: false });
+    const result = getNextQueueItem(queueState);
 
     expect(result).toEqual(queueState.queue[0]);
   });
@@ -95,12 +95,12 @@ describe("getNextQueueItem", () => {
     const queueState: QueueState = {
       queue: [
         createQueueItem("1", "failed"),
-        createQueueItem("2", "idle", ["1"]),
-        createQueueItem("3", "idle"),
+        createQueueItem("2", "ready-to-run", ["1"]),
+        createQueueItem("3", "ready-to-run"),
       ],
     };
 
-    const result = getNextQueueItem(queueState, { hasUserInput: false });
+    const result = getNextQueueItem(queueState);
 
     expect(result).toEqual(queueState.queue[2]);
   });
@@ -109,12 +109,12 @@ describe("getNextQueueItem", () => {
     const queueState: QueueState = {
       queue: [
         createQueueItem("1", "requires-user-input"),
-        createQueueItem("2", "idle", ["1"]),
-        createQueueItem("3", "idle"),
+        createQueueItem("2", "ready-to-run", ["1"]),
+        createQueueItem("3", "ready-to-run"),
       ],
     };
 
-    const result = getNextQueueItem(queueState, { hasUserInput: false });
+    const result = getNextQueueItem(queueState);
 
     expect(result).toEqual(queueState.queue[2]);
   });
@@ -124,12 +124,12 @@ describe("getNextQueueItem", () => {
       queue: [
         createQueueItem("1", "completed"),
         createQueueItem("2", "completed"),
-        createQueueItem("3", "idle", ["1", "2"]),
-        createQueueItem("4", "idle"),
+        createQueueItem("3", "ready-to-run", ["1", "2"]),
+        createQueueItem("4", "ready-to-run"),
       ],
     };
 
-    const result = getNextQueueItem(queueState, { hasUserInput: false });
+    const result = getNextQueueItem(queueState);
 
     expect(result).toEqual(queueState.queue[2]);
   });
@@ -143,7 +143,7 @@ describe("getNextQueueItem", () => {
       ],
     };
 
-    const result = getNextQueueItem(queueState, { hasUserInput: false });
+    const result = getNextQueueItem(queueState);
 
     expect(result).toBeUndefined();
   });
@@ -151,12 +151,12 @@ describe("getNextQueueItem", () => {
   it("should return null when all items have unsatisfied dependencies", () => {
     const queueState: QueueState = {
       queue: [
-        createQueueItem("1", "idle", ["2"]),
-        createQueueItem("2", "idle", ["1"]),
+        createQueueItem("1", "ready-to-run", ["2"]),
+        createQueueItem("2", "ready-to-run", ["1"]),
       ],
     };
 
-    const result = getNextQueueItem(queueState, { hasUserInput: false });
+    const result = getNextQueueItem(queueState);
 
     expect(result).toBeUndefined();
   });
@@ -166,7 +166,7 @@ describe("getNextQueueItem", () => {
       queue: [],
     };
 
-    const result = getNextQueueItem(queueState, { hasUserInput: false });
+    const result = getNextQueueItem(queueState);
 
     expect(result).toBeUndefined();
   });
@@ -174,22 +174,22 @@ describe("getNextQueueItem", () => {
   it("should handle items with undefined dependencies", () => {
     const queueState: QueueState = {
       queue: [
-        createQueueItem("1", "idle"),
-        createQueueItem("2", "idle", undefined),
+        createQueueItem("1", "ready-to-run"),
+        createQueueItem("2", "ready-to-run", undefined),
       ],
     };
 
-    const result = getNextQueueItem(queueState, { hasUserInput: false });
+    const result = getNextQueueItem(queueState);
 
     expect(result).toEqual(queueState.queue[0]);
   });
 
   it("should handle items with empty dependencies array", () => {
     const queueState: QueueState = {
-      queue: [createQueueItem("1", "idle"), createQueueItem("2", "idle", [])],
+      queue: [createQueueItem("1", "ready-to-run"), createQueueItem("2", "ready-to-run", [])],
     };
 
-    const result = getNextQueueItem(queueState, { hasUserInput: false });
+    const result = getNextQueueItem(queueState);
 
     expect(result).toEqual(queueState.queue[0]);
   });
@@ -197,12 +197,12 @@ describe("getNextQueueItem", () => {
   it("should handle missing dependency items gracefully", () => {
     const queueState: QueueState = {
       queue: [
-        createQueueItem("1", "idle", ["missing-id"]),
-        createQueueItem("2", "idle"),
+        createQueueItem("1", "ready-to-run", ["missing-id"]),
+        createQueueItem("2", "ready-to-run"),
       ],
     };
 
-    const result = getNextQueueItem(queueState, { hasUserInput: false });
+    const result = getNextQueueItem(queueState);
 
     expect(result).toEqual(queueState.queue[1]);
   });
@@ -212,12 +212,12 @@ describe("getNextQueueItem", () => {
       queue: [
         createQueueItem("1", "completed"),
         createQueueItem("2", "completed", ["1"]),
-        createQueueItem("3", "idle", ["2"]),
-        createQueueItem("4", "idle", ["1", "3"]),
+        createQueueItem("3", "ready-to-run", ["2"]),
+        createQueueItem("4", "ready-to-run", ["1", "3"]),
       ],
     };
 
-    const result = getNextQueueItem(queueState, { hasUserInput: false });
+    const result = getNextQueueItem(queueState);
 
     expect(result).toEqual(queueState.queue[2]);
   });
@@ -227,12 +227,12 @@ describe("getNextQueueItem", () => {
       queue: [
         createQueueItem("1", "completed"),
         createQueueItem("2", "failed", ["1"]),
-        createQueueItem("3", "idle", ["1", "2"]),
-        createQueueItem("4", "idle", ["1"]),
+        createQueueItem("3", "ready-to-run", ["1", "2"]),
+        createQueueItem("4", "ready-to-run", ["1"]),
       ],
     };
 
-    const result = getNextQueueItem(queueState, { hasUserInput: false });
+    const result = getNextQueueItem(queueState);
 
     expect(result).toEqual(queueState.queue[3]);
   });
@@ -249,12 +249,12 @@ describe("getNextQueueItem", () => {
           },
           status: "requires-user-input",
         },
-        createQueueItem("2", "idle"),
+        createQueueItem("2", "ready-to-run"),
       ],
     };
 
     // Should skip the links-request item even with hasUserInput: true
-    const result = getNextQueueItem(queueState, { hasUserInput: true });
+    const result = getNextQueueItem(queueState);
 
     expect(result).toEqual(queueState.queue[1]);
   });
@@ -278,13 +278,13 @@ describe("getNextQueueItem", () => {
             type: "links-request",
             linkRequests: ["test2"],
           },
-          status: "idle",
+          status: "ready-to-run",
         },
       ],
     };
 
     // Should return undefined since all items are links-request
-    const result = getNextQueueItem(queueState, { hasUserInput: true });
+    const result = getNextQueueItem(queueState);
 
     expect(result).toBeUndefined();
   });
