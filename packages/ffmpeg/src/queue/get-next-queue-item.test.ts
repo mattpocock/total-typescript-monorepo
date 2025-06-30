@@ -35,7 +35,7 @@ describe("getNextQueueItem", () => {
     expect(result).toEqual(queueState.queue[1]);
   });
 
-  it("should return requires-user-input item when hasUserInput is true", () => {
+  it("should skip requires-user-input items", () => {
     const queueState: QueueState = {
       queue: [
         createQueueItem("1", "completed"),
@@ -46,10 +46,11 @@ describe("getNextQueueItem", () => {
 
     const result = getNextQueueItem(queueState);
 
-    expect(result).toEqual(queueState.queue[1]);
+    // Should skip the requires-user-input item and return the ready-to-run item
+    expect(result).toEqual(queueState.queue[2]);
   });
 
-  it("should not return requires-user-input item when hasUserInput is false", () => {
+  it("should not return requires-user-input item", () => {
     const queueState: QueueState = {
       queue: [
         createQueueItem("1", "completed"),
@@ -253,7 +254,7 @@ describe("getNextQueueItem", () => {
       ],
     };
 
-    // Should skip the links-request item even with hasUserInput: true
+    // Should skip the links-request item (requires-user-input status)
     const result = getNextQueueItem(queueState);
 
     expect(result).toEqual(queueState.queue[1]);
@@ -278,12 +279,12 @@ describe("getNextQueueItem", () => {
             type: "links-request",
             linkRequests: ["test2"],
           },
-          status: "ready-to-run",
+          status: "requires-user-input",
         },
       ],
     };
 
-    // Should return undefined since all items are links-request
+    // Should return undefined since all items have requires-user-input status
     const result = getNextQueueItem(queueState);
 
     expect(result).toBeUndefined();
