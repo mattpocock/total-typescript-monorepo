@@ -146,6 +146,11 @@ export const getNextQueueItem = (
 ) => {
   const queueItemsAsMap = new Map(queueState.queue.map((i) => [i.id, i]));
   return queueState.queue.find((i) => {
+    // Skip information requests - they should only be processed by processInformationRequests()
+    if (i.action.type === "links-request") {
+      return false;
+    }
+
     const canBeRun =
       i.status === "idle" ||
       (opts.hasUserInput && i.status === "requires-user-input");
@@ -245,9 +250,15 @@ export const processQueue = (opts: { hasUserInput: boolean }) => {
     while (true) {
       const queueState = yield* getQueueState();
       const queueItem = queueState.queue.find(
-        (i) =>
-          i.status === "idle" ||
-          (opts.hasUserInput && i.status === "requires-user-input")
+        (i) => {
+          // Skip information requests - they should only be processed by processInformationRequests()
+          if (i.action.type === "links-request") {
+            return false;
+          }
+          
+          return i.status === "idle" ||
+            (opts.hasUserInput && i.status === "requires-user-input");
+        }
       );
 
       if (!queueItem) {
@@ -283,26 +294,10 @@ export const processQueue = (opts: { hasUserInput: boolean }) => {
 
           break;
         case "links-request":
-          const links: { description: string; url: string }[] = [];
-          for (const linkRequest of queueItem.action.linkRequests) {
-            const link = yield* askQuestion.askQuestion(
-              `Link request: ${linkRequest}`
-            );
-
-            links.push({
-              description: linkRequest,
-              url: link,
-            });
-          }
-
-          yield* linkStorage.addLinks(links);
-
-          yield* updateQueueItem({
-            ...queueItem,
-            status: "completed",
-            completedAt: Date.now(),
-          });
-          break;
+          // Information requests should not be processed here
+          // They should only be processed by processInformationRequests()
+          yield* Console.log("Skipping information request - use process-information-requests command");
+          continue;
         default:
           queueItem.action satisfies never;
           yield* Console.log("Unknown queue item type");

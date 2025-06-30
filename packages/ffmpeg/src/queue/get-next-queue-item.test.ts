@@ -236,4 +236,56 @@ describe("getNextQueueItem", () => {
 
     expect(result).toEqual(queueState.queue[3]);
   });
+
+  it("should skip links-request items (information requests)", () => {
+    const queueState: QueueState = {
+      queue: [
+        {
+          id: "1",
+          createdAt: Date.now(),
+          action: {
+            type: "links-request",
+            linkRequests: ["test"],
+          },
+          status: "requires-user-input",
+        },
+        createQueueItem("2", "idle"),
+      ],
+    };
+
+    // Should skip the links-request item even with hasUserInput: true
+    const result = getNextQueueItem(queueState, { hasUserInput: true });
+
+    expect(result).toEqual(queueState.queue[1]);
+  });
+
+  it("should return undefined when only links-request items are available", () => {
+    const queueState: QueueState = {
+      queue: [
+        {
+          id: "1",
+          createdAt: Date.now(),
+          action: {
+            type: "links-request",
+            linkRequests: ["test"],
+          },
+          status: "requires-user-input",
+        },
+        {
+          id: "2",
+          createdAt: Date.now(),
+          action: {
+            type: "links-request",
+            linkRequests: ["test2"],
+          },
+          status: "idle",
+        },
+      ],
+    };
+
+    // Should return undefined since all items are links-request
+    const result = getNextQueueItem(queueState, { hasUserInput: true });
+
+    expect(result).toBeUndefined();
+  });
 });

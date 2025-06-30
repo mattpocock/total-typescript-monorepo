@@ -126,7 +126,7 @@ it("Should update the queue.json when a new item is added", async () => {
   }
 });
 
-it("Should allow you to add a link request to the queue, then run the request", async () => {
+it("Should allow you to add a link request to the queue and process it with processInformationRequests", async () => {
   const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
 
   try {
@@ -139,6 +139,8 @@ it("Should allow you to add a link request to the queue, then run the request", 
 
     const addLinks = vi.fn().mockReturnValue(Effect.succeed(undefined));
     const getLinks = vi.fn().mockReturnValue(Effect.succeed([]));
+
+    const { processInformationRequests } = await import("./queue.js");
 
     await Effect.gen(function* () {
       yield* writeToQueue([
@@ -153,7 +155,8 @@ it("Should allow you to add a link request to the queue, then run the request", 
         },
       ]);
 
-      yield* processQueue({ hasUserInput: true });
+      // Use processInformationRequests instead of processQueue
+      yield* processInformationRequests();
     }).pipe(
       Effect.provide(NodeFileSystem.layer),
       Effect.provideService(
@@ -211,7 +214,7 @@ it("Should allow you to add a link request to the queue, then run the request", 
   }
 });
 
-it("Should not process links requests when hasUserInput is false", async () => {
+it("Should not process links requests (processQueue ignores information requests)", async () => {
   const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
 
   try {
@@ -239,7 +242,8 @@ it("Should not process links requests when hasUserInput is false", async () => {
         },
       ]);
 
-      yield* processQueue({ hasUserInput: false });
+      // processQueue should ignore information requests regardless of hasUserInput
+      yield* processQueue({ hasUserInput: true });
     }).pipe(
       Effect.provide(NodeFileSystem.layer),
       Effect.provideService(
@@ -275,7 +279,7 @@ it("Should not process links requests when hasUserInput is false", async () => {
       (await fs.readFile(QUEUE_LOCATION, "utf-8")).toString()
     );
 
-    // The queue item should remain unchanged - not processed
+    // The queue item should remain unchanged - not processed by processQueue
     expect(queueState.queue).toEqual([
       {
         id: "1",
@@ -288,7 +292,7 @@ it("Should not process links requests when hasUserInput is false", async () => {
       },
     ]);
 
-    // These functions should not have been called
+    // These functions should not have been called by processQueue
     expect(addLinks).not.toHaveBeenCalled();
     expect(askQuestion).not.toHaveBeenCalled();
   } finally {

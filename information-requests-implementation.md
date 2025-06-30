@@ -44,6 +44,8 @@ pnpm cli pir
 3. **User Interaction**: Prompts user for each link request and stores the responses in the links storage service
 4. **Queue Locking**: Uses the existing queue lock mechanism to prevent concurrent processing
 5. **Error Handling**: Properly handles cases where no information requests are found
+6. **Modified `processQueue`**: The main `processQueue` function now **ignores** information requests entirely, leaving them only for the dedicated `processInformationRequests` function
+7. **Modified `getNextQueueItem`**: Also updated to skip `"links-request"` items to maintain consistency
 
 ## Testing
 
@@ -65,5 +67,15 @@ The new functions are automatically exported through the existing `export * from
 4. If found, user is prompted for each link request
 5. Responses are stored and queue items are marked as completed
 6. Other queue items (like video processing) remain untouched
+
+## Important Behavior Change
+
+**Before**: The `processQueue` function would process information requests when `hasUserInput: true` was set.
+
+**After**: The `processQueue` function now **completely ignores** information requests regardless of the `hasUserInput` setting. Information requests can only be processed using the dedicated `process-information-requests` CLI command.
+
+This ensures clear separation of concerns:
+- `processQueue` handles video processing and other non-information-request items
+- `processInformationRequests` handles only information requests
 
 This implementation provides exactly what was requested: a way to check for and process only information requests in the queue, without affecting other queue items.
