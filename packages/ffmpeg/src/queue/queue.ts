@@ -34,6 +34,11 @@ export type QueueItem = {
   createdAt: number;
   completedAt?: number;
   action: QueueItemAction;
+  /**
+   * An array of queue item ids that must be completed
+   * before this item can be processed.
+   */
+  dependencies?: string[];
   status: "idle" | "completed" | "failed" | "requires-user-input";
   error?: string;
 };
@@ -132,6 +137,26 @@ const deleteQueueLockfile = () => {
     );
     const fs = yield* FileSystem;
     yield* fs.remove(queueLockfileLocation);
+  });
+};
+
+export const getNextQueueItem = (
+  queueState: QueueState,
+  opts: { hasUserInput: boolean }
+) => {
+  const queueItemsAsMap = new Map(queueState.queue.map((i) => [i.id, i]));
+  return queueState.queue.find((i) => {
+    const canBeRun =
+      i.status === "idle" ||
+      (opts.hasUserInput && i.status === "requires-user-input");
+
+    const dependenciesAreMet =
+      !i.dependencies ||
+      i.dependencies.every(
+        (dependency) => queueItemsAsMap.get(dependency)?.status === "completed"
+      );
+
+    return canBeRun && dependenciesAreMet;
   });
 };
 

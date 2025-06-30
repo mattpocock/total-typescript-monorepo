@@ -1,18 +1,12 @@
-import { NodeFileSystem } from "@effect/platform-node";
 import { Config, Effect, Layer, Redacted } from "effect";
 import { createReadStream } from "node:fs";
 import OpenAI from "openai";
 import prompts from "prompts";
 import {
-  AIService,
-  ArticleStorageService,
   AskQuestionService,
-  FFmpegCommandsService,
-  OBSIntegrationService,
   OpenAIService,
   QuestionNotAnsweredError,
   ReadStreamService,
-  TranscriptStorageService,
 } from "./services.js";
 
 export const OpenAILayerLive = Layer.effect(
@@ -60,15 +54,3 @@ export const AskQuestionLayerLive = Layer.succeed(AskQuestionService, {
     });
   },
 });
-
-export const AppLayerLive = Layer.mergeAll(
-  FFmpegCommandsService.Default,
-  OpenAILayerLive,
-  ReadStreamLayerLive,
-  AskQuestionLayerLive,
-  ArticleStorageService.Default,
-  OBSIntegrationService.Default,
-  TranscriptStorageService.Default,
-  AIService.Default,
-  NodeFileSystem.layer
-);

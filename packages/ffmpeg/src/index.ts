@@ -1,13 +1,13 @@
 export * from "./constants.js";
 export * from "./silence-detection.js";
 export * from "./chapter-extraction.js";
-export * from "./auto-editing.js";
 export * from "./subtitle-rendering.js";
 export * from "./workflows.js";
 export * from "./davinci-integration.js";
 export * from "./services.js";
 export * from "./queue/queue.js";
 export * as ffmpeg from "./ffmpeg-commands.js";
-export * from "./layers.js";
 export * from "./article-from-transcript.js";
 export * from "./validate-windows-filename.js";
+export * from "./app-layer.js";
+export * from "./layers.js";

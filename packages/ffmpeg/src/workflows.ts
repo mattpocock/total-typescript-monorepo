@@ -32,6 +32,7 @@ import {
   THRESHOLD,
 } from "./constants.js";
 import { findSilenceInVideo } from "./silence-detection.js";
+import { NodeFileSystem } from "@effect/platform-node";
 
 export interface CreateAutoEditedVideoWorkflowOptions {
   inputVideo: AbsolutePath;
@@ -473,6 +474,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       AskQuestionLayerLive,
       ReadStreamLayerLive,
       OpenAILayerLive,
+      NodeFileSystem.layer,
     ],
   }
 ) {}

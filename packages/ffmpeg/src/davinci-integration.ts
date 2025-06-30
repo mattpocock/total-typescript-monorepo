@@ -46,8 +46,9 @@ export const appendVideoToTimeline = (
         startPadding: AUTO_EDITED_START_PADDING,
         endPadding: AUTO_EDITED_END_PADDING,
         silenceDuration: SILENCE_DURATION,
+        ffmpeg,
       }),
-      extractBadTakeMarkersFromFile(inputVideo, fps),
+      extractBadTakeMarkersFromFile(inputVideo, fps, ffmpeg),
     ]);
 
     const serialisedClipsOfSpeaking = silenceResult.speakingClips

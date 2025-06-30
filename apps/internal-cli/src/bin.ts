@@ -166,7 +166,9 @@ program
   .aliases(["p", "process"])
   .description("Process the queue.")
   .action(async () => {
-    await processQueue().pipe(
+    await processQueue({
+      hasUserInput: process.stdout.isTTY,
+    }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(AppLayerLive),
       Effect.runPromise
@@ -257,7 +259,6 @@ program
         (item: QueueItem, idx: number) => {
           return Effect.gen(function* () {
             const completed = formatRelativeDate(item.completedAt);
-            const isAutoEdit = item.action.type === "create-auto-edited-video";
             let statusIcon = "";
             switch (item.status) {
               case "completed":
@@ -269,15 +270,16 @@ program
               default:
                 statusIcon = "⏳";
             }
+
             let options = [];
-            if (isAutoEdit) {
+            if (item.action.type === "create-auto-edited-video") {
               if (item.action.dryRun) options.push("Dry Run");
               if (item.action.subtitles) options.push("Subtitles");
             }
 
             yield* Console.log(
               `${styleText("bold", `#${idx + 1}`)} ${statusIcon}\n` +
-                (isAutoEdit
+                (item.action.type === "create-auto-edited-video"
                   ? `  ${styleText("dim", "Title")}      ${item.action.videoName}\n` +
                     (options.length > 0
                       ? `  ${styleText("dim", "Options")}    ${options.join(", ")}\n`
