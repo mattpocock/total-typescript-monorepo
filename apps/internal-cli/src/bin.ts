@@ -9,8 +9,10 @@ import {
   doesQueueLockfileExist,
   exportSubtitles,
   generateArticleFromTranscript,
+  getOutstandingInformationRequests,
   getQueueState,
   moveRawFootageToLongTermStorage,
+  processInformationRequests,
   processQueue,
   transcribeVideoWorkflow,
   validateWindowsFilename,
@@ -132,7 +134,7 @@ program
             subtitles: Boolean(options.subtitles),
             dryRun: Boolean(options.dryRun),
           },
-          status: "idle",
+          status: "ready-to-run",
         },
       ]);
     }).pipe(
@@ -166,8 +168,28 @@ program
   .aliases(["p", "process"])
   .description("Process the queue.")
   .action(async () => {
-    await processQueue({
-      hasUserInput: process.stdout.isTTY,
+    await processQueue().pipe(
+      Effect.withConfigProvider(ConfigProvider.fromEnv()),
+      Effect.provide(AppLayerLive),
+      Effect.runPromise
+    );
+  });
+
+program
+  .command("process-information-requests")
+  .aliases(["pir", "info-requests"])
+  .description("Check for and process outstanding information requests in the queue.")
+  .action(async () => {
+    await Effect.gen(function* () {
+      const informationRequests = yield* getOutstandingInformationRequests();
+      
+      if (informationRequests.length === 0) {
+        yield* Console.log("No outstanding information requests found.");
+        return;
+      }
+      
+      yield* Console.log(`Found ${informationRequests.length} outstanding information request(s).`);
+      yield* processInformationRequests();
     }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(AppLayerLive),
