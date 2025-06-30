@@ -80,11 +80,10 @@ export const isBadTake = (
 
 export const extractBadTakeMarkersFromFile = (
   inputVideo: AbsolutePath,
-  fps: number
+  fps: number,
+  ffmpeg: FFmpegCommandsService
 ) => {
   return Effect.gen(function* () {
-    const ffmpeg = yield* FFmpegCommandsService;
-
     const chapters = yield* ffmpeg.getChapters(inputVideo);
 
     return chapters.chapters

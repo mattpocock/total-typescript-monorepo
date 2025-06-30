@@ -9,14 +9,10 @@ import type { ReadStream } from "node:fs";
 import * as realFs from "node:fs/promises";
 import path from "node:path";
 import type { OpenAI } from "openai";
-import type { FFMPeg } from "./ffmpeg-commands.js";
 import { anthropic } from "@ai-sdk/anthropic";
 import { z } from "zod";
 
-export class FFmpegCommandsService extends Context.Tag("FFmpegCommandsService")<
-  FFmpegCommandsService,
-  FFMPeg
->() {}
+export { FFmpegCommandsService } from "./ffmpeg-commands.js";
 
 export class OpenAIService extends Context.Tag("OpenAIService")<
   OpenAIService,
@@ -223,7 +219,7 @@ export class ArticleStorageService extends Effect.Service<ArticleStorageService>
         }),
         countArticles: Effect.fn("countArticles")(function* () {
           const files = yield* fs.readDirectory(ARTICLE_STORAGE_PATH);
-          return files.length;
+          return files.filter((file) => file.endsWith(".md")).length;
         }),
         getLatestArticles: Effect.fn("getLatestArticles")(function* (opts: {
           take?: number;
@@ -233,52 +229,55 @@ export class ArticleStorageService extends Effect.Service<ArticleStorageService>
           });
 
           const articles: Article[] = yield* Effect.all(
-            files.slice(0, opts.take).map((file) => {
-              return Effect.gen(function* () {
-                const content = yield* fs.readFileString(file);
+            files
+              .filter((file) => file.endsWith(".md"))
+              .slice(0, opts.take)
+              .map((file) => {
+                return Effect.gen(function* () {
+                  const content = yield* fs.readFileString(file);
 
-                const { attributes, body } = yield* Effect.try(
-                  (): {
-                    attributes: {
-                      date: string;
-                      originalVideoPath: string;
-                      title: string;
-                    };
-                    body: string;
-                  } => (fm as any)(content)
-                ).pipe(
-                  Effect.mapError((e) => {
-                    return new CouldNotParseArticleError({
-                      cause: e.cause as Error,
-                      filePath: file,
-                    });
-                  }),
-                  Effect.andThen(({ attributes, body }) => {
-                    if (
-                      !attributes?.date ||
-                      !attributes?.originalVideoPath ||
-                      !attributes?.title
-                    ) {
-                      return Effect.fail(
-                        new CouldNotParseArticleError({
-                          cause: new Error("Invalid article format"),
-                          filePath: file,
-                        })
-                      );
-                    }
-                    return Effect.succeed({ attributes, body });
-                  })
-                );
-                return {
-                  content: body,
-                  originalVideoPath:
-                    attributes.originalVideoPath as AbsolutePath,
-                  date: new Date(attributes.date),
-                  title: attributes.title,
-                  filename: path.basename(file),
-                };
-              });
-            })
+                  const { attributes, body } = yield* Effect.try(
+                    (): {
+                      attributes: {
+                        date: string;
+                        originalVideoPath: string;
+                        title: string;
+                      };
+                      body: string;
+                    } => (fm as any)(content)
+                  ).pipe(
+                    Effect.mapError((e) => {
+                      return new CouldNotParseArticleError({
+                        cause: e.cause as Error,
+                        filePath: file,
+                      });
+                    }),
+                    Effect.andThen(({ attributes, body }) => {
+                      if (
+                        !attributes?.date ||
+                        !attributes?.originalVideoPath ||
+                        !attributes?.title
+                      ) {
+                        return Effect.fail(
+                          new CouldNotParseArticleError({
+                            cause: new Error("Invalid article format"),
+                            filePath: file,
+                          })
+                        );
+                      }
+                      return Effect.succeed({ attributes, body });
+                    })
+                  );
+                  return {
+                    content: body,
+                    originalVideoPath:
+                      attributes.originalVideoPath as AbsolutePath,
+                    date: new Date(attributes.date),
+                    title: attributes.title,
+                    filename: path.basename(file),
+                  };
+                });
+              })
           );
           return articles;
         }),
@@ -406,3 +405,62 @@ export class AIService extends Effect.Service<AIService>()("AIService", {
   }),
   dependencies: [NodeFileSystem.layer],
 }) {}
+
+export class LinksStorageService extends Effect.Service<LinksStorageService>()(
+  "LinksStorageService",
+  {
+    effect: Effect.gen(function* () {
+      const fs = yield* FileSystem.FileSystem;
+      const LINKS_STORAGE_PATH = yield* Config.string("LINKS_STORAGE_PATH");
+
+      const getLinks = Effect.fn("getLinks")(function* () {
+        // Check if file exists, if not return empty array
+        const exists = yield* fs.exists(LINKS_STORAGE_PATH);
+        if (!exists) {
+          return [];
+        }
+
+        const linksContent = yield* fs.readFileString(LINKS_STORAGE_PATH);
+
+        // Handle empty file case
+        if (!linksContent.trim()) {
+          return [];
+        }
+
+        try {
+          return JSON.parse(linksContent) as Array<{
+            description: string;
+            url: string;
+          }>;
+        } catch (error) {
+          // If JSON parsing fails, return empty array
+          yield* Effect.logWarning(
+            "Failed to parse links JSON, returning empty array",
+            { error }
+          );
+          return [];
+        }
+      });
+
+      const addLinks = Effect.fn("addLinks")(function* (
+        links: {
+          description: string;
+          url: string;
+        }[]
+      ) {
+        const existingLinks = yield* getLinks();
+        const updatedLinks = [...existingLinks, ...links];
+        yield* fs.writeFileString(
+          LINKS_STORAGE_PATH,
+          JSON.stringify(updatedLinks, null, 2)
+        );
+      });
+
+      return {
+        getLinks,
+        addLinks,
+      };
+    }),
+    dependencies: [NodeFileSystem.layer],
+  }
+) {}

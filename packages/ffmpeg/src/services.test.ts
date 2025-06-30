@@ -45,9 +45,9 @@ it("should store an article", async () => {
     "/mnt/d/articles/001-hello-world.md",
     [
       "---",
-      `date: ${article.date.toISOString()}`,
-      `originalVideoPath: ${article.originalVideoPath}`,
-      `title: ${article.title}`,
+      `date: "${article.date.toISOString()}"`,
+      `originalVideoPath: "${article.originalVideoPath}"`,
+      `title: "${article.title}"`,
       "---",
       "",
       article.content,

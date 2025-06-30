@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 
-import { config } from "dotenv";
+import { FileSystem } from "@effect/platform";
 import {
   addCurrentTimelineToRenderQueue,
   appendVideoToTimeline,
   AppLayerLive,
-  createAutoEditedVideoWorkflow,
   createTimeline,
   doesQueueLockfileExist,
   exportSubtitles,
@@ -13,26 +12,24 @@ import {
   getQueueState,
   moveRawFootageToLongTermStorage,
   processQueue,
-  QueueRunnerService,
   transcribeVideoWorkflow,
+  validateWindowsFilename,
   writeToQueue,
   type QueueItem,
 } from "@total-typescript/ffmpeg";
-import { FileSystem } from "@effect/platform";
 import { type AbsolutePath } from "@total-typescript/shared";
 import { Command } from "commander";
-import { ConfigProvider, Effect, Layer, LogLevel } from "effect";
+import { config } from "dotenv";
+import { ConfigProvider, Console, Effect } from "effect";
+import path from "node:path";
 import { styleText } from "node:util";
 import {
   AIService,
-  ArticleStorageService,
   AskQuestionService,
   OBSIntegrationService,
   TranscriptStorageService,
 } from "../../../packages/ffmpeg/dist/services.js";
 import packageJson from "../package.json" with { type: "json" };
-import { Console } from "effect";
-import path from "node:path";
 
 config({
   path: path.resolve(import.meta.dirname, "../../../.env"),
@@ -116,7 +113,13 @@ program
 
       const inputVideo = yield* obs.getLatestOBSVideo();
 
-      yield* Effect.log("Adding to queue...");
+      yield* Console.log("Adding to queue...");
+
+      const videoName = yield* askQuestion.askQuestion(
+        "What is the name of the video?"
+      );
+
+      yield* validateWindowsFilename(videoName);
 
       yield* writeToQueue([
         {
@@ -125,9 +128,7 @@ program
           action: {
             type: "create-auto-edited-video",
             inputVideo,
-            videoName: yield* askQuestion.askQuestion(
-              "What is the name of the video?"
-            ),
+            videoName,
             subtitles: Boolean(options.subtitles),
             dryRun: Boolean(options.dryRun),
           },
@@ -160,17 +161,6 @@ program
     );
   });
 
-const QueueLayerLive = Layer.merge(
-  AppLayerLive,
-  Layer.succeed(QueueRunnerService, {
-    createAutoEditedVideoWorkflow: (params) => {
-      return createAutoEditedVideoWorkflow(params).pipe(
-        Effect.provide(AppLayerLive)
-      );
-    },
-  })
-);
-
 program
   .command("process-queue")
   .aliases(["p", "process"])
@@ -178,7 +168,7 @@ program
   .action(async () => {
     await processQueue().pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(QueueLayerLive),
+      Effect.provide(AppLayerLive),
       Effect.runPromise
     );
   });
@@ -318,7 +308,7 @@ program
       }
     }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(QueueLayerLive),
+      Effect.provide(AppLayerLive),
       Effect.runPromise
     );
   });

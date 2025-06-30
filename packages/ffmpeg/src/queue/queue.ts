@@ -1,29 +1,43 @@
 import { FileSystem } from "@effect/platform/FileSystem";
 import { type AbsolutePath } from "@total-typescript/shared";
-import { Config, Context, Effect } from "effect";
-import type { createAutoEditedVideoWorkflow } from "../workflows.js";
+import { Config, Console, Context, Effect, Either } from "effect";
+import { WorkflowsService } from "../workflows.js";
 
-export type QueueItemAction = {
-  type: "create-auto-edited-video";
-  inputVideo: AbsolutePath;
-  videoName: string;
-  /**
-   * Whether or not to render subtitles.
-   */
-  subtitles: boolean;
-  /**
-   * Whether or not to save the video to the
-   * shorts directory.
-   */
-  dryRun: boolean;
-};
+export type QueueItemAction =
+  | {
+      type: "create-auto-edited-video";
+      inputVideo: AbsolutePath;
+      videoName: string;
+      /**
+       * Whether or not to render subtitles.
+       */
+      subtitles: boolean;
+      /**
+       * Whether or not to save the video to the
+       * shorts directory.
+       */
+      dryRun: boolean;
+    }
+  | {
+      /**
+       * A request for the user to provide links
+       * that the transcript editor uses to
+       * find the relevant content.
+       */
+      type: "links-request";
+      linkRequests: string[];
+    };
 
 export type QueueItem = {
   id: string;
   createdAt: number;
   completedAt?: number;
   action: QueueItemAction;
-  status: "idle" | "completed" | "failed";
+  status:
+    | "idle"
+    | "completed"
+    | "failed"
+    | "not-enough-information-to-continue";
   error?: string;
 };
 
@@ -124,67 +138,60 @@ const deleteQueueLockfile = () => {
   });
 };
 
-export class QueueRunnerService extends Context.Tag("QueueRunnerService")<
-  QueueRunnerService,
-  {
-    createAutoEditedVideoWorkflow: (
-      params: Parameters<typeof createAutoEditedVideoWorkflow>[0]
-    ) => Effect.Effect<
-      AbsolutePath,
-      Effect.Effect.Error<ReturnType<typeof createAutoEditedVideoWorkflow>>
-    >;
-  }
->() {}
-
 export const processQueue = () => {
   return Effect.gen(function* () {
     if (yield* doesQueueLockfileExist()) {
-      return Effect.succeed("Queue is locked, skipping");
+      return yield* Console.log("Queue is locked, skipping");
     }
 
     yield* writeQueueLockfile();
 
-    const queueRunners = yield* QueueRunnerService;
+    const workflows = yield* WorkflowsService;
 
-    const queueState = yield* getQueueState();
-    const queueItem = queueState.queue.find((i) => i.status === "idle");
+    while (true) {
+      const queueState = yield* getQueueState();
+      const queueItem = queueState.queue.find((i) => i.status === "idle");
 
-    if (!queueItem) {
-      return Effect.succeed("No idle queue items found");
-    }
+      if (!queueItem) {
+        return yield* Console.log("No idle queue items found");
+      }
 
-    switch (queueItem.action.type) {
-      case "create-auto-edited-video":
-        yield* queueRunners
-          .createAutoEditedVideoWorkflow({
-            subtitles: queueItem.action.subtitles,
-            dryRun: queueItem.action.dryRun,
-          })
-          .pipe(
-            Effect.match({
-              onSuccess: () => {
-                return updateQueueItem({
-                  ...queueItem,
-                  status: "completed",
-                  completedAt: Date.now(),
-                });
-              },
-              onFailure: (error) => {
-                return updateQueueItem({
-                  ...queueItem,
-                  status: "failed",
-                  error: error.message,
-                });
-              },
+      switch (queueItem.action.type) {
+        case "create-auto-edited-video":
+          const result = yield* workflows
+            .createAutoEditedVideoWorkflow({
+              inputVideo: queueItem.action.inputVideo,
+              outputFilename: queueItem.action.videoName,
+              subtitles: queueItem.action.subtitles,
+              dryRun: queueItem.action.dryRun,
             })
-          );
+            .pipe(Effect.either);
 
-        break;
-      default:
-        return Effect.succeed("Unknown queue item type");
+          if (Either.isLeft(result)) {
+            yield* Effect.logError(result.left);
+            yield* updateQueueItem({
+              ...queueItem,
+              status: "failed",
+              error: result.left.message,
+            });
+            continue;
+          }
+
+          yield* updateQueueItem({
+            ...queueItem,
+            status: "completed",
+            completedAt: Date.now(),
+          });
+
+          break;
+        default:
+          // @ts-expect-error TODO
+          queueItem.action.type satisfies never;
+          yield* Console.log("Unknown queue item type");
+          break;
+      }
+      yield* Console.log("Queue item processed");
     }
-
-    return Effect.succeed("Queue item processed");
   }).pipe(
     Effect.ensuring(
       deleteQueueLockfile().pipe(

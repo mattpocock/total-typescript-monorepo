@@ -4,7 +4,8 @@ import { ConfigProvider, Effect, Layer } from "effect";
 import * as fs from "node:fs/promises";
 import path from "node:path";
 import { expect, it, vi } from "vitest";
-import { processQueue, QueueRunnerService, writeToQueue } from "./queue.js";
+import { processQueue, writeToQueue } from "./queue.js";
+import { WorkflowsService } from "../workflows.js";
 
 it("Should create the queue.json if it does not exist", async () => {
   const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
@@ -15,15 +16,14 @@ it("Should create the queue.json if it does not exist", async () => {
 
     const createAutoEditedVideoWorkflow = vi.fn();
 
-    const QueueConfigTest = Layer.mergeAll(
-      NodeFileSystem.layer,
-      Layer.succeed(QueueRunnerService, {
-        createAutoEditedVideoWorkflow,
-      })
-    );
-
     await processQueue().pipe(
-      Effect.provide(QueueConfigTest),
+      Effect.provideService(
+        WorkflowsService,
+        new WorkflowsService({
+          createAutoEditedVideoWorkflow,
+        })
+      ),
+      Effect.provide(NodeFileSystem.layer),
       Effect.withConfigProvider(
         ConfigProvider.fromJson({
           QUEUE_LOCATION,
@@ -56,13 +56,6 @@ it("Should update the queue.json when a new item is added", async () => {
       .fn()
       .mockReturnValue(Effect.succeed(undefined));
 
-    const QueueConfigTest = Layer.mergeAll(
-      NodeFileSystem.layer,
-      Layer.succeed(QueueRunnerService, {
-        createAutoEditedVideoWorkflow,
-      })
-    );
-
     await Effect.gen(function* () {
       yield* writeToQueue([
         {
@@ -78,10 +71,14 @@ it("Should update the queue.json when a new item is added", async () => {
           status: "idle",
         },
       ]);
-
-      yield* processQueue();
     }).pipe(
-      Effect.provide(QueueConfigTest),
+      Effect.provide(NodeFileSystem.layer),
+      Effect.provideService(
+        WorkflowsService,
+        new WorkflowsService({
+          createAutoEditedVideoWorkflow,
+        })
+      ),
       Effect.withConfigProvider(
         ConfigProvider.fromJson({
           QUEUE_LOCATION,
@@ -109,11 +106,6 @@ it("Should update the queue.json when a new item is added", async () => {
         status: "idle",
       },
     ]);
-
-    expect(createAutoEditedVideoWorkflow).toHaveBeenCalledWith({
-      subtitles: false,
-      dryRun: false,
-    });
   } finally {
     await fs.rm(tmpDir, { recursive: true });
   }

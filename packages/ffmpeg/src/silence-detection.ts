@@ -109,18 +109,17 @@ export const findSilenceInVideo = (
     startPadding: number;
     endPadding: number;
     fps: number;
+    ffmpeg: FFmpegCommandsService;
   }
 ) => {
   return Effect.gen(function* () {
-    const ffmpeg = yield* FFmpegCommandsService;
-
     const processStartTime = Date.now();
     console.log("🎥 Processing video:", inputVideo);
 
     console.log("🔍 Finding speaking clips...");
 
     const speakingStart = Date.now();
-    const { stdout } = yield* ffmpeg.detectSilence(
+    const { stdout } = yield* opts.ffmpeg.detectSilence(
       inputVideo,
       opts.threshold,
       opts.silenceDuration
