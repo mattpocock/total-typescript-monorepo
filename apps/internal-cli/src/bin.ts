@@ -276,15 +276,48 @@ program
     await Effect.gen(function* () {
       const queueState = yield* getQueueState();
 
-      const uncompleted = queueState.queue.filter(
-        (q: QueueItem) => q.status !== "completed"
-      );
-      if (queueState.queue.length === 0) {
-        yield* Effect.log("(Queue is empty)");
+      // Filter queue items based on requirements:
+      // 1. All outstanding items (ready-to-run, requires-user-input)
+      // 2. All failed items
+      // 3. Today's and Yesterday's successful items
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const yesterday = new Date(today);
+      yesterday.setDate(today.getDate() - 1);
+
+      const filteredQueue = queueState.queue.filter((item: QueueItem) => {
+        // Show all outstanding items
+        if (item.status === "ready-to-run" || item.status === "requires-user-input") {
+          return true;
+        }
+        
+        // Show all failed items
+        if (item.status === "failed") {
+          return true;
+        }
+        
+        // Show today's and yesterday's successful items
+        if (item.status === "completed" && item.completedAt) {
+          const completedDate = new Date(item.completedAt);
+          const completedDay = new Date(completedDate.getFullYear(), completedDate.getMonth(), completedDate.getDate());
+          
+          return completedDay.getTime() === today.getTime() || completedDay.getTime() === yesterday.getTime();
+        }
+        
+        return false;
+      });
+
+      if (filteredQueue.length === 0) {
+        yield* Effect.log("(No relevant queue items to display)");
         return;
       }
+
+      const uncompleted = filteredQueue.filter(
+        (q: QueueItem) => q.status !== "completed"
+      );
+
       yield* Effect.forEach(
-        queueState.queue,
+        filteredQueue,
         (item: QueueItem, idx: number) => {
           return Effect.gen(function* () {
             const completed = formatRelativeDate(item.completedAt);
@@ -296,24 +329,34 @@ program
               case "failed":
                 statusIcon = "❌";
                 break;
+              case "requires-user-input":
+                statusIcon = "❓";
+                break;
               default:
                 statusIcon = "⏳";
             }
 
-            let options = [];
+            let actionContent = "";
             if (item.action.type === "create-auto-edited-video") {
+              let options = [];
               if (item.action.dryRun) options.push("Dry Run");
               if (item.action.subtitles) options.push("Subtitles");
+              
+              actionContent = 
+                `  ${styleText("dim", "Title")}      ${item.action.videoName}\n` +
+                (options.length > 0
+                  ? `  ${styleText("dim", "Options")}    ${options.join(", ")}\n`
+                  : "");
+            } else if (item.action.type === "links-request") {
+              actionContent = 
+                `  ${styleText("dim", "Type")}       Information Request\n` +
+                `  ${styleText("dim", "Links")}      ${item.action.linkRequests.length} link(s) requested\n`;
             }
 
             yield* Console.log(
               `${styleText("bold", `#${idx + 1}`)} ${statusIcon}\n` +
-                (item.action.type === "create-auto-edited-video"
-                  ? `  ${styleText("dim", "Title")}      ${item.action.videoName}\n` +
-                    (options.length > 0
-                      ? `  ${styleText("dim", "Options")}    ${options.join(", ")}\n`
-                      : "")
-                  : "") +
+                actionContent +
+                `  ${styleText("dim", "Status")}     ${item.status}\n` +
                 `  ${styleText("dim", "Completed")}  ${completed}` +
                 (item.error
                   ? `\n  ${styleText("dim", "Error")}      ${item.error}`
@@ -325,10 +368,10 @@ program
       );
 
       if (uncompleted.length === 0) {
-        yield* Console.log("✅ All queue items are completed!");
+        yield* Console.log("✅ All outstanding queue items are completed!");
       } else {
         yield* Console.log(
-          `⏳ There are ${uncompleted.length} uncompleted item(s) in the queue.`
+          `⏳ There are ${uncompleted.length} outstanding item(s) in the queue.`
         );
         const isProcessing = yield* doesQueueLockfileExist();
         if (isProcessing) {
