@@ -1,0 +1,75 @@
+# Total TypeScript Monorepo - Apps
+
+Standalone applications and tools in the `apps/` directory.
+
+## written-content
+**Purpose**: TypeScript learning content and examples repository
+- **Technologies**: TypeScript, React, Vite, Vitest, multiple validation libraries
+- **Key Features**:
+  - Educational TypeScript content creation
+  - Integration with multiple validation libraries (Zod, ArkType, Valibot, Joi, TypeBox)
+  - Support for React Query examples
+  - Email content generation from markdown
+  - Scratch mode for experimental content
+
+## written-content-manager
+**Purpose**: Full-stack web application for managing TypeScript educational content
+- **Technologies**: Remix, React, Prisma, PostgreSQL, TailwindCSS, AI integration
+- **Key Features**:
+  - Database-driven content management (PostgreSQL with Prisma)
+  - AI-powered content assistance (Anthropic)
+  - Modern UI with Radix UI components and TailwindCSS
+  - Monaco Editor for code editing
+  - Date management and content organization
+  - XState for complex state management
+  - Docker integration for local development
+
+## @total-typescript/twoslash-preview-server
+**Purpose**: Development server for previewing TypeScript code snippets with Twoslash
+- **Technologies**: Node.js, WebSockets, Puppeteer, Fastify
+- **Key Features**:
+  - Hot reloading for Twoslash content
+  - File watching with Chokidar
+  - WebSocket connections for real-time updates
+  - Browser automation with Puppeteer
+  - Fast web server with Fastify
+
+## @total-typescript/twoslash-to-simple-markdown
+**Purpose**: CLI tool for converting Twoslash TypeScript snippets to simple markdown
+- **Technologies**: Node.js CLI, Commander, Fast-glob
+- **Key Features**:
+  - Batch processing of markdown files
+  - TypeScript code snippet simplification
+  - Command-line interface
+  - File pattern matching with glob support
+
+## @total-typescript/twoslash-lint
+**Purpose**: Linting tool for TypeScript code snippets with Twoslash
+- **Technologies**: Node.js CLI, Chokidar, Commander
+- **Key Features**:
+  - Code quality checking for TypeScript snippets
+  - File watching for continuous linting
+  - Batch processing capabilities
+  - CLI interface for integration with workflows
+
+## remotion-subtitle-renderer
+**Purpose**: Video subtitle rendering using Remotion
+- **Technologies**: Remotion, React 19, TailwindCSS v4
+- **Key Features**:
+  - Programmatic video generation
+  - Subtitle overlay rendering
+  - Modern React and TailwindCSS integration
+  - Media parsing capabilities
+
+## @total-typescript/internal-cli
+**Purpose**: Internal command-line tools for monorepo management and workflows
+- **Technologies**: Node.js CLI, Commander, Effect, dotenv
+- **Key Features**:
+  - Video timeline management
+  - Integration with FFmpeg package
+  - Environment configuration
+  - Internal workflow automation
+  - Effect-based functional programming
+
+## _example-app
+**Purpose**: Template/example application for creating new apps in the monorepo

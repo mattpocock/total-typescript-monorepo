@@ -1,0 +1,47 @@
+# Total TypeScript Monorepo - Packages
+
+Shared libraries and utilities in the `packages/` directory.
+
+## @total-typescript/shared
+**Purpose**: Core shared utilities and types used across the monorepo
+- **Technologies**: TypeScript, Zod, Effect
+- **Exports**: Constants, types, utilities, DaVinci Resolve integrations
+- **Key Features**:
+  - Common type definitions
+  - Utility functions  
+  - DaVinci Resolve video editing integrations
+  - Effect-based functional programming utilities
+
+## @total-typescript/twoslash-shared  
+**Purpose**: Shared utilities for TypeScript code snippets with Twoslash integration
+- **Technologies**: Shiki, Twoslash, Rehype, CDN storage
+- **Key Features**:
+  - Code transformation utilities
+  - TypeScript code fence processing
+  - Syntax highlighting with Shiki
+  - Twoslash integration for TypeScript examples
+  - Code sample extraction from files
+
+## @total-typescript/ffmpeg
+**Purpose**: FFmpeg video processing utilities with AI integration
+- **Technologies**: FFmpeg, OpenAI, Anthropic AI, Effect
+- **Key Features**:
+  - Video processing and manipulation
+  - AI-powered content generation
+  - Integration with OpenAI and Anthropic APIs
+  - Front-matter processing for content files
+  - Parallel processing with p-limit
+
+## resolve-scripts
+**Purpose**: DaVinci Resolve automation scripts for video editing workflows
+- **Technologies**: Lua scripting for DaVinci Resolve
+- **Key Features**:
+  - Timeline export automation
+  - Clip manipulation (zoom, append, blur effects)
+  - Subtitle integration
+  - Render queue management
+  - OBS video import workflows
+  - Project creation automation
+
+## _example-package
+**Purpose**: Template/example package for creating new packages in the monorepo

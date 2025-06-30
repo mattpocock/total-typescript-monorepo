@@ -1,0 +1,35 @@
+# Total TypeScript Monorepo Overview
+
+This is Matt Pocock's Total TypeScript monorepo - a comprehensive workspace for TypeScript educational content creation, video production, and tooling.
+
+## Repository Structure
+- **Root**: Configuration files, scripts, and monorepo setup using pnpm workspaces with turbo
+- **packages/**: Shared libraries and utilities
+- **apps/**: Standalone applications and tools
+
+## Key Technologies
+- **Package Management**: pnpm workspaces
+- **Build System**: Turborepo  
+- **Languages**: TypeScript 5.8.0-dev, Lua, React
+- **Database**: PostgreSQL with Prisma
+- **AI Integration**: OpenAI, Anthropic
+- **Video**: DaVinci Resolve, Remotion, FFmpeg
+- **Web Framework**: Remix, Fastify
+- **UI**: TailwindCSS, Radix UI
+- **State Management**: XState
+- **Testing**: Vitest
+
+## Development Environment Requirements
+- Node.js 20 (exact version required)
+- pnpm 9.11.0
+- TypeScript 5.8.0-dev for latest features
+- Effect library for functional programming
+- Docker for local database development
+
+## Key Workflows
+- **Content Creation**: `pnpm write`, `pnpm new`, `pnpm scratch`
+- **Content Management**: `pnpm manage` (content manager + preview server)
+- **Video Production**: DaVinci Resolve automation + Remotion + FFmpeg
+- **Development**: `pnpm dev` (watch mode), `pnpm ci` (CI pipeline)
+
+This monorepo supports the complete lifecycle of TypeScript educational content - from writing and managing content to creating videos and publishing materials.
