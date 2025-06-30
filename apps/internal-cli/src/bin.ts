@@ -262,13 +262,6 @@ program
   });
 
 program
-  .command("test-tty")
-  .description("Test if the terminal is a TTY")
-  .action(async () => {
-    console.log("isTTY", process.stdout.isTTY);
-  });
-
-program
   .command("queue-status")
   .aliases(["qs", "status"])
   .description("Show the status of the render queue.")
