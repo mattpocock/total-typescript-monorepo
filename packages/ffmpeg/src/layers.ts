@@ -1,9 +1,7 @@
 import { NodeFileSystem } from "@effect/platform-node";
 import { Config, Effect, Layer, Redacted } from "effect";
 import { createReadStream } from "node:fs";
-import { createInterface } from "node:readline/promises";
 import OpenAI from "openai";
-import * as ffmpeg from "./ffmpeg-commands.js";
 import prompts from "prompts";
 import {
   AIService,
@@ -12,14 +10,10 @@ import {
   FFmpegCommandsService,
   OBSIntegrationService,
   OpenAIService,
+  QuestionNotAnsweredError,
   ReadStreamService,
   TranscriptStorageService,
 } from "./services.js";
-
-export const FFmpegCommandsLayerLive = Layer.succeed(
-  FFmpegCommandsService,
-  ffmpeg
-);
 
 export const OpenAILayerLive = Layer.effect(
   OpenAIService,
@@ -43,8 +37,16 @@ export const AskQuestionLayerLive = Layer.succeed(AskQuestionService, {
         name: "value",
         message: question,
       });
+
       return response.value;
-    }),
+    }).pipe(
+      Effect.andThen((val) => {
+        if (!val) {
+          return Effect.fail(new QuestionNotAnsweredError({ question }));
+        }
+        return Effect.succeed(val);
+      })
+    ),
 
   select: (question, choices) => {
     return Effect.promise(async () => {
@@ -60,7 +62,7 @@ export const AskQuestionLayerLive = Layer.succeed(AskQuestionService, {
 });
 
 export const AppLayerLive = Layer.mergeAll(
-  FFmpegCommandsLayerLive,
+  FFmpegCommandsService.Default,
   OpenAILayerLive,
   ReadStreamLayerLive,
   AskQuestionLayerLive,

@@ -1,6 +1,7 @@
 import { FileSystem } from "@effect/platform/FileSystem";
 import { type AbsolutePath } from "@total-typescript/shared";
-import { Config, Console, Context, Effect, Either } from "effect";
+import { Config, Console, Effect, Either } from "effect";
+import { AskQuestionService, LinksStorageService } from "../services.js";
 import { WorkflowsService } from "../workflows.js";
 
 export type QueueItemAction =
@@ -33,11 +34,7 @@ export type QueueItem = {
   createdAt: number;
   completedAt?: number;
   action: QueueItemAction;
-  status:
-    | "idle"
-    | "completed"
-    | "failed"
-    | "not-enough-information-to-continue";
+  status: "idle" | "completed" | "failed" | "requires-user-input";
   error?: string;
 };
 
@@ -138,7 +135,7 @@ const deleteQueueLockfile = () => {
   });
 };
 
-export const processQueue = () => {
+export const processQueue = (opts: { hasUserInput: boolean }) => {
   return Effect.gen(function* () {
     if (yield* doesQueueLockfileExist()) {
       return yield* Console.log("Queue is locked, skipping");
@@ -147,10 +144,16 @@ export const processQueue = () => {
     yield* writeQueueLockfile();
 
     const workflows = yield* WorkflowsService;
+    const askQuestion = yield* AskQuestionService;
+    const linkStorage = yield* LinksStorageService;
 
     while (true) {
       const queueState = yield* getQueueState();
-      const queueItem = queueState.queue.find((i) => i.status === "idle");
+      const queueItem = queueState.queue.find(
+        (i) =>
+          i.status === "idle" ||
+          (opts.hasUserInput && i.status === "requires-user-input")
+      );
 
       if (!queueItem) {
         return yield* Console.log("No idle queue items found");
@@ -184,9 +187,29 @@ export const processQueue = () => {
           });
 
           break;
+        case "links-request":
+          const links: { description: string; url: string }[] = [];
+          for (const linkRequest of queueItem.action.linkRequests) {
+            const link = yield* askQuestion.askQuestion(
+              `Link request: ${linkRequest}`
+            );
+
+            links.push({
+              description: linkRequest,
+              url: link,
+            });
+          }
+
+          yield* linkStorage.addLinks(links);
+
+          yield* updateQueueItem({
+            ...queueItem,
+            status: "completed",
+            completedAt: Date.now(),
+          });
+          break;
         default:
-          // @ts-expect-error TODO
-          queueItem.action.type satisfies never;
+          queueItem.action satisfies never;
           yield* Console.log("Unknown queue item type");
           break;
       }

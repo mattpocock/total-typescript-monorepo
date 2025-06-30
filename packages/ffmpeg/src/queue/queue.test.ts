@@ -6,6 +6,7 @@ import path from "node:path";
 import { expect, it, vi } from "vitest";
 import { processQueue, writeToQueue } from "./queue.js";
 import { WorkflowsService } from "../workflows.js";
+import { AskQuestionService, LinksStorageService } from "../services.js";
 
 it("Should create the queue.json if it does not exist", async () => {
   const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
@@ -16,14 +17,28 @@ it("Should create the queue.json if it does not exist", async () => {
 
     const createAutoEditedVideoWorkflow = vi.fn();
 
-    await processQueue().pipe(
+    await processQueue({ hasUserInput: false }).pipe(
+      Effect.provide(NodeFileSystem.layer),
       Effect.provideService(
         WorkflowsService,
         new WorkflowsService({
           createAutoEditedVideoWorkflow,
         })
       ),
-      Effect.provide(NodeFileSystem.layer),
+      Effect.provideService(
+        LinksStorageService,
+        new LinksStorageService({
+          addLinks: vi.fn(),
+          getLinks: vi.fn().mockReturnValue(Effect.succeed([])),
+        })
+      ),
+      Effect.provideService(
+        AskQuestionService,
+        AskQuestionService.of({
+          askQuestion: vi.fn().mockReturnValue(Effect.succeed("test")),
+          select: vi.fn().mockReturnValue(Effect.succeed("test")),
+        })
+      ),
       Effect.withConfigProvider(
         ConfigProvider.fromJson({
           QUEUE_LOCATION,
@@ -106,6 +121,176 @@ it("Should update the queue.json when a new item is added", async () => {
         status: "idle",
       },
     ]);
+  } finally {
+    await fs.rm(tmpDir, { recursive: true });
+  }
+});
+
+it("Should allow you to add a link request to the queue, then run the request", async () => {
+  const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
+
+  try {
+    const QUEUE_LOCATION = path.join(tmpDir, "queue.json");
+    const QUEUE_LOCKFILE_LOCATION = path.join(tmpDir, "queue.lock");
+
+    const createAutoEditedVideoWorkflow = vi
+      .fn()
+      .mockReturnValue(Effect.succeed(undefined));
+
+    const addLinks = vi.fn().mockReturnValue(Effect.succeed(undefined));
+    const getLinks = vi.fn().mockReturnValue(Effect.succeed([]));
+
+    await Effect.gen(function* () {
+      yield* writeToQueue([
+        {
+          id: "1",
+          createdAt: Date.now(),
+          action: {
+            type: "links-request",
+            linkRequests: ["test", "test2"],
+          },
+          status: "requires-user-input",
+        },
+      ]);
+
+      yield* processQueue({ hasUserInput: true });
+    }).pipe(
+      Effect.provide(NodeFileSystem.layer),
+      Effect.provideService(
+        WorkflowsService,
+        new WorkflowsService({
+          createAutoEditedVideoWorkflow,
+        })
+      ),
+      Effect.provideService(
+        LinksStorageService,
+        new LinksStorageService({
+          addLinks,
+          getLinks,
+        })
+      ),
+      Effect.provideService(
+        AskQuestionService,
+        AskQuestionService.of({
+          askQuestion: vi.fn().mockReturnValue(Effect.succeed("awesome-url")),
+          select: vi.fn().mockReturnValue(Effect.succeed("test")),
+        })
+      ),
+      Effect.withConfigProvider(
+        ConfigProvider.fromJson({
+          QUEUE_LOCATION,
+          QUEUE_LOCKFILE_LOCATION,
+        })
+      ),
+      Effect.runPromise
+    );
+
+    const queueState = JSON.parse(
+      (await fs.readFile(QUEUE_LOCATION, "utf-8")).toString()
+    );
+
+    expect(queueState.queue).toEqual([
+      {
+        id: "1",
+        createdAt: expect.any(Number),
+        action: {
+          type: "links-request",
+          linkRequests: ["test", "test2"],
+        },
+        status: "completed",
+        completedAt: expect.any(Number),
+      },
+    ]);
+
+    expect(addLinks).toHaveBeenCalledWith([
+      { description: "test", url: "awesome-url" },
+      { description: "test2", url: "awesome-url" },
+    ]);
+  } finally {
+    await fs.rm(tmpDir, { recursive: true });
+  }
+});
+
+it("Should not process links requests when hasUserInput is false", async () => {
+  const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
+
+  try {
+    const QUEUE_LOCATION = path.join(tmpDir, "queue.json");
+    const QUEUE_LOCKFILE_LOCATION = path.join(tmpDir, "queue.lock");
+
+    const createAutoEditedVideoWorkflow = vi
+      .fn()
+      .mockReturnValue(Effect.succeed(undefined));
+
+    const addLinks = vi.fn().mockReturnValue(Effect.succeed(undefined));
+    const getLinks = vi.fn().mockReturnValue(Effect.succeed([]));
+    const askQuestion = vi.fn().mockReturnValue(Effect.succeed("awesome-url"));
+
+    await Effect.gen(function* () {
+      yield* writeToQueue([
+        {
+          id: "1",
+          createdAt: Date.now(),
+          action: {
+            type: "links-request",
+            linkRequests: ["test", "test2"],
+          },
+          status: "requires-user-input",
+        },
+      ]);
+
+      yield* processQueue({ hasUserInput: false });
+    }).pipe(
+      Effect.provide(NodeFileSystem.layer),
+      Effect.provideService(
+        WorkflowsService,
+        new WorkflowsService({
+          createAutoEditedVideoWorkflow,
+        })
+      ),
+      Effect.provideService(
+        LinksStorageService,
+        new LinksStorageService({
+          addLinks,
+          getLinks,
+        })
+      ),
+      Effect.provideService(
+        AskQuestionService,
+        AskQuestionService.of({
+          askQuestion,
+          select: vi.fn().mockReturnValue(Effect.succeed("test")),
+        })
+      ),
+      Effect.withConfigProvider(
+        ConfigProvider.fromJson({
+          QUEUE_LOCATION,
+          QUEUE_LOCKFILE_LOCATION,
+        })
+      ),
+      Effect.runPromise
+    );
+
+    const queueState = JSON.parse(
+      (await fs.readFile(QUEUE_LOCATION, "utf-8")).toString()
+    );
+
+    // The queue item should remain unchanged - not processed
+    expect(queueState.queue).toEqual([
+      {
+        id: "1",
+        createdAt: expect.any(Number),
+        action: {
+          type: "links-request",
+          linkRequests: ["test", "test2"],
+        },
+        status: "requires-user-input",
+      },
+    ]);
+
+    // These functions should not have been called
+    expect(addLinks).not.toHaveBeenCalled();
+    expect(askQuestion).not.toHaveBeenCalled();
   } finally {
     await fs.rm(tmpDir, { recursive: true });
   }

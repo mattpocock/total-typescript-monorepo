@@ -4,7 +4,6 @@ import { Config, Console, Data, Effect } from "effect";
 import path from "path";
 import {
   AskQuestionLayerLive,
-  FFmpegCommandsLayerLive,
   OpenAILayerLive,
   ReadStreamLayerLive,
 } from "./layers.js";
@@ -469,7 +468,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       };
     }),
     dependencies: [
-      FFmpegCommandsLayerLive,
+      FFmpegCommandsService.Default,
       TranscriptStorageService.Default,
       AskQuestionLayerLive,
       ReadStreamLayerLive,

@@ -26,10 +26,18 @@ export class ReadStreamService extends Context.Tag("ReadStreamService")<
   }
 >() {}
 
+export class QuestionNotAnsweredError extends Data.TaggedError(
+  "QuestionNotAnsweredError"
+)<{
+  question: string;
+}> {}
+
 export class AskQuestionService extends Context.Tag("AskQuestionService")<
   AskQuestionService,
   {
-    askQuestion: (question: string) => Effect.Effect<string>;
+    askQuestion: (
+      question: string
+    ) => Effect.Effect<string, QuestionNotAnsweredError>;
     select: <T>(
       question: string,
       choices: Array<{ title: string; value: T }>
