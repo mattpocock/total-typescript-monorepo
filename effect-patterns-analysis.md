@@ -36,16 +36,16 @@ I analyzed the `packages/ffmpeg` codebase and identified comprehensive Effect-TS
 
 ## Created Cursor Rules Files
 
-I created 7 comprehensive Cursor rules files in `.cursor-rules/`:
+I created 8 comprehensive Cursor rules files in `.cursor-rules/` (as `.mdc` files):
 
-1. **`effect-overview.md`** - Main overview tying all patterns together
-2. **`effect-tagged-errors.md`** - Data.TaggedError patterns and naming conventions
-3. **`effect-services.md`** - Effect.Service dependency injection patterns
-4. **`effect-functions.md`** - Effect.fn and Effect.gen usage patterns
-5. **`effect-layers.md`** - Layer composition and dependency management
-6. **`effect-error-handling.md`** - Error handling, recovery, and transformation patterns
-7. **`effect-config.md`** - Configuration access and management patterns
-8. **`effect-workflows.md`** - Workflow orchestration patterns
+1. **`effect-overview.mdc`** - Main overview tying all patterns together
+2. **`effect-tagged-errors.mdc`** - Data.TaggedError patterns and naming conventions
+3. **`effect-services.mdc`** - Effect.Service dependency injection patterns
+4. **`effect-functions.mdc`** - Effect.fn and Effect.gen usage patterns
+5. **`effect-layers.mdc`** - Layer composition and dependency management
+6. **`effect-error-handling.mdc`** - Error handling, recovery, and transformation patterns
+7. **`effect-config.mdc`** - Configuration access and management patterns
+8. **`effect-workflows.mdc`** - Workflow orchestration patterns
 
 ## Impact for Cursor
 

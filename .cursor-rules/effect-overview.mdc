@@ -5,34 +5,39 @@ This project uses [Effect-TS](https://effect.website/) for functional programmin
 ## Core Patterns
 
 ### 1. **Data.TaggedError** - Typed Error Handling
-- See: [effect-tagged-errors.md](./effect-tagged-errors.md)
+- See: [effect-tagged-errors.mdc](./effect-tagged-errors.mdc)
 - Use for creating typed error classes with structured error information
 - Consistent naming: end with "Error", include relevant context
 
 ### 2. **Effect.Service** - Dependency Injection
-- See: [effect-services.md](./effect-services.md)  
+- See: [effect-services.mdc](./effect-services.mdc)  
 - Use for creating reusable, injectable services
 - Encapsulate related functionality with proper dependency management
 
 ### 3. **Effect.fn & Effect.gen** - Effectful Functions
-- See: [effect-functions.md](./effect-functions.md)
+- See: [effect-functions.mdc](./effect-functions.mdc)
 - `Effect.fn` for named Effect functions with tracing
 - `Effect.gen` for generator-style effectful code
 
 ### 4. **Layer** - Dependency Composition
-- See: [effect-layers.md](./effect-layers.md)
+- See: [effect-layers.mdc](./effect-layers.mdc)
 - Use `Layer.mergeAll()` to compose application dependencies
 - Prefer `Service.Default` layers over manual creation
 
 ### 5. **Error Handling** - Robust Error Management
-- See: [effect-error-handling.md](./effect-error-handling.md)
+- See: [effect-error-handling.mdc](./effect-error-handling.mdc)
 - Use `Effect.mapError`, `Effect.either`, `Effect.catchTag`
 - Transform external errors to tagged errors at boundaries
 
 ### 6. **Config** - Type-Safe Configuration
-- See: [effect-config.md](./effect-config.md)
+- See: [effect-config.mdc](./effect-config.mdc)
 - Use `Config.string()`, `Config.number()`, etc. for environment variables
 - Use `Config.redacted()` for sensitive values
+
+### 7. **Workflows** - Business Logic Orchestration
+- See: [effect-workflows.mdc](./effect-workflows.mdc)
+- Orchestrate multiple services for complex business logic
+- Use `Effect.gen` to coordinate between services
 
 ## Project Structure
 
