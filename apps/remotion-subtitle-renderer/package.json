@@ -25,8 +25,7 @@
   },
   "scripts": {
     "dev": "remotion studio",
-    "upgrade": "remotion upgrade",
-    "lint": "tsc"
+    "upgrade": "remotion upgrade"
   },
   "sideEffects": [
     "*.css"
