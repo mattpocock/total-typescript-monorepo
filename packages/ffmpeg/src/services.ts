@@ -3,12 +3,14 @@ import { FileSystem } from "@effect/platform";
 import { NodeFileSystem } from "@effect/platform-node";
 import { type AbsolutePath } from "@total-typescript/shared";
 import { generateObject, generateText } from "ai";
-import { Config, Context, Data, Effect, Redacted } from "effect";
+import { Config, Data, Effect, Redacted } from "effect";
 import fm from "front-matter";
 import type { ReadStream } from "node:fs";
+import { createReadStream } from "node:fs";
 import * as realFs from "node:fs/promises";
 import path from "node:path";
 import { OpenAI } from "openai";
+import prompts from "prompts";
 import { z } from "zod";
 
 export { FFmpegCommandsService } from "./ffmpeg-commands.js";
@@ -27,12 +29,18 @@ export class OpenAIService extends Effect.Service<OpenAIService>()(
   }
 ) {}
 
-export class ReadStreamService extends Context.Tag("ReadStreamService")<
-  ReadStreamService,
+export class ReadStreamService extends Effect.Service<ReadStreamService>()(
+  "ReadStreamService",
   {
-    createReadStream: (path: AbsolutePath) => Effect.Effect<ReadStream>;
+    effect: Effect.gen(function* () {
+      return {
+        createReadStream: (path: AbsolutePath): Effect.Effect<ReadStream> => {
+          return Effect.succeed(createReadStream(path));
+        },
+      };
+    }),
   }
->() {}
+) {}
 
 export class QuestionNotAnsweredError extends Data.TaggedError(
   "QuestionNotAnsweredError"
@@ -40,18 +48,49 @@ export class QuestionNotAnsweredError extends Data.TaggedError(
   question: string;
 }> {}
 
-export class AskQuestionService extends Context.Tag("AskQuestionService")<
-  AskQuestionService,
+export class AskQuestionService extends Effect.Service<AskQuestionService>()(
+  "AskQuestionService",
   {
-    askQuestion: (
-      question: string
-    ) => Effect.Effect<string, QuestionNotAnsweredError>;
-    select: <T>(
-      question: string,
-      choices: Array<{ title: string; value: T }>
-    ) => Effect.Effect<T>;
+    effect: Effect.gen(function* () {
+      return {
+        askQuestion: (
+          question: string
+        ): Effect.Effect<string, QuestionNotAnsweredError> => {
+          return Effect.promise(async () => {
+            const response = await prompts({
+              type: "text",
+              name: "value",
+              message: question,
+            });
+            return response.value;
+          }).pipe(
+            Effect.andThen((val) => {
+              if (!val) {
+                return Effect.fail(new QuestionNotAnsweredError({ question }));
+              }
+              return Effect.succeed(val);
+            })
+          );
+        },
+
+        select: <T>(
+          question: string,
+          choices: Array<{ title: string; value: T }>
+        ): Effect.Effect<T> => {
+          return Effect.promise(async () => {
+            const response = await prompts({
+              type: "select",
+              name: "value",
+              message: question,
+              choices,
+            });
+            return response.value;
+          });
+        },
+      };
+    }),
   }
->() {}
+) {}
 
 export class NoOBSFilesFoundError extends Data.TaggedError(
   "NoOBSFilesFoundError"

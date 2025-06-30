@@ -3,7 +3,6 @@ import { execAsync, type AbsolutePath } from "@total-typescript/shared";
 import { generateObject } from "ai";
 import { Config, Data, Effect } from "effect";
 import { OpenAIService, ReadStreamService } from "./services.js";
-import { ReadStreamLayerLive } from "./layers.js";
 
 // Error classes
 export class CouldNotTranscribeAudioError extends Data.TaggedError(
@@ -360,6 +359,6 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
         }),
       };
     }),
-    dependencies: [OpenAIService.Default, ReadStreamLayerLive],
+    dependencies: [OpenAIService.Default, ReadStreamService.Default],
   }
 ) {}

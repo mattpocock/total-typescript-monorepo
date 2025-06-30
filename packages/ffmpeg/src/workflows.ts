@@ -2,11 +2,11 @@ import { FileSystem } from "@effect/platform/FileSystem";
 import { execAsync, type AbsolutePath } from "@total-typescript/shared";
 import { Config, Console, Data, Effect } from "effect";
 import path from "path";
-import { AskQuestionLayerLive, ReadStreamLayerLive } from "./layers.js";
 import {
   AskQuestionService,
   FFmpegCommandsService,
   OpenAIService,
+  ReadStreamService,
   TranscriptStorageService,
 } from "./services.js";
 import {
@@ -15,6 +15,7 @@ import {
   type Subtitle,
 } from "./subtitle-rendering.js";
 
+import { NodeFileSystem } from "@effect/platform-node";
 import { tmpdir } from "os";
 import { join } from "path";
 import {
@@ -29,7 +30,6 @@ import {
   THRESHOLD,
 } from "./constants.js";
 import { findSilenceInVideo } from "./silence-detection.js";
-import { NodeFileSystem } from "@effect/platform-node";
 
 export interface CreateAutoEditedVideoWorkflowOptions {
   inputVideo: AbsolutePath;
@@ -468,8 +468,8 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
     dependencies: [
       FFmpegCommandsService.Default,
       TranscriptStorageService.Default,
-      AskQuestionLayerLive,
-      ReadStreamLayerLive,
+      AskQuestionService.Default,
+      ReadStreamService.Default,
       OpenAIService.Default,
       NodeFileSystem.layer,
     ],

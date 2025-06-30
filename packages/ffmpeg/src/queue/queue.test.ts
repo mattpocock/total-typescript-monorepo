@@ -34,7 +34,7 @@ it("Should create the queue.json if it does not exist", async () => {
       ),
       Effect.provideService(
         AskQuestionService,
-        AskQuestionService.of({
+        new AskQuestionService({
           askQuestion: vi.fn().mockReturnValue(Effect.succeed("test")),
           select: vi.fn().mockReturnValue(Effect.succeed("test")),
         })
@@ -171,7 +171,7 @@ it("Should allow you to add a link request to the queue, then run the request", 
       ),
       Effect.provideService(
         AskQuestionService,
-        AskQuestionService.of({
+        new AskQuestionService({
           askQuestion: vi.fn().mockReturnValue(Effect.succeed("awesome-url")),
           select: vi.fn().mockReturnValue(Effect.succeed("test")),
         })
@@ -257,7 +257,7 @@ it("Should not process links requests when hasUserInput is false", async () => {
       ),
       Effect.provideService(
         AskQuestionService,
-        AskQuestionService.of({
+        new AskQuestionService({
           askQuestion,
           select: vi.fn().mockReturnValue(Effect.succeed("test")),
         })
