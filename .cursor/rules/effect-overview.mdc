@@ -1,0 +1,140 @@
+# Effect-TS Patterns Overview
+
+This project uses [Effect-TS](https://effect.website/) for functional programming with typed errors, dependency injection, and resource management. The following patterns are consistently used throughout the codebase.
+
+## Core Patterns
+
+### 1. **Data.TaggedError** - Typed Error Handling
+- See: [effect-tagged-errors.mdc](./effect-tagged-errors.mdc)
+- Use for creating typed error classes with structured error information
+- Consistent naming: end with "Error", include relevant context
+
+### 2. **Effect.Service** - Dependency Injection
+- See: [effect-services.mdc](./effect-services.mdc)  
+- Use for creating reusable, injectable services
+- Encapsulate related functionality with proper dependency management
+
+### 3. **Effect.fn & Effect.gen** - Effectful Functions
+- See: [effect-functions.mdc](./effect-functions.mdc)
+- `Effect.fn` for named Effect functions with tracing
+- `Effect.gen` for generator-style effectful code
+
+### 4. **Layer** - Dependency Composition
+- See: [effect-layers.mdc](./effect-layers.mdc)
+- Use `Layer.mergeAll()` to compose application dependencies
+- Prefer `Service.Default` layers over manual creation
+
+### 5. **Error Handling** - Robust Error Management
+- See: [effect-error-handling.mdc](./effect-error-handling.mdc)
+- Use `Effect.mapError`, `Effect.either`, `Effect.catchTag`
+- Transform external errors to tagged errors at boundaries
+
+### 6. **Config** - Type-Safe Configuration
+- See: [effect-config.mdc](./effect-config.mdc)
+- Use `Config.string()`, `Config.number()`, etc. for environment variables
+- Use `Config.redacted()` for sensitive values
+
+### 7. **Workflows** - Business Logic Orchestration
+- See: [effect-workflows.mdc](./effect-workflows.mdc)
+- Orchestrate multiple services for complex business logic
+- Use `Effect.gen` to coordinate between services
+
+## Project Structure
+
+```
+packages/ffmpeg/src/
+├── services.ts          # Core services with Effect.Service pattern
+├── workflows.ts         # High-level workflows using Effect.gen
+├── ffmpeg-commands.ts   # FFmpeg operations as Effect functions
+├── app-layer.ts         # Application layer composition
+├── queue/               # Queue management services
+└── __tests__/           # Tests using Effect patterns
+```
+
+## Common Imports
+
+```typescript
+import { Data, Effect, Config, Layer } from "effect";
+import { FileSystem } from "@effect/platform";
+import { NodeFileSystem } from "@effect/platform-node";
+```
+
+## Typical Service Structure
+
+```typescript
+export class MyService extends Effect.Service<MyService>()("MyService", {
+  effect: Effect.gen(function* () {
+    // Dependencies
+    const fs = yield* FileSystem.FileSystem;
+    const config = yield* Config.string("SOME_CONFIG");
+    
+    return {
+      // Methods using Effect.fn
+      doSomething: Effect.fn("doSomething")(function* (param: string) {
+        // Implementation
+      }),
+    };
+  }),
+  dependencies: [NodeFileSystem.layer], // Platform dependencies
+}) {}
+```
+
+## Typical Workflow Structure
+
+```typescript
+const workflow = Effect.gen(function* () {
+  // Get services
+  const service = yield* MyService;
+  const config = yield* Config.string("CONFIG_KEY");
+  
+  // Perform operations with error handling
+  const result = yield* service.doSomething(config).pipe(
+    Effect.mapError((e) => new WorkflowError({ cause: e }))
+  );
+  
+  return result;
+});
+```
+
+## App Layer Pattern
+
+```typescript
+export const AppLayerLive = Layer.mergeAll(
+  // All your services
+  ServiceA.Default,
+  ServiceB.Default,
+  ServiceC.Default,
+  
+  // Platform layers
+  NodeFileSystem.layer,
+);
+```
+
+## Running Effects
+
+```typescript
+// In main application
+Effect.runPromise(
+  myWorkflow().pipe(Effect.provide(AppLayerLive))
+);
+```
+
+## Key Benefits
+
+1. **Type Safety**: All errors are typed and trackable
+2. **Dependency Injection**: Clean, testable dependency management
+3. **Resource Management**: Automatic cleanup with proper scoping
+4. **Composability**: Services and layers compose naturally
+5. **Testability**: Easy mocking and test layer creation
+6. **Tracing**: Built-in tracing with Effect.fn naming
+
+## When to Use Each Pattern
+
+- **Services**: For stateful operations, external integrations, business logic
+- **Workflows**: For orchestrating multiple services and operations
+- **Tagged Errors**: For any operation that can fail with specific errors
+- **Layers**: For wiring up application dependencies
+- **Config**: For any configuration or environment variables
+- **Effect.fn**: For any function that performs Effects (almost all functions)
+
+See the individual pattern files for detailed examples and best practices.

@@ -1,0 +1,178 @@
+# Effect Functions and Generators
+
+## Effect.fn Pattern
+
+Use `Effect.fn` to create named Effect functions that provide better tracing and debugging capabilities.
+
+### Basic Effect.fn Usage
+
+```typescript
+import { Effect } from "effect";
+
+export const processData = Effect.fn("processData")(function* (data: string) {
+  // Effect implementation
+  const processed = yield* transformData(data);
+  return processed;
+});
+```
+
+### Effect.fn in Services
+
+```typescript
+export class DataService extends Effect.Service<DataService>()("DataService", {
+  effect: Effect.gen(function* () {
+    return {
+      processFile: Effect.fn("processFile")(function* (path: string) {
+        const content = yield* fs.readFileString(path);
+        const processed = yield* processContent(content);
+        return processed;
+      }),
+      
+      saveResult: Effect.fn("saveResult")(function* (data: any, output: string) {
+        yield* fs.writeFileString(output, JSON.stringify(data));
+      }),
+    };
+  }),
+}) {}
+```
+
+## Effect.gen Pattern
+
+Use `Effect.gen` for writing effectful code in a generator style that allows for clean, sequential-looking asynchronous code.
+
+### Basic Effect.gen
+
+```typescript
+const workflow = Effect.gen(function* () {
+  const config = yield* Config.string("SOME_CONFIG");
+  const service = yield* SomeService;
+  
+  const result = yield* service.doOperation(config);
+  yield* Effect.logInfo("Operation completed", { result });
+  
+  return result;
+});
+```
+
+### Error Handling in Effect.gen
+
+```typescript
+const safeWorkflow = Effect.gen(function* () {
+  const result = yield* riskyOperation().pipe(
+    Effect.mapError((e) => new MyCustomError({ cause: e }))
+  );
+  
+  if (!result) {
+    return yield* Effect.fail(new NoResultError());
+  }
+  
+  return result;
+});
+```
+
+### Parallel Operations
+
+```typescript
+const parallelWorkflow = Effect.gen(function* () {
+  // Run operations in parallel
+  const [result1, result2, result3] = yield* Effect.all([
+    operation1(),
+    operation2(),
+    operation3(),
+  ]);
+  
+  return combineResults(result1, result2, result3);
+});
+```
+
+### Controlled Concurrency
+
+```typescript
+const batchWorkflow = Effect.gen(function* () {
+  const items = yield* getItems();
+  
+  const results = yield* Effect.all(
+    items.map((item) => processItem(item)),
+    { concurrency: 5 } // Limit to 5 concurrent operations
+  );
+  
+  return results;
+});
+```
+
+## Configuration Access
+
+```typescript
+const configWorkflow = Effect.gen(function* () {
+  // String configuration
+  const apiUrl = yield* Config.string("API_URL");
+  
+  // Number with default
+  const timeout = yield* Config.number("TIMEOUT").pipe(
+    Config.withDefault(5000)
+  );
+  
+  // Redacted (sensitive) configuration
+  const apiKey = yield* Config.redacted(Config.string("API_KEY"));
+  
+  return { apiUrl, timeout, apiKey };
+});
+```
+
+## Logging in Effects
+
+```typescript
+const loggingWorkflow = Effect.gen(function* () {
+  yield* Effect.logInfo("Starting workflow");
+  
+  const result = yield* someOperation();
+  
+  yield* Effect.logDebug("Operation result", { result });
+  
+  if (result.success) {
+    yield* Effect.logInfo("Workflow completed successfully");
+  } else {
+    yield* Effect.logWarning("Workflow completed with warnings");
+  }
+  
+  return result;
+});
+```
+
+## Conditional Logic
+
+```typescript
+const conditionalWorkflow = Effect.gen(function* () {
+  const condition = yield* checkCondition();
+  
+  if (condition) {
+    return yield* happyPath();
+  } else {
+    return yield* alternativePath();
+  }
+});
+```
+
+## Resource Management
+
+```typescript
+const resourceWorkflow = Effect.gen(function* () {
+  const resource = yield* acquireResource();
+  
+  try {
+    const result = yield* useResource(resource);
+    return result;
+  } finally {
+    yield* releaseResource(resource);
+  }
+}).pipe(
+  Effect.ensuring(cleanupEffect()) // Always runs cleanup
+);
+```
+
+## Naming Conventions
+
+- Use descriptive names for Effect.fn functions
+- Name should indicate what the function does
+- Use camelCase for function names
+- Include context in the name when helpful (e.g., "readFileAndParse" vs just "read")
