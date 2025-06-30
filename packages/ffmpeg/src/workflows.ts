@@ -2,14 +2,11 @@ import { FileSystem } from "@effect/platform/FileSystem";
 import { execAsync, type AbsolutePath } from "@total-typescript/shared";
 import { Config, Console, Data, Effect } from "effect";
 import path from "path";
-import {
-  AskQuestionLayerLive,
-  OpenAILayerLive,
-  ReadStreamLayerLive,
-} from "./layers.js";
+import { AskQuestionLayerLive, ReadStreamLayerLive } from "./layers.js";
 import {
   AskQuestionService,
   FFmpegCommandsService,
+  OpenAIService,
   TranscriptStorageService,
 } from "./services.js";
 import {
@@ -473,7 +470,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       TranscriptStorageService.Default,
       AskQuestionLayerLive,
       ReadStreamLayerLive,
-      OpenAILayerLive,
+      OpenAIService.Default,
       NodeFileSystem.layer,
     ],
   }

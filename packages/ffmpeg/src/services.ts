@@ -1,23 +1,31 @@
-import { openai } from "@ai-sdk/openai";
+import { anthropic } from "@ai-sdk/anthropic";
 import { FileSystem } from "@effect/platform";
 import { NodeFileSystem } from "@effect/platform-node";
 import { type AbsolutePath } from "@total-typescript/shared";
 import { generateObject, generateText } from "ai";
-import { Config, Context, Data, Effect } from "effect";
+import { Config, Context, Data, Effect, Redacted } from "effect";
 import fm from "front-matter";
 import type { ReadStream } from "node:fs";
 import * as realFs from "node:fs/promises";
 import path from "node:path";
-import type { OpenAI } from "openai";
-import { anthropic } from "@ai-sdk/anthropic";
+import { OpenAI } from "openai";
 import { z } from "zod";
 
 export { FFmpegCommandsService } from "./ffmpeg-commands.js";
 
-export class OpenAIService extends Context.Tag("OpenAIService")<
-  OpenAIService,
-  OpenAI
->() {}
+export class OpenAIService extends Effect.Service<OpenAIService>()(
+  "OpenAIService",
+  {
+    effect: Effect.gen(function* () {
+      const openaiKey = yield* Config.redacted(Config.string("OPENAI_API_KEY"));
+      const openaiClient = new OpenAI({
+        apiKey: Redacted.value(openaiKey),
+      });
+
+      return openaiClient;
+    }),
+  }
+) {}
 
 export class ReadStreamService extends Context.Tag("ReadStreamService")<
   ReadStreamService,
