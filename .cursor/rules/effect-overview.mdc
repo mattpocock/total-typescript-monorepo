@@ -1,41 +1,46 @@
+---
+description: Writing Effect Code
+globs: 
+alwaysApply: false
+---
 # Effect-TS Patterns Overview
 
-This project uses [Effect-TS](https://effect.website/) for functional programming with typed errors, dependency injection, and resource management. The following patterns are consistently used throughout the codebase.
+This project uses [Effect-TS](mdc:https:/effect.website) for functional programming with typed errors, dependency injection, and resource management. The following patterns are consistently used throughout the codebase.
 
 ## Core Patterns
 
 ### 1. **Data.TaggedError** - Typed Error Handling
-- See: [effect-tagged-errors.mdc](./effect-tagged-errors.mdc)
+- See: [effect-tagged-errors.mdc](mdc:effect-tagged-errors.mdc)
 - Use for creating typed error classes with structured error information
 - Consistent naming: end with "Error", include relevant context
 
 ### 2. **Effect.Service** - Dependency Injection
-- See: [effect-services.mdc](./effect-services.mdc)  
+- See: [effect-services.mdc](mdc:effect-services.mdc)  
 - Use for creating reusable, injectable services
 - Encapsulate related functionality with proper dependency management
 
 ### 3. **Effect.fn & Effect.gen** - Effectful Functions
-- See: [effect-functions.mdc](./effect-functions.mdc)
+- See: [effect-functions.mdc](mdc:effect-functions.mdc)
 - `Effect.fn` for named Effect functions with tracing
 - `Effect.gen` for generator-style effectful code
 
 ### 4. **Layer** - Dependency Composition
-- See: [effect-layers.mdc](./effect-layers.mdc)
+- See: [effect-layers.mdc](mdc:effect-layers.mdc)
 - Use `Layer.mergeAll()` to compose application dependencies
 - Prefer `Service.Default` layers over manual creation
 
 ### 5. **Error Handling** - Robust Error Management
-- See: [effect-error-handling.mdc](./effect-error-handling.mdc)
+- See: [effect-error-handling.mdc](mdc:effect-error-handling.mdc)
 - Use `Effect.mapError`, `Effect.either`, `Effect.catchTag`
 - Transform external errors to tagged errors at boundaries
 
 ### 6. **Config** - Type-Safe Configuration
-- See: [effect-config.mdc](./effect-config.mdc)
+- See: [effect-config.mdc](mdc:effect-config.mdc)
 - Use `Config.string()`, `Config.number()`, etc. for environment variables
 - Use `Config.redacted()` for sensitive values
 
 ### 7. **Workflows** - Business Logic Orchestration
-- See: [effect-workflows.mdc](./effect-workflows.mdc)
+- See: [effect-workflows.mdc](mdc:effect-workflows.mdc)
 - Orchestrate multiple services for complex business logic
 - Use `Effect.gen` to coordinate between services
 

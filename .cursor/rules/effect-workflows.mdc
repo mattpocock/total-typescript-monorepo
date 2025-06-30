@@ -1,3 +1,8 @@
+---
+description: Writing Effect Code
+globs: 
+alwaysApply: false
+---
 # Effect Workflow Patterns
 
 ## What are Workflows
