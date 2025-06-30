@@ -1,7 +1,7 @@
 import { type AbsolutePath } from "@total-typescript/shared";
 import { Data, Effect } from "effect";
 import { MINIMUM_CLIP_LENGTH_IN_SECONDS } from "./constants.js";
-import { FFmpegCommandsService } from "./services.js";
+import { FFmpegCommandsService } from "./ffmpeg-commands.js";
 
 export class CouldNotFindStartTimeError extends Data.TaggedError(
   "CouldNotFindStartTimeError"

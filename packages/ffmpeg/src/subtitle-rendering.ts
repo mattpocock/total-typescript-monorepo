@@ -1,8 +1,4 @@
-import { FileSystem } from "@effect/platform/FileSystem";
-import { type AbsolutePath } from "@total-typescript/shared";
-import { Config, Effect } from "effect";
 import path from "path";
-import { FFmpegCommandsService } from "./services.js";
 
 export type Subtitle = {
   start: number;

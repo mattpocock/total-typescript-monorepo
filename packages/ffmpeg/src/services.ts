@@ -13,8 +13,6 @@ import { OpenAI } from "openai";
 import prompts from "prompts";
 import { z } from "zod";
 
-export { FFmpegCommandsService } from "./ffmpeg-commands.js";
-
 export class OpenAIService extends Effect.Service<OpenAIService>()(
   "OpenAIService",
   {

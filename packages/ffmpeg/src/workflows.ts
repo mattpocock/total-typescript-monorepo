@@ -4,8 +4,6 @@ import { Config, Console, Data, Effect } from "effect";
 import path from "path";
 import {
   AskQuestionService,
-  FFmpegCommandsService,
-  OpenAIService,
   ReadStreamService,
   TranscriptStorageService,
 } from "./services.js";
@@ -30,6 +28,7 @@ import {
   THRESHOLD,
 } from "./constants.js";
 import { findSilenceInVideo } from "./silence-detection.js";
+import { FFmpegCommandsService } from "./ffmpeg-commands.js";
 
 export interface CreateAutoEditedVideoWorkflowOptions {
   inputVideo: AbsolutePath;
@@ -470,7 +469,6 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       TranscriptStorageService.Default,
       AskQuestionService.Default,
       ReadStreamService.Default,
-      OpenAIService.Default,
       NodeFileSystem.layer,
     ],
   }

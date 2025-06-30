@@ -4,7 +4,7 @@ import {
   DEFINITELY_BAD_TAKE_PADDING,
   MAX_BAD_TAKE_DISTANCE,
 } from "./constants.js";
-import { FFmpegCommandsService } from "./services.js";
+import { FFmpegCommandsService } from "./ffmpeg-commands.js";
 
 export interface BadTakeMarker {
   frame: number;

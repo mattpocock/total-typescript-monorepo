@@ -14,7 +14,8 @@ import {
   SILENCE_DURATION,
   THRESHOLD,
 } from "./constants.js";
-import { FFmpegCommandsService, OBSIntegrationService } from "./services.js";
+import { FFmpegCommandsService } from "./ffmpeg-commands.js";
+import { OBSIntegrationService } from "./services.js";
 import { findSilenceInVideo } from "./silence-detection.js";
 
 export interface AppendVideoToTimelineOptions {

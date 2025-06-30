@@ -1,20 +1,18 @@
+import { NodeFileSystem } from "@effect/platform-node";
 import { Layer } from "effect";
 import { FFmpegCommandsService } from "./ffmpeg-commands.js";
 import {
+  AIService,
   ArticleStorageService,
-  OpenAIService,
-  ReadStreamService,
   AskQuestionService,
+  LinksStorageService,
+  OBSIntegrationService,
+  ReadStreamService,
+  TranscriptStorageService,
 } from "./services.js";
-import { OBSIntegrationService } from "./services.js";
-import { TranscriptStorageService } from "./services.js";
-import { AIService } from "./services.js";
-import { NodeFileSystem } from "@effect/platform-node";
-import { LinksStorageService } from "./services.js";
 import { WorkflowsService } from "./workflows.js";
 
 export const AppLayerLive = Layer.mergeAll(
-  OpenAIService.Default,
   FFmpegCommandsService.Default,
   ReadStreamService.Default,
   AskQuestionService.Default,
