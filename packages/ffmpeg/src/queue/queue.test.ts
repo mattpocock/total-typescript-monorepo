@@ -561,12 +561,12 @@ it("Should handle code-request action type and store code content in temporaryDa
         type: "code-request",
         transcriptPath: "/path/to/transcript.txt",
         originalVideoPath: "/path/to/video.mp4",
+        temporaryData: {
+          codePath: CODE_FILE_PATH,
+          codeContent: "console.log('hello world');",
+        },
       },
       status: "completed",
-      temporaryData: {
-        codePath: CODE_FILE_PATH,
-        codeContent: "console.log('hello world');",
-      },
     });
 
     expect(askQuestion).toHaveBeenCalledWith(
@@ -652,12 +652,12 @@ it("Should handle empty code file path gracefully", async () => {
         type: "code-request",
         transcriptPath: "/path/to/transcript.txt",
         originalVideoPath: "/path/to/video.mp4",
+        temporaryData: {
+          codePath: "",
+          codeContent: "",
+        },
       },
       status: "completed",
-      temporaryData: {
-        codePath: "",
-        codeContent: "",
-      },
     });
   } finally {
     await fs.rm(tmpDir, { recursive: true });
@@ -740,12 +740,12 @@ it("Should handle missing code file gracefully", async () => {
         type: "code-request",
         transcriptPath: "/path/to/transcript.txt",
         originalVideoPath: "/path/to/video.mp4",
+        temporaryData: {
+          codePath: MISSING_FILE_PATH,
+          codeContent: "",
+        },
       },
       status: "completed",
-      temporaryData: {
-        codePath: MISSING_FILE_PATH,
-        codeContent: "",
-      },
     });
   } finally {
     await fs.rm(tmpDir, { recursive: true });

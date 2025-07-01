@@ -37,6 +37,13 @@ export type QueueItemAction =
       type: "code-request";
       transcriptPath: AbsolutePath;
       originalVideoPath: AbsolutePath;
+      /**
+       * Temporary data storage for code request workflow
+       */
+      temporaryData?: {
+        codePath?: string;
+        codeContent?: string;
+      };
     }
   | {
       type: "generate-article-from-transcript";
@@ -58,14 +65,6 @@ export type QueueItem = {
   dependencies?: string[];
   status: "ready-to-run" | "completed" | "failed" | "requires-user-input";
   error?: string;
-  /**
-   * Temporary data storage for workflow context
-   */
-  temporaryData?: {
-    codePath?: string;
-    codeContent?: string;
-    linkRequests?: string[];
-  };
 };
 
 export type QueueState = {
@@ -276,10 +275,12 @@ export const processInformationRequests = () => {
           ...queueItem,
           status: "completed",
           completedAt: Date.now(),
-          temporaryData: {
-            ...queueItem.temporaryData,
-            codePath: actualCodePath,
-            codeContent,
+          action: {
+            ...queueItem.action,
+            temporaryData: {
+              codePath: actualCodePath,
+              codeContent,
+            },
           },
         });
         

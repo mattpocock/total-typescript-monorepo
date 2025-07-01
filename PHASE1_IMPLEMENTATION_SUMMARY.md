@@ -12,16 +12,22 @@ Added three new action types to `QueueItemAction`:
 - **`code-request`**: Prompts user for optional code file path and content  
 - **`generate-article-from-transcript`**: Generates article from transcript with code and links
 
-### 2. Enhanced Queue Item Structure
-Extended `QueueItem` type with `temporaryData` field for workflow context storage:
+### 2. Enhanced Queue Action Structure
+Added `temporaryData` field to the `code-request` action type for workflow context storage:
 
 ```typescript
-temporaryData?: {
-  codePath?: string;
-  codeContent?: string;
-  linkRequests?: string[];
-};
+{
+  type: "code-request";
+  transcriptPath: AbsolutePath;
+  originalVideoPath: AbsolutePath;
+  temporaryData?: {
+    codePath?: string;
+    codeContent?: string;
+  };
+}
 ```
+
+**Important**: Temporary data is stored on the actions themselves, not at the queue item level, ensuring proper encapsulation and type safety.
 
 ### 3. Updated Queue Processing
 
@@ -75,7 +81,8 @@ generate-article-from-transcript (article-1, depends: [code-1, links-1])
 - Preserves queue item state on failures
 
 #### Data Flow
-- Code content stored in queue `temporaryData` (not permanently persisted)
+- Code content stored in action's `temporaryData` field (not permanently persisted)
+- Temporary data scoped to specific action types that need it  
 - Temporary data cleaned up naturally when queue items complete
 - Thread-safe queue updates with proper locking
 
@@ -108,7 +115,7 @@ Key test scenarios verified:
 - [x] **New queue action types work correctly**
 - [x] **TemporaryData storage and retrieval functional** 
 - [x] **Code requests process correctly (user prompted for file path)**
-- [x] **Code content stored in queue temporaryData**
+- [x] **Code content stored in action's temporaryData**
 - [x] **Dependencies enforced properly**
 - [x] **Error handling robust for all steps**
 - [x] **All changes fit in single context window**
