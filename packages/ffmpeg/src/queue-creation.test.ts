@@ -42,35 +42,33 @@ describe("createAutoEditedVideoQueueItems", () => {
     expect(videoItem.createdAt).toBeTypeOf("number");
   });
 
-  it("should create 5 queue items with proper dependencies when generateArticle is true", async () => {
+  it("should create 4 queue items with proper dependencies when generateArticle is true", async () => {
     const queueItems = await createAutoEditedVideoQueueItems({
       ...baseOptions,
       generateArticle: true,
     }).pipe(Effect.withConfigProvider(testConfig), Effect.runPromise);
 
-    expect(queueItems).toHaveLength(5);
+    expect(queueItems).toHaveLength(4);
 
     // Check all items have unique IDs
     const ids = queueItems.map((item) => item.id);
-    expect(new Set(ids)).toHaveLength(5);
+    expect(new Set(ids)).toHaveLength(4);
 
     // Check action types in correct order
     expect(queueItems[0]!.action.type).toBe("create-auto-edited-video");
     expect(queueItems[1]!.action.type).toBe("analyze-transcript-for-links");
-    expect(queueItems[2]!.action.type).toBe("code-request");
-    expect(queueItems[3]!.action.type).toBe("links-request");
-    expect(queueItems[4]!.action.type).toBe("generate-article-from-transcript");
+    expect(queueItems[2]!.action.type).toBe("links-request");
+    expect(queueItems[3]!.action.type).toBe("generate-article-from-transcript");
 
     // Check dependency chain
     const videoId = queueItems[0]!.id;
     const transcriptAnalysisId = queueItems[1]!.id;
-    const linksRequestId = queueItems[3]!.id;
+    const linksRequestId = queueItems[2]!.id;
 
     expect(queueItems[0]!.dependencies).toBeUndefined();
     expect(queueItems[1]!.dependencies).toEqual([videoId]);
-    expect(queueItems[2]!.dependencies).toEqual([]);
-    expect(queueItems[3]!.dependencies).toEqual([transcriptAnalysisId]);
-    expect(queueItems[4]!.dependencies).toEqual([linksRequestId]);
+    expect(queueItems[2]!.dependencies).toEqual([transcriptAnalysisId]);
+    expect(queueItems[3]!.dependencies).toEqual([linksRequestId]);
   });
 
   it("should generate correct transcript and video paths", async () => {
@@ -80,8 +78,7 @@ describe("createAutoEditedVideoQueueItems", () => {
     }).pipe(Effect.withConfigProvider(testConfig), Effect.runPromise);
 
     const transcriptAnalysisItem = queueItems[1]!;
-    const codeRequestItem = queueItems[2]!;
-    const articleGenerationItem = queueItems[4]!;
+    const articleGenerationItem = queueItems[3]!;
 
     // Check transcript path
     if (transcriptAnalysisItem.action.type === "analyze-transcript-for-links") {
@@ -89,15 +86,6 @@ describe("createAutoEditedVideoQueueItems", () => {
         "/test/transcriptions/video.txt"
       );
       expect(transcriptAnalysisItem.action.originalVideoPath).toBe(
-        "/test/obs-output/video.mp4"
-      );
-    }
-
-    if (codeRequestItem.action.type === "code-request") {
-      expect(codeRequestItem.action.transcriptPath).toBe(
-        "/test/transcriptions/video.txt"
-      );
-      expect(codeRequestItem.action.originalVideoPath).toBe(
         "/test/obs-output/video.mp4"
       );
     }
@@ -129,15 +117,14 @@ describe("createAutoEditedVideoQueueItems", () => {
     }
   });
 
-  it("should set correct dependency IDs in article generation action", async () => {
+  it("should set correct dependency ID in article generation action", async () => {
     const queueItems = await createAutoEditedVideoQueueItems({
       ...baseOptions,
       generateArticle: true,
     }).pipe(Effect.withConfigProvider(testConfig), Effect.runPromise);
 
-    const codeRequestId = queueItems[2]!.id;
-    const linksRequestId = queueItems[3]!.id;
-    const articleGenerationItem = queueItems[4]!;
+    const linksRequestId = queueItems[2]!.id;
+    const articleGenerationItem = queueItems[3]!;
 
     if (
       articleGenerationItem.action.type === "generate-article-from-transcript"
@@ -145,7 +132,6 @@ describe("createAutoEditedVideoQueueItems", () => {
       expect(articleGenerationItem.action.linksDependencyId).toBe(
         linksRequestId
       );
-      expect(articleGenerationItem.action.codeDependencyId).toBe(codeRequestId);
     }
   });
 
@@ -181,14 +167,11 @@ describe("createAutoEditedVideoQueueItems", () => {
     // Transcript analysis can run automatically (once dependencies are met)
     expect(queueItems[1]!.status).toBe("ready-to-run");
 
-    // Code request is now completed synchronously
-    expect(queueItems[2]!.status).toBe("completed");
-
     // Links request requires user input
-    expect(queueItems[3]!.status).toBe("requires-user-input");
+    expect(queueItems[2]!.status).toBe("requires-user-input");
 
     // Article generation can run automatically (once dependencies are met)
-    expect(queueItems[4]!.status).toBe("ready-to-run");
+    expect(queueItems[3]!.status).toBe("ready-to-run");
   });
 
   it("should initialize links request with empty linkRequests array", async () => {
@@ -197,7 +180,7 @@ describe("createAutoEditedVideoQueueItems", () => {
       generateArticle: true,
     }).pipe(Effect.withConfigProvider(testConfig), Effect.runPromise);
 
-    const linksRequestItem = queueItems[3]!;
+    const linksRequestItem = queueItems[2]!;
     if (linksRequestItem.action.type === "links-request") {
       expect(linksRequestItem.action.linkRequests).toEqual([]);
     }
@@ -258,27 +241,25 @@ describe("createAutoEditedVideoQueueItems", () => {
     }
   });
 
-  it("should create code-request with empty data when no code is provided", async () => {
+  it("should include code fields in article generation when no code is provided", async () => {
     const queueItems = await createAutoEditedVideoQueueItems({
       ...baseOptions,
       generateArticle: true,
       // No codePath or codeContent provided
     }).pipe(Effect.withConfigProvider(testConfig), Effect.runPromise);
 
-    const codeRequestItem = queueItems[2]!;
-    expect(codeRequestItem.action.type).toBe("code-request");
+    const articleGenerationItem = queueItems[3]!;
+    expect(articleGenerationItem.action.type).toBe("generate-article-from-transcript");
     
-    if (codeRequestItem.action.type === "code-request") {
-      expect(codeRequestItem.action.temporaryData?.codePath).toBe("");
-      expect(codeRequestItem.action.temporaryData?.codeContent).toBe("");
+    if (articleGenerationItem.action.type === "generate-article-from-transcript") {
+      expect(articleGenerationItem.action.codePath).toBe("");
+      expect(articleGenerationItem.action.codeContent).toBe("");
     }
     
-    expect(codeRequestItem.status).toBe("completed");
-    expect(codeRequestItem.completedAt).toBeDefined();
-    expect(codeRequestItem.completedAt).toBeTypeOf("number");
+    expect(articleGenerationItem.status).toBe("ready-to-run");
   });
 
-  it("should create code-request with provided code data when code is supplied", async () => {
+  it("should include code fields in article generation when code is provided", async () => {
     const testCodePath = "/path/to/test-file.ts";
     const testCodeContent = "console.log('Hello, world!');";
 
@@ -289,16 +270,15 @@ describe("createAutoEditedVideoQueueItems", () => {
       codeContent: testCodeContent,
     }).pipe(Effect.withConfigProvider(testConfig), Effect.runPromise);
 
-    const codeRequestItem = queueItems[2]!;
-    expect(codeRequestItem.action.type).toBe("code-request");
+    const articleGenerationItem = queueItems[3]!;
+    expect(articleGenerationItem.action.type).toBe("generate-article-from-transcript");
     
-    if (codeRequestItem.action.type === "code-request") {
-      expect(codeRequestItem.action.temporaryData?.codePath).toBe(testCodePath);
-      expect(codeRequestItem.action.temporaryData?.codeContent).toBe(testCodeContent);
+    if (articleGenerationItem.action.type === "generate-article-from-transcript") {
+      expect(articleGenerationItem.action.codePath).toBe(testCodePath);
+      expect(articleGenerationItem.action.codeContent).toBe(testCodeContent);
     }
     
-    expect(codeRequestItem.status).toBe("completed");
-    expect(codeRequestItem.completedAt).toBeDefined();
+    expect(articleGenerationItem.status).toBe("ready-to-run");
   });
 
   it("should handle partial code data gracefully", async () => {
@@ -309,13 +289,13 @@ describe("createAutoEditedVideoQueueItems", () => {
       // No codeContent provided
     }).pipe(Effect.withConfigProvider(testConfig), Effect.runPromise);
 
-    const codeRequestItem = queueItems[2]!;
+    const articleGenerationItem = queueItems[3]!;
     
-    if (codeRequestItem.action.type === "code-request") {
-      expect(codeRequestItem.action.temporaryData?.codePath).toBe("/path/to/file.ts");
-      expect(codeRequestItem.action.temporaryData?.codeContent).toBe("");
+    if (articleGenerationItem.action.type === "generate-article-from-transcript") {
+      expect(articleGenerationItem.action.codePath).toBe("/path/to/file.ts");
+      expect(articleGenerationItem.action.codeContent).toBe("");
     }
     
-    expect(codeRequestItem.status).toBe("completed");
+    expect(articleGenerationItem.status).toBe("ready-to-run");
   });
 });

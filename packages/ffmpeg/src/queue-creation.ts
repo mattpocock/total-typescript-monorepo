@@ -9,7 +9,7 @@ export interface CreateAutoEditedVideoQueueItemsOptions {
   subtitles: boolean;
   dryRun: boolean;
   generateArticle: boolean;
-  // New optional fields for synchronous code request
+  // Code information collected synchronously during video submission
   codePath?: string;
   codeContent?: string;
 }
@@ -28,7 +28,6 @@ export const createAutoEditedVideoQueueItems = Effect.fn(
   // Generate unique IDs for all queue items
   const videoId = crypto.randomUUID();
   const transcriptAnalysisId = crypto.randomUUID();
-  const codeRequestId = crypto.randomUUID();
   const linksRequestId = crypto.randomUUID();
   const articleGenerationId = crypto.randomUUID();
 
@@ -77,24 +76,7 @@ export const createAutoEditedVideoQueueItems = Effect.fn(
         dependencies: [videoId],
         status: "ready-to-run",
       },
-      // 3. Code request - now created as completed with synchronous data
-      {
-        id: codeRequestId,
-        createdAt: Date.now(),
-        completedAt: Date.now(), // Mark as completed since we got the code synchronously
-        action: {
-          type: "code-request",
-          transcriptPath,
-          originalVideoPath,
-          temporaryData: {
-            codePath: codePath || "",
-            codeContent: codeContent || "",
-          },
-        },
-        dependencies: [],
-        status: "completed", // Changed from "requires-user-input" to "completed"
-      },
-      // 4. Links request (depends on code request)
+      // 3. Links request (depends on transcript analysis)
       {
         id: linksRequestId,
         createdAt: Date.now(),
@@ -105,7 +87,7 @@ export const createAutoEditedVideoQueueItems = Effect.fn(
         dependencies: [transcriptAnalysisId],
         status: "requires-user-input",
       },
-      // 5. Article generation (depends on links request and code request)
+      // 4. Article generation (depends on links request, code is included directly)
       {
         id: articleGenerationId,
         createdAt: Date.now(),
@@ -114,7 +96,8 @@ export const createAutoEditedVideoQueueItems = Effect.fn(
           transcriptPath,
           originalVideoPath,
           linksDependencyId: linksRequestId,
-          codeDependencyId: codeRequestId,
+          codePath: codePath || "",
+          codeContent: codeContent || "",
         },
         dependencies: [linksRequestId],
         status: "ready-to-run",

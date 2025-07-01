@@ -13,12 +13,6 @@ export class TranscriptReadError extends Data.TaggedError(
   cause: unknown;
 }> {}
 
-export class CodeDependencyNotFoundError extends Data.TaggedError(
-  "CodeDependencyNotFoundError"
-)<{
-  codeDependencyId: string;
-}> {}
-
 export class LinksDependencyNotFoundError extends Data.TaggedError(
   "LinksDependencyNotFoundError"
 )<{
@@ -79,16 +73,18 @@ export const generateArticleFromTranscriptQueue = Effect.fn(
 )(function* (opts: {
   transcriptPath: AbsolutePath;
   originalVideoPath: AbsolutePath;
-  codeDependencyId: string;
   linksDependencyId: string;
   queueState: QueueState;
+  codePath?: string;
+  codeContent?: string;
 }) {
   const {
     transcriptPath,
     originalVideoPath,
-    codeDependencyId,
     linksDependencyId,
     queueState,
+    codePath,
+    codeContent,
   } = opts;
 
   const fs = yield* FileSystem.FileSystem;
@@ -137,11 +133,22 @@ export const generateArticleFromTranscriptQueue = Effect.fn(
     `Found ${urls.length} stored links for article generation`
   );
 
+  // Use code content directly from the action (collected synchronously during video submission)
+  const code = codeContent && codeContent.trim() ? codeContent : undefined;
+
+  if (code) {
+    yield* Console.log(
+      `Using code from: ${codePath || 'inline'} (${code.length} characters)`
+    );
+  } else {
+    yield* Console.log(`No code content provided - generating article without code examples`);
+  }
+
   // Use the shared core article generation logic
   const result = yield* generateArticleCore({
     originalVideoPath,
     transcript: transcriptContent,
-    code: "",
+    code,
     urls,
   }).pipe(
     Effect.mapError((error) => {
@@ -174,7 +181,8 @@ export const processArticleGenerationForQueue = Effect.fn(
       transcriptPath: AbsolutePath;
       originalVideoPath: AbsolutePath;
       linksDependencyId: string;
-      codeDependencyId: string;
+      codePath?: string;
+      codeContent?: string;
     };
   };
   queueState: QueueState;
@@ -188,9 +196,10 @@ export const processArticleGenerationForQueue = Effect.fn(
   const result = yield* generateArticleFromTranscriptQueue({
     transcriptPath: queueItem.action.transcriptPath,
     originalVideoPath: queueItem.action.originalVideoPath,
-    codeDependencyId: queueItem.action.codeDependencyId,
     linksDependencyId: queueItem.action.linksDependencyId,
     queueState,
+    codePath: queueItem.action.codePath,
+    codeContent: queueItem.action.codeContent,
   });
 
   yield* Console.log(
