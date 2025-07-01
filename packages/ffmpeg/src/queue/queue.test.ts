@@ -469,17 +469,6 @@ it("Should not return information requests with unmet dependencies", async () =>
           dependencies: ["dependency-1"], // Depends on incomplete item
         },
         {
-          id: "code-request-1",
-          createdAt: Date.now(),
-          action: {
-            type: "code-request",
-            transcriptPath: "/path/to/transcript.txt" as AbsolutePath,
-            originalVideoPath: "/path/to/video.mp4" as AbsolutePath,
-          },
-          status: "requires-user-input",
-          dependencies: ["dependency-2"], // Depends on completed item
-        },
-        {
           id: "links-request-2",
           createdAt: Date.now(),
           action: {
@@ -504,14 +493,7 @@ it("Should not return information requests with unmet dependencies", async () =>
     );
 
     // Should only return information requests with met dependencies or no dependencies
-    expect(informationRequests).toHaveLength(2);
-
-    // Should include code-request-1 (dependency met)
-    const codeRequest = informationRequests.find(
-      (r) => r.id === "code-request-1"
-    );
-    expect(codeRequest).toBeDefined();
-    expect(codeRequest!.action.type).toBe("code-request");
+    expect(informationRequests).toHaveLength(1);
 
     // Should include links-request-2 (no dependencies)
     const linksRequest2 = informationRequests.find(
@@ -651,287 +633,13 @@ it("Should process only information requests", async () => {
   }
 });
 
-it("Should handle code-request action type and store code content in temporaryData", async () => {
-  const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
 
-  try {
-    const QUEUE_LOCATION = path.join(tmpDir, "queue.json");
-    const QUEUE_LOCKFILE_LOCATION = path.join(tmpDir, "queue.lock");
-    const CODE_FILE_PATH = path.join(tmpDir, "test.ts");
 
-    // Create a test code file
-    await fs.writeFile(CODE_FILE_PATH, "console.log('hello world');");
 
-    const createAutoEditedVideoWorkflow = vi
-      .fn()
-      .mockReturnValue(Effect.succeed(undefined));
-    const concatenateVideosWorkflow = vi
-      .fn()
-      .mockReturnValue(Effect.succeed(undefined));
 
-    const addLinks = vi.fn().mockReturnValue(Effect.succeed(undefined));
-    const getLinks = vi.fn().mockReturnValue(Effect.succeed([]));
-    const askQuestion = vi.fn().mockReturnValue(Effect.succeed(CODE_FILE_PATH));
 
-    const { processInformationRequests } = await import("./queue.js");
 
-    await Effect.gen(function* () {
-      yield* writeToQueue([
-        {
-          id: "code-1",
-          createdAt: Date.now(),
-          action: {
-            type: "code-request",
-            transcriptPath: "/path/to/transcript.txt" as AbsolutePath,
-            originalVideoPath: "/path/to/video.mp4" as AbsolutePath,
-          },
-          status: "requires-user-input",
-        },
-      ]);
-
-      yield* processInformationRequests();
-    }).pipe(
-      Effect.provide(NodeFileSystem.layer),
-      Effect.provideService(
-        WorkflowsService,
-        new WorkflowsService({
-          createAutoEditedVideoWorkflow,
-          concatenateVideosWorkflow,
-        })
-      ),
-      Effect.provideService(
-        LinksStorageService,
-        new LinksStorageService({
-          addLinks,
-          getLinks,
-        })
-      ),
-      Effect.provideService(
-        AskQuestionService,
-        new AskQuestionService({
-          askQuestion,
-          select: vi.fn().mockReturnValue(Effect.succeed("test")),
-        })
-      ),
-      Effect.withConfigProvider(
-        ConfigProvider.fromJson({
-          QUEUE_LOCATION,
-          QUEUE_LOCKFILE_LOCATION,
-        })
-      ),
-      Effect.runPromise
-    );
-
-    const queueState = JSON.parse(
-      (await fs.readFile(QUEUE_LOCATION, "utf-8")).toString()
-    );
-
-    expect(queueState.queue[0]).toEqual({
-      id: "code-1",
-      createdAt: expect.any(Number),
-      completedAt: expect.any(Number),
-      action: {
-        type: "code-request",
-        transcriptPath: "/path/to/transcript.txt",
-        originalVideoPath: "/path/to/video.mp4",
-        temporaryData: {
-          codePath: CODE_FILE_PATH,
-          codeContent: "console.log('hello world');",
-        },
-      },
-      status: "completed",
-    });
-  } finally {
-    await fs.rm(tmpDir, { recursive: true });
-  }
-});
-
-it("Should handle empty code file path gracefully", async () => {
-  const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
-
-  try {
-    const QUEUE_LOCATION = path.join(tmpDir, "queue.json");
-    const QUEUE_LOCKFILE_LOCATION = path.join(tmpDir, "queue.lock");
-
-    const createAutoEditedVideoWorkflow = vi
-      .fn()
-      .mockReturnValue(Effect.succeed(undefined));
-    const concatenateVideosWorkflow = vi
-      .fn()
-      .mockReturnValue(Effect.succeed(undefined));
-
-    const addLinks = vi.fn().mockReturnValue(Effect.succeed(undefined));
-    const getLinks = vi.fn().mockReturnValue(Effect.succeed([]));
-    const askQuestion = vi.fn().mockReturnValue(Effect.succeed("  ")); // Empty/whitespace
-
-    const { processInformationRequests } = await import("./queue.js");
-
-    await Effect.gen(function* () {
-      yield* writeToQueue([
-        {
-          id: "code-1",
-          createdAt: Date.now(),
-          action: {
-            type: "code-request",
-            transcriptPath: "/path/to/transcript.txt" as AbsolutePath,
-            originalVideoPath: "/path/to/video.mp4" as AbsolutePath,
-          },
-          status: "requires-user-input",
-        },
-      ]);
-
-      yield* processInformationRequests();
-    }).pipe(
-      Effect.provide(NodeFileSystem.layer),
-      Effect.provideService(
-        WorkflowsService,
-        new WorkflowsService({
-          createAutoEditedVideoWorkflow,
-          concatenateVideosWorkflow,
-        })
-      ),
-      Effect.provideService(
-        LinksStorageService,
-        new LinksStorageService({
-          addLinks,
-          getLinks,
-        })
-      ),
-      Effect.provideService(
-        AskQuestionService,
-        new AskQuestionService({
-          askQuestion,
-          select: vi.fn().mockReturnValue(Effect.succeed("test")),
-        })
-      ),
-      Effect.withConfigProvider(
-        ConfigProvider.fromJson({
-          QUEUE_LOCATION,
-          QUEUE_LOCKFILE_LOCATION,
-        })
-      ),
-      Effect.runPromise
-    );
-
-    const queueState = JSON.parse(
-      (await fs.readFile(QUEUE_LOCATION, "utf-8")).toString()
-    );
-
-    expect(queueState.queue[0]).toEqual({
-      id: "code-1",
-      createdAt: expect.any(Number),
-      completedAt: expect.any(Number),
-      action: {
-        type: "code-request",
-        transcriptPath: "/path/to/transcript.txt",
-        originalVideoPath: "/path/to/video.mp4",
-        temporaryData: {
-          codePath: "",
-          codeContent: "",
-        },
-      },
-      status: "completed",
-    });
-  } finally {
-    await fs.rm(tmpDir, { recursive: true });
-  }
-});
-
-it("Should handle missing code file gracefully", async () => {
-  const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
-
-  try {
-    const QUEUE_LOCATION = path.join(tmpDir, "queue.json");
-    const QUEUE_LOCKFILE_LOCATION = path.join(tmpDir, "queue.lock");
-    const MISSING_FILE_PATH = path.join(tmpDir, "missing.ts");
-
-    const createAutoEditedVideoWorkflow = vi
-      .fn()
-      .mockReturnValue(Effect.succeed(undefined));
-    const concatenateVideosWorkflow = vi
-      .fn()
-      .mockReturnValue(Effect.succeed(undefined));
-
-    const addLinks = vi.fn().mockReturnValue(Effect.succeed(undefined));
-    const getLinks = vi.fn().mockReturnValue(Effect.succeed([]));
-    const askQuestion = vi
-      .fn()
-      .mockReturnValue(Effect.succeed(MISSING_FILE_PATH));
-
-    const { processInformationRequests } = await import("./queue.js");
-
-    await Effect.gen(function* () {
-      yield* writeToQueue([
-        {
-          id: "code-1",
-          createdAt: Date.now(),
-          action: {
-            type: "code-request",
-            transcriptPath: "/path/to/transcript.txt" as AbsolutePath,
-            originalVideoPath: "/path/to/video.mp4" as AbsolutePath,
-          },
-          status: "requires-user-input",
-        },
-      ]);
-
-      yield* processInformationRequests();
-    }).pipe(
-      Effect.provide(NodeFileSystem.layer),
-      Effect.provideService(
-        WorkflowsService,
-        new WorkflowsService({
-          createAutoEditedVideoWorkflow,
-          concatenateVideosWorkflow,
-        })
-      ),
-      Effect.provideService(
-        LinksStorageService,
-        new LinksStorageService({
-          addLinks,
-          getLinks,
-        })
-      ),
-      Effect.provideService(
-        AskQuestionService,
-        new AskQuestionService({
-          askQuestion,
-          select: vi.fn().mockReturnValue(Effect.succeed("test")),
-        })
-      ),
-      Effect.withConfigProvider(
-        ConfigProvider.fromJson({
-          QUEUE_LOCATION,
-          QUEUE_LOCKFILE_LOCATION,
-        })
-      ),
-      Effect.runPromise
-    );
-
-    const queueState = JSON.parse(
-      (await fs.readFile(QUEUE_LOCATION, "utf-8")).toString()
-    );
-
-    expect(queueState.queue[0]).toEqual({
-      id: "code-1",
-      createdAt: expect.any(Number),
-      completedAt: expect.any(Number),
-      action: {
-        type: "code-request",
-        transcriptPath: "/path/to/transcript.txt",
-        originalVideoPath: "/path/to/video.mp4",
-        temporaryData: {
-          codePath: MISSING_FILE_PATH,
-          codeContent: "",
-        },
-      },
-      status: "completed",
-    });
-  } finally {
-    await fs.rm(tmpDir, { recursive: true });
-  }
-});
-
-it("Should include code-request in outstanding information requests", async () => {
+it("Should include only links-request in outstanding information requests", async () => {
   const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
 
   try {
@@ -948,16 +656,6 @@ it("Should include code-request in outstanding information requests", async () =
           action: {
             type: "links-request",
             linkRequests: ["test"],
-          },
-          status: "requires-user-input",
-        },
-        {
-          id: "2",
-          createdAt: Date.now(),
-          action: {
-            type: "code-request",
-            transcriptPath: "/path/to/transcript.txt" as AbsolutePath,
-            originalVideoPath: "/path/to/video.mp4" as AbsolutePath,
           },
           status: "requires-user-input",
         },
@@ -987,12 +685,11 @@ it("Should include code-request in outstanding information requests", async () =
       Effect.runPromise
     );
 
-    expect(informationRequests).toHaveLength(2);
+    expect(informationRequests).toHaveLength(1);
     expect(informationRequests.map((r) => r.action.type)).toEqual([
       "links-request",
-      "code-request",
     ]);
-    expect(informationRequests.map((r) => r.id)).toEqual(["1", "2"]);
+    expect(informationRequests.map((r) => r.id)).toEqual(["1"]);
   } finally {
     await fs.rm(tmpDir, { recursive: true });
   }
@@ -1034,14 +731,14 @@ it("Should handle dependency chains with new action types", async () => {
           dependencies: ["video-1"],
         },
         {
-          id: "code-1",
+          id: "links-1",
           createdAt: Date.now(),
           action: {
-            type: "code-request",
-            transcriptPath: "/path/to/transcript.txt" as AbsolutePath,
-            originalVideoPath: "/path/to/video.mp4" as AbsolutePath,
+            type: "links-request",
+            linkRequests: ["test link"],
           },
-          status: "requires-user-input",
+          status: "completed",
+          completedAt: Date.now(),
           dependencies: ["analysis-1"],
         },
         {
@@ -1052,13 +749,14 @@ it("Should handle dependency chains with new action types", async () => {
             transcriptPath: "/path/to/transcript.txt" as AbsolutePath,
             originalVideoPath: "/path/to/video.mp4" as AbsolutePath,
             linksDependencyId: "links-1",
-            codeDependencyId: "code-1",
             videoName: "test-video",
             dryRun: true,
             alongside: false,
+            codeContent: "const example = 'test';",
+            codePath: "/path/to/code.ts",
           },
           status: "ready-to-run",
-          dependencies: ["code-1", "links-1"],
+          dependencies: ["links-1"],
         },
       ]);
 
@@ -1079,10 +777,7 @@ it("Should handle dependency chains with new action types", async () => {
     expect(nextItem?.id).toBe("analysis-1");
     expect(nextItem?.action.type).toBe("analyze-transcript-for-links");
 
-    // Should not be able to run code-1 (requires user input) or article-1 (dependencies not met)
-    expect(queueState.queue.find((i) => i.id === "code-1")?.status).toBe(
-      "requires-user-input"
-    );
+    // article-1 should be ready to run since links-1 is completed
     expect(queueState.queue.find((i) => i.id === "article-1")?.status).toBe(
       "ready-to-run"
     );

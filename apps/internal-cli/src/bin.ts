@@ -156,6 +156,58 @@ program
 
         yield* validateWindowsFilename(videoName);
 
+        // If article generation is enabled, ask for code file synchronously
+        let codeContent = "";
+        let codePath = "";
+        
+        if (options.generateArticle) {
+          yield* Console.log("📝 Article generation enabled");
+          
+          const fs = yield* FileSystem.FileSystem;
+          const providedCodePath = yield* askQuestion.askQuestion(
+            "📂 Code file path (optional, press Enter to skip): ",
+            { optional: true }
+          );
+
+          if (providedCodePath.trim()) {
+            codePath = providedCodePath.trim();
+            const codeExists = yield* fs
+              .exists(codePath)
+              .pipe(Effect.catchAll(() => Effect.succeed(false)));
+
+            if (codeExists) {
+              codeContent = yield* fs.readFileString(codePath).pipe(
+                Effect.catchAll((error) => {
+                  return Effect.gen(function* () {
+                    yield* Console.log(
+                      `⚠️  Warning: Could not read code file ${codePath}: ${error}`
+                    );
+                    yield* Console.log(
+                      `💡 Tip: Check file permissions and ensure the path is correct`
+                    );
+                    return "";
+                  });
+                })
+              );
+              yield* Console.log(
+                `✅ Code file loaded: ${codePath} (${codeContent.length} characters)`
+              );
+            } else {
+              yield* Console.log(
+                `⚠️  Warning: Code file ${codePath} does not exist`
+              );
+              yield* Console.log(
+                `💡 Continuing without code - you can manually add code examples to the article later`
+              );
+              codePath = ""; // Reset path if file doesn't exist
+            }
+          } else {
+            yield* Console.log(
+              `ℹ️  No code file provided - continuing without code examples`
+            );
+          }
+        }
+
         const queueItems = yield* createAutoEditedVideoQueueItems({
           inputVideo,
           videoName,
@@ -163,6 +215,8 @@ program
           dryRun: !Boolean(options.upload),
           generateArticle: Boolean(options.generateArticle),
           alongside: Boolean(options.alongside),
+          codeContent,
+          codePath,
         });
 
         if (options.generateArticle) {
