@@ -8,8 +8,10 @@ import { WorkflowsService } from "../workflows.js";
 
 class InvalidQueueItemTypeError extends Error {
   constructor(expectedType: string, actualType: string) {
-    super(`Invalid queue item type: expected '${expectedType}', got '${actualType}'`);
-    this.name = 'InvalidQueueItemTypeError';
+    super(
+      `Invalid queue item type: expected '${expectedType}', got '${actualType}'`
+    );
+    this.name = "InvalidQueueItemTypeError";
   }
 }
 
@@ -434,7 +436,7 @@ export const processQueue = () => {
               );
             }
             const currentQueueState = yield* getQueueState();
-            
+
             // Type assertion is safe here because we've checked the type above
             const typedQueueItem = queueItem as QueueItem & {
               action: {
@@ -443,7 +445,7 @@ export const processQueue = () => {
                 originalVideoPath: AbsolutePath;
               };
             };
-            
+
             return yield* processTranscriptAnalysisForQueue({
               queueItem: typedQueueItem,
               queueState: currentQueueState,
@@ -498,7 +500,7 @@ export const processQueue = () => {
               );
             }
             const currentQueueState = yield* getQueueState();
-            
+
             // Type assertion is safe here because we've checked the type above
             const typedQueueItem = queueItem as QueueItem & {
               action: {
@@ -509,11 +511,10 @@ export const processQueue = () => {
                 codeDependencyId: string;
               };
             };
-            
+
             return yield* processArticleGenerationForQueue({
               queueItem: typedQueueItem,
               queueState: currentQueueState,
-              updateQueueItem,
             });
           }).pipe(Effect.either);
 

@@ -9,6 +9,7 @@ import { getQueueState, processQueue, writeToQueue } from "./queue.js";
 import { WorkflowsService } from "../workflows.js";
 import {
   AIService,
+  ArticleStorageService,
   AskQuestionService,
   LinksStorageService,
 } from "../services.js";
@@ -64,6 +65,14 @@ it("Should create the queue.json if it does not exist", async () => {
         ConfigProvider.fromJson({
           QUEUE_LOCATION,
           QUEUE_LOCKFILE_LOCATION,
+        })
+      ),
+      Effect.provideService(
+        ArticleStorageService,
+        new ArticleStorageService({
+          countArticles: vi.fn().mockReturnValue(Effect.succeed(0)),
+          getLatestArticles: vi.fn().mockReturnValue(Effect.succeed([])),
+          storeArticle: vi.fn().mockReturnValue(Effect.succeed(undefined)),
         })
       ),
       Effect.runPromise
@@ -313,6 +322,14 @@ it("Should not process links requests (processQueue ignores information requests
             .mockReturnValue(Effect.succeed("test")),
           titleFromTranscript: vi.fn().mockReturnValue(Effect.succeed("test")),
           askForLinks: vi.fn().mockReturnValue(Effect.succeed(["test"])),
+        })
+      ),
+      Effect.provideService(
+        ArticleStorageService,
+        new ArticleStorageService({
+          countArticles: vi.fn().mockReturnValue(Effect.succeed(0)),
+          getLatestArticles: vi.fn().mockReturnValue(Effect.succeed([])),
+          storeArticle: vi.fn().mockReturnValue(Effect.succeed(undefined)),
         })
       ),
       Effect.runPromise

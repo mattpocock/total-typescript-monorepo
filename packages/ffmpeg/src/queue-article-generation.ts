@@ -1,10 +1,10 @@
 import { FileSystem } from "@effect/platform";
 import { type AbsolutePath } from "@total-typescript/shared";
-import { Console, Data, Effect } from "effect";
-import type { PlatformError } from "@effect/platform/Error";
-import { LinksStorageService } from "./services.js";
+import { ConfigError, Console, Data, Effect } from "effect";
 import { generateArticleCore } from "./article-from-transcript.js";
 import type { QueueItem, QueueState } from "./queue/queue.js";
+import { LinksStorageService } from "./services.js";
+import type { PlatformError } from "@effect/platform/Error";
 
 export class TranscriptReadError extends Data.TaggedError(
   "TranscriptReadError"
@@ -36,30 +36,33 @@ export class ArticleGenerationError extends Data.TaggedError(
  * Retrieves code content from a completed queue item's temporaryData
  */
 export const getCodeFromQueueItem = Effect.fn("getCodeFromQueueItem")(
-  function* (opts: {
-    queueItemId: string;
-    queueState: QueueState;
-  }): Effect.Effect<string | undefined, CodeDependencyNotFoundError> {
+  function* (opts: { queueItemId: string; queueState: QueueState }) {
     const { queueItemId, queueState } = opts;
 
     const queueItem = queueState.queue.find((item) => item.id === queueItemId);
 
     if (!queueItem) {
-      return yield* Effect.fail(new CodeDependencyNotFoundError({
-        codeDependencyId: queueItemId,
-      }));
+      return yield* Effect.fail(
+        new CodeDependencyNotFoundError({
+          codeDependencyId: queueItemId,
+        })
+      );
     }
 
     if (queueItem.action.type !== "code-request") {
-      return yield* Effect.fail(new CodeDependencyNotFoundError({
-        codeDependencyId: queueItemId,
-      }));
+      return yield* Effect.fail(
+        new CodeDependencyNotFoundError({
+          codeDependencyId: queueItemId,
+        })
+      );
     }
 
     if (queueItem.status !== "completed") {
-      return yield* Effect.fail(new CodeDependencyNotFoundError({
-        codeDependencyId: queueItemId,
-      }));
+      return yield* Effect.fail(
+        new CodeDependencyNotFoundError({
+          codeDependencyId: queueItemId,
+        })
+      );
     }
 
     // Return the code content from temporaryData, or undefined if not available
@@ -71,30 +74,35 @@ export const getCodeFromQueueItem = Effect.fn("getCodeFromQueueItem")(
  * Validates that the links dependency queue item exists and is completed
  */
 export const validateLinksDependency = Effect.fn("validateLinksDependency")(
-  function* (opts: {
-    linksDependencyId: string;
-    queueState: QueueState;
-  }): Effect.Effect<void, LinksDependencyNotFoundError> {
+  function* (opts: { linksDependencyId: string; queueState: QueueState }) {
     const { linksDependencyId, queueState } = opts;
 
-    const queueItem = queueState.queue.find((item) => item.id === linksDependencyId);
+    const queueItem = queueState.queue.find(
+      (item) => item.id === linksDependencyId
+    );
 
     if (!queueItem) {
-      return yield* Effect.fail(new LinksDependencyNotFoundError({
-        linksDependencyId,
-      }));
+      return yield* Effect.fail(
+        new LinksDependencyNotFoundError({
+          linksDependencyId,
+        })
+      );
     }
 
     if (queueItem.action.type !== "links-request") {
-      return yield* Effect.fail(new LinksDependencyNotFoundError({
-        linksDependencyId,
-      }));
+      return yield* Effect.fail(
+        new LinksDependencyNotFoundError({
+          linksDependencyId,
+        })
+      );
     }
 
     if (queueItem.status !== "completed") {
-      return yield* Effect.fail(new LinksDependencyNotFoundError({
-        linksDependencyId,
-      }));
+      return yield* Effect.fail(
+        new LinksDependencyNotFoundError({
+          linksDependencyId,
+        })
+      );
     }
 
     return undefined;
@@ -140,10 +148,12 @@ export const generateArticleFromTranscriptQueue = Effect.fn(
 
   // Handle empty transcript
   if (!transcriptContent.trim()) {
-    return yield* Effect.fail(new ArticleGenerationError({
-      transcriptPath,
-      cause: new Error("Transcript is empty or contains only whitespace"),
-    }));
+    return yield* Effect.fail(
+      new ArticleGenerationError({
+        transcriptPath,
+        cause: new Error("Transcript is empty or contains only whitespace"),
+      })
+    );
   }
 
   // Validate links dependency
@@ -220,9 +230,8 @@ export const processArticleGenerationForQueue = Effect.fn(
     };
   };
   queueState: QueueState;
-  updateQueueItem: (item: QueueItem) => Effect.Effect<void>;
 }) {
-  const { queueItem, queueState, updateQueueItem } = opts;
+  const { queueItem, queueState } = opts;
 
   yield* Console.log(
     `Processing generate-article-from-transcript for ${queueItem.action.transcriptPath}`

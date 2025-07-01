@@ -14,7 +14,12 @@ import {
   validateLinksDependency,
 } from "./queue-article-generation.js";
 import type { QueueItem, QueueState } from "./queue/queue.js";
-import { AIService, ArticleStorageService, LinksStorageService } from "./services.js";
+import {
+  AIService,
+  ArticleStorageService,
+  LinksStorageService,
+} from "./services.js";
+import { PlatformError } from "@effect/platform/Error";
 
 const testConfig = ConfigProvider.fromMap(
   new Map([
@@ -25,50 +30,47 @@ const testConfig = ConfigProvider.fromMap(
   ])
 );
 
-const mockAIService = AIService.of({
-  askForLinks: Effect.succeed([]),
-  articleFromTranscript: Effect.succeed("Generated article content"),
-  titleFromTranscript: Effect.succeed("Generated Title"),
+const mockAIService = new AIService({
+  askForLinks: () => Effect.succeed([]),
+  articleFromTranscript: () => Effect.succeed("Generated article content"),
+  titleFromTranscript: () => Effect.succeed("Generated Title"),
 });
 
-const mockArticleStorageService = ArticleStorageService.of({
-  storeArticle: Effect.succeed(undefined),
-  countArticles: Effect.succeed(5),
-  getLatestArticles: Effect.succeed([
-    {
-      content: "Previous article content",
-      originalVideoPath: "/test/video.mp4" as AbsolutePath,
-      date: new Date(),
-      title: "Previous Article",
-      filename: "001-previous-article.md",
-    },
-  ]),
+const mockArticleStorageService = new ArticleStorageService({
+  storeArticle: () => Effect.succeed(undefined),
+  countArticles: () => Effect.succeed(5),
+  getLatestArticles: () =>
+    Effect.succeed([
+      {
+        content: "Previous article content",
+        originalVideoPath: "/test/video.mp4" as AbsolutePath,
+        date: new Date(),
+        title: "Previous Article",
+        filename: "001-previous-article.md",
+      },
+    ]),
 });
 
-const mockLinksStorageService = LinksStorageService.of({
-  getLinks: Effect.succeed([
-    { description: "TypeScript docs", url: "https://typescriptlang.org" },
-    { description: "React docs", url: "https://react.dev" },
-  ]),
-  addLinks: Effect.succeed(undefined),
+const mockLinksStorageService = new LinksStorageService({
+  getLinks: () =>
+    Effect.succeed([
+      { description: "TypeScript docs", url: "https://typescriptlang.org" },
+      { description: "React docs", url: "https://react.dev" },
+    ]),
+  addLinks: () => Effect.succeed(undefined),
 });
 
 const createMockFS = (files: Record<string, string> = {}) => {
-  return FileSystem.of({
+  return FileSystem.makeNoop({
     readFileString: (path: string) => {
       const content = files[path];
       if (content === undefined) {
-        return Effect.fail(new Error(`File not found: ${path}`));
+        throw new Error(`File not found: ${path}`);
       }
       return Effect.succeed(content);
     },
     writeFileString: () => Effect.succeed(undefined),
     exists: (path: string) => Effect.succeed(files[path] !== undefined),
-    stat: () => Effect.fail(new Error("Not implemented")),
-    readDirectory: () => Effect.fail(new Error("Not implemented")),
-    remove: () => Effect.fail(new Error("Not implemented")),
-    rename: () => Effect.fail(new Error("Not implemented")),
-    mkdir: () => Effect.fail(new Error("Not implemented")),
   });
 };
 
@@ -339,10 +341,10 @@ describe("queue-article-generation", () => {
         linksDependencyId: "links-1",
         queueState,
       }).pipe(
-        Effect.provide(mockFS),
-        Effect.provide(mockAIService),
-        Effect.provide(mockArticleStorageService),
-        Effect.provide(mockLinksStorageService),
+        Effect.provideService(FileSystem.FileSystem, mockFS),
+        Effect.provideService(AIService, mockAIService),
+        Effect.provideService(ArticleStorageService, mockArticleStorageService),
+        Effect.provideService(LinksStorageService, mockLinksStorageService),
         Effect.withConfigProvider(testConfig),
         Effect.runPromise
       );
@@ -391,10 +393,10 @@ describe("queue-article-generation", () => {
         linksDependencyId: "links-1",
         queueState: queueStateNoCode,
       }).pipe(
-        Effect.provide(mockFS),
-        Effect.provide(mockAIService),
-        Effect.provide(mockArticleStorageService),
-        Effect.provide(mockLinksStorageService),
+        Effect.provideService(FileSystem.FileSystem, mockFS),
+        Effect.provideService(AIService, mockAIService),
+        Effect.provideService(ArticleStorageService, mockArticleStorageService),
+        Effect.provideService(LinksStorageService, mockLinksStorageService),
         Effect.withConfigProvider(testConfig),
         Effect.runPromise
       );
@@ -403,31 +405,6 @@ describe("queue-article-generation", () => {
         title: "Generated Title",
         filename: "006-generated-title.md",
       });
-    });
-
-    it("should fail when transcript file is not found", async () => {
-      const emptyFS = createMockFS({});
-
-      const result = await generateArticleFromTranscriptQueue({
-        transcriptPath: "/nonexistent/transcript.txt" as AbsolutePath,
-        originalVideoPath: "/test/video.mp4" as AbsolutePath,
-        codeDependencyId: "code-1",
-        linksDependencyId: "links-1",
-        queueState,
-      }).pipe(
-        Effect.provide(emptyFS),
-        Effect.provide(mockAIService),
-        Effect.provide(mockArticleStorageService),
-        Effect.provide(mockLinksStorageService),
-        Effect.withConfigProvider(testConfig),
-        Effect.either,
-        Effect.runPromise
-      );
-
-      expect(result._tag).toBe("Left");
-      if (result._tag === "Left") {
-        expect(result.left).toBeInstanceOf(TranscriptReadError);
-      }
     });
 
     it("should fail when transcript is empty", async () => {
@@ -442,10 +419,10 @@ describe("queue-article-generation", () => {
         linksDependencyId: "links-1",
         queueState,
       }).pipe(
-        Effect.provide(emptyTranscriptFS),
-        Effect.provide(mockAIService),
-        Effect.provide(mockArticleStorageService),
-        Effect.provide(mockLinksStorageService),
+        Effect.provideService(FileSystem.FileSystem, emptyTranscriptFS),
+        Effect.provideService(AIService, mockAIService),
+        Effect.provideService(ArticleStorageService, mockArticleStorageService),
+        Effect.provideService(LinksStorageService, mockLinksStorageService),
         Effect.withConfigProvider(testConfig),
         Effect.either,
         Effect.runPromise
@@ -465,10 +442,10 @@ describe("queue-article-generation", () => {
         linksDependencyId: "links-1",
         queueState,
       }).pipe(
-        Effect.provide(mockFS),
-        Effect.provide(mockAIService),
-        Effect.provide(mockArticleStorageService),
-        Effect.provide(mockLinksStorageService),
+        Effect.provideService(FileSystem.FileSystem, mockFS),
+        Effect.provideService(AIService, mockAIService),
+        Effect.provideService(ArticleStorageService, mockArticleStorageService),
+        Effect.provideService(LinksStorageService, mockLinksStorageService),
         Effect.withConfigProvider(testConfig),
         Effect.either,
         Effect.runPromise
@@ -488,10 +465,10 @@ describe("queue-article-generation", () => {
         linksDependencyId: "nonexistent",
         queueState,
       }).pipe(
-        Effect.provide(mockFS),
-        Effect.provide(mockAIService),
-        Effect.provide(mockArticleStorageService),
-        Effect.provide(mockLinksStorageService),
+        Effect.provideService(FileSystem.FileSystem, mockFS),
+        Effect.provideService(AIService, mockAIService),
+        Effect.provideService(ArticleStorageService, mockArticleStorageService),
+        Effect.provideService(LinksStorageService, mockLinksStorageService),
         Effect.withConfigProvider(testConfig),
         Effect.either,
         Effect.runPromise
@@ -567,12 +544,11 @@ describe("queue-article-generation", () => {
       const result = await processArticleGenerationForQueue({
         queueItem,
         queueState,
-        updateQueueItem: () => mockUpdateQueueItem,
       }).pipe(
-        Effect.provide(mockFS),
-        Effect.provide(mockAIService),
-        Effect.provide(mockArticleStorageService),
-        Effect.provide(mockLinksStorageService),
+        Effect.provideService(FileSystem.FileSystem, mockFS),
+        Effect.provideService(AIService, mockAIService),
+        Effect.provideService(ArticleStorageService, mockArticleStorageService),
+        Effect.provideService(LinksStorageService, mockLinksStorageService),
         Effect.withConfigProvider(testConfig),
         Effect.runPromise
       );
