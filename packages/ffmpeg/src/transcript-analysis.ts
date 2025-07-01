@@ -3,6 +3,20 @@ import { type AbsolutePath } from "@total-typescript/shared";
 import { Data, Effect } from "effect";
 import { AIService } from "./services.js";
 
+export class TranscriptReadError extends Data.TaggedError(
+  "TranscriptReadError"
+)<{
+  transcriptPath: AbsolutePath;
+  cause: unknown;
+}> {}
+
+export class TranscriptAnalysisError extends Data.TaggedError(
+  "TranscriptAnalysisError"
+)<{
+  transcriptPath: AbsolutePath;
+  cause: unknown;
+}> {}
+
 export const analyzeTranscriptForLinks = Effect.fn("analyzeTranscriptForLinks")(
   function* (opts: {
     transcriptPath: AbsolutePath;
@@ -28,8 +42,10 @@ export const analyzeTranscriptForLinks = Effect.fn("analyzeTranscriptForLinks")(
 
     // Handle empty transcript
     if (!transcriptContent.trim()) {
-      yield* Effect.logWarning(`Empty transcript found: ${transcriptPath}`);
-      return [];
+      return yield* Effect.fail(new TranscriptAnalysisError({
+        transcriptPath,
+        cause: new Error("Transcript is empty or contains only whitespace"),
+      }));
     }
 
     // Use AI service to generate link requests
@@ -51,17 +67,3 @@ export const analyzeTranscriptForLinks = Effect.fn("analyzeTranscriptForLinks")(
     return linkRequests || [];
   }
 );
-
-export class TranscriptReadError extends Data.TaggedError(
-  "TranscriptReadError"
-)<{
-  transcriptPath: AbsolutePath;
-  cause: unknown;
-}> {}
-
-export class TranscriptAnalysisError extends Data.TaggedError(
-  "TranscriptAnalysisError"
-)<{
-  transcriptPath: AbsolutePath;
-  cause: unknown;
-}> {}

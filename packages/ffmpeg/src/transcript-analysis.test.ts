@@ -9,6 +9,7 @@ import {
   TranscriptAnalysisError,
   TranscriptReadError,
 } from "./transcript-analysis.js";
+import { FileSystem } from "@effect/platform";
 
 it("Should analyze transcript and return link requests", async () => {
   const mockAskForLinks = vi
@@ -27,8 +28,10 @@ it("Should analyze transcript and return link requests", async () => {
   }).pipe(
     Effect.provideService(AIService, {
       askForLinks: mockAskForLinks,
+      articleFromTranscript: vi.fn(),
+      titleFromTranscript: vi.fn(),
     }),
-    Effect.provideService("FileSystem", {
+    Effect.provideService(FileSystem.FileSystem, {
       readFileString: mockReadFileString,
     }),
     Effect.runPromise
@@ -41,7 +44,7 @@ it("Should analyze transcript and return link requests", async () => {
   expect(mockReadFileString).toHaveBeenCalledWith("/path/to/transcript.txt");
 });
 
-it("Should handle empty transcript gracefully", async () => {
+it("Should fail when transcript is empty", async () => {
   const mockAskForLinks = vi.fn();
   const mockReadFileString = vi
     .fn()
@@ -53,14 +56,17 @@ it("Should handle empty transcript gracefully", async () => {
   }).pipe(
     Effect.provideService(AIService, {
       askForLinks: mockAskForLinks,
+      articleFromTranscript: vi.fn(),
+      titleFromTranscript: vi.fn(),
     }),
-    Effect.provideService("FileSystem", {
+    Effect.provideService(FileSystem.FileSystem, {
       readFileString: mockReadFileString,
     }),
-    Effect.runPromise
+    Effect.flip
   );
 
-  expect(result).toEqual([]);
+  expect(result).toBeInstanceOf(TranscriptAnalysisError);
+  expect(result.transcriptPath).toBe("/path/to/empty.txt");
   expect(mockAskForLinks).not.toHaveBeenCalled();
 });
 
@@ -77,8 +83,10 @@ it("Should handle file read errors", async () => {
   }).pipe(
     Effect.provideService(AIService, {
       askForLinks: mockAskForLinks,
+      articleFromTranscript: vi.fn(),
+      titleFromTranscript: vi.fn(),
     }),
-    Effect.provideService("FileSystem", {
+    Effect.provideService(FileSystem.FileSystem, {
       readFileString: mockReadFileString,
     }),
     Effect.flip
@@ -106,8 +114,10 @@ it("Should handle AI service failures", async () => {
   }).pipe(
     Effect.provideService(AIService, {
       askForLinks: mockAskForLinks,
+      articleFromTranscript: vi.fn(),
+      titleFromTranscript: vi.fn(),
     }),
-    Effect.provideService("FileSystem", {
+    Effect.provideService(FileSystem.FileSystem, {
       readFileString: mockReadFileString,
     }),
     Effect.flip
@@ -133,8 +143,10 @@ it("Should handle undefined response from AI service", async () => {
   }).pipe(
     Effect.provideService(AIService, {
       askForLinks: mockAskForLinks,
+      articleFromTranscript: vi.fn(),
+      titleFromTranscript: vi.fn(),
     }),
-    Effect.provideService("FileSystem", {
+    Effect.provideService(FileSystem.FileSystem, {
       readFileString: mockReadFileString,
     }),
     Effect.runPromise
@@ -158,8 +170,10 @@ it("Should handle null response from AI service", async () => {
   }).pipe(
     Effect.provideService(AIService, {
       askForLinks: mockAskForLinks,
+      articleFromTranscript: vi.fn(),
+      titleFromTranscript: vi.fn(),
     }),
-    Effect.provideService("FileSystem", {
+    Effect.provideService(FileSystem.FileSystem, {
       readFileString: mockReadFileString,
     }),
     Effect.runPromise
