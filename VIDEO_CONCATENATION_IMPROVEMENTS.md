@@ -6,13 +6,14 @@ Based on user feedback, the following improvements have been implemented for the
 
 ## Changes Made
 
-### 1. **Added Autocomplete Support to AskQuestionService**
-- Added a new `autocomplete()` method to the `AskQuestionService`
-- Updated the `select()` method to automatically use autocomplete when there are more than 10 choices
-- This provides a better user experience for long lists of items
+### 1. **Simplified Service with Always-On Autocomplete**
+- The `AskQuestionService.select()` method now always uses autocomplete
+- Removed the separate `autocomplete()` method to keep the API clean
+- Eliminated the option parameter since autocomplete is now the standard behavior
+- This provides a consistent user experience across all selection prompts
 
 ### 2. **Enhanced Video Selection with Autocomplete**
-- The `multiSelectVideosFromQueue()` function now uses autocomplete instead of the basic select prompt
+- The `multiSelectVideosFromQueue()` function uses the improved select method (which uses autocomplete)
 - Users can now type to search through available videos, making selection much faster
 - Particularly useful when there are many completed videos to choose from
 
@@ -39,17 +40,10 @@ Based on user feedback, the following improvements have been implemented for the
 
 ### New API Methods
 ```typescript
-// New autocomplete method
-autocomplete: <T>(
-  question: string,
-  choices: Array<{ title: string; value: T }>
-): Effect.Effect<T>
-
-// Enhanced select method with automatic autocomplete
+// Simplified select method that always uses autocomplete
 select: <T>(
   question: string,
-  choices: Array<{ title: string; value: T }>,
-  options?: { useAutocomplete?: boolean }
+  choices: Array<{ title: string; value: T }>
 ): Effect.Effect<T>
 ```
 
@@ -58,11 +52,12 @@ select: <T>(
 1. **Faster Navigation**: Autocomplete allows quick filtering of videos by typing
 2. **Better Organization**: Most recent videos at the top, "End" command immediately accessible
 3. **Clearer Information**: Enhanced timestamps for better video identification
-4. **Consistent UX**: Autocomplete becomes default for longer lists across the application
+4. **Consistent UX**: Autocomplete is now always enabled for all selection prompts
 
 ## Benefits
 
 - **Efficiency**: Reduced time to find and select specific videos
 - **Usability**: More intuitive interface following common CLI patterns
 - **Scalability**: Better performance with large numbers of completed videos
-- **Consistency**: Standardized autocomplete behavior across the application
+- **Consistency**: Simplified API with autocomplete always enabled
+- **Simplicity**: Single selection method reduces complexity and improves maintainability

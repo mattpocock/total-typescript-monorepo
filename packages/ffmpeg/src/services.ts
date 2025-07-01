@@ -73,25 +73,6 @@ export class AskQuestionService extends Effect.Service<AskQuestionService>()(
 
         select: <T>(
           question: string,
-          choices: Array<{ title: string; value: T }>,
-          options?: { useAutocomplete?: boolean }
-        ): Effect.Effect<T> => {
-          return Effect.promise(async () => {
-            // Use autocomplete by default if there are more than 10 choices
-            const shouldUseAutocomplete = options?.useAutocomplete ?? choices.length > 10;
-            
-            const response = await prompts({
-              type: shouldUseAutocomplete ? "autocomplete" : "select",
-              name: "value",
-              message: question,
-              choices,
-            });
-            return response.value;
-          });
-        },
-
-        autocomplete: <T>(
-          question: string,
           choices: Array<{ title: string; value: T }>
         ): Effect.Effect<T> => {
           return Effect.promise(async () => {

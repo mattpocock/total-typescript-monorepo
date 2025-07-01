@@ -776,7 +776,7 @@ export const multiSelectVideosFromQueue = () => {
         ? ` (${selectedVideoIds.length} videos selected)`
         : "";
 
-      const selection = yield* askQuestion.autocomplete(
+      const selection = yield* askQuestion.select(
         `Select a video to add to concatenation${selectedMessage}:`,
         choices
       );
