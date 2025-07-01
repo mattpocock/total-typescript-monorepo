@@ -9,12 +9,15 @@ export interface CreateAutoEditedVideoQueueItemsOptions {
   subtitles: boolean;
   dryRun: boolean;
   generateArticle: boolean;
+  // New optional fields for synchronous code request
+  codePath?: string;
+  codeContent?: string;
 }
 
 export const createAutoEditedVideoQueueItems = Effect.fn(
   "createAutoEditedVideoQueueItems"
 )(function* (opts: CreateAutoEditedVideoQueueItemsOptions) {
-  const { inputVideo, videoName, subtitles, dryRun, generateArticle } = opts;
+  const { inputVideo, videoName, subtitles, dryRun, generateArticle, codePath, codeContent } = opts;
 
   // Get environment configuration
   const transcriptionDirectory = yield* Config.string(
@@ -74,17 +77,22 @@ export const createAutoEditedVideoQueueItems = Effect.fn(
         dependencies: [videoId],
         status: "ready-to-run",
       },
-      // 3. Code request (depends on transcript analysis)
+      // 3. Code request - now created as completed with synchronous data
       {
         id: codeRequestId,
         createdAt: Date.now(),
+        completedAt: Date.now(), // Mark as completed since we got the code synchronously
         action: {
           type: "code-request",
           transcriptPath,
           originalVideoPath,
+          temporaryData: {
+            codePath: codePath || "",
+            codeContent: codeContent || "",
+          },
         },
         dependencies: [],
-        status: "requires-user-input",
+        status: "completed", // Changed from "requires-user-input" to "completed"
       },
       // 4. Links request (depends on code request)
       {

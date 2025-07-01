@@ -129,6 +129,7 @@ program
       await Effect.gen(function* () {
         const obs = yield* OBSIntegrationService;
         const askQuestion = yield* AskQuestionService;
+        const fs = yield* FileSystem.FileSystem;
 
         const inputVideo = yield* obs.getLatestOBSVideo();
 
@@ -140,12 +141,70 @@ program
 
         yield* validateWindowsFilename(videoName);
 
+        // If article generation is enabled, ask for code file synchronously
+        let codePath: string | undefined;
+        let codeContent: string | undefined;
+
+        if (options.generateArticle) {
+          yield* Console.log(
+            "📝 Article generation enabled - gathering code information..."
+          );
+
+          const codeFileInput = yield* askQuestion.askQuestion(
+            "Enter the file path containing any code for the article (optional, press Enter to skip):"
+          );
+
+          if (codeFileInput.trim()) {
+            const inputCodePath = codeFileInput.trim();
+            const codeExists = yield* fs
+              .exists(inputCodePath)
+              .pipe(Effect.catchAll(() => Effect.succeed(false)));
+
+            if (codeExists) {
+              const content = yield* fs.readFileString(inputCodePath).pipe(
+                Effect.catchAll((error) => {
+                  return Effect.gen(function* () {
+                    yield* Console.log(
+                      `⚠️  Warning: Could not read code file ${inputCodePath}: ${error}`
+                    );
+                    yield* Console.log(
+                      `💡 Tip: Check file permissions and ensure the path is correct`
+                    );
+                    return "";
+                  });
+                })
+              );
+
+              if (content) {
+                codePath = inputCodePath;
+                codeContent = content;
+                yield* Console.log(
+                  `✅ Code file loaded: ${inputCodePath} (${content.length} characters)`
+                );
+              }
+            } else {
+              yield* Console.log(
+                `⚠️  Warning: Code file ${inputCodePath} does not exist`
+              );
+              yield* Console.log(
+                `💡 Continuing without code - you can manually add code examples to the article later`
+              );
+            }
+          } else {
+            yield* Console.log(
+              `ℹ️  No code file provided - continuing without code examples`
+            );
+          }
+        }
+
         const queueItems = yield* createAutoEditedVideoQueueItems({
           inputVideo,
           videoName,
           subtitles: Boolean(options.subtitles),
           dryRun: !Boolean(options.upload),
           generateArticle: Boolean(options.generateArticle),
+          codePath,
+          codeContent,
         });
 
         if (options.generateArticle) {

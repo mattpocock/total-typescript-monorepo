@@ -129,9 +129,9 @@ pnpm cli create-auto-edited-video
 The `--generate-article` flag enables automatic article creation from video transcripts through a sophisticated AI-powered workflow:
 
 #### Complete Workflow Steps
-1. **Video Processing**: Standard auto-editing and transcript generation
-2. **Transcript Analysis**: AI analyzes transcript content and generates link requests
-3. **Code Integration**: Optional code file inclusion for technical content
+1. **Video Submission**: User provides video name and optional code file when submitting
+2. **Video Processing**: Standard auto-editing and transcript generation
+3. **Transcript Analysis**: AI analyzes transcript content and generates link requests
 4. **Link Collection**: User provides relevant external resources and documentation
 5. **Article Generation**: AI creates comprehensive article with code examples and links
 
@@ -146,9 +146,9 @@ pnpm cli create-auto-edited-video --generate-article --upload --no-subtitles
 ```
 
 #### Interactive Steps
-- **Code File**: Prompted for optional TypeScript/JavaScript code file path
-- **Link Requests**: AI generates contextual link requests based on transcript content
-- **Link URLs**: User provides URLs for documentation, references, and resources
+- **Code File**: Prompted synchronously during video submission for optimal context
+- **Link Requests**: AI generates contextual link requests based on transcript content (processed later)
+- **Link URLs**: User provides URLs for documentation, references, and resources (processed later)
 
 #### Output
 - **Video**: Processed and edited video file

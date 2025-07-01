@@ -181,8 +181,8 @@ describe("createAutoEditedVideoQueueItems", () => {
     // Transcript analysis can run automatically (once dependencies are met)
     expect(queueItems[1]!.status).toBe("ready-to-run");
 
-    // Code request requires user input
-    expect(queueItems[2]!.status).toBe("requires-user-input");
+    // Code request is now completed synchronously
+    expect(queueItems[2]!.status).toBe("completed");
 
     // Links request requires user input
     expect(queueItems[3]!.status).toBe("requires-user-input");
@@ -256,5 +256,66 @@ describe("createAutoEditedVideoQueueItems", () => {
         queueItems2[1]!.action.transcriptPath
       );
     }
+  });
+
+  it("should create code-request with empty data when no code is provided", async () => {
+    const queueItems = await createAutoEditedVideoQueueItems({
+      ...baseOptions,
+      generateArticle: true,
+      // No codePath or codeContent provided
+    }).pipe(Effect.withConfigProvider(testConfig), Effect.runPromise);
+
+    const codeRequestItem = queueItems[2]!;
+    expect(codeRequestItem.action.type).toBe("code-request");
+    
+    if (codeRequestItem.action.type === "code-request") {
+      expect(codeRequestItem.action.temporaryData?.codePath).toBe("");
+      expect(codeRequestItem.action.temporaryData?.codeContent).toBe("");
+    }
+    
+    expect(codeRequestItem.status).toBe("completed");
+    expect(codeRequestItem.completedAt).toBeDefined();
+    expect(codeRequestItem.completedAt).toBeTypeOf("number");
+  });
+
+  it("should create code-request with provided code data when code is supplied", async () => {
+    const testCodePath = "/path/to/test-file.ts";
+    const testCodeContent = "console.log('Hello, world!');";
+
+    const queueItems = await createAutoEditedVideoQueueItems({
+      ...baseOptions,
+      generateArticle: true,
+      codePath: testCodePath,
+      codeContent: testCodeContent,
+    }).pipe(Effect.withConfigProvider(testConfig), Effect.runPromise);
+
+    const codeRequestItem = queueItems[2]!;
+    expect(codeRequestItem.action.type).toBe("code-request");
+    
+    if (codeRequestItem.action.type === "code-request") {
+      expect(codeRequestItem.action.temporaryData?.codePath).toBe(testCodePath);
+      expect(codeRequestItem.action.temporaryData?.codeContent).toBe(testCodeContent);
+    }
+    
+    expect(codeRequestItem.status).toBe("completed");
+    expect(codeRequestItem.completedAt).toBeDefined();
+  });
+
+  it("should handle partial code data gracefully", async () => {
+    const queueItems = await createAutoEditedVideoQueueItems({
+      ...baseOptions,
+      generateArticle: true,
+      codePath: "/path/to/file.ts",
+      // No codeContent provided
+    }).pipe(Effect.withConfigProvider(testConfig), Effect.runPromise);
+
+    const codeRequestItem = queueItems[2]!;
+    
+    if (codeRequestItem.action.type === "code-request") {
+      expect(codeRequestItem.action.temporaryData?.codePath).toBe("/path/to/file.ts");
+      expect(codeRequestItem.action.temporaryData?.codeContent).toBe("");
+    }
+    
+    expect(codeRequestItem.status).toBe("completed");
   });
 });
