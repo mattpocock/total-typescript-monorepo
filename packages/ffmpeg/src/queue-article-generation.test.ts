@@ -20,6 +20,8 @@ const testConfig = ConfigProvider.fromMap(
   new Map([
     ["LINKS_STORAGE_PATH", "/tmp/test-links.json"],
     ["ARTICLE_STORAGE_PATH", "/tmp/test-articles"],
+    ["EXPORT_DIRECTORY", "/path/to/export"],
+    ["SHORTS_EXPORT_DIRECTORY", "/path/to/shorts"],
     ["ARTICLES_TO_TAKE", "3"],
     ["PADDED_NUMBER_LENGTH", "3"],
   ])
@@ -320,6 +322,151 @@ describe("queue-article-generation", () => {
       if (result._tag === "Left") {
         expect(result.left).toBeInstanceOf(LinksDependencyNotFoundError);
       }
+    });
+
+    it("should save article alongside video in export directory when alongside is true and dryRun is true", async () => {
+      let capturedPath: string | undefined;
+      let capturedContent: string | undefined;
+
+      const mockFSWithCapture = FileSystem.makeNoop({
+        readFileString: (path: string) => {
+          const files = { "/test/transcript.txt": "This is a sample transcript about TypeScript." };
+          const content = files[path as keyof typeof files];
+          if (content === undefined) {
+            throw new Error(`File not found: ${path}`);
+          }
+          return Effect.succeed(content);
+        },
+        writeFileString: (path: string, content: string) => {
+          capturedPath = path;
+          capturedContent = content;
+          return Effect.succeed(undefined);
+        },
+        exists: () => Effect.succeed(true),
+      });
+
+      const result = await generateArticleFromTranscriptQueue({
+        transcriptPath: "/test/transcript.txt" as AbsolutePath,
+        originalVideoPath: "/test/video.mp4" as AbsolutePath,
+        codeDependencyId: "code-1",
+        linksDependencyId: "links-1",
+        queueState,
+        videoName: "my-awesome-video",
+        dryRun: true,
+        alongside: true,
+      }).pipe(
+        Effect.provideService(FileSystem.FileSystem, mockFSWithCapture),
+        Effect.provideService(AIService, mockAIService),
+        Effect.provideService(ArticleStorageService, mockArticleStorageService),
+        Effect.provideService(LinksStorageService, mockLinksStorageService),
+        Effect.withConfigProvider(testConfig),
+        Effect.runPromise
+      );
+
+      expect(result).toEqual({
+        title: "Generated Title",
+        filename: "my-awesome-video.md",
+      });
+
+      // Verify the article was saved to the export directory with the video name
+      expect(capturedPath).toBe("/path/to/export/my-awesome-video.md");
+      expect(capturedContent).toContain("Generated article content");
+      expect(capturedContent).toContain('title: "Generated Title"');
+      expect(capturedContent).toContain('originalVideoPath: "/test/video.mp4"');
+    });
+
+    it("should save article alongside video in shorts directory when alongside is true and dryRun is false", async () => {
+      let capturedPath: string | undefined;
+      let capturedContent: string | undefined;
+
+      const mockFSWithCapture = FileSystem.makeNoop({
+        readFileString: (path: string) => {
+          const files = { "/test/transcript.txt": "This is a sample transcript about TypeScript." };
+          const content = files[path as keyof typeof files];
+          if (content === undefined) {
+            throw new Error(`File not found: ${path}`);
+          }
+          return Effect.succeed(content);
+        },
+        writeFileString: (path: string, content: string) => {
+          capturedPath = path;
+          capturedContent = content;
+          return Effect.succeed(undefined);
+        },
+        exists: () => Effect.succeed(true),
+      });
+
+      const result = await generateArticleFromTranscriptQueue({
+        transcriptPath: "/test/transcript.txt" as AbsolutePath,
+        originalVideoPath: "/test/video.mp4" as AbsolutePath,
+        codeDependencyId: "code-1",
+        linksDependencyId: "links-1",
+        queueState,
+        videoName: "uploaded-video",
+        dryRun: false,
+        alongside: true,
+      }).pipe(
+        Effect.provideService(FileSystem.FileSystem, mockFSWithCapture),
+        Effect.provideService(AIService, mockAIService),
+        Effect.provideService(ArticleStorageService, mockArticleStorageService),
+        Effect.provideService(LinksStorageService, mockLinksStorageService),
+        Effect.withConfigProvider(testConfig),
+        Effect.runPromise
+      );
+
+      expect(result).toEqual({
+        title: "Generated Title",
+        filename: "uploaded-video.md",
+      });
+
+      // Verify the article was saved to the shorts directory with the video name
+      expect(capturedPath).toBe("/path/to/shorts/uploaded-video.md");
+      expect(capturedContent).toContain("Generated article content");
+      expect(capturedContent).toContain('title: "Generated Title"');
+      expect(capturedContent).toContain('originalVideoPath: "/test/video.mp4"');
+    });
+
+    it("should use regular article storage when alongside is false", async () => {
+      let mockStoreArticleCalled = false;
+      let capturedArticle: any;
+
+      const mockArticleStorageServiceWithCapture = new ArticleStorageService({
+        storeArticle: (article) => {
+          mockStoreArticleCalled = true;
+          capturedArticle = article;
+          return Effect.succeed(undefined);
+        },
+        countArticles: () => Effect.succeed(5),
+        getLatestArticles: () => Effect.succeed([]),
+      });
+
+      const result = await generateArticleFromTranscriptQueue({
+        transcriptPath: "/test/transcript.txt" as AbsolutePath,
+        originalVideoPath: "/test/video.mp4" as AbsolutePath,
+        codeDependencyId: "code-1",
+        linksDependencyId: "links-1",
+        queueState,
+        videoName: "test-video",
+        dryRun: true,
+        alongside: false,
+      }).pipe(
+        Effect.provideService(FileSystem.FileSystem, mockFS),
+        Effect.provideService(AIService, mockAIService),
+        Effect.provideService(ArticleStorageService, mockArticleStorageServiceWithCapture),
+        Effect.provideService(LinksStorageService, mockLinksStorageService),
+        Effect.withConfigProvider(testConfig),
+        Effect.runPromise
+      );
+
+      expect(result).toEqual({
+        title: "Generated Title",
+        filename: "006-generated-title.md",
+      });
+
+      // Verify that regular article storage was used
+      expect(mockStoreArticleCalled).toBe(true);
+      expect(capturedArticle.filename).toBe("006-generated-title.md");
+      expect(capturedArticle.title).toBe("Generated Title");
     });
   });
 
