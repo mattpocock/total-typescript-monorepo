@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import { type AbsolutePath } from "@total-typescript/shared";
 import { Console, Data, Effect } from "effect";
 import { analyzeTranscriptForLinks } from "./transcript-analysis.js";
