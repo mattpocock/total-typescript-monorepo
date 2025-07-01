@@ -1,0 +1,32 @@
+# Repository Feedback and CI Validation
+
+## CI Check Requirement
+
+**IMPORTANT**: Any time you need feedback on the repository state, changes, or overall health, you must run the CI pipeline first.
+
+## Command to Run
+
+```bash
+pnpm run ci
+```
+
+This command should be executed from the **root directory** of the monorepo.
+
+## When to Run CI
+
+- Before providing feedback on code changes
+- When assessing repository health
+- Before suggesting improvements or modifications
+- When validating that changes work correctly across the entire monorepo
+- When troubleshooting build or test issues
+
+## Why This Matters
+
+The CI pipeline runs comprehensive checks across all packages and apps in the monorepo, including:
+- TypeScript compilation
+- Tests across all workspaces
+- Linting and formatting
+- Build processes
+- Integration between packages
+
+This ensures any feedback provided is based on the actual working state of the repository, not just surface-level observations.
