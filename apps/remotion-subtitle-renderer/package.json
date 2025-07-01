@@ -16,7 +16,7 @@
     "zod": "^3.25.46"
   },
   "devDependencies": {
-    "@remotion/eslint-config-flat": "4.0.311",
+    "@remotion/eslint-config-flat": "4.0.321",
     "@types/react": "19.1.8",
     "@types/web": "0.0.166",
     "eslint": "9.19.0",
