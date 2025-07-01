@@ -26,8 +26,9 @@ This plan implements a new option for the `create auto-edited video` workflow th
 1. User runs `create auto-edited video --generate-article` command
 2. Video creation queue item added (unchanged)
 3. **NEW**: Transcript analysis queue item added (depends on video completion)
-4. **NEW**: Links request queue item added (depends on transcript analysis)
-5. **NEW**: Article generation queue item added (depends on links completion)
+4. **NEW**: Code request queue item added (depends on transcript analysis)
+5. **NEW**: Links request queue item added (depends on code request)
+6. **NEW**: Article generation queue item added (depends on links completion)
 
 ## Implementation Plan
 
@@ -48,20 +49,47 @@ This plan implements a new option for the `create auto-edited video` workflow th
        originalVideoPath: AbsolutePath;
      }
    | {
+       type: "code-request";
+       transcriptPath: AbsolutePath;
+       originalVideoPath: AbsolutePath;
+     }
+   | {
        type: "generate-article-from-transcript";
        transcriptPath: AbsolutePath;
        originalVideoPath: AbsolutePath;
        linksDependencyId: string;
+       codeDependencyId: string;
      }
    ```
 
-2. **Extend `processQueue` function** to handle new action types
-3. **Add comprehensive unit tests** for new queue actions and dependencies
-4. **Update TypeScript types** for queue system
+2. **Extend queue item structure** to support temporary data storage:
+   ```typescript
+   export type QueueItem = {
+     id: string;
+     createdAt: number;
+     completedAt?: number;
+     action: QueueItemAction;
+     dependencies?: string[];
+     status: "ready-to-run" | "completed" | "failed" | "requires-user-input";
+     error?: string;
+     // NEW: Temporary data storage for workflow context
+     temporaryData?: {
+       codePath?: string;
+       codeContent?: string;
+       linkRequests?: string[];
+     };
+   };
+   ```
+
+3. **Extend `processQueue` function** to handle new action types
+4. **Add comprehensive unit tests** for new queue actions and dependencies
+5. **Update TypeScript types** for queue system
 
 #### Key Functions to Implement:
 - Queue processing for transcript analysis
+- Queue processing for code requests (user input)
 - Queue processing for article generation  
+- Temporary data storage and retrieval in queue items
 - Dependency chain validation tests
 - Error handling for failed queue items
 
@@ -81,21 +109,23 @@ This plan implements a new option for the `create auto-edited video` workflow th
 
 #### Implementation Details:
 - Flag should be optional (default: false)
-- When enabled, adds 3 queue items with proper dependencies:
+- When enabled, adds 4 additional queue items with proper dependencies:
   1. Video creation (existing, unchanged)
   2. Transcript analysis (depends on video)
-  3. Links request (depends on transcript analysis)  
-  4. Article generation (depends on links request)
+  3. Code request (depends on transcript analysis)
+  4. Links request (depends on code request)  
+  5. Article generation (depends on links request)
 
 ---
 
-### Phase 3: Transcript Analysis Service
+### Phase 3: Transcript Analysis and Code Request Services
 **PR Size**: Medium (Single context window)
-**Estimated Lines**: ~250-300
+**Estimated Lines**: ~300-350
 
 #### Files to Create/Modify:
 - `packages/ffmpeg/src/transcript-analysis.ts` (new)
 - `packages/ffmpeg/src/transcript-analysis.test.ts` (new)
+- `packages/ffmpeg/src/queue/queue.ts` (modify - add code request processing)
 - `packages/ffmpeg/src/index.ts` (export new functions)
 
 #### Changes:
@@ -105,15 +135,25 @@ This plan implements a new option for the `create auto-edited video` workflow th
    - Returns link requests for queue processing
    - Non-interactive (queue-friendly)
 
-2. **Add error handling**:
+2. **Add code request processing to queue**:
+   - Extend `processInformationRequests` to handle code requests
+   - New action type: `"code-request"` with status `"requires-user-input"`
+   - Prompt user for code file path (optional, can be empty)
+   - Read code file content and store in queue item's temporaryData
+   - Handle empty/invalid file paths gracefully (store empty string)
+   - Update queue item status to `"completed"` when done
+
+3. **Add error handling**:
    - File not found errors
    - AI service failures
    - Empty transcript handling
+   - Invalid code file paths
 
-3. **Add comprehensive unit tests**:
+4. **Add comprehensive unit tests**:
    - Happy path scenarios
    - Error conditions
    - Mock AI service responses
+   - Code request processing tests
 
 #### Key Functions:
 ```typescript
@@ -125,6 +165,13 @@ export const analyzeTranscriptForLinks = Effect.fn("analyzeTranscriptForLinks")(
     // Implementation
   }
 );
+
+// New queue action type for code requests
+type CodeRequestAction = {
+  type: "code-request";
+  transcriptPath: AbsolutePath;
+  originalVideoPath: AbsolutePath;
+};
 ```
 
 ---
@@ -142,7 +189,8 @@ export const analyzeTranscriptForLinks = Effect.fn("analyzeTranscriptForLinks")(
 1. **Create queue-friendly article generation**:
    - Non-interactive version of existing functionality
    - Uses stored links instead of prompting user
-   - Handles missing links gracefully
+   - Retrieves code content from queue temporaryData
+   - Handles missing links and code gracefully
 
 2. **Modify existing `generateArticleFromTranscript`**:
    - Extract common logic into shared utilities
@@ -152,7 +200,13 @@ export const analyzeTranscriptForLinks = Effect.fn("analyzeTranscriptForLinks")(
 3. **Add queue integration**:
    - Function to process article generation queue items
    - Link dependency resolution
+   - Code content retrieval from dependency queue items
    - Error handling and retry logic
+
+4. **Add dependency data retrieval**:
+   - Helper functions to get code content from completed queue items
+   - Link collection from stored links service
+   - Graceful handling when dependencies are missing
 
 #### Key Functions:
 ```typescript
@@ -161,9 +215,19 @@ export const generateArticleFromTranscriptQueue = Effect.fn(
 )(function* (opts: {
   transcriptPath: AbsolutePath;
   originalVideoPath: AbsolutePath;
+  codeDependencyId: string;
+  linksDependencyId: string;
 }) {
   // Queue-optimized implementation
+  // Retrieves code from queue temporaryData
+  // Uses stored links from LinksStorageService
 });
+
+const getCodeFromQueueItem = Effect.fn("getCodeFromQueueItem")(
+  function* (queueItemId: string): Effect<string | undefined> {
+    // Helper to retrieve code content from completed queue item
+  }
+);
 ```
 
 ---
@@ -184,10 +248,13 @@ export const generateArticleFromTranscriptQueue = Effect.fn(
 4. **Add end-to-end test scenarios**
 
 #### Test Scenarios:
-- Complete workflow with article generation
+- Complete workflow with article generation (with code)
+- Complete workflow with article generation (without code)
+- Workflow with code request failures
 - Workflow with link request failures
 - Workflow with article generation failures
 - Dependency chain validation
+- TemporaryData storage and retrieval
 
 ---
 
@@ -223,15 +290,25 @@ export const generateArticleFromTranscriptQueue = Effect.fn(
 create-auto-edited-video (id: video-1)
     ↓
 analyze-transcript-for-links (id: analysis-1, depends: [video-1])
-    ↓  
-links-request (id: links-1, depends: [analysis-1])
     ↓
-generate-article-from-transcript (id: article-1, depends: [links-1])
+code-request (id: code-1, depends: [analysis-1])
+    ↓  
+links-request (id: links-1, depends: [code-1])
+    ↓
+generate-article-from-transcript (id: article-1, depends: [links-1, code-1])
+```
+
+### Temporary Data Flow
+```
+code-request (id: code-1) → temporaryData: { codePath, codeContent }
+    ↓
+generate-article-from-transcript retrieves code from code-1.temporaryData
 ```
 
 ### Error Handling Strategy
 - **Video creation fails**: Stop entire workflow
 - **Transcript analysis fails**: Continue without article
+- **Code request fails**: Generate article without code
 - **Links request fails**: Generate article without links
 - **Article generation fails**: Log error, continue workflow
 
@@ -278,11 +355,13 @@ generate-article-from-transcript (id: article-1, depends: [links-1])
 
 ### Functional Requirements
 - [ ] CLI flag `--generate-article` works correctly
-- [ ] Queue processes all new action types
+- [ ] Queue processes all new action types (analyze-transcript, code-request, generate-article)
 - [ ] Dependencies enforced properly
-- [ ] Articles generated automatically
+- [ ] Code requests processed correctly (user prompted for file path)
+- [ ] Code content stored in queue temporaryData
+- [ ] Articles generated automatically with code and links
 - [ ] Links integrated correctly
-- [ ] Error handling robust
+- [ ] Error handling robust for all steps
 
 ### Non-Functional Requirements  
 - [ ] All changes fit in single context windows
@@ -328,9 +407,11 @@ generate-article-from-transcript (id: article-1, depends: [links-1])
 
 ### Code Organization
 - Keep queue logic separate from business logic
-- Use existing service patterns
+- Use existing service patterns for information requests (code requests follow links pattern)
 - Follow Effect-based functional programming
 - Maintain consistent error handling
+- TemporaryData should be cleaned up after workflow completion
+- Code content stored in queue state, not permanently persisted
 
 ### Performance Considerations
 - Async processing for long-running operations
