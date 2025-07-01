@@ -417,11 +417,14 @@ export const processQueue = () => {
           );
 
           const transcriptAnalysisResult = yield* Effect.gen(function* () {
+            if (queueItem.action.type !== "analyze-transcript-for-links") {
+              return yield* Effect.fail(new Error("Invalid queue item type"));
+            }
             const currentQueueState = yield* getQueueState();
             return yield* processTranscriptAnalysisForQueue({
-              queueItem,
+              queueItem: queueItem as any,
               queueState: currentQueueState,
-              updateQueueItem,
+              updateQueueItem: updateQueueItem as any,
             });
           }).pipe(Effect.either);
 

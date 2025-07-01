@@ -1,11 +1,12 @@
 import type { AbsolutePath } from "@total-typescript/shared";
-import { Effect } from "effect";
+import { Effect, Layer } from "effect";
 import { expect, it, vi } from "vitest";
 import {
   DependentLinksRequestNotFoundError,
   processTranscriptAnalysisForQueue,
 } from "./queue-transcript-processing.js";
 import type { QueueItem, QueueState } from "./queue/queue.js";
+import { analyzeTranscriptForLinks } from "./transcript-analysis.js";
 
 it("Should update existing links-request item with generated link requests", async () => {
   const mockAnalyzeTranscriptForLinks = vi.fn().mockReturnValue(
@@ -14,7 +15,13 @@ it("Should update existing links-request item with generated link requests", asy
 
   const mockUpdateQueueItem = vi.fn().mockReturnValue(Effect.succeed(void 0));
 
-  const transcriptAnalysisItem: QueueItem = {
+  const transcriptAnalysisItem: QueueItem & {
+    action: {
+      type: "analyze-transcript-for-links";
+      transcriptPath: AbsolutePath;
+      originalVideoPath: AbsolutePath;
+    };
+  } = {
     id: "analysis-1",
     createdAt: Date.now(),
     action: {
@@ -40,14 +47,14 @@ it("Should update existing links-request item with generated link requests", asy
     queue: [transcriptAnalysisItem, linksRequestItem],
   };
 
+  const mockLayer = Layer.succeed(analyzeTranscriptForLinks, mockAnalyzeTranscriptForLinks);
+
   await processTranscriptAnalysisForQueue({
     queueItem: transcriptAnalysisItem,
     queueState,
     updateQueueItem: mockUpdateQueueItem,
   }).pipe(
-    Effect.provide(
-      Effect.provideService("analyzeTranscriptForLinks", mockAnalyzeTranscriptForLinks)
-    ),
+    Effect.provide(mockLayer),
     Effect.runPromise
   );
 
@@ -68,7 +75,13 @@ it("Should handle empty link requests gracefully", async () => {
 
   const mockUpdateQueueItem = vi.fn().mockReturnValue(Effect.succeed(void 0));
 
-  const transcriptAnalysisItem: QueueItem = {
+  const transcriptAnalysisItem: QueueItem & {
+    action: {
+      type: "analyze-transcript-for-links";
+      transcriptPath: AbsolutePath;
+      originalVideoPath: AbsolutePath;
+    };
+  } = {
     id: "analysis-1",
     createdAt: Date.now(),
     action: {
@@ -83,14 +96,14 @@ it("Should handle empty link requests gracefully", async () => {
     queue: [transcriptAnalysisItem],
   };
 
+  const mockLayer = Layer.succeed(analyzeTranscriptForLinks, mockAnalyzeTranscriptForLinks);
+
   const result = await processTranscriptAnalysisForQueue({
     queueItem: transcriptAnalysisItem,
     queueState,
     updateQueueItem: mockUpdateQueueItem,
   }).pipe(
-    Effect.provide(
-      Effect.provideService("analyzeTranscriptForLinks", mockAnalyzeTranscriptForLinks)
-    ),
+    Effect.provide(mockLayer),
     Effect.runPromise
   );
 
@@ -105,7 +118,13 @@ it("Should fail when no dependent links-request item is found", async () => {
 
   const mockUpdateQueueItem = vi.fn().mockReturnValue(Effect.succeed(void 0));
 
-  const transcriptAnalysisItem: QueueItem = {
+  const transcriptAnalysisItem: QueueItem & {
+    action: {
+      type: "analyze-transcript-for-links";
+      transcriptPath: AbsolutePath;
+      originalVideoPath: AbsolutePath;
+    };
+  } = {
     id: "analysis-1",
     createdAt: Date.now(),
     action: {
@@ -121,19 +140,19 @@ it("Should fail when no dependent links-request item is found", async () => {
     queue: [transcriptAnalysisItem],
   };
 
+  const mockLayer = Layer.succeed(analyzeTranscriptForLinks, mockAnalyzeTranscriptForLinks);
+
   const result = await processTranscriptAnalysisForQueue({
     queueItem: transcriptAnalysisItem,
     queueState,
     updateQueueItem: mockUpdateQueueItem,
   }).pipe(
-    Effect.provide(
-      Effect.provideService("analyzeTranscriptForLinks", mockAnalyzeTranscriptForLinks)
-    ),
+    Effect.provide(mockLayer),
     Effect.flip
   );
 
   expect(result).toBeInstanceOf(DependentLinksRequestNotFoundError);
-  expect(result.transcriptAnalysisItemId).toBe("analysis-1");
+  expect((result as any).transcriptAnalysisItemId).toBe("analysis-1");
   expect(mockUpdateQueueItem).not.toHaveBeenCalled();
 });
 
@@ -144,7 +163,13 @@ it("Should find the correct dependent links-request item when multiple exist", a
 
   const mockUpdateQueueItem = vi.fn().mockReturnValue(Effect.succeed(void 0));
 
-  const transcriptAnalysisItem: QueueItem = {
+  const transcriptAnalysisItem: QueueItem & {
+    action: {
+      type: "analyze-transcript-for-links";
+      transcriptPath: AbsolutePath;
+      originalVideoPath: AbsolutePath;
+    };
+  } = {
     id: "analysis-1",
     createdAt: Date.now(),
     action: {
@@ -181,14 +206,14 @@ it("Should find the correct dependent links-request item when multiple exist", a
     queue: [transcriptAnalysisItem, unrelatedLinksRequestItem, correctLinksRequestItem],
   };
 
+  const mockLayer = Layer.succeed(analyzeTranscriptForLinks, mockAnalyzeTranscriptForLinks);
+
   await processTranscriptAnalysisForQueue({
     queueItem: transcriptAnalysisItem,
     queueState,
     updateQueueItem: mockUpdateQueueItem,
   }).pipe(
-    Effect.provide(
-      Effect.provideService("analyzeTranscriptForLinks", mockAnalyzeTranscriptForLinks)
-    ),
+    Effect.provide(mockLayer),
     Effect.runPromise
   );
 
@@ -210,7 +235,13 @@ it("Should propagate transcript analysis errors", async () => {
 
   const mockUpdateQueueItem = vi.fn().mockReturnValue(Effect.succeed(void 0));
 
-  const transcriptAnalysisItem: QueueItem = {
+  const transcriptAnalysisItem: QueueItem & {
+    action: {
+      type: "analyze-transcript-for-links";
+      transcriptPath: AbsolutePath;
+      originalVideoPath: AbsolutePath;
+    };
+  } = {
     id: "analysis-1",
     createdAt: Date.now(),
     action: {
@@ -225,14 +256,14 @@ it("Should propagate transcript analysis errors", async () => {
     queue: [transcriptAnalysisItem],
   };
 
+  const mockLayer = Layer.succeed(analyzeTranscriptForLinks, mockAnalyzeTranscriptForLinks);
+
   const result = await processTranscriptAnalysisForQueue({
     queueItem: transcriptAnalysisItem,
     queueState,
     updateQueueItem: mockUpdateQueueItem,
   }).pipe(
-    Effect.provide(
-      Effect.provideService("analyzeTranscriptForLinks", mockAnalyzeTranscriptForLinks)
-    ),
+    Effect.provide(mockLayer),
     Effect.flip
   );
 
