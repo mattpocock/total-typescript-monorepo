@@ -86,7 +86,7 @@ export const createAutoEditedVideoQueueItems = Effect.fn(
           originalVideoPath,
         },
         dependencies: [transcriptAnalysisId],
-        status: "ready-to-run",
+        status: "requires-user-input",
       },
       // 4. Links request (depends on code request)
       {
@@ -97,7 +97,7 @@ export const createAutoEditedVideoQueueItems = Effect.fn(
           linkRequests: [], // Will be populated by transcript analysis
         },
         dependencies: [codeRequestId],
-        status: "ready-to-run",
+        status: "requires-user-input",
       },
       // 5. Article generation (depends on links request and code request)
       {

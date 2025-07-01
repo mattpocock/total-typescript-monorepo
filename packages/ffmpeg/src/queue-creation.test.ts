@@ -163,7 +163,7 @@ describe("createAutoEditedVideoQueueItems", () => {
     }
   });
 
-  it("should initialize all queue items with ready-to-run status", async () => {
+  it("should initialize queue items with correct statuses", async () => {
     const queueItems = await createAutoEditedVideoQueueItems({
       ...baseOptions,
       generateArticle: true,
@@ -172,9 +172,20 @@ describe("createAutoEditedVideoQueueItems", () => {
       Effect.runPromise
     );
 
-    queueItems.forEach(item => {
-      expect(item.status).toBe("ready-to-run");
-    });
+    // Video creation can run immediately
+    expect(queueItems[0]!.status).toBe("ready-to-run");
+    
+    // Transcript analysis can run automatically (once dependencies are met)
+    expect(queueItems[1]!.status).toBe("ready-to-run");
+    
+    // Code request requires user input
+    expect(queueItems[2]!.status).toBe("requires-user-input");
+    
+    // Links request requires user input
+    expect(queueItems[3]!.status).toBe("requires-user-input");
+    
+    // Article generation can run automatically (once dependencies are met)
+    expect(queueItems[4]!.status).toBe("ready-to-run");
   });
 
   it("should initialize links request with empty linkRequests array", async () => {

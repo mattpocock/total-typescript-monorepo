@@ -50,6 +50,7 @@ export interface CreateAutoEditedVideoQueueItemsOptions {
 - ✅ Timestamp validation for createdAt
 - ✅ Immutability between function calls
 - ✅ Empty linkRequests initialization
+- ✅ Correct status assignment (ready-to-run vs requires-user-input)
 
 ### 3. Package Export
 **File**: `packages/ffmpeg/src/index.ts`
@@ -92,7 +93,7 @@ const queueItems = yield* createAutoEditedVideoQueueItems({
   ✓ should handle different video options correctly
   ✓ should set correct dependency IDs in article generation action
   ✓ should handle complex video file paths correctly
-  ✓ should initialize all queue items with ready-to-run status
+  ✓ should initialize queue items with correct statuses
   ✓ should initialize links request with empty linkRequests array
   ✓ should use current timestamp for createdAt
   ✓ should handle video names with special characters
@@ -127,6 +128,11 @@ Test Files  1 passed (1)
 - **Type guards in tests**: Proper handling of union types in tests
 - **Effect integration**: Uses Effect Config for environment variables
 - **AbsolutePath types**: Maintains type safety for file paths
+
+### Queue Item Status Logic
+- **`ready-to-run`**: For items that can be processed automatically (video creation, transcript analysis, article generation)
+- **`requires-user-input`**: For items that need user interaction (code requests, links requests)
+- **Proper dependency handling**: Items wait for dependencies regardless of status
 
 ### Testing Quality
 - **Comprehensive coverage**: All code paths tested
