@@ -42,6 +42,30 @@ export type QueueItemAction =
        * shorts directory.
        */
       dryRun: boolean;
+    }
+  | {
+      type: "analyze-transcript-for-links";
+      transcriptPath: AbsolutePath;
+      originalVideoPath: AbsolutePath;
+    }
+  | {
+      type: "code-request";
+      transcriptPath: AbsolutePath;
+      originalVideoPath: AbsolutePath;
+      /**
+       * Temporary data storage for code request workflow
+       */
+      temporaryData?: {
+        codePath?: string;
+        codeContent?: string;
+      };
+    }
+  | {
+      type: "generate-article-from-transcript";
+      transcriptPath: AbsolutePath;
+      originalVideoPath: AbsolutePath;
+      linksDependencyId: string;
+      codeDependencyId: string;
     };
 
 export type QueueItem = {
@@ -321,6 +345,18 @@ export const processQueue = () => {
           });
 
           break;
+        case "analyze-transcript-for-links":
+          // TODO: Implement analyze-transcript-for-links workflow
+          yield* Console.log("ERROR: analyze-transcript-for-links action not implemented");
+          continue;
+        case "code-request":
+          // TODO: Implement code-request workflow
+          yield* Console.log("ERROR: code-request action not implemented");
+          continue;
+        case "generate-article-from-transcript":
+          // TODO: Implement generate-article-from-transcript workflow
+          yield* Console.log("ERROR: generate-article-from-transcript action not implemented");
+          continue;
         default:
           queueItem.action satisfies never;
           yield* Console.log("Unknown queue item type");
