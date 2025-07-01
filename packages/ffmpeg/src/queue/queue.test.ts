@@ -637,7 +637,7 @@ it("Should handle code-request action type and store code content in temporaryDa
     });
 
     expect(askQuestion).toHaveBeenCalledWith(
-      "Code file path (optional, leave empty if no code needed): "
+      "📂 Code file path (optional, press Enter to skip): "
     );
   } finally {
     await fs.rm(tmpDir, { recursive: true });
