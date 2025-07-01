@@ -330,7 +330,10 @@ describe("queue-article-generation", () => {
 
       const mockFSWithCapture = FileSystem.makeNoop({
         readFileString: (path: string) => {
-          const files = { "/test/transcript.txt": "This is a sample transcript about TypeScript." };
+          const files = {
+            "/test/transcript.txt":
+              "This is a sample transcript about TypeScript.",
+          };
           const content = files[path as keyof typeof files];
           if (content === undefined) {
             throw new Error(`File not found: ${path}`);
@@ -381,7 +384,10 @@ describe("queue-article-generation", () => {
 
       const mockFSWithCapture = FileSystem.makeNoop({
         readFileString: (path: string) => {
-          const files = { "/test/transcript.txt": "This is a sample transcript about TypeScript." };
+          const files = {
+            "/test/transcript.txt":
+              "This is a sample transcript about TypeScript.",
+          };
           const content = files[path as keyof typeof files];
           if (content === undefined) {
             throw new Error(`File not found: ${path}`);
@@ -452,7 +458,10 @@ describe("queue-article-generation", () => {
       }).pipe(
         Effect.provideService(FileSystem.FileSystem, mockFS),
         Effect.provideService(AIService, mockAIService),
-        Effect.provideService(ArticleStorageService, mockArticleStorageServiceWithCapture),
+        Effect.provideService(
+          ArticleStorageService,
+          mockArticleStorageServiceWithCapture
+        ),
         Effect.provideService(LinksStorageService, mockLinksStorageService),
         Effect.withConfigProvider(testConfig),
         Effect.runPromise
