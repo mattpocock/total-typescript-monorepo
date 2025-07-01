@@ -1,8 +1,8 @@
 import { FileSystem } from "@effect/platform/FileSystem";
 import { type AbsolutePath } from "@total-typescript/shared";
 import { Config, Console, Effect, Either } from "effect";
+import { processTranscriptAnalysisForQueue } from "../queue-transcript-processing.js";
 import { AskQuestionService, LinksStorageService } from "../services.js";
-import { analyzeTranscriptForLinks } from "../transcript-analysis.js";
 import { WorkflowsService } from "../workflows.js";
 
 export type QueueItemAction =
@@ -417,44 +417,12 @@ export const processQueue = () => {
           );
 
           const transcriptAnalysisResult = yield* Effect.gen(function* () {
-            const linkRequests = yield* analyzeTranscriptForLinks({
-              transcriptPath: queueItem.action.transcriptPath,
-              originalVideoPath: queueItem.action.originalVideoPath,
+            const currentQueueState = yield* getQueueState();
+            return yield* processTranscriptAnalysisForQueue({
+              queueItem,
+              queueState: currentQueueState,
+              updateQueueItem,
             });
-
-            if (linkRequests.length > 0) {
-              // Find the existing links-request queue item that depends on this analysis
-              const queueState = yield* getQueueState();
-              const linksRequestItem = queueState.queue.find(
-                (item) =>
-                  item.action.type === "links-request" &&
-                  item.dependencies?.includes(queueItem.id)
-              );
-
-              if (linksRequestItem) {
-                // Update the existing links-request item with the generated requests
-                yield* updateQueueItem({
-                  ...linksRequestItem,
-                  action: {
-                    ...linksRequestItem.action,
-                    linkRequests,
-                  },
-                  status: "requires-user-input",
-                });
-
-                yield* Console.log(
-                  `Updated existing links request queue item ${linksRequestItem.id} with ${linkRequests.length} requests`
-                );
-              } else {
-                yield* Console.log(
-                  "Warning: No dependent links-request queue item found for transcript analysis"
-                );
-              }
-            } else {
-              yield* Console.log("No link requests generated from transcript");
-            }
-
-            return linkRequests;
           }).pipe(Effect.either);
 
           if (Either.isLeft(transcriptAnalysisResult)) {
