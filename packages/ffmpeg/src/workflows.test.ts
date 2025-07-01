@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import { expect, it, test, vi } from "vitest";
+import { describe, expect, it, test, vi } from "vitest";
 import { createAutoEditedVideoWorkflow } from "./workflows.js";
 import type { AbsolutePath } from "@total-typescript/shared";
 import { fromPartial } from "@total-typescript/shoehorn";
