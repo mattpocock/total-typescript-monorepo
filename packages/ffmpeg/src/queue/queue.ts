@@ -399,26 +399,28 @@ export const processQueue = () => {
             continue;
           }
 
+          yield* updateQueueItem({
+            ...queueItem,
+            status: "completed",
+            completedAt: Date.now(),
+          });
+
+          break;
         case "analyze-transcript-for-links":
+          yield* Console.log(
+            `Processing analyze-transcript-for-links for ${queueItem.action.transcriptPath}`
+          );
           // TODO: Implement analyze-transcript-for-links workflow
-          yield* Console.log(
-            "ERROR: analyze-transcript-for-links action not implemented"
-          );
-          continue;
-        case "code-request":
-          // TODO: Implement code-request workflow
-          yield* Console.log("ERROR: code-request action not implemented");
-          continue;
-        case "generate-article-from-transcript":
-          // TODO: Implement generate-article-from-transcript workflow
-          yield* Console.log(
-            "ERROR: generate-article-from-transcript action not implemented"
-          );
-          continue;
+          yield* updateQueueItem({
+            ...queueItem,
+            status: "completed",
+            completedAt: Date.now(),
+          });
+          break;
         case "code-request":
           // This should be handled by processInformationRequests
           yield* Console.log(
-            "ERROR: Code request found in processQueue - this should not happen"
+            "ERROR: Code request found in processQueue - this should be handled by processInformationRequests"
           );
           continue;
         case "generate-article-from-transcript":

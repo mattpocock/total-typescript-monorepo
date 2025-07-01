@@ -506,6 +506,7 @@ it("Should handle code-request action type and store code content in temporaryDa
     const createAutoEditedVideoWorkflow = vi
       .fn()
       .mockReturnValue(Effect.succeed(undefined));
+    const concatenateVideosWorkflow = vi.fn().mockReturnValue(Effect.succeed(undefined));
 
     const addLinks = vi.fn().mockReturnValue(Effect.succeed(undefined));
     const getLinks = vi.fn().mockReturnValue(Effect.succeed([]));
@@ -534,6 +535,7 @@ it("Should handle code-request action type and store code content in temporaryDa
         WorkflowsService,
         new WorkflowsService({
           createAutoEditedVideoWorkflow,
+          concatenateVideosWorkflow,
         })
       ),
       Effect.provideService(
@@ -597,6 +599,7 @@ it("Should handle empty code file path gracefully", async () => {
     const createAutoEditedVideoWorkflow = vi
       .fn()
       .mockReturnValue(Effect.succeed(undefined));
+    const concatenateVideosWorkflow = vi.fn().mockReturnValue(Effect.succeed(undefined));
 
     const addLinks = vi.fn().mockReturnValue(Effect.succeed(undefined));
     const getLinks = vi.fn().mockReturnValue(Effect.succeed([]));
@@ -625,6 +628,7 @@ it("Should handle empty code file path gracefully", async () => {
         WorkflowsService,
         new WorkflowsService({
           createAutoEditedVideoWorkflow,
+          concatenateVideosWorkflow,
         })
       ),
       Effect.provideService(
@@ -685,6 +689,7 @@ it("Should handle missing code file gracefully", async () => {
     const createAutoEditedVideoWorkflow = vi
       .fn()
       .mockReturnValue(Effect.succeed(undefined));
+    const concatenateVideosWorkflow = vi.fn().mockReturnValue(Effect.succeed(undefined));
 
     const addLinks = vi.fn().mockReturnValue(Effect.succeed(undefined));
     const getLinks = vi.fn().mockReturnValue(Effect.succeed([]));
@@ -713,6 +718,7 @@ it("Should handle missing code file gracefully", async () => {
         WorkflowsService,
         new WorkflowsService({
           createAutoEditedVideoWorkflow,
+          concatenateVideosWorkflow,
         })
       ),
       Effect.provideService(
@@ -922,6 +928,7 @@ it("Should not process code-request or generate-article-from-transcript in proce
     const createAutoEditedVideoWorkflow = vi
       .fn()
       .mockReturnValue(Effect.succeed(undefined));
+    const concatenateVideosWorkflow = vi.fn().mockReturnValue(Effect.succeed(undefined));
 
     await Effect.gen(function* () {
       yield* writeToQueue([
@@ -956,6 +963,7 @@ it("Should not process code-request or generate-article-from-transcript in proce
         WorkflowsService,
         new WorkflowsService({
           createAutoEditedVideoWorkflow,
+          concatenateVideosWorkflow,
         })
       ),
       Effect.provideService(
