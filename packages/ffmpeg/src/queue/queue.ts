@@ -2,6 +2,7 @@ import { FileSystem } from "@effect/platform/FileSystem";
 import { type AbsolutePath } from "@total-typescript/shared";
 import { Config, Console, Effect, Either } from "effect";
 import { AskQuestionService, LinksStorageService } from "../services.js";
+import { analyzeTranscriptForLinks } from "../transcript-analysis.js";
 import { WorkflowsService } from "../workflows.js";
 
 export type QueueItemAction =
@@ -407,15 +408,66 @@ export const processQueue = () => {
 
           break;
         case "analyze-transcript-for-links":
+          if (queueItem.action.type !== "analyze-transcript-for-links") {
+            break;
+          }
+
           yield* Console.log(
             `Processing analyze-transcript-for-links for ${queueItem.action.transcriptPath}`
           );
-          // TODO: Implement analyze-transcript-for-links workflow
+
+          const transcriptAnalysisResult = yield* Effect.gen(function* () {
+            const linkRequests = yield* analyzeTranscriptForLinks({
+              transcriptPath: queueItem.action.transcriptPath,
+              originalVideoPath: queueItem.action.originalVideoPath,
+            });
+
+            if (linkRequests.length > 0) {
+              // Add a links-request queue item as a dependency for this analysis
+              const linksRequestId = `links-request-${Date.now()}`;
+              yield* writeToQueue([
+                {
+                  id: linksRequestId,
+                  createdAt: Date.now(),
+                  action: {
+                    type: "links-request",
+                    linkRequests,
+                  },
+                  status: "requires-user-input",
+                },
+              ]);
+
+              yield* Console.log(
+                `Created links request queue item with ${linkRequests.length} requests`
+              );
+            } else {
+              yield* Console.log("No link requests generated from transcript");
+            }
+
+            return linkRequests;
+          }).pipe(Effect.either);
+
+          if (Either.isLeft(transcriptAnalysisResult)) {
+            yield* Effect.logError(
+              `Transcript analysis failed: ${transcriptAnalysisResult.left}`
+            );
+            yield* updateQueueItem({
+              ...queueItem,
+              status: "failed",
+              error:
+                transcriptAnalysisResult.left instanceof Error
+                  ? transcriptAnalysisResult.left.message
+                  : String(transcriptAnalysisResult.left),
+            });
+            continue;
+          }
+
           yield* updateQueueItem({
             ...queueItem,
             status: "completed",
             completedAt: Date.now(),
           });
+
           break;
         case "code-request":
           // This should be handled by processInformationRequests
