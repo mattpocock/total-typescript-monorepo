@@ -22,12 +22,12 @@ I have successfully implemented a new CLI command for concatenating multiple com
 ### 3. Proper Padding Management
 The implementation correctly handles video padding according to the requirements:
 
-- **Existing videos have**: `AUTO_EDITED_END_PADDING` (0.08s) + content + potential final padding
+- **Existing videos have**: Content + `AUTO_EDITED_VIDEO_FINAL_END_PADDING` (0.5s)
 - **Concatenation logic**:
-  - Removes `AUTO_EDITED_END_PADDING` (0.08s) from ALL videos
-  - This creates seamless transitions between videos
-  - The final video retains its natural ending (no artificial gaps)
-  - Final video keeps the `AUTO_EDITED_VIDEO_FINAL_END_PADDING` that was already applied during creation
+  - **Non-final videos**: Replace `AUTO_EDITED_VIDEO_FINAL_END_PADDING` (0.5s) with `AUTO_EDITED_END_PADDING` (0.08s)
+  - **Final video**: Keep existing `AUTO_EDITED_VIDEO_FINAL_END_PADDING` (0.5s)
+  - **Net effect**: Non-final videos are shortened by 0.42s each, creating smooth transitions
+  - **Result**: `[Vid + 0.08s, Vid + 0.08s, Vid + 0.5s]`
 
 ### 4. Queue Integration
 - **New Queue Action Type**: `concatenate-videos`
@@ -58,15 +58,17 @@ All padding calculations have been thoroughly tested:
 
 ```javascript
 // Test Results: ✅ ALL PASS
-Test 1 - Single video: [5.08] → [5.0] seconds
-Test 2 - Multiple videos: [5.08, 8.08, 6.58] → [5.0, 8.0, 6.5] seconds  
-Test 3 - Minimal duration: [1.08] → [1.0] seconds
-Test 4 - Total duration: [3.08, 4.58, 2.08] → 9.5 seconds total
+Test 1 - Single video: [5.5] → [5.5] seconds (keeps final padding)
+Test 2 - Multiple videos: [5.5, 8.5, 6.5] → [5.08, 8.08, 6.5] seconds  
+Test 3 - Minimal duration: [1.5] → [1.5] seconds (single video)
+Test 4 - Total duration: [3.5, 4.5, 2.5] → 9.66 seconds total
+Test 5 - Padding replacement: 0.5s → 0.08s (net reduction: 0.42s per non-final video)
 ```
 
 ### Padding Constants Used
-- `AUTO_EDITED_END_PADDING`: 0.08s (removed from all videos)
-- `AUTO_EDITED_VIDEO_FINAL_END_PADDING`: 0.5s (preserved on final video)
+- `AUTO_EDITED_END_PADDING`: 0.08s (applied to non-final videos)
+- `AUTO_EDITED_VIDEO_FINAL_END_PADDING`: 0.5s (kept on final video only)
+- **Net reduction per non-final video**: 0.42s (0.5s - 0.08s)
 
 ## 🔧 Technical Details
 

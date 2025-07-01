@@ -546,12 +546,12 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
                   
                   let trimmedDuration: number;
                   if (isLast) {
-                    // For the last video, remove the existing AUTO_EDITED_END_PADDING and keep AUTO_EDITED_VIDEO_FINAL_END_PADDING
-                    trimmedDuration = duration - AUTO_EDITED_END_PADDING;
+                    // For the last video, keep the existing AUTO_EDITED_VIDEO_FINAL_END_PADDING
+                    trimmedDuration = duration;
                   } else {
-                    // For all other videos, remove both AUTO_EDITED_END_PADDING and AUTO_EDITED_VIDEO_FINAL_END_PADDING,
-                    // then add back the normal AUTO_EDITED_END_PADDING for transition
-                    trimmedDuration = duration - AUTO_EDITED_END_PADDING;
+                    // For all other videos, replace AUTO_EDITED_VIDEO_FINAL_END_PADDING with AUTO_EDITED_END_PADDING
+                    // Remove the large padding and add back the small padding
+                    trimmedDuration = duration - AUTO_EDITED_VIDEO_FINAL_END_PADDING + AUTO_EDITED_END_PADDING;
                   }
 
                   // Trim the video to remove existing padding

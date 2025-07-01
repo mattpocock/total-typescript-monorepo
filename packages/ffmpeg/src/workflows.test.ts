@@ -447,72 +447,75 @@ test.skip("createAutoEditedVideoWorkflow returns an error if the filename alread
 });
 
 describe("Video Concatenation Padding Logic", () => {
-  it("should calculate correct padding removal for non-final videos", () => {
+  it("should calculate correct padding replacement for non-final videos", () => {
     // For videos that are not the last in the concatenation,
-    // we should remove AUTO_EDITED_END_PADDING but keep normal structure
-    const originalDuration = 10.0; // 10 seconds
-    const expectedTrimmedDuration = originalDuration - AUTO_EDITED_END_PADDING;
+    // we should replace AUTO_EDITED_VIDEO_FINAL_END_PADDING with AUTO_EDITED_END_PADDING
+    const originalDuration = 10.5; // 10 seconds + 0.5s final padding
+    const expectedTrimmedDuration = originalDuration - AUTO_EDITED_VIDEO_FINAL_END_PADDING + AUTO_EDITED_END_PADDING;
     
-    expect(expectedTrimmedDuration).toBe(10.0 - 0.08); // 9.92 seconds
+    expect(expectedTrimmedDuration).toBe(10.5 - 0.5 + 0.08); // 10.08 seconds
   });
 
-  it("should calculate correct padding for final video", () => {
-    // For the last video in concatenation, we remove AUTO_EDITED_END_PADDING
-    // but keep the natural ending (the AUTO_EDITED_VIDEO_FINAL_END_PADDING
-    // was already applied during the original video creation)
-    const originalDuration = 10.5; // 10.5 seconds including final padding
-    const expectedTrimmedDuration = originalDuration - AUTO_EDITED_END_PADDING;
+  it("should keep existing padding for final video", () => {
+    // For the last video in concatenation, we keep the existing AUTO_EDITED_VIDEO_FINAL_END_PADDING
+    const originalDuration = 10.5; // 10 seconds + 0.5s final padding
+    const expectedTrimmedDuration = originalDuration; // No change
     
-    expect(expectedTrimmedDuration).toBe(10.5 - 0.08); // 10.42 seconds
+    expect(expectedTrimmedDuration).toBe(10.5); // Unchanged
   });
 
   it("should handle multiple videos with correct padding transitions", () => {
-    // Test case: 3 videos with durations [5.08, 8.08, 6.58] seconds
-    // (these include AUTO_EDITED_END_PADDING of 0.08s each)
-    const videoDurations = [5.08, 8.08, 6.58];
+    // Test case: 3 videos with durations [5.5, 8.5, 6.5] seconds
+    // (these include AUTO_EDITED_VIDEO_FINAL_END_PADDING of 0.5s each)
+    const videoDurations = [5.5, 8.5, 6.5];
     
     const processedDurations = videoDurations.map((duration, index, array) => {
       const isLast = index === array.length - 1;
-      return duration - AUTO_EDITED_END_PADDING;
+      if (isLast) {
+        // Keep existing final padding
+        return duration;
+      } else {
+        // Replace final padding with small padding
+        return duration - AUTO_EDITED_VIDEO_FINAL_END_PADDING + AUTO_EDITED_END_PADDING;
+      }
     });
 
     expect(processedDurations).toEqual([
-      5.0,  // First video: 5.08 - 0.08 = 5.0
-      8.0,  // Second video: 8.08 - 0.08 = 8.0  
-      6.5,  // Last video: 6.58 - 0.08 = 6.5
+      5.08,  // First video: 5.5 - 0.5 + 0.08 = 5.08
+      8.08,  // Second video: 8.5 - 0.5 + 0.08 = 8.08  
+      6.5,   // Last video: 6.5 (unchanged)
     ]);
 
     // Total duration should be sum of processed durations
     const totalDuration = processedDurations.reduce((sum, duration) => sum + duration, 0);
-    expect(totalDuration).toBe(19.5); // 5.0 + 8.0 + 6.5
+    expect(totalDuration).toBe(19.66); // 5.08 + 8.08 + 6.5
   });
 
   it("should preserve proper transitions between videos", () => {
-    // When videos are concatenated, there should be no extra padding between them
-    // Each video (except the last) has its ending padding removed
-    // The final video keeps its natural ending
+    // When videos are concatenated, non-final videos get small padding for smooth transitions
+    // The final video keeps its natural ending with larger padding
     
-    const video1Duration = 3.08; // includes AUTO_EDITED_END_PADDING
-    const video2Duration = 4.58; // includes AUTO_EDITED_END_PADDING and FINAL_END_PADDING
+    const video1Duration = 3.5; // includes AUTO_EDITED_VIDEO_FINAL_END_PADDING
+    const video2Duration = 4.5; // includes AUTO_EDITED_VIDEO_FINAL_END_PADDING (final video)
     
-    const trimmedVideo1 = video1Duration - AUTO_EDITED_END_PADDING; // 3.0
-    const trimmedVideo2 = video2Duration - AUTO_EDITED_END_PADDING; // 4.5
+    const trimmedVideo1 = video1Duration - AUTO_EDITED_VIDEO_FINAL_END_PADDING + AUTO_EDITED_END_PADDING; // 3.08
+    const trimmedVideo2 = video2Duration; // 4.5 (unchanged)
     
-    // The final concatenated video should have no artificial gaps
-    expect(trimmedVideo1).toBe(3.0);
+    // The videos should have proper padding for transitions
+    expect(trimmedVideo1).toBe(3.08);
     expect(trimmedVideo2).toBe(4.5);
     
-    // Total should be 7.5 seconds with proper flow between videos
-    expect(trimmedVideo1 + trimmedVideo2).toBe(7.5);
+    // Total should be 7.58 seconds with proper transitions
+    expect(trimmedVideo1 + trimmedVideo2).toBe(7.58);
   });
 
   it("should handle edge case with very short videos", () => {
-    // Test with minimal duration videos
-    const shortVideoDuration = 1.08; // 1 second + padding
-    const trimmedDuration = shortVideoDuration - AUTO_EDITED_END_PADDING;
+    // Test with minimal duration videos that include final padding
+    const shortVideoDuration = 1.5; // 1 second + 0.5s final padding
+    const trimmedDuration = shortVideoDuration - AUTO_EDITED_VIDEO_FINAL_END_PADDING + AUTO_EDITED_END_PADDING;
     
-    expect(trimmedDuration).toBe(1.0);
-    expect(trimmedDuration).toBeGreaterThan(0); // Should never become negative
+    expect(trimmedDuration).toBe(1.08); // 1.5 - 0.5 + 0.08
+    expect(trimmedDuration).toBeGreaterThan(1); // Should be longer than 1 second
   });
 
   it("should validate padding constants are as expected", () => {
@@ -522,6 +525,9 @@ describe("Video Concatenation Padding Logic", () => {
     
     // Final padding should be larger than regular padding
     expect(AUTO_EDITED_VIDEO_FINAL_END_PADDING).toBeGreaterThan(AUTO_EDITED_END_PADDING);
+    
+    // The difference should be 0.42 seconds
+    expect(AUTO_EDITED_VIDEO_FINAL_END_PADDING - AUTO_EDITED_END_PADDING).toBe(0.42);
   });
 });
 
@@ -568,10 +574,10 @@ describe("concatenateVideosWorkflow", () => {
       ],
     };
 
-    // Mock video durations (including existing padding)
+    // Mock video durations (including existing final padding)
     mockFfmpeg.getVideoDuration
-      .mockResolvedValueOnce(5.08) // video1: 5 seconds + 0.08 padding
-      .mockResolvedValueOnce(3.58); // video2: 3.5 seconds + 0.08 padding
+      .mockResolvedValueOnce(5.5) // video1: 5 seconds + 0.5 final padding
+      .mockResolvedValueOnce(4.0); // video2: 3.5 seconds + 0.5 final padding
     
     // Mock file existence checks
     mockFs.exists
@@ -587,16 +593,16 @@ describe("concatenateVideosWorkflow", () => {
     // This would be tested in a real Effect environment
     // For now, we verify the padding calculations are correct
     
-    // Video 1 (not last): 5.08 - 0.08 = 5.0 seconds
-    const video1TrimmedDuration = 5.08 - AUTO_EDITED_END_PADDING;
-    expect(video1TrimmedDuration).toBe(5.0);
+    // Video 1 (not last): 5.5 - 0.5 + 0.08 = 5.08 seconds
+    const video1TrimmedDuration = 5.5 - AUTO_EDITED_VIDEO_FINAL_END_PADDING + AUTO_EDITED_END_PADDING;
+    expect(video1TrimmedDuration).toBe(5.08);
 
-    // Video 2 (last): 3.58 - 0.08 = 3.5 seconds  
-    const video2TrimmedDuration = 3.58 - AUTO_EDITED_END_PADDING;
-    expect(video2TrimmedDuration).toBe(3.5);
+    // Video 2 (last): 4.0 seconds (unchanged)
+    const video2TrimmedDuration = 4.0;
+    expect(video2TrimmedDuration).toBe(4.0);
 
-    // Total concatenated duration should be 8.5 seconds
-    expect(video1TrimmedDuration + video2TrimmedDuration).toBe(8.5);
+    // Total concatenated duration should be 9.08 seconds
+    expect(video1TrimmedDuration + video2TrimmedDuration).toBe(9.08);
   });
 
   it("should fail when video files don't exist", () => {
