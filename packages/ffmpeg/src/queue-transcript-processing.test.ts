@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import type { AbsolutePath } from "@total-typescript/shared";
 import { Effect } from "effect";
 import { expect, it, vi } from "vitest";
