@@ -29,6 +29,21 @@ export type QueueItemAction =
       linkRequests: string[];
     }
   | {
+      /**
+       * Concatenate multiple completed videos together.
+       * The videos will have their existing padding removed
+       * and proper transitions added.
+       */
+      type: "concatenate-videos";
+      videoIds: string[];
+      outputVideoName: string;
+      /**
+       * Whether or not to save the video to the
+       * shorts directory.
+       */
+      dryRun: boolean;
+    }
+  | {
       type: "analyze-transcript-for-links";
       transcriptPath: AbsolutePath;
       originalVideoPath: AbsolutePath;
@@ -187,12 +202,14 @@ export const getNextQueueItem = (queueState: QueueState) => {
 export const getOutstandingInformationRequests = () => {
   return Effect.gen(function* () {
     const queueState = yield* getQueueState();
-    
+
     const informationRequests = queueState.queue.filter(
-      (item) => (item.action.type === "links-request" || item.action.type === "code-request") && 
-               item.status === "requires-user-input"
+      (item) =>
+        (item.action.type === "links-request" ||
+          item.action.type === "code-request") &&
+        item.status === "requires-user-input"
     );
-    
+
     return informationRequests;
   });
 };
@@ -204,12 +221,14 @@ export const processInformationRequests = () => {
     }
 
     const informationRequests = yield* getOutstandingInformationRequests();
-    
+
     if (informationRequests.length === 0) {
       return yield* Console.log("No outstanding information requests found");
     }
 
-    yield* Console.log(`Found ${informationRequests.length} outstanding information request(s)`);
+    yield* Console.log(
+      `Found ${informationRequests.length} outstanding information request(s)`
+    );
     yield* writeQueueLockfile();
 
     const askQuestion = yield* AskQuestionService;
@@ -219,7 +238,7 @@ export const processInformationRequests = () => {
     for (const queueItem of informationRequests) {
       if (queueItem.action.type === "links-request") {
         yield* Console.log(`Processing information request: ${queueItem.id}`);
-        
+
         const links: { description: string; url: string }[] = [];
         for (const linkRequest of queueItem.action.linkRequests) {
           const link = yield* askQuestion.askQuestion(
@@ -239,35 +258,39 @@ export const processInformationRequests = () => {
           status: "completed",
           completedAt: Date.now(),
         });
-        
+
         yield* Console.log(`Information request ${queueItem.id} completed`);
       } else if (queueItem.action.type === "code-request") {
         yield* Console.log(`Processing code request: ${queueItem.id}`);
-        
+
         const codePath = yield* askQuestion.askQuestion(
           `Code file path (optional, leave empty if no code needed): `
         );
 
         let codeContent = "";
         let actualCodePath = "";
-        
+
         if (codePath.trim()) {
           actualCodePath = codePath.trim();
-          const codeExists = yield* fs.exists(actualCodePath).pipe(
-            Effect.catchAll(() => Effect.succeed(false))
-          );
-          
+          const codeExists = yield* fs
+            .exists(actualCodePath)
+            .pipe(Effect.catchAll(() => Effect.succeed(false)));
+
           if (codeExists) {
             codeContent = yield* fs.readFileString(actualCodePath).pipe(
               Effect.catchAll((error) => {
                 return Effect.gen(function* () {
-                  yield* Console.log(`Warning: Could not read code file ${actualCodePath}: ${error}`);
+                  yield* Console.log(
+                    `Warning: Could not read code file ${actualCodePath}: ${error}`
+                  );
                   return "";
                 });
               })
             );
           } else {
-            yield* Console.log(`Warning: Code file ${actualCodePath} does not exist`);
+            yield* Console.log(
+              `Warning: Code file ${actualCodePath} does not exist`
+            );
           }
         }
 
@@ -283,11 +306,11 @@ export const processInformationRequests = () => {
             },
           },
         });
-        
+
         yield* Console.log(`Code request ${queueItem.id} completed`);
       }
     }
-    
+
     yield* Console.log("All information requests processed");
   }).pipe(
     Effect.ensuring(
@@ -333,7 +356,10 @@ export const processQueue = () => {
             yield* updateQueueItem({
               ...queueItem,
               status: "failed",
-              error: result.left.message,
+              error:
+                result.left instanceof Error
+                  ? result.left.message
+                  : String(result.left),
             });
             continue;
           }
@@ -347,11 +373,44 @@ export const processQueue = () => {
           break;
         case "links-request":
           // This should never happen since getNextQueueItem filters out requires-user-input items
-          yield* Console.log("ERROR: Links request found in processQueue - this should not happen");
+          yield* Console.log(
+            "ERROR: Links request found in processQueue - this should not happen"
+          );
           continue;
+        case "concatenate-videos":
+          const concatenateResult = yield* workflows
+            .concatenateVideosWorkflow({
+              videoIds: queueItem.action.videoIds,
+              outputVideoName: queueItem.action.outputVideoName,
+              dryRun: queueItem.action.dryRun,
+            })
+            .pipe(Effect.either);
+
+          if (Either.isLeft(concatenateResult)) {
+            yield* Effect.logError(concatenateResult.left);
+            yield* updateQueueItem({
+              ...queueItem,
+              status: "failed",
+              error:
+                concatenateResult.left instanceof Error
+                  ? concatenateResult.left.message
+                  : String(concatenateResult.left),
+            });
+            continue;
+          }
+
+          yield* updateQueueItem({
+            ...queueItem,
+            status: "completed",
+            completedAt: Date.now(),
+          });
+
+          break;
         case "analyze-transcript-for-links":
-          yield* Console.log(`Processing analyze-transcript-for-links for ${queueItem.action.transcriptPath}`);
-          // TODO: Implement transcript analysis logic
+          yield* Console.log(
+            `Processing analyze-transcript-for-links for ${queueItem.action.transcriptPath}`
+          );
+          // TODO: Implement analyze-transcript-for-links workflow
           yield* updateQueueItem({
             ...queueItem,
             status: "completed",
@@ -360,10 +419,14 @@ export const processQueue = () => {
           break;
         case "code-request":
           // This should be handled by processInformationRequests
-          yield* Console.log("ERROR: Code request found in processQueue - this should not happen");
+          yield* Console.log(
+            "ERROR: Code request found in processQueue - this should be handled by processInformationRequests"
+          );
           continue;
         case "generate-article-from-transcript":
-          yield* Console.log(`Processing generate-article-from-transcript for ${queueItem.action.transcriptPath}`);
+          yield* Console.log(
+            `Processing generate-article-from-transcript for ${queueItem.action.transcriptPath}`
+          );
           // TODO: Implement article generation logic
           yield* updateQueueItem({
             ...queueItem,
