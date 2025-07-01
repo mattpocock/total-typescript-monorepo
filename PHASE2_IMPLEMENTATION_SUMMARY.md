@@ -102,7 +102,7 @@ pnpm cli create-auto-edited-video
 pnpm cli create-auto-edited-video --generate-article
 
 # Combined flags work correctly
-pnpm cli create-auto-edited-video --generate-article --dry-run --no-subtitles
+pnpm cli create-auto-edited-video --generate-article --upload --no-subtitles
 ```
 
 ## 🔄 Next Steps

@@ -108,10 +108,10 @@ program
   .description(
     `Create a new auto-edited video from the latest OBS recording and save it to the export directory`
   )
-  .option("-d, --dry-run", "Run without saving to Dropbox")
+  .option("-u, --upload", "Upload to shorts directory")
   .option("-ns, --no-subtitles", "Disable subtitle rendering")
   .option("-ga, --generate-article", "Automatically generate an article from the video transcript")
-  .action(async (options: { dryRun?: boolean; subtitles?: boolean; generateArticle?: boolean }) => {
+  .action(async (options: { upload?: boolean; subtitles?: boolean; generateArticle?: boolean }) => {
     await Effect.gen(function* () {
       const obs = yield* OBSIntegrationService;
       const askQuestion = yield* AskQuestionService;
@@ -130,7 +130,7 @@ program
         inputVideo,
         videoName,
         subtitles: Boolean(options.subtitles),
-        dryRun: Boolean(options.dryRun),
+        dryRun: !Boolean(options.upload),
         generateArticle: Boolean(options.generateArticle),
       });
 
@@ -340,7 +340,7 @@ program
             let actionContent = "";
             if (item.action.type === "create-auto-edited-video") {
               let options = [];
-              if (item.action.dryRun) options.push("Dry Run");
+              if (!item.action.dryRun) options.push("Upload");
               if (item.action.subtitles) options.push("Subtitles");
               
               actionContent = 
@@ -354,7 +354,7 @@ program
                 `  ${styleText("dim", "Links")}      ${item.action.linkRequests.length} link(s) requested\n`;
             } else if (item.action.type === "concatenate-videos") {
               let options = [];
-              if (item.action.dryRun) options.push("Dry Run");
+              if (!item.action.dryRun) options.push("Upload");
               
               actionContent = 
                 `  ${styleText("dim", "Title")}      ${item.action.outputVideoName}\n` +
@@ -402,8 +402,8 @@ program
   .command("concatenate-videos")
   .aliases(["concat", "c"])
   .description("Concatenate multiple completed videos from the queue")
-  .option("-d, --dry-run", "Save to export directory instead of shorts directory")
-  .action(async (options: { dryRun?: boolean }) => {
+  .option("-u, --upload", "Upload to shorts directory")
+  .action(async (options: { upload?: boolean }) => {
     await Effect.gen(function* () {
       const askQuestion = yield* AskQuestionService;
       
@@ -437,7 +437,7 @@ program
             type: "concatenate-videos",
             videoIds: selectedVideoIds,
             outputVideoName,
-            dryRun: Boolean(options.dryRun),
+            dryRun: !Boolean(options.upload),
           },
           dependencies: selectedVideoIds, // Depend on all selected videos being completed
           status: "ready-to-run",
