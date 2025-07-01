@@ -28,6 +28,4 @@ Use the code as the source of truth for the article.
 
 ## Available Links
 
-{{urls}}
-
-When links are available, select and include only the most relevant ones in your article. Don't force irrelevant links into the content - only use links that naturally enhance the reader's understanding or provide valuable additional resources related to the specific topics discussed in the transcript.
+{{links_section}}

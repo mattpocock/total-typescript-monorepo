@@ -419,14 +419,15 @@ export class AIService extends Effect.Service<AIService>()("AIService", {
         // Get existing stored links to include in the prompt
         const existingLinks = yield* linksStorage.getLinks();
         
-        let system = systemRaw;
-        
+        let existingLinksSection = "";
         if (existingLinks.length > 0) {
-          system += "\n\n## Previously Stored Links\n\n";
-          system += "Here are links that have already been collected and stored. DO NOT request these links again:\n\n";
-          system += existingLinks.map((link) => `- ${link.description}: ${link.url}`).join("\n");
-          system += "\n\nOnly request links that are NOT already in the above list.";
+          existingLinksSection = "\n\n## Previously Stored Links\n\n" +
+            "Here are links that have already been collected and stored. DO NOT request these links again:\n\n" +
+            existingLinks.map((link) => `- ${link.description}: ${link.url}`).join("\n") +
+            "\n\nOnly request links that are NOT already in the above list.";
         }
+
+        const system = systemRaw.replace("{{existing_links_section}}", existingLinksSection);
 
         const links = yield* Effect.tryPromise(() => {
           return generateObject({
@@ -460,13 +461,6 @@ export class AIService extends Effect.Service<AIService>()("AIService", {
             )
           );
 
-          let system = systemRaw.replace(
-            "{{articles}}",
-            opts.mostRecentArticles
-              .map((a) => `# ${a.title}\n\n${a.content}`)
-              .join("\n\n")
-          );
-
           // Get stored links and combine with newly requested ones
           const storedLinks = yield* linksStorage.getLinks();
           const allLinks = [
@@ -474,26 +468,24 @@ export class AIService extends Effect.Service<AIService>()("AIService", {
             ...opts.urls
           ];
 
+          let linksSection = "";
           if (allLinks.length > 0) {
-            const linksSection = "Here are available links that you can reference in the article:\n\n" +
+            linksSection = "Here are available links that you can reference in the article:\n\n" +
               allLinks.map((u) => `- ${u.request}: ${u.url}`).join("\n") +
-              "\n\nYou MUST include relevant links from this list in the article. Use your judgment to determine which links are most relevant to the content.";
-            
-            system = system.replace("{{urls}}", linksSection);
+              "\n\nWhen links are available, select and include only the most relevant ones in your article. Don't force irrelevant links into the content - only use links that naturally enhance the reader's understanding or provide valuable additional resources related to the specific topics discussed in the transcript.";
           } else {
-            system = system.replace("{{urls}}", "No links available");
+            linksSection = "No links available.";
           }
+
+          let system = systemRaw
+            .replace("{{articles}}", opts.mostRecentArticles
+              .map((a) => `# ${a.title}\n\n${a.content}`)
+              .join("\n\n")
+            )
+            .replace("{{links_section}}", linksSection)
+            .replace("{{code}}", opts.code ? `\`\`\`ts\n${opts.code}\n\`\`\`` : "No code provided");
 
           yield* Effect.logDebug("System", system);
-
-          if (opts.code) {
-            system = system.replace(
-              "{{code}}",
-              `\`\`\`ts\n${opts.code}\n\`\`\``
-            );
-          } else {
-            system = system.replace("{{code}}", "No code provided");
-          }
 
           const article = yield* Effect.tryPromise(() => {
             return generateText({
@@ -516,13 +508,7 @@ export class AIService extends Effect.Service<AIService>()("AIService", {
           path.resolve(import.meta.dirname, "../prompts", "generate-title.md")
         );
 
-        let system = systemRaw;
-
-        if (opts.code) {
-          system = system.replace("{{code}}", `\`\`\`ts\n${opts.code}\n\`\`\``);
-        } else {
-          system = system.replace("{{code}}", "No code provided");
-        }
+        const system = systemRaw.replace("{{code}}", opts.code ? `\`\`\`ts\n${opts.code}\n\`\`\`` : "No code provided");
 
         const title = yield* Effect.tryPromise(() => {
           return generateText({
