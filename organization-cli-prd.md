@@ -4,17 +4,26 @@
 
 ### 1.1 Product Name
 
-`exercise-organizer` (or `eo` for short command)
+`exercise-organizer` (or `eo` for short command) - **New command within the existing `@total-typescript/internal-cli` package**
 
 ### 1.2 Purpose
 
-A CLI tool for organizing and managing TypeScript tutorial exercises and media files in the total-typescript-monorepo. The tool provides a Terminal User Interface (TUI) for visualizing, validating, and reorganizing exercise files that follow specific naming conventions.
+A CLI tool for organizing and managing TypeScript tutorial exercises and media files within the total-typescript-monorepo. The tool provides a Terminal User Interface (TUI) for visualizing, validating, and reorganizing exercise files that follow specific naming conventions. This will be implemented as a new command within the existing `apps/internal-cli` package, which already provides other internal tools like video processing, timeline management, and queue operations.
 
 ### 1.3 Target Users
 
-- Content creators managing TypeScript tutorial materials
-- Developers organizing educational content
-- Internal users of the total-typescript-monorepo
+- Matt Pocock (primary user) managing TypeScript tutorial materials in the total-typescript-monorepo
+- Content creators working within the monorepo structure
+- Internal users of the total-typescript-monorepo workflow
+
+### 1.4 Repository Context
+
+This tool will be implemented as part of the existing `apps/internal-cli` package, which:
+
+- Uses the `tt` command prefix (e.g., `tt exercise-organizer`)
+- Integrates with the existing Effect-based architecture
+- Follows the established patterns for file operations and CLI commands
+- Leverages existing dependencies like `@total-typescript/shared`, `@total-typescript/ffmpeg`, and `effect`
 
 ## 2. Exercise Definition & File Structure
 
@@ -139,10 +148,13 @@ Sections are folders that contain multiple exercises:
 
 ```bash
 # Launch TUI in current directory
-eo
+tt exercise-organizer
 
 # Launch TUI in specific directory
-eo /path/to/exercises
+tt exercise-organizer /path/to/exercises
+
+# Alternative short command (if implemented)
+tt eo
 ```
 
 #### 3.2.2 TUI Commands
@@ -326,151 +338,64 @@ For files that can't be paired or classified:
 
 #### 5.1.1 Technology Stack
 
-- **Language**: TypeScript/Node.js
-- **TUI Library**: `@clack/prompts` or `ink` for React-like TUI
+- **Language**: TypeScript/Node.js (following existing internal-cli patterns)
+- **TUI Library**: `ink` for React-like TUI
 - **File System**: Node.js `fs` module with async operations
-- **CLI Framework**: `commander.js` or `yargs`
-- **AI/NLP**: Local pattern matching (no external AI APIs for privacy)
-- **String Similarity**: `fuzzball` or `string-similarity` for filename matching
+- **CLI Framework**: `commander.js` (already used in internal-cli)
+- **AI/NLP**: Use existing AI Services from `@total-typescript/ffmpeg`
+- **Architecture**: Effect-based functional programming (following existing patterns)
 
-#### 4.1.2 Project Structure
+## 6. User Experience Requirements
 
-```
-src/
-├── cli.ts              # Main CLI entry point
-├── tui/               # TUI components
-│   ├── main-view.ts   # Main exercise list view
-│   ├── move-dialog.ts # Exercise moving interface
-│   ├── suggest-view.ts # AI suggestions interface
-│   └── help-view.ts   # Help screen
-├── core/              # Core logic
-│   ├── parser.ts      # Exercise parsing logic
-│   ├── validator.ts   # Validation rules
-│   ├── normalizer.ts  # Numbering normalization
-│   ├── ai-suggester.ts # AI-powered file suggestions
-│   └── file-ops.ts    # File system operations
-├── types/             # TypeScript types
-│   ├── exercise.ts    # Exercise and section types
-│   └── suggestion.ts  # AI suggestion types
-└── utils/             # Utility functions
-    ├── path-utils.ts
-    └── string-utils.ts # Text processing utilities
-```
-
-### 4.2 Data Models
-
-#### 4.2.1 Exercise Model
-
-```typescript
-interface Exercise {
-  id: string;
-  number: number;
-  description: string;
-  type: "file-based" | "folder-based";
-  files: ExerciseFile[];
-  path: string;
-  isValid: boolean;
-  errors: ValidationError[];
-}
-
-interface ExerciseFile {
-  path: string;
-  type: "problem" | "solution" | "explainer";
-  solutionNumber?: number;
-  extension: string;
-}
-```
-
-#### 4.2.2 Section Model
-
-```typescript
-interface Section {
-  id: string;
-  number: number;
-  name: string;
-  path: string;
-  exercises: Exercise[];
-  subsections: Section[];
-  isValid: boolean;
-  errors: ValidationError[];
-}
-```
-
-#### 4.2.3 AI Suggestion Model
-
-```typescript
-interface FileSuggestion {
-  originalPath: string;
-  suggestedPath: string;
-  confidence: number; // 0-1 scale
-  reasoning: string;
-  type: "rename" | "split" | "merge";
-  relatedFiles?: string[]; // For problem/solution pairs
-}
-
-interface SuggestionBatch {
-  suggestions: FileSuggestion[];
-  totalFiles: number;
-  estimatedTime: string;
-  conflicts: SuggestionConflict[];
-}
-
-interface SuggestionConflict {
-  type: "duplicate_number" | "existing_file" | "invalid_pairing";
-  files: string[];
-  resolution: string;
-}
-```
-
-### 4.3 Performance Requirements
-
-- **P1**: Handle directories with 1000+ exercises efficiently
-- **P2**: Instant navigation response time (<100ms)
-- **P3**: File operations should be atomic and safe
-- **P4**: Provide progress indicators for long operations
-
-## 5. User Experience Requirements
-
-### 5.1 Visual Design
+### 6.1 Visual Design
 
 - Clean, readable terminal interface
 - Consistent color scheme (red for errors, green for valid, blue for info)
 - Clear hierarchy visualization with indentation
 - Status bar showing current mode and available commands
 
-### 5.2 Usability
+### 6.2 Usability
 
 - Intuitive keyboard shortcuts
 - Undo functionality for move operations
 - Confirmation dialogs for destructive operations
 - Helpful error messages with suggested fixes
 
-### 5.3 Accessibility
+### 6.3 Accessibility
 
 - Support for screen readers
 - High contrast mode option
 - Keyboard-only navigation
 - Configurable key bindings
 
-## 6. Integration Requirements
+## 7. Integration Requirements
 
-### 6.1 Monorepo Integration
+### 7.1 Monorepo Integration
 
-- Package should be part of internal CLI tools
+- Package will be part of the existing `apps/internal-cli` tools
 - Shared configuration with other monorepo tools
-- Consistent logging and error reporting
-- Integration with existing build processes
+- Consistent logging and error reporting using Effect
+- Integration with existing build processes and turbo pipeline
+- Follows existing patterns for CLI commands (e.g., `tt exercise-organizer`)
 
-### 6.2 File System Safety
+### 7.2 File System Safety
 
 - Backup creation before bulk operations
 - Atomic file moves to prevent corruption
 - Rollback capability for failed operations
 - Respect .gitignore and other ignore files
+- Integration with existing file operation patterns from `@total-typescript/ffmpeg`
 
-## 7. Future Enhancements
+### 7.3 Effect Integration
 
-### 7.1 Phase 2 Features
+- Use Effect-based error handling and logging
+- Integrate with existing services and layers
+- Follow functional programming patterns established in the codebase
+- Leverage existing utilities from `@total-typescript/shared`
+
+## 8. Future Enhancements
+
+### 8.1 Phase 2 Features
 
 - Advanced AI pattern learning from user corrections
 - Custom naming convention templates
@@ -479,16 +404,16 @@ interface SuggestionConflict {
 - Integration with Git for change tracking
 - Exercise dependency management
 
-### 7.2 Phase 3 Features
+### 8.2 Phase 3 Features
 
 - Web-based interface for remote management
 - Collaborative editing features
 - Exercise analytics and usage tracking
 - Integration with learning management systems
 
-## 8. Acceptance Criteria
+## 9. Acceptance Criteria
 
-### 8.1 Core Functionality
+### 9.1 Core Functionality
 
 - ✅ Successfully parse and display complex directory structures
 - ✅ Accurately identify and highlight validation errors
@@ -497,26 +422,18 @@ interface SuggestionConflict {
 - ✅ Generate accurate AI suggestions with >85% user acceptance rate
 - ✅ Handle batch renaming operations without data loss
 
-### 8.2 User Experience
+### 9.2 User Experience
 
 - ✅ Intuitive navigation requiring minimal learning curve
 - ✅ Clear visual feedback for all operations
 - ✅ Reliable undo/redo functionality
 - ✅ Comprehensive help system
 
-### 8.3 Technical Quality
+### 9.3 Technical Quality
 
 - ✅ 100% test coverage for core logic
 - ✅ Handle edge cases gracefully
 - ✅ Cross-platform compatibility (Windows, macOS, Linux)
 - ✅ Performance benchmarks met for large directories
-
-## 9. Success Metrics
-
-- Reduction in time spent manually organizing exercises by 80%
-- Reduction in time spent renaming non-conforming files by 95%
-- AI suggestion accuracy rate of 85%+ based on user acceptance
-- Zero data loss incidents during file operations
-- User adoption rate of 90% among target users
-- Average task completion time under 30 seconds for common operations
-- Average suggestion review time under 2 minutes for 50+ files
+- ✅ Integration with existing Effect-based architecture
+- ✅ Consistent with existing internal-cli patterns and conventions
