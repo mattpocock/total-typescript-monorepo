@@ -275,7 +275,10 @@ export const processInformationRequests = () => {
         yield* Console.log(`Processing code request: ${queueItem.id}`);
 
         const codePath = yield* askQuestion.askQuestion(
-          `Code file path (optional, leave empty if no code needed): `
+          `Code file path (optional, leave empty if no code needed): `,
+          {
+            optional: true,
+          }
         );
 
         let codeContent = "";

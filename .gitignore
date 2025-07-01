@@ -7,4 +7,5 @@ dist
 .env
 .twoslash-lint
 coverage
-queue.lock
+/queue.lock
+/links.json
