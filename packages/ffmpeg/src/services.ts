@@ -77,7 +77,7 @@ export class AskQuestionService extends Effect.Service<AskQuestionService>()(
         ): Effect.Effect<T> => {
           return Effect.promise(async () => {
             const response = await prompts({
-              type: "select",
+              type: "autocomplete",
               name: "value",
               message: question,
               choices,
