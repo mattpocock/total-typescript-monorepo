@@ -54,43 +54,6 @@ export class ConfigurableService extends Effect.Service<ConfigurableService>()("
 }) {}
 ```
 
-## Service Dependencies
-
-### Explicit Dependencies
-```typescript
-export class DependentService extends Effect.Service<DependentService>()("DependentService", {
-  effect: Effect.gen(function* () {
-    const fileSystem = yield* FileSystem.FileSystem;
-    const config = yield* Config.string("SOME_CONFIG");
-    
-    return {
-      processFile: Effect.fn("processFile")(function* (path: string) {
-        // Use dependencies
-      }),
-    };
-  }),
-  dependencies: [NodeFileSystem.layer], // Platform dependencies
-}) {}
-```
-
-### Service-to-Service Dependencies
-```typescript
-export class HighLevelService extends Effect.Service<HighLevelService>()("HighLevelService", {
-  effect: Effect.gen(function* () {
-    const lowLevelService = yield* LowLevelService;
-    
-    return {
-      complexOperation: Effect.fn("complexOperation")(function* () {
-        const result = yield* lowLevelService.simpleOperation();
-        // Process result
-        return processedResult;
-      }),
-    };
-  }),
-  dependencies: [LowLevelService.Default],
-}) {}
-```
-
 ## Service Methods with Effect.fn
 
 Always use `Effect.fn` for service methods to provide proper tracing and debugging:
@@ -138,7 +101,9 @@ const someWorkflow = Effect.gen(function* () {
 Services can be easily mocked for testing by providing alternative implementations:
 
 ```typescript
-const TestService = Layer.succeed(MyService, {
-  doSomething: Effect.succeed("mocked result"),
-});
+import { vi } from 'vitest'
+
+const TestService = new MyService({
+  doSomething: vi.fn().mockReturnValue('foo')
+})
 ```
