@@ -1,7 +1,9 @@
 import { type AbsolutePath } from "@total-typescript/shared";
-import { Console, Data, Effect } from "effect";
+import { ConfigError, Console, Data, Effect } from "effect";
 import { analyzeTranscriptForLinks } from "./transcript-analysis.js";
 import type { QueueItem, QueueState } from "./queue/queue.js";
+import type { PlatformError } from "@effect/platform/Error";
+import type { FileSystem } from "@effect/platform";
 
 export class DependentLinksRequestNotFoundError extends Data.TaggedError(
   "DependentLinksRequestNotFoundError"
@@ -20,7 +22,13 @@ export const processTranscriptAnalysisForQueue = Effect.fn(
     };
   };
   queueState: QueueState;
-  updateQueueItem: (item: QueueItem) => Effect.Effect<void>;
+  updateQueueItem: (
+    item: QueueItem
+  ) => Effect.Effect<
+    void,
+    ConfigError.ConfigError | PlatformError,
+    FileSystem.FileSystem
+  >;
 }) {
   const { queueItem, queueState, updateQueueItem } = opts;
 
@@ -43,10 +51,9 @@ export const processTranscriptAnalysisForQueue = Effect.fn(
     );
 
     if (!linksRequestItem) {
-      yield* Effect.fail(new DependentLinksRequestNotFoundError({
+      return yield* new DependentLinksRequestNotFoundError({
         transcriptAnalysisItemId: queueItem.id,
-      }));
-      return;
+      });
     }
 
     // Update the existing links-request item with the generated requests

@@ -7,7 +7,11 @@ import path from "node:path";
 import { expect, it, vi } from "vitest";
 import { getQueueState, processQueue, writeToQueue } from "./queue.js";
 import { WorkflowsService } from "../workflows.js";
-import { AskQuestionService, LinksStorageService } from "../services.js";
+import {
+  AIService,
+  AskQuestionService,
+  LinksStorageService,
+} from "../services.js";
 
 it("Should create the queue.json if it does not exist", async () => {
   const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
@@ -16,8 +20,12 @@ it("Should create the queue.json if it does not exist", async () => {
     const QUEUE_LOCATION = path.join(tmpDir, "queue.json");
     const QUEUE_LOCKFILE_LOCATION = path.join(tmpDir, "queue.lock");
 
-          const createAutoEditedVideoWorkflow = vi.fn().mockReturnValue(Effect.succeed(undefined));
-      const concatenateVideosWorkflow = vi.fn().mockReturnValue(Effect.succeed(undefined));
+    const createAutoEditedVideoWorkflow = vi
+      .fn()
+      .mockReturnValue(Effect.succeed(undefined));
+    const concatenateVideosWorkflow = vi
+      .fn()
+      .mockReturnValue(Effect.succeed(undefined));
 
     await processQueue().pipe(
       Effect.provide(NodeFileSystem.layer),
@@ -26,6 +34,16 @@ it("Should create the queue.json if it does not exist", async () => {
         new WorkflowsService({
           createAutoEditedVideoWorkflow,
           concatenateVideosWorkflow,
+        })
+      ),
+      Effect.provideService(
+        AIService,
+        new AIService({
+          articleFromTranscript: vi
+            .fn()
+            .mockReturnValue(Effect.succeed("test")),
+          titleFromTranscript: vi.fn().mockReturnValue(Effect.succeed("test")),
+          askForLinks: vi.fn().mockReturnValue(Effect.succeed(["test"])),
         })
       ),
       Effect.provideService(
@@ -73,7 +91,9 @@ it("Should update the queue.json when a new item is added", async () => {
     const createAutoEditedVideoWorkflow = vi
       .fn()
       .mockReturnValue(Effect.succeed(undefined));
-    const concatenateVideosWorkflow = vi.fn().mockReturnValue(Effect.succeed(undefined));
+    const concatenateVideosWorkflow = vi
+      .fn()
+      .mockReturnValue(Effect.succeed(undefined));
 
     await Effect.gen(function* () {
       yield* writeToQueue([
@@ -141,7 +161,9 @@ it("Should allow you to add a link request to the queue and process it with proc
     const createAutoEditedVideoWorkflow = vi
       .fn()
       .mockReturnValue(Effect.succeed(undefined));
-    const concatenateVideosWorkflow = vi.fn().mockReturnValue(Effect.succeed(undefined));
+    const concatenateVideosWorkflow = vi
+      .fn()
+      .mockReturnValue(Effect.succeed(undefined));
 
     const addLinks = vi.fn().mockReturnValue(Effect.succeed(undefined));
     const getLinks = vi.fn().mockReturnValue(Effect.succeed([]));
@@ -231,7 +253,9 @@ it("Should not process links requests (processQueue ignores information requests
     const createAutoEditedVideoWorkflow = vi
       .fn()
       .mockReturnValue(Effect.succeed(undefined));
-    const concatenateVideosWorkflow = vi.fn().mockReturnValue(Effect.succeed(undefined));
+    const concatenateVideosWorkflow = vi
+      .fn()
+      .mockReturnValue(Effect.succeed(undefined));
 
     const addLinks = vi.fn().mockReturnValue(Effect.succeed(undefined));
     const getLinks = vi.fn().mockReturnValue(Effect.succeed([]));
@@ -250,7 +274,7 @@ it("Should not process links requests (processQueue ignores information requests
         },
       ]);
 
-      // processQueue should ignore information requests 
+      // processQueue should ignore information requests
       yield* processQueue();
     }).pipe(
       Effect.provide(NodeFileSystem.layer),
@@ -279,6 +303,16 @@ it("Should not process links requests (processQueue ignores information requests
         ConfigProvider.fromJson({
           QUEUE_LOCATION,
           QUEUE_LOCKFILE_LOCATION,
+        })
+      ),
+      Effect.provideService(
+        AIService,
+        new AIService({
+          articleFromTranscript: vi
+            .fn()
+            .mockReturnValue(Effect.succeed("test")),
+          titleFromTranscript: vi.fn().mockReturnValue(Effect.succeed("test")),
+          askForLinks: vi.fn().mockReturnValue(Effect.succeed(["test"])),
         })
       ),
       Effect.runPromise
@@ -383,7 +417,9 @@ it("Should process only information requests", async () => {
     const createAutoEditedVideoWorkflow = vi
       .fn()
       .mockReturnValue(Effect.succeed(undefined));
-    const concatenateVideosWorkflow = vi.fn().mockReturnValue(Effect.succeed(undefined));
+    const concatenateVideosWorkflow = vi
+      .fn()
+      .mockReturnValue(Effect.succeed(undefined));
 
     const addLinks = vi.fn().mockReturnValue(Effect.succeed(undefined));
     const getLinks = vi.fn().mockReturnValue(Effect.succeed([]));
@@ -506,7 +542,9 @@ it("Should handle code-request action type and store code content in temporaryDa
     const createAutoEditedVideoWorkflow = vi
       .fn()
       .mockReturnValue(Effect.succeed(undefined));
-    const concatenateVideosWorkflow = vi.fn().mockReturnValue(Effect.succeed(undefined));
+    const concatenateVideosWorkflow = vi
+      .fn()
+      .mockReturnValue(Effect.succeed(undefined));
 
     const addLinks = vi.fn().mockReturnValue(Effect.succeed(undefined));
     const getLinks = vi.fn().mockReturnValue(Effect.succeed([]));
@@ -599,7 +637,9 @@ it("Should handle empty code file path gracefully", async () => {
     const createAutoEditedVideoWorkflow = vi
       .fn()
       .mockReturnValue(Effect.succeed(undefined));
-    const concatenateVideosWorkflow = vi.fn().mockReturnValue(Effect.succeed(undefined));
+    const concatenateVideosWorkflow = vi
+      .fn()
+      .mockReturnValue(Effect.succeed(undefined));
 
     const addLinks = vi.fn().mockReturnValue(Effect.succeed(undefined));
     const getLinks = vi.fn().mockReturnValue(Effect.succeed([]));
@@ -689,11 +729,15 @@ it("Should handle missing code file gracefully", async () => {
     const createAutoEditedVideoWorkflow = vi
       .fn()
       .mockReturnValue(Effect.succeed(undefined));
-    const concatenateVideosWorkflow = vi.fn().mockReturnValue(Effect.succeed(undefined));
+    const concatenateVideosWorkflow = vi
+      .fn()
+      .mockReturnValue(Effect.succeed(undefined));
 
     const addLinks = vi.fn().mockReturnValue(Effect.succeed(undefined));
     const getLinks = vi.fn().mockReturnValue(Effect.succeed([]));
-    const askQuestion = vi.fn().mockReturnValue(Effect.succeed(MISSING_FILE_PATH));
+    const askQuestion = vi
+      .fn()
+      .mockReturnValue(Effect.succeed(MISSING_FILE_PATH));
 
     const { processInformationRequests } = await import("./queue.js");
 
@@ -825,8 +869,11 @@ it("Should include code-request in outstanding information requests", async () =
     );
 
     expect(informationRequests).toHaveLength(2);
-    expect(informationRequests.map(r => r.action.type)).toEqual(["links-request", "code-request"]);
-    expect(informationRequests.map(r => r.id)).toEqual(["1", "2"]);
+    expect(informationRequests.map((r) => r.action.type)).toEqual([
+      "links-request",
+      "code-request",
+    ]);
+    expect(informationRequests.map((r) => r.id)).toEqual(["1", "2"]);
   } finally {
     await fs.rm(tmpDir, { recursive: true });
   }
@@ -893,7 +940,7 @@ it("Should handle dependency chains with new action types", async () => {
         },
       ]);
 
-              return yield* getQueueState();
+      return yield* getQueueState();
     }).pipe(
       Effect.provide(NodeFileSystem.layer),
       Effect.withConfigProvider(
@@ -911,114 +958,12 @@ it("Should handle dependency chains with new action types", async () => {
     expect(nextItem?.action.type).toBe("analyze-transcript-for-links");
 
     // Should not be able to run code-1 (requires user input) or article-1 (dependencies not met)
-    expect(queueState.queue.find(i => i.id === "code-1")?.status).toBe("requires-user-input");
-    expect(queueState.queue.find(i => i.id === "article-1")?.status).toBe("ready-to-run");
-  } finally {
-    await fs.rm(tmpDir, { recursive: true });
-  }
-});
-
-it("Should not process code-request or generate-article-from-transcript in processQueue", async () => {
-  const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
-
-  try {
-    const QUEUE_LOCATION = path.join(tmpDir, "queue.json");
-    const QUEUE_LOCKFILE_LOCATION = path.join(tmpDir, "queue.lock");
-
-    const createAutoEditedVideoWorkflow = vi
-      .fn()
-      .mockReturnValue(Effect.succeed(undefined));
-    const concatenateVideosWorkflow = vi.fn().mockReturnValue(Effect.succeed(undefined));
-
-    await Effect.gen(function* () {
-      yield* writeToQueue([
-        {
-          id: "analysis-1",
-          createdAt: Date.now(),
-          action: {
-            type: "analyze-transcript-for-links",
-            transcriptPath: "/path/to/transcript.txt" as AbsolutePath,
-            originalVideoPath: "/path/to/video.mp4" as AbsolutePath,
-          },
-          status: "ready-to-run",
-        },
-        {
-          id: "article-1",
-          createdAt: Date.now(),
-          action: {
-            type: "generate-article-from-transcript",
-            transcriptPath: "/path/to/transcript.txt" as AbsolutePath,
-            originalVideoPath: "/path/to/video.mp4" as AbsolutePath,
-            linksDependencyId: "links-1",
-            codeDependencyId: "code-1",
-          },
-          status: "ready-to-run",
-        },
-      ]);
-
-      yield* processQueue();
-    }).pipe(
-      Effect.provide(NodeFileSystem.layer),
-      Effect.provideService(
-        WorkflowsService,
-        new WorkflowsService({
-          createAutoEditedVideoWorkflow,
-          concatenateVideosWorkflow,
-        })
-      ),
-      Effect.provideService(
-        LinksStorageService,
-        new LinksStorageService({
-          addLinks: vi.fn(),
-          getLinks: vi.fn().mockReturnValue(Effect.succeed([])),
-        })
-      ),
-      Effect.provideService(
-        AskQuestionService,
-        new AskQuestionService({
-          askQuestion: vi.fn().mockReturnValue(Effect.succeed("test")),
-          select: vi.fn().mockReturnValue(Effect.succeed("test")),
-        })
-      ),
-      Effect.withConfigProvider(
-        ConfigProvider.fromJson({
-          QUEUE_LOCATION,
-          QUEUE_LOCKFILE_LOCATION,
-        })
-      ),
-      Effect.runPromise
+    expect(queueState.queue.find((i) => i.id === "code-1")?.status).toBe(
+      "requires-user-input"
     );
-
-    const queueState = JSON.parse(
-      (await fs.readFile(QUEUE_LOCATION, "utf-8")).toString()
+    expect(queueState.queue.find((i) => i.id === "article-1")?.status).toBe(
+      "ready-to-run"
     );
-
-    // Both items should be processed and completed with TODO implementations
-    expect(queueState.queue[0]).toEqual({
-      id: "analysis-1",
-      createdAt: expect.any(Number),
-      completedAt: expect.any(Number),
-      action: {
-        type: "analyze-transcript-for-links",
-        transcriptPath: "/path/to/transcript.txt",
-        originalVideoPath: "/path/to/video.mp4",
-      },
-      status: "completed",
-    });
-
-    expect(queueState.queue[1]).toEqual({
-      id: "article-1",
-      createdAt: expect.any(Number),
-      completedAt: expect.any(Number),
-      action: {
-        type: "generate-article-from-transcript",
-        transcriptPath: "/path/to/transcript.txt",
-        originalVideoPath: "/path/to/video.mp4",
-        linksDependencyId: "links-1",
-        codeDependencyId: "code-1",
-      },
-      status: "completed",
-    });
   } finally {
     await fs.rm(tmpDir, { recursive: true });
   }
