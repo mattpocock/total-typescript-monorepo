@@ -5,6 +5,13 @@ import { processTranscriptAnalysisForQueue } from "../queue-transcript-processin
 import { AskQuestionService, LinksStorageService } from "../services.js";
 import { WorkflowsService } from "../workflows.js";
 
+class InvalidQueueItemTypeError extends Error {
+  constructor(expectedType: string, actualType: string) {
+    super(`Invalid queue item type: expected '${expectedType}', got '${actualType}'`);
+    this.name = 'InvalidQueueItemTypeError';
+  }
+}
+
 export type QueueItemAction =
   | {
       type: "create-auto-edited-video";
@@ -418,13 +425,28 @@ export const processQueue = () => {
 
           const transcriptAnalysisResult = yield* Effect.gen(function* () {
             if (queueItem.action.type !== "analyze-transcript-for-links") {
-              return yield* Effect.fail(new Error("Invalid queue item type"));
+              return yield* Effect.fail(
+                new InvalidQueueItemTypeError(
+                  "analyze-transcript-for-links",
+                  queueItem.action.type
+                )
+              );
             }
             const currentQueueState = yield* getQueueState();
+            
+            // Type assertion is safe here because we've checked the type above
+            const typedQueueItem = queueItem as QueueItem & {
+              action: {
+                type: "analyze-transcript-for-links";
+                transcriptPath: AbsolutePath;
+                originalVideoPath: AbsolutePath;
+              };
+            };
+            
             return yield* processTranscriptAnalysisForQueue({
-              queueItem: queueItem as any,
+              queueItem: typedQueueItem,
               queueState: currentQueueState,
-              updateQueueItem: updateQueueItem as any,
+              updateQueueItem,
             });
           }).pipe(Effect.either);
 
