@@ -1,0 +1,29 @@
+# Observability Stack for Effect Tracing
+# This Dockerfile sets up Jaeger, OpenTelemetry Collector, and Prometheus
+# for collecting and visualizing traces from Effect applications
+
+FROM grafana/otel-lgtm:latest
+
+# Expose necessary ports
+# Jaeger UI
+EXPOSE 16686
+# OpenTelemetry Collector - OTLP gRPC
+EXPOSE 4317
+# OpenTelemetry Collector - OTLP HTTP  
+EXPOSE 4318
+# Prometheus metrics
+EXPOSE 9090
+# Grafana UI
+EXPOSE 3000
+
+# Set environment variables for better defaults
+ENV JAEGER_ENDPOINT=http://localhost:14268/api/traces
+ENV OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+ENV OTEL_SERVICE_NAME=effect-internal-cli
+
+# Health check to ensure services are running
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:16686 || exit 1
+
+# Default command (inherited from base image)
+CMD ["sh", "-c", "exec /otel-lgtm"]
