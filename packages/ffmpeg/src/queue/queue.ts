@@ -423,23 +423,33 @@ export const processQueue = () => {
             });
 
             if (linkRequests.length > 0) {
-              // Add a links-request queue item as a dependency for this analysis
-              const linksRequestId = `links-request-${Date.now()}`;
-              yield* writeToQueue([
-                {
-                  id: linksRequestId,
-                  createdAt: Date.now(),
+              // Find the existing links-request queue item that depends on this analysis
+              const queueState = yield* getQueueState();
+              const linksRequestItem = queueState.queue.find(
+                (item) =>
+                  item.action.type === "links-request" &&
+                  item.dependencies?.includes(queueItem.id)
+              );
+
+              if (linksRequestItem) {
+                // Update the existing links-request item with the generated requests
+                yield* updateQueueItem({
+                  ...linksRequestItem,
                   action: {
-                    type: "links-request",
+                    ...linksRequestItem.action,
                     linkRequests,
                   },
                   status: "requires-user-input",
-                },
-              ]);
+                });
 
-              yield* Console.log(
-                `Created links request queue item with ${linkRequests.length} requests`
-              );
+                yield* Console.log(
+                  `Updated existing links request queue item ${linksRequestItem.id} with ${linkRequests.length} requests`
+                );
+              } else {
+                yield* Console.log(
+                  "Warning: No dependent links-request queue item found for transcript analysis"
+                );
+              }
             } else {
               yield* Console.log("No link requests generated from transcript");
             }
