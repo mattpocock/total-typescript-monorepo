@@ -6,6 +6,7 @@ export * from "./workflows.js";
 export * from "./davinci-integration.js";
 export * from "./services.js";
 export * from "./queue/queue.js";
+export * from "./queue-creation.js";
 export * as ffmpeg from "./ffmpeg-commands.js";
 export * from "./article-from-transcript.js";
 export * from "./validate-windows-filename.js";

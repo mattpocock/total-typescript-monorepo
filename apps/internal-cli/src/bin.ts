@@ -6,6 +6,7 @@ import {
   appendVideoToTimeline,
   AppLayerLive,
   createTimeline,
+  createAutoEditedVideoQueueItems,
   doesQueueLockfileExist,
   exportSubtitles,
   generateArticleFromTranscript,
@@ -109,7 +110,8 @@ program
   )
   .option("-d, --dry-run", "Run without saving to Dropbox")
   .option("-ns, --no-subtitles", "Disable subtitle rendering")
-  .action(async (options: { dryRun?: boolean; subtitles?: boolean }) => {
+  .option("-ga, --generate-article", "Automatically generate an article from the video transcript")
+  .action(async (options: { dryRun?: boolean; subtitles?: boolean; generateArticle?: boolean }) => {
     await Effect.gen(function* () {
       const obs = yield* OBSIntegrationService;
       const askQuestion = yield* AskQuestionService;
@@ -124,20 +126,25 @@ program
 
       yield* validateWindowsFilename(videoName);
 
-      yield* writeToQueue([
-        {
-          id: crypto.randomUUID(),
-          createdAt: Date.now(),
-          action: {
-            type: "create-auto-edited-video",
-            inputVideo,
-            videoName,
-            subtitles: Boolean(options.subtitles),
-            dryRun: Boolean(options.dryRun),
-          },
-          status: "ready-to-run",
-        },
-      ]);
+      const queueItems = yield* createAutoEditedVideoQueueItems({
+        inputVideo,
+        videoName,
+        subtitles: Boolean(options.subtitles),
+        dryRun: Boolean(options.dryRun),
+        generateArticle: Boolean(options.generateArticle),
+      });
+
+      if (options.generateArticle) {
+        yield* Console.log("Article generation enabled - adding workflow queue items...");
+      }
+
+      yield* writeToQueue(queueItems);
+
+      if (options.generateArticle) {
+        yield* Console.log(`Added ${queueItems.length} items to queue for video processing with article generation.`);
+      } else {
+        yield* Console.log("Added video processing item to queue.");
+      }
     }).pipe(
       Effect.catchAll((e) => {
         return Effect.gen(function* () {
