@@ -393,6 +393,37 @@ program
               (options.length > 0
                 ? `  ${styleText("dim", "Options")}    ${options.join(", ")}\n`
                 : "");
+          } else if (item.action.type === "analyze-transcript-for-links") {
+            const transcriptName = item.action.transcriptPath.split('/').pop()?.replace('.txt', '') || 'Unknown';
+            actionContent =
+              `  ${styleText("dim", "Type")}       Transcript Analysis\n` +
+              `  ${styleText("dim", "Video")}      ${transcriptName}\n` +
+              `  ${styleText("dim", "Purpose")}    Generate link requests for article\n`;
+          } else if (item.action.type === "code-request") {
+            const transcriptName = item.action.transcriptPath.split('/').pop()?.replace('.txt', '') || 'Unknown';
+            const hasCode = item.action.temporaryData?.codeContent ? 
+              `Yes (${item.action.temporaryData.codeContent.length} chars)` : 
+              item.status === "completed" ? "No code provided" : "Pending";
+            actionContent =
+              `  ${styleText("dim", "Type")}       Code Request\n` +
+              `  ${styleText("dim", "Video")}      ${transcriptName}\n` +
+              `  ${styleText("dim", "Code")}       ${hasCode}\n`;
+          } else if (item.action.type === "generate-article-from-transcript") {
+            const transcriptName = item.action.transcriptPath.split('/').pop()?.replace('.txt', '') || 'Unknown';
+            
+            // Find dependency queue items to show context
+            const codeDep = queueState.queue.find((q: QueueItem) => q.id === item.action.codeDependencyId);
+            const linksDep = queueState.queue.find((q: QueueItem) => q.id === item.action.linksDependencyId);
+            
+            const codeStatus = codeDep?.status === "completed" ? 
+              (codeDep.action.type === "code-request" && codeDep.action.temporaryData?.codeContent ? "✓ Code" : "✓ No code") : 
+              "⏳ Code pending";
+            const linksStatus = linksDep?.status === "completed" ? "✓ Links" : "⏳ Links pending";
+            
+            actionContent =
+              `  ${styleText("dim", "Type")}       Article Generation\n` +
+              `  ${styleText("dim", "Video")}      ${transcriptName}\n` +
+              `  ${styleText("dim", "Dependencies")} ${codeStatus}, ${linksStatus}\n`;
           }
 
           yield* Console.log(
@@ -408,12 +439,44 @@ program
         });
       });
 
+      // Add workflow summary for article generation
+      const articleWorkflows = yield* analyzeArticleWorkflows(queueState);
+      if (articleWorkflows.length > 0) {
+        yield* Console.log(styleText("bold", "\n📚 Article Generation Workflows:"));
+        yield* Effect.forEach(articleWorkflows, (workflow, idx) => {
+          return Effect.gen(function* () {
+            const progressBar = generateProgressBar(workflow.steps);
+            const statusIcon = workflow.status === "completed" ? "✅" : 
+                              workflow.status === "failed" ? "❌" : 
+                              workflow.status === "blocked" ? "⚠️" : "🔄";
+            
+            yield* Console.log(
+              `${styleText("bold", `Workflow ${idx + 1}`)} ${statusIcon} ${workflow.videoName}\n` +
+              `  ${styleText("dim", "Progress")}   ${progressBar}\n` +
+              `  ${styleText("dim", "Status")}     ${workflow.statusDescription}\n`
+            );
+          });
+        });
+        yield* Console.log("");
+      }
+
       if (uncompleted.length === 0) {
         yield* Console.log("✅ All outstanding queue items are completed!");
       } else {
         yield* Console.log(
           `⏳ There are ${uncompleted.length} outstanding item(s) in the queue.`
         );
+        
+        // Show information request summary
+        const infoRequests = uncompleted.filter(
+          (item: QueueItem) => item.status === "requires-user-input"
+        );
+        if (infoRequests.length > 0) {
+          yield* Console.log(
+            `❓ ${infoRequests.length} item(s) require user input. Run: ${styleText("bold", "pnpm cli pir")}`
+          );
+        }
+        
         const isProcessing = yield* doesQueueLockfileExist();
         if (isProcessing) {
           yield* Console.log("🔄 Queue processor is currently running.");
@@ -516,6 +579,127 @@ function formatRelativeDate(dateInput: number | Date | undefined): string {
   if (isToday) return `Today, ${time}`;
   if (isYesterday) return `Yesterday, ${time}`;
   return completedDate.toLocaleString();
+}
+
+// Analyze article generation workflows in the queue
+const analyzeArticleWorkflows = Effect.fn("analyzeArticleWorkflows")(
+  function* (queueState: { queue: QueueItem[] }) {
+    const workflows: {
+      videoName: string;
+      status: "completed" | "failed" | "blocked" | "in-progress";
+      statusDescription: string;
+      steps: Array<{ name: string; status: "completed" | "failed" | "blocked" | "pending" }>;
+    }[] = [];
+
+    // Group queue items by video (using transcript path or video name)
+    const videoGroups = new Map<string, QueueItem[]>();
+    
+    for (const item of queueState.queue) {
+      let videoKey = "";
+      
+      if (item.action.type === "create-auto-edited-video") {
+        videoKey = item.action.videoName;
+      } else if (
+        item.action.type === "analyze-transcript-for-links" ||
+        item.action.type === "code-request" ||
+        item.action.type === "generate-article-from-transcript"
+      ) {
+        videoKey = item.action.transcriptPath.split('/').pop()?.replace('.txt', '') || 'Unknown';
+      }
+      
+      if (videoKey) {
+        if (!videoGroups.has(videoKey)) {
+          videoGroups.set(videoKey, []);
+        }
+        videoGroups.get(videoKey)!.push(item);
+      }
+    }
+
+    // Analyze each video's workflow
+    for (const [videoName, items] of videoGroups) {
+      // Check if this is an article generation workflow (has article generation step)
+      const hasArticleGeneration = items.some(
+        (item: QueueItem) => item.action.type === "generate-article-from-transcript"
+      );
+      
+      if (!hasArticleGeneration) continue;
+
+      const stepOrder = [
+        "create-auto-edited-video",
+        "analyze-transcript-for-links", 
+        "code-request",
+        "links-request",
+        "generate-article-from-transcript"
+      ];
+
+              const steps = stepOrder.map(stepType => {
+          const item = items.find((i: QueueItem) => i.action.type === stepType);
+        const stepNames = {
+          "create-auto-edited-video": "Video Creation",
+          "analyze-transcript-for-links": "Analysis", 
+          "code-request": "Code",
+          "links-request": "Links",
+          "generate-article-from-transcript": "Article"
+        };
+        
+        return {
+          name: stepNames[stepType as keyof typeof stepNames] || stepType,
+          status: !item ? "pending" as const :
+                  item.status === "completed" ? "completed" as const :
+                  item.status === "failed" ? "failed" as const :
+                  item.status === "requires-user-input" ? "blocked" as const :
+                  "pending" as const
+        };
+      });
+
+      // Determine overall workflow status
+      const failedSteps = steps.filter(s => s.status === "failed");
+      const blockedSteps = steps.filter(s => s.status === "blocked");
+      const completedSteps = steps.filter(s => s.status === "completed");
+      
+      let status: "completed" | "failed" | "blocked" | "in-progress";
+      let statusDescription: string;
+      
+      if (failedSteps.length > 0) {
+        status = "failed";
+        statusDescription = `Failed at ${failedSteps[0]!.name}`;
+      } else if (completedSteps.length === steps.length) {
+        status = "completed";
+        statusDescription = "Article generation complete";
+      } else if (blockedSteps.length > 0) {
+        status = "blocked";
+        statusDescription = `Waiting for user input: ${blockedSteps.map(s => s.name).join(", ")}`;
+      } else {
+        status = "in-progress";
+        const nextStep = steps.find(s => s.status === "pending");
+        statusDescription = nextStep ? `Processing ${nextStep.name}...` : "In progress";
+      }
+
+      workflows.push({
+        videoName,
+        status,
+        statusDescription,
+        steps
+      });
+    }
+
+    return workflows;
+  }
+);
+
+// Generate a visual progress bar for workflow steps
+function generateProgressBar(steps: Array<{ name: string; status: string }>): string {
+  const icons = steps.map(step => {
+    switch (step.status) {
+      case "completed": return "✅";
+      case "failed": return "❌";
+      case "blocked": return "❓";
+      default: return "⏳";
+    }
+  });
+  
+  const names = steps.map(s => s.name);
+  return names.map((name, i) => `${icons[i]} ${name}`).join(" → ");
 }
 
 program.parse(process.argv);
