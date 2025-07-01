@@ -101,6 +101,12 @@ pnpm run release
 ```bash
 # Append video to DaVinci Resolve timeline
 pnpm run append
+
+# Create auto-edited video with automatic article generation
+pnpm cli create-auto-edited-video --generate-article
+
+# Create auto-edited video (standard workflow)
+pnpm cli create-auto-edited-video
 ```
 
 ## 🎬 Video Production Workflow
@@ -116,6 +122,39 @@ pnpm run append
 - **Bad Take Detection**: Identify and exclude marked bad takes
 - **Subtitle Generation**: AI-powered transcription and subtitle overlay
 - **Batch Processing**: Handle multiple videos with consistent settings
+- **Article Generation**: Automatically create written content from video transcripts
+
+### Article Generation Workflow
+
+The `--generate-article` flag enables automatic article creation from video transcripts through a sophisticated AI-powered workflow:
+
+#### Complete Workflow Steps
+1. **Video Processing**: Standard auto-editing and transcript generation
+2. **Transcript Analysis**: AI analyzes transcript content and generates link requests
+3. **Code Integration**: Optional code file inclusion for technical content
+4. **Link Collection**: User provides relevant external resources and documentation
+5. **Article Generation**: AI creates comprehensive article with code examples and links
+
+#### Usage Examples
+
+```bash
+# Basic article generation
+pnpm cli create-auto-edited-video --generate-article
+
+# Combined with other options
+pnpm cli create-auto-edited-video --generate-article --upload --no-subtitles
+```
+
+#### Interactive Steps
+- **Code File**: Prompted for optional TypeScript/JavaScript code file path
+- **Link Requests**: AI generates contextual link requests based on transcript content
+- **Link URLs**: User provides URLs for documentation, references, and resources
+
+#### Output
+- **Video**: Processed and edited video file
+- **Transcript**: Text transcript of the video content
+- **Article**: Markdown article with structured content, code examples, and external links
+- **Automatic Naming**: Articles are numbered and named based on AI-generated titles
 
 ## 📚 Code Example Workflow
 
@@ -133,6 +172,16 @@ pnpm run append
 export EXPORT_DIRECTORY="/path/to/video/exports"
 export SHORTS_EXPORT_DIRECTORY="/path/to/shorts"
 export TRANSCRIPTION_DIRECTORY="/path/to/transcripts"
+export OBS_OUTPUT_DIRECTORY="/path/to/obs/recordings"
+
+# Article generation
+export ARTICLE_STORAGE_PATH="/path/to/articles"
+export ARTICLES_TO_TAKE="5"              # Number of recent articles for context
+export PADDED_NUMBER_LENGTH="3"          # Article numbering format (001, 002, etc.)
+
+# Queue processing
+export QUEUE_LOCATION="/path/to/queue.json"
+export QUEUE_LOCKFILE_LOCATION="/path/to/queue.lock"
 
 # AI API keys
 export OPENAI_API_KEY="your-openai-key"
@@ -171,8 +220,19 @@ The monorepo leverages AI for content creation:
 
 - **Content Analysis**: Determine optimal calls-to-action
 - **Transcription**: Convert speech to text for subtitles
-- **Article Generation**: Create written content from video transcripts
-- **Code Enhancement**: Improve TypeScript examples
+- **Article Generation**: Create written content from video transcripts with contextual awareness
+- **Link Discovery**: Automatically identify and request relevant external resources
+- **Code Enhancement**: Improve TypeScript examples and integrate code snippets
+- **Title Generation**: Create SEO-friendly article titles from content analysis
+
+### AI-Powered Article Creation
+
+The article generation system uses advanced AI to:
+- **Analyze Transcripts**: Extract key concepts and technical topics
+- **Generate Link Requests**: Identify documentation and resources mentioned in content
+- **Create Structured Content**: Build comprehensive articles with proper formatting
+- **Maintain Context**: Use recent articles to ensure consistent style and approach
+- **Integrate Code**: Seamlessly incorporate TypeScript examples and explanations
 
 ## 🔗 Integration Points
 
@@ -238,7 +298,48 @@ Each package contains its own README with detailed usage instructions:
 4. Update relevant documentation
 5. Submit a pull request
 
-## 📄 License
+## �️ Troubleshooting
+
+### Article Generation Issues
+
+**Queue Processing**
+```bash
+# Check queue status
+cat /path/to/queue.json
+
+# Clear stuck queue (careful!)
+rm /path/to/queue.json /path/to/queue.lock
+```
+
+**Common Issues**
+- **Transcript not found**: Ensure `TRANSCRIPTION_DIRECTORY` is correct and transcript exists
+- **AI service errors**: Verify `ANTHROPIC_API_KEY` is set and valid
+- **Code file missing**: Path provided during code request must exist and be readable
+- **Article generation fails**: Check `ARTICLE_STORAGE_PATH` permissions and disk space
+
+**Debugging**
+```bash
+# Enable debug logging
+DEBUG=1 pnpm cli create-auto-edited-video --generate-article
+
+# Process individual queue steps
+pnpm cli process-queue           # Process automated items
+pnpm cli process-info-requests   # Handle user input items
+```
+
+### Error Recovery
+
+**Failed Article Generation**
+- Article generation failures don't affect video processing
+- Manually retry with `pnpm cli article-from-transcript`
+- Check AI service quotas and API limits
+
+**Queue Corruption**
+- Queue items are designed to be recoverable
+- Failed items are marked with error details
+- Manual intervention may be required for complex dependency failures
+
+## �📄 License
 
 ISC - See individual packages for specific licensing information.
 

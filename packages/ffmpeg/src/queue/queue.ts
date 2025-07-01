@@ -1,6 +1,7 @@
 import { FileSystem } from "@effect/platform/FileSystem";
 import { type AbsolutePath } from "@total-typescript/shared";
 import { Config, Console, Effect, Either } from "effect";
+
 import { processTranscriptAnalysisForQueue } from "../queue-transcript-processing.js";
 import { processArticleGenerationForQueue } from "../queue-article-generation.js";
 import { AskQuestionService, LinksStorageService } from "../services.js";
@@ -228,17 +229,19 @@ export const getOutstandingInformationRequests = () => {
 export const processInformationRequests = () => {
   return Effect.gen(function* () {
     if (yield* doesQueueLockfileExist()) {
-      return yield* Console.log("Queue is locked, skipping");
+      return yield* Console.log(
+        "⏸️  Queue is locked, skipping information requests"
+      );
     }
 
     const informationRequests = yield* getOutstandingInformationRequests();
 
     if (informationRequests.length === 0) {
-      return yield* Console.log("No outstanding information requests found");
+      return yield* Console.log("📋 No outstanding information requests found");
     }
 
     yield* Console.log(
-      `Found ${informationRequests.length} outstanding information request(s)`
+      `💬 Found ${informationRequests.length} outstanding information request(s) - user input required`
     );
     yield* writeQueueLockfile();
 
@@ -246,14 +249,25 @@ export const processInformationRequests = () => {
     const linkStorage = yield* LinksStorageService;
     const fs = yield* FileSystem;
 
+    let processedRequests = 0;
+
     for (const queueItem of informationRequests) {
+      processedRequests++;
+
       if (queueItem.action.type === "links-request") {
-        yield* Console.log(`Processing information request: ${queueItem.id}`);
+        yield* Console.log(
+          `🔗 Processing links request (${processedRequests}/${informationRequests.length})`
+        );
 
         const links: { description: string; url: string }[] = [];
+
+        yield* Console.log(
+          `📝 Please provide URLs for ${queueItem.action.linkRequests.length} link request(s):`
+        );
+
         for (const linkRequest of queueItem.action.linkRequests) {
           const link = yield* askQuestion.askQuestion(
-            `Link request: ${linkRequest}`
+            `🌐 Link for "${linkRequest}": `
           );
 
           links.push({
@@ -270,15 +284,16 @@ export const processInformationRequests = () => {
           completedAt: Date.now(),
         });
 
-        yield* Console.log(`Information request ${queueItem.id} completed`);
+        yield* Console.log(
+          `✅ Links request completed - added ${links.length} link(s)`
+        );
       } else if (queueItem.action.type === "code-request") {
-        yield* Console.log(`Processing code request: ${queueItem.id}`);
+        yield* Console.log(
+          `💻 Processing code request (${processedRequests}/${informationRequests.length})`
+        );
 
         const codePath = yield* askQuestion.askQuestion(
-          `Code file path (optional, leave empty if no code needed): `,
-          {
-            optional: true,
-          }
+          `📂 Code file path (optional, press Enter to skip): `
         );
 
         let codeContent = "";
@@ -295,17 +310,30 @@ export const processInformationRequests = () => {
               Effect.catchAll((error) => {
                 return Effect.gen(function* () {
                   yield* Console.log(
-                    `Warning: Could not read code file ${actualCodePath}: ${error}`
+                    `⚠️  Warning: Could not read code file ${actualCodePath}: ${error}`
+                  );
+                  yield* Console.log(
+                    `💡 Tip: Check file permissions and ensure the path is correct`
                   );
                   return "";
                 });
               })
             );
+            yield* Console.log(
+              `✅ Code file loaded: ${actualCodePath} (${codeContent.length} characters)`
+            );
           } else {
             yield* Console.log(
-              `Warning: Code file ${actualCodePath} does not exist`
+              `⚠️  Warning: Code file ${actualCodePath} does not exist`
+            );
+            yield* Console.log(
+              `💡 Continuing without code - you can manually add code examples to the article later`
             );
           }
+        } else {
+          yield* Console.log(
+            `ℹ️  No code file provided - continuing without code examples`
+          );
         }
 
         yield* updateQueueItem({
@@ -321,11 +349,13 @@ export const processInformationRequests = () => {
           },
         });
 
-        yield* Console.log(`Code request ${queueItem.id} completed`);
+        yield* Console.log(`✅ Code request completed`);
       }
     }
 
-    yield* Console.log("All information requests processed");
+    yield* Console.log(
+      `🎉 All ${processedRequests} information request(s) processed successfully!`
+    );
   }).pipe(
     Effect.ensuring(
       deleteQueueLockfile().pipe(
@@ -339,23 +369,42 @@ export const processInformationRequests = () => {
 export const processQueue = () => {
   return Effect.gen(function* () {
     if (yield* doesQueueLockfileExist()) {
-      return yield* Console.log("Queue is locked, skipping");
+      return yield* Console.log("⏸️  Queue is locked, skipping processing");
     }
 
     yield* writeQueueLockfile();
+    yield* Console.log("🚀 Starting queue processing...");
 
     const workflows = yield* WorkflowsService;
+    let processedCount = 0;
 
     while (true) {
       const queueState = yield* getQueueState();
       const queueItem = getNextQueueItem(queueState);
 
       if (!queueItem) {
-        return yield* Console.log("No ready-to-run queue items found");
+        if (processedCount === 0) {
+          yield* Console.log("📋 No ready-to-run queue items found");
+        } else {
+          yield* Console.log(
+            `✅ Queue processing complete. Processed ${processedCount} item(s)`
+          );
+        }
+        return;
       }
+
+      processedCount++;
+      yield* Console.log(
+        `📦 Processing queue item ${processedCount}: ${queueItem.action.type} (ID: ${queueItem.id})`
+      );
 
       switch (queueItem.action.type) {
         case "create-auto-edited-video":
+          yield* Console.log(
+            `🎬 Creating auto-edited video: ${queueItem.action.videoName}`
+          );
+          const startTime = Date.now();
+
           const result = yield* workflows
             .createAutoEditedVideoWorkflow({
               inputVideo: queueItem.action.inputVideo,
@@ -366,17 +415,31 @@ export const processQueue = () => {
             .pipe(Effect.either);
 
           if (Either.isLeft(result)) {
-            yield* Effect.logError(result.left);
+            const errorMessage =
+              result.left instanceof Error
+                ? result.left.message
+                : String(result.left);
+
+            yield* Console.log(`❌ Video creation failed: ${errorMessage}`);
+            yield* Effect.logError("Video creation workflow failed", {
+              queueItemId: queueItem.id,
+              videoName: queueItem.action.videoName,
+              inputVideo: queueItem.action.inputVideo,
+              error: result.left,
+            });
+
             yield* updateQueueItem({
               ...queueItem,
               status: "failed",
-              error:
-                result.left instanceof Error
-                  ? result.left.message
-                  : String(result.left),
+              error: `Video creation failed: ${errorMessage}`,
             });
             continue;
           }
+
+          const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+          yield* Console.log(
+            `✅ Video creation completed in ${duration}s: ${queueItem.action.videoName}`
+          );
 
           yield* updateQueueItem({
             ...queueItem,
@@ -425,9 +488,8 @@ export const processQueue = () => {
             break;
           }
 
-          yield* Console.log(
-            `Processing analyze-transcript-for-links for ${queueItem.action.transcriptPath}`
-          );
+          yield* Console.log(`🔍 Analyzing transcript for links...`);
+          const analysisStartTime = Date.now();
 
           const transcriptAnalysisResult = yield* Effect.gen(function* () {
             if (queueItem.action.type !== "analyze-transcript-for-links") {
@@ -457,19 +519,42 @@ export const processQueue = () => {
           }).pipe(Effect.either);
 
           if (Either.isLeft(transcriptAnalysisResult)) {
-            yield* Effect.logError(
-              `Transcript analysis failed: ${transcriptAnalysisResult.left}`
+            const errorMessage =
+              transcriptAnalysisResult.left instanceof Error
+                ? transcriptAnalysisResult.left.message
+                : String(transcriptAnalysisResult.left);
+
+            yield* Console.log(
+              `❌ Transcript analysis failed: ${errorMessage}`
             );
+            yield* Console.log(
+              `💡 Tip: You can continue with manual article generation using: pnpm cli article-from-transcript`
+            );
+
+            yield* Effect.logError("Transcript analysis failed", {
+              queueItemId: queueItem.id,
+              transcriptPath: queueItem.action.transcriptPath,
+              error: transcriptAnalysisResult.left,
+            });
+
             yield* updateQueueItem({
               ...queueItem,
               status: "failed",
-              error:
-                transcriptAnalysisResult.left instanceof Error
-                  ? transcriptAnalysisResult.left.message
-                  : String(transcriptAnalysisResult.left),
+              error: `Transcript analysis failed: ${errorMessage}`,
             });
             continue;
           }
+
+          const analysisDuration = (
+            (Date.now() - analysisStartTime) /
+            1000
+          ).toFixed(1);
+          const linkCount = Array.isArray(transcriptAnalysisResult.right)
+            ? transcriptAnalysisResult.right.length
+            : 0;
+          yield* Console.log(
+            `✅ Transcript analysis completed in ${analysisDuration}s. Generated ${linkCount} link request(s)`
+          );
 
           yield* updateQueueItem({
             ...queueItem,
@@ -489,9 +574,8 @@ export const processQueue = () => {
             break;
           }
 
-          yield* Console.log(
-            `Processing generate-article-from-transcript for ${queueItem.action.transcriptPath}`
-          );
+          yield* Console.log(`📝 Generating article from transcript...`);
+          const articleStartTime = Date.now();
 
           const articleGenerationResult = yield* Effect.gen(function* () {
             if (queueItem.action.type !== "generate-article-from-transcript") {
@@ -522,19 +606,37 @@ export const processQueue = () => {
           }).pipe(Effect.either);
 
           if (Either.isLeft(articleGenerationResult)) {
-            yield* Effect.logError(
-              `Article generation failed: ${articleGenerationResult.left}`
+            const errorMessage =
+              articleGenerationResult.left instanceof Error
+                ? articleGenerationResult.left.message
+                : String(articleGenerationResult.left);
+
+            yield* Console.log(`❌ Article generation failed: ${errorMessage}`);
+            yield* Console.log(
+              `💡 Tip: Video processing completed successfully. You can manually create an article using: pnpm cli article-from-transcript`
             );
+
+            yield* Effect.logError("Article generation failed", {
+              queueItemId: queueItem.id,
+              transcriptPath: queueItem.action.transcriptPath,
+              error: articleGenerationResult.left,
+            });
+
             yield* updateQueueItem({
               ...queueItem,
               status: "failed",
-              error:
-                articleGenerationResult.left instanceof Error
-                  ? articleGenerationResult.left.message
-                  : String(articleGenerationResult.left),
+              error: `Article generation failed: ${errorMessage}`,
             });
             continue;
           }
+
+          const articleDuration = (
+            (Date.now() - articleStartTime) /
+            1000
+          ).toFixed(1);
+          yield* Console.log(
+            `✅ Article generation completed in ${articleDuration}s`
+          );
 
           yield* updateQueueItem({
             ...queueItem,
