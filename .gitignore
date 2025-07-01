@@ -7,3 +7,4 @@ dist
 .env
 .twoslash-lint
 coverage
+queue.lock
