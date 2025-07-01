@@ -10,7 +10,7 @@ I have successfully implemented the video concatenation CLI command with correct
 - **Command**: `concatenate-videos` (aliases: `concat`, `c`)
 - **Description**: Concatenate multiple completed videos from the queue
 - **Options**:
-  - `-d, --dry-run`: Save to export directory instead of shorts directory
+  - `-u, --upload`: Upload to shorts directory
 
 ### 2. Multi-Selection Interface ✅
 - Interactive terminal interface using `AskQuestionService.select`
@@ -93,8 +93,8 @@ pnpm cli concatenate-videos
 pnpm cli concat
 pnpm cli c
 
-# With dry-run option
-pnpm cli concat --dry-run
+# With upload option
+pnpm cli concat --upload
 ```
 
 ## 📋 **Next Steps**
