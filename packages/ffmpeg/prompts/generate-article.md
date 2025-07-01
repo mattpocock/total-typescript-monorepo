@@ -26,10 +26,8 @@ Here is the code for the article (if it exists):
 
 Use the code as the source of truth for the article.
 
-## Links
-
-Here are some links that have been requested for the article:
+## Available Links
 
 {{urls}}
 
-You MUST include these links somewhere in the article.
+When links are available, select and include only the most relevant ones in your article. Don't force irrelevant links into the content - only use links that naturally enhance the reader's understanding or provide valuable additional resources related to the specific topics discussed in the transcript.

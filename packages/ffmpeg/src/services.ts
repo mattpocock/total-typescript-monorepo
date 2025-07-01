@@ -343,122 +343,6 @@ export class ArticleStorageService extends Effect.Service<ArticleStorageService>
   }
 ) {}
 
-export class AIService extends Effect.Service<AIService>()("AIService", {
-  effect: Effect.gen(function* () {
-    const model = anthropic("claude-3-7-sonnet-20250219");
-    const fs = yield* FileSystem.FileSystem;
-
-    return {
-      askForLinks: Effect.fn("askForLinks")(function* (opts: {
-        transcript: string;
-      }) {
-        const systemRaw = yield* fs.readFileString(
-          path.resolve(import.meta.dirname, "../prompts", "ask-for-links.md")
-        );
-
-        const links = yield* Effect.tryPromise(() => {
-          return generateObject({
-            model,
-            schema: z.object({
-              linkRequests: z
-                .array(z.string())
-                .describe("The links you want to request"),
-            }),
-            system: systemRaw,
-            prompt: opts.transcript,
-          });
-        });
-
-        return links.object?.linkRequests;
-      }),
-      articleFromTranscript: Effect.fn("articleFromTranscript")(
-        function* (opts: {
-          transcript: string;
-          mostRecentArticles: Article[];
-          code?: string;
-          urls: { request: string; url: string }[];
-        }) {
-          yield* Effect.logDebug("Generating article from transcript", opts);
-
-          const systemRaw = yield* fs.readFileString(
-            path.resolve(
-              import.meta.dirname,
-              "../prompts",
-              "generate-article.md"
-            )
-          );
-
-          let system = systemRaw.replace(
-            "{{articles}}",
-            opts.mostRecentArticles
-              .map((a) => `# ${a.title}\n\n${a.content}`)
-              .join("\n\n")
-          );
-
-          if (opts.urls.length > 0) {
-            system = system.replace(
-              "{{urls}}",
-              opts.urls.map((u) => `- ${u.request}: ${u.url}`).join("\n")
-            );
-          } else {
-            system = system.replace("{{urls}}", "No links provided");
-          }
-
-          yield* Effect.logDebug("System", system);
-
-          if (opts.code) {
-            system = system.replace(
-              "{{code}}",
-              `\`\`\`ts\n${opts.code}\n\`\`\``
-            );
-          } else {
-            system = system.replace("{{code}}", "No code provided");
-          }
-
-          const article = yield* Effect.tryPromise(() => {
-            return generateText({
-              model,
-              system,
-              prompt: opts.transcript,
-            });
-          });
-
-          return article.text;
-        }
-      ),
-      titleFromTranscript: Effect.fn("titleFromTranscript")(function* (opts: {
-        transcript: string;
-        code?: string;
-      }) {
-        yield* Effect.logDebug("Generating title from transcript", opts);
-
-        const systemRaw = yield* fs.readFileString(
-          path.resolve(import.meta.dirname, "../prompts", "generate-title.md")
-        );
-
-        let system = systemRaw;
-
-        if (opts.code) {
-          system = system.replace("{{code}}", `\`\`\`ts\n${opts.code}\n\`\`\``);
-        } else {
-          system = system.replace("{{code}}", "No code provided");
-        }
-
-        const title = yield* Effect.tryPromise(() => {
-          return generateText({
-            model,
-            system,
-            prompt: opts.transcript,
-          });
-        });
-
-        return title.text;
-      }),
-    };
-  }),
-  dependencies: [NodeFileSystem.layer],
-}) {}
-
 export class LinksStorageService extends Effect.Service<LinksStorageService>()(
   "LinksStorageService",
   {
@@ -517,3 +401,140 @@ export class LinksStorageService extends Effect.Service<LinksStorageService>()(
     dependencies: [NodeFileSystem.layer],
   }
 ) {}
+
+export class AIService extends Effect.Service<AIService>()("AIService", {
+  effect: Effect.gen(function* () {
+    const model = anthropic("claude-3-7-sonnet-20250219");
+    const fs = yield* FileSystem.FileSystem;
+    const linksStorage = yield* LinksStorageService;
+
+    return {
+      askForLinks: Effect.fn("askForLinks")(function* (opts: {
+        transcript: string;
+      }) {
+        const systemRaw = yield* fs.readFileString(
+          path.resolve(import.meta.dirname, "../prompts", "ask-for-links.md")
+        );
+
+        // Get existing stored links to include in the prompt
+        const existingLinks = yield* linksStorage.getLinks();
+        
+        let system = systemRaw;
+        
+        if (existingLinks.length > 0) {
+          system += "\n\n## Previously Stored Links\n\n";
+          system += "Here are links that have already been collected and stored. DO NOT request these links again:\n\n";
+          system += existingLinks.map((link) => `- ${link.description}: ${link.url}`).join("\n");
+          system += "\n\nOnly request links that are NOT already in the above list.";
+        }
+
+        const links = yield* Effect.tryPromise(() => {
+          return generateObject({
+            model,
+            schema: z.object({
+              linkRequests: z
+                .array(z.string())
+                .describe("The links you want to request"),
+            }),
+            system,
+            prompt: opts.transcript,
+          });
+        });
+
+        return links.object?.linkRequests;
+      }),
+      articleFromTranscript: Effect.fn("articleFromTranscript")(
+        function* (opts: {
+          transcript: string;
+          mostRecentArticles: Article[];
+          code?: string;
+          urls: { request: string; url: string }[];
+        }) {
+          yield* Effect.logDebug("Generating article from transcript", opts);
+
+          const systemRaw = yield* fs.readFileString(
+            path.resolve(
+              import.meta.dirname,
+              "../prompts",
+              "generate-article.md"
+            )
+          );
+
+          let system = systemRaw.replace(
+            "{{articles}}",
+            opts.mostRecentArticles
+              .map((a) => `# ${a.title}\n\n${a.content}`)
+              .join("\n\n")
+          );
+
+          // Get stored links and combine with newly requested ones
+          const storedLinks = yield* linksStorage.getLinks();
+          const allLinks = [
+            ...storedLinks.map((link) => ({ request: link.description, url: link.url })),
+            ...opts.urls
+          ];
+
+          if (allLinks.length > 0) {
+            const linksSection = "Here are available links that you can reference in the article:\n\n" +
+              allLinks.map((u) => `- ${u.request}: ${u.url}`).join("\n") +
+              "\n\nYou MUST include relevant links from this list in the article. Use your judgment to determine which links are most relevant to the content.";
+            
+            system = system.replace("{{urls}}", linksSection);
+          } else {
+            system = system.replace("{{urls}}", "No links available");
+          }
+
+          yield* Effect.logDebug("System", system);
+
+          if (opts.code) {
+            system = system.replace(
+              "{{code}}",
+              `\`\`\`ts\n${opts.code}\n\`\`\``
+            );
+          } else {
+            system = system.replace("{{code}}", "No code provided");
+          }
+
+          const article = yield* Effect.tryPromise(() => {
+            return generateText({
+              model,
+              system,
+              prompt: opts.transcript,
+            });
+          });
+
+          return article.text;
+        }
+      ),
+      titleFromTranscript: Effect.fn("titleFromTranscript")(function* (opts: {
+        transcript: string;
+        code?: string;
+      }) {
+        yield* Effect.logDebug("Generating title from transcript", opts);
+
+        const systemRaw = yield* fs.readFileString(
+          path.resolve(import.meta.dirname, "../prompts", "generate-title.md")
+        );
+
+        let system = systemRaw;
+
+        if (opts.code) {
+          system = system.replace("{{code}}", `\`\`\`ts\n${opts.code}\n\`\`\``);
+        } else {
+          system = system.replace("{{code}}", "No code provided");
+        }
+
+        const title = yield* Effect.tryPromise(() => {
+          return generateText({
+            model,
+            system,
+            prompt: opts.transcript,
+          });
+        });
+
+        return title.text;
+      }),
+    };
+  }),
+  dependencies: [NodeFileSystem.layer, LinksStorageService.Default],
+}) {}
