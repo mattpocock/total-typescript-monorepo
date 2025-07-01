@@ -735,11 +735,16 @@ export const multiSelectVideosFromQueue = () => {
       return [];
     }
 
+    // Sort by creation date (most recent first)
+    const sortedVideoItems = completedVideoItems.sort(
+      (a, b) => b.createdAt - a.createdAt
+    );
+
     const selectedVideoIds: string[] = [];
 
     while (true) {
-      // Filter out already selected videos
-      const availableVideos = completedVideoItems.filter(
+      // Filter out already selected videos, maintaining the sorted order
+      const availableVideos = sortedVideoItems.filter(
         (item) => !selectedVideoIds.includes(item.id)
       );
 
@@ -748,25 +753,30 @@ export const multiSelectVideosFromQueue = () => {
         break;
       }
 
-      // Prepare choices including "End" option
+      // Prepare choices with "End" option at the very top
       const choices = [
+        { title: "End - Finish selecting videos", value: "END" },
         ...availableVideos.map((item) => {
           if (item.action.type === "create-auto-edited-video") {
+            const createdDate = new Date(item.createdAt).toLocaleDateString();
+            const createdTime = new Date(item.createdAt).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit'
+            });
             return {
-              title: `${item.action.videoName} (${new Date(item.createdAt).toLocaleDateString()})`,
+              title: `${item.action.videoName} (${createdDate} ${createdTime})`,
               value: item.id,
             };
           }
           return { title: "Unknown", value: item.id };
         }),
-        { title: "End - Finish selecting videos", value: "END" },
       ];
 
       const selectedMessage = selectedVideoIds.length > 0 
         ? ` (${selectedVideoIds.length} videos selected)`
         : "";
 
-      const selection = yield* askQuestion.select(
+      const selection = yield* askQuestion.autocomplete(
         `Select a video to add to concatenation${selectedMessage}:`,
         choices
       );
@@ -776,7 +786,7 @@ export const multiSelectVideosFromQueue = () => {
       }
 
       selectedVideoIds.push(selection as string);
-      const selectedItem = completedVideoItems.find(item => item.id === selection);
+      const selectedItem = sortedVideoItems.find(item => item.id === selection);
       if (selectedItem && selectedItem.action.type === "create-auto-edited-video") {
         yield* Console.log(`✅ Added "${selectedItem.action.videoName}" to selection`);
       }
