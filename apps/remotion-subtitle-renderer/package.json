@@ -6,7 +6,7 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
-    "@remotion/cli": "4.0.311",
+    "@remotion/cli": "4.0.321",
     "@remotion/media-parser": "^4.0.311",
     "@remotion/tailwind-v4": "4.0.311",
     "react": "19.0.0",
