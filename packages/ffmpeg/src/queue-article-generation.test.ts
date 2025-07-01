@@ -115,12 +115,14 @@ describe("queue-article-generation", () => {
       const queueState: QueueState = {
         queue: [
           {
-            id: "code-1",
+            id: "video-1",
             createdAt: Date.now(),
             action: {
-              type: "code-request",
-              transcriptPath: "/test/transcript.txt" as AbsolutePath,
-              originalVideoPath: "/test/video.mp4" as AbsolutePath,
+              type: "create-auto-edited-video",
+              inputVideo: "/test/input.mp4" as AbsolutePath,
+              videoName: "test",
+              subtitles: false,
+              dryRun: false,
             },
             status: "completed",
           },
@@ -128,7 +130,7 @@ describe("queue-article-generation", () => {
       };
 
       const result = await validateLinksDependency({
-        linksDependencyId: "code-1",
+        linksDependencyId: "video-1",
         queueState,
       }).pipe(Effect.either, Effect.runPromise);
 
@@ -173,21 +175,6 @@ describe("queue-article-generation", () => {
     const queueState: QueueState = {
       queue: [
         {
-          id: "code-1",
-          createdAt: Date.now(),
-          action: {
-            type: "code-request",
-            transcriptPath: "/test/transcript.txt" as AbsolutePath,
-            originalVideoPath: "/test/video.mp4" as AbsolutePath,
-            temporaryData: {
-              codePath: "/test/code.ts",
-              codeContent: "const example = 'TypeScript';",
-            },
-          },
-          status: "completed",
-          completedAt: Date.now(),
-        },
-        {
           id: "links-1",
           createdAt: Date.now(),
           action: {
@@ -204,9 +191,10 @@ describe("queue-article-generation", () => {
       const result = await generateArticleFromTranscriptQueue({
         transcriptPath: "/test/transcript.txt" as AbsolutePath,
         originalVideoPath: "/test/video.mp4" as AbsolutePath,
-        codeDependencyId: "code-1",
         linksDependencyId: "links-1",
         queueState,
+        codeContent: "const example = 'TypeScript';",
+        codePath: "/test/code.ts",
       }).pipe(
         Effect.provideService(FileSystem.FileSystem, mockFS),
         Effect.provideService(AIService, mockAIService),
@@ -226,21 +214,6 @@ describe("queue-article-generation", () => {
       const queueStateNoCode: QueueState = {
         queue: [
           {
-            id: "code-1",
-            createdAt: Date.now(),
-            action: {
-              type: "code-request",
-              transcriptPath: "/test/transcript.txt" as AbsolutePath,
-              originalVideoPath: "/test/video.mp4" as AbsolutePath,
-              temporaryData: {
-                codePath: "",
-                codeContent: "",
-              },
-            },
-            status: "completed",
-            completedAt: Date.now(),
-          },
-          {
             id: "links-1",
             createdAt: Date.now(),
             action: {
@@ -256,9 +229,10 @@ describe("queue-article-generation", () => {
       const result = await generateArticleFromTranscriptQueue({
         transcriptPath: "/test/transcript.txt" as AbsolutePath,
         originalVideoPath: "/test/video.mp4" as AbsolutePath,
-        codeDependencyId: "code-1",
         linksDependencyId: "links-1",
         queueState: queueStateNoCode,
+        codeContent: "",
+        codePath: "",
       }).pipe(
         Effect.provideService(FileSystem.FileSystem, mockFS),
         Effect.provideService(AIService, mockAIService),
@@ -282,9 +256,10 @@ describe("queue-article-generation", () => {
       const result = await generateArticleFromTranscriptQueue({
         transcriptPath: "/test/transcript.txt" as AbsolutePath,
         originalVideoPath: "/test/video.mp4" as AbsolutePath,
-        codeDependencyId: "code-1",
         linksDependencyId: "links-1",
         queueState,
+        codeContent: "",
+        codePath: "",
       }).pipe(
         Effect.provideService(FileSystem.FileSystem, emptyTranscriptFS),
         Effect.provideService(AIService, mockAIService),
@@ -305,9 +280,10 @@ describe("queue-article-generation", () => {
       const result = await generateArticleFromTranscriptQueue({
         transcriptPath: "/test/transcript.txt" as AbsolutePath,
         originalVideoPath: "/test/video.mp4" as AbsolutePath,
-        codeDependencyId: "code-1",
         linksDependencyId: "nonexistent",
         queueState,
+        codeContent: "",
+        codePath: "",
       }).pipe(
         Effect.provideService(FileSystem.FileSystem, mockFS),
         Effect.provideService(AIService, mockAIService),
@@ -351,12 +327,13 @@ describe("queue-article-generation", () => {
       const result = await generateArticleFromTranscriptQueue({
         transcriptPath: "/test/transcript.txt" as AbsolutePath,
         originalVideoPath: "/test/video.mp4" as AbsolutePath,
-        codeDependencyId: "code-1",
         linksDependencyId: "links-1",
         queueState,
         videoName: "my-awesome-video",
         dryRun: true,
         alongside: true,
+        codeContent: "const example = 'test';",
+        codePath: "/test/code.ts",
       }).pipe(
         Effect.provideService(FileSystem.FileSystem, mockFSWithCapture),
         Effect.provideService(AIService, mockAIService),
@@ -405,12 +382,13 @@ describe("queue-article-generation", () => {
       const result = await generateArticleFromTranscriptQueue({
         transcriptPath: "/test/transcript.txt" as AbsolutePath,
         originalVideoPath: "/test/video.mp4" as AbsolutePath,
-        codeDependencyId: "code-1",
         linksDependencyId: "links-1",
         queueState,
         videoName: "uploaded-video",
         dryRun: false,
         alongside: true,
+        codeContent: "const example = 'test';",
+        codePath: "/test/code.ts",
       }).pipe(
         Effect.provideService(FileSystem.FileSystem, mockFSWithCapture),
         Effect.provideService(AIService, mockAIService),
@@ -449,12 +427,13 @@ describe("queue-article-generation", () => {
       const result = await generateArticleFromTranscriptQueue({
         transcriptPath: "/test/transcript.txt" as AbsolutePath,
         originalVideoPath: "/test/video.mp4" as AbsolutePath,
-        codeDependencyId: "code-1",
         linksDependencyId: "links-1",
         queueState,
         videoName: "test-video",
         dryRun: true,
         alongside: false,
+        codeContent: "const example = 'test';",
+        codePath: "/test/code.ts",
       }).pipe(
         Effect.provideService(FileSystem.FileSystem, mockFS),
         Effect.provideService(AIService, mockAIService),
@@ -488,10 +467,11 @@ describe("queue-article-generation", () => {
         transcriptPath: AbsolutePath;
         originalVideoPath: AbsolutePath;
         linksDependencyId: string;
-        codeDependencyId: string;
         videoName: string;
         dryRun: boolean;
         alongside: boolean;
+        codeContent: string;
+        codePath: string;
       };
     } = {
       id: "article-1",
@@ -501,10 +481,11 @@ describe("queue-article-generation", () => {
         transcriptPath: "/test/transcript.txt" as AbsolutePath,
         originalVideoPath: "/test/video.mp4" as AbsolutePath,
         linksDependencyId: "links-1",
-        codeDependencyId: "code-1",
         videoName: "test-video",
         dryRun: true,
         alongside: false,
+        codeContent: "const example = 'test';",
+        codePath: "/test/code.ts",
       },
       status: "ready-to-run",
     };
@@ -512,21 +493,6 @@ describe("queue-article-generation", () => {
     const queueState: QueueState = {
       queue: [
         queueItem,
-        {
-          id: "code-1",
-          createdAt: Date.now(),
-          action: {
-            type: "code-request",
-            transcriptPath: "/test/transcript.txt" as AbsolutePath,
-            originalVideoPath: "/test/video.mp4" as AbsolutePath,
-            temporaryData: {
-              codePath: "/test/code.ts",
-              codeContent: "const example = 'test';",
-            },
-          },
-          status: "completed",
-          completedAt: Date.now(),
-        },
         {
           id: "links-1",
           createdAt: Date.now(),

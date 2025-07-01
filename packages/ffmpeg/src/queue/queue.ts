@@ -60,27 +60,17 @@ export type QueueItemAction =
       transcriptPath: AbsolutePath;
       originalVideoPath: AbsolutePath;
     }
-  | {
-      type: "code-request";
-      transcriptPath: AbsolutePath;
-      originalVideoPath: AbsolutePath;
-      /**
-       * Temporary data storage for code request workflow
-       */
-      temporaryData?: {
-        codePath?: string;
-        codeContent?: string;
-      };
-    }
+
   | {
       type: "generate-article-from-transcript";
       transcriptPath: AbsolutePath;
       originalVideoPath: AbsolutePath;
       linksDependencyId: string;
-      codeDependencyId: string;
       videoName: string;
       dryRun: boolean;
       alongside: boolean;
+      codeContent: string;
+      codePath: string;
     };
 
 export type QueueItem = {
@@ -225,8 +215,7 @@ export const getOutstandingInformationRequests = () => {
 
     const informationRequests = queueState.queue.filter(
       (item) =>
-        (item.action.type === "links-request" ||
-          item.action.type === "code-request") &&
+        item.action.type === "links-request" &&
         item.status === "requires-user-input" &&
         // Check that all dependencies are completed
         (!item.dependencies ||
@@ -301,72 +290,6 @@ export const processInformationRequests = () => {
         yield* Console.log(
           `✅ Links request completed - added ${links.length} link(s)`
         );
-      } else if (queueItem.action.type === "code-request") {
-        yield* Console.log(
-          `💻 Processing code request (${processedRequests}/${informationRequests.length})`
-        );
-
-        const codePath = yield* askQuestion.askQuestion(
-          `📂 Code file path (optional, press Enter to skip): `,
-          {
-            optional: true,
-          }
-        );
-
-        let codeContent = "";
-        let actualCodePath = "";
-
-        if (codePath.trim()) {
-          actualCodePath = codePath.trim();
-          const codeExists = yield* fs
-            .exists(actualCodePath)
-            .pipe(Effect.catchAll(() => Effect.succeed(false)));
-
-          if (codeExists) {
-            codeContent = yield* fs.readFileString(actualCodePath).pipe(
-              Effect.catchAll((error) => {
-                return Effect.gen(function* () {
-                  yield* Console.log(
-                    `⚠️  Warning: Could not read code file ${actualCodePath}: ${error}`
-                  );
-                  yield* Console.log(
-                    `💡 Tip: Check file permissions and ensure the path is correct`
-                  );
-                  return "";
-                });
-              })
-            );
-            yield* Console.log(
-              `✅ Code file loaded: ${actualCodePath} (${codeContent.length} characters)`
-            );
-          } else {
-            yield* Console.log(
-              `⚠️  Warning: Code file ${actualCodePath} does not exist`
-            );
-            yield* Console.log(
-              `💡 Continuing without code - you can manually add code examples to the article later`
-            );
-          }
-        } else {
-          yield* Console.log(
-            `ℹ️  No code file provided - continuing without code examples`
-          );
-        }
-
-        yield* updateQueueItem({
-          ...queueItem,
-          status: "completed",
-          completedAt: Date.now(),
-          action: {
-            ...queueItem.action,
-            temporaryData: {
-              codePath: actualCodePath,
-              codeContent,
-            },
-          },
-        });
-
-        yield* Console.log(`✅ Code request completed`);
       }
     }
 
@@ -580,12 +503,7 @@ export const processQueue = () => {
           });
 
           break;
-        case "code-request":
-          // This should be handled by processInformationRequests
-          yield* Console.log(
-            "ERROR: Code request found in processQueue - this should be handled by processInformationRequests"
-          );
-          continue;
+
         case "generate-article-from-transcript":
           if (queueItem.action.type !== "generate-article-from-transcript") {
             break;
@@ -612,10 +530,11 @@ export const processQueue = () => {
                 transcriptPath: AbsolutePath;
                 originalVideoPath: AbsolutePath;
                 linksDependencyId: string;
-                codeDependencyId: string;
                 videoName: string;
                 dryRun: boolean;
                 alongside: boolean;
+                codeContent: string;
+                codePath: string;
               };
             };
 
