@@ -2,13 +2,16 @@ import { FileSystem } from "@effect/platform/FileSystem";
 import { type AbsolutePath } from "@total-typescript/shared";
 import { Config, Console, Effect, Either } from "effect";
 import { processTranscriptAnalysisForQueue } from "../queue-transcript-processing.js";
+import { processArticleGenerationForQueue } from "../queue-article-generation.js";
 import { AskQuestionService, LinksStorageService } from "../services.js";
 import { WorkflowsService } from "../workflows.js";
 
 class InvalidQueueItemTypeError extends Error {
   constructor(expectedType: string, actualType: string) {
-    super(`Invalid queue item type: expected '${expectedType}', got '${actualType}'`);
-    this.name = 'InvalidQueueItemTypeError';
+    super(
+      `Invalid queue item type: expected '${expectedType}', got '${actualType}'`
+    );
+    this.name = "InvalidQueueItemTypeError";
   }
 }
 
@@ -433,7 +436,7 @@ export const processQueue = () => {
               );
             }
             const currentQueueState = yield* getQueueState();
-            
+
             // Type assertion is safe here because we've checked the type above
             const typedQueueItem = queueItem as QueueItem & {
               action: {
@@ -442,7 +445,7 @@ export const processQueue = () => {
                 originalVideoPath: AbsolutePath;
               };
             };
-            
+
             return yield* processTranscriptAnalysisForQueue({
               queueItem: typedQueueItem,
               queueState: currentQueueState,
@@ -479,15 +482,63 @@ export const processQueue = () => {
           );
           continue;
         case "generate-article-from-transcript":
+          if (queueItem.action.type !== "generate-article-from-transcript") {
+            break;
+          }
+
           yield* Console.log(
             `Processing generate-article-from-transcript for ${queueItem.action.transcriptPath}`
           );
-          // TODO: Implement article generation logic
+
+          const articleGenerationResult = yield* Effect.gen(function* () {
+            if (queueItem.action.type !== "generate-article-from-transcript") {
+              return yield* Effect.fail(
+                new InvalidQueueItemTypeError(
+                  "generate-article-from-transcript",
+                  queueItem.action.type
+                )
+              );
+            }
+            const currentQueueState = yield* getQueueState();
+
+            // Type assertion is safe here because we've checked the type above
+            const typedQueueItem = queueItem as QueueItem & {
+              action: {
+                type: "generate-article-from-transcript";
+                transcriptPath: AbsolutePath;
+                originalVideoPath: AbsolutePath;
+                linksDependencyId: string;
+                codeDependencyId: string;
+              };
+            };
+
+            return yield* processArticleGenerationForQueue({
+              queueItem: typedQueueItem,
+              queueState: currentQueueState,
+            });
+          }).pipe(Effect.either);
+
+          if (Either.isLeft(articleGenerationResult)) {
+            yield* Effect.logError(
+              `Article generation failed: ${articleGenerationResult.left}`
+            );
+            yield* updateQueueItem({
+              ...queueItem,
+              status: "failed",
+              error:
+                articleGenerationResult.left instanceof Error
+                  ? articleGenerationResult.left.message
+                  : String(articleGenerationResult.left),
+            });
+            continue;
+          }
+
           yield* updateQueueItem({
             ...queueItem,
             status: "completed",
             completedAt: Date.now(),
           });
+
           break;
         default:
           queueItem.action satisfies never;
