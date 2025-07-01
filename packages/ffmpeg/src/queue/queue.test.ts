@@ -1,10 +1,11 @@
+import { FileSystem } from "@effect/platform/FileSystem";
 import { NodeFileSystem } from "@effect/platform-node";
 import type { AbsolutePath } from "@total-typescript/shared";
-import { ConfigProvider, Effect, Layer } from "effect";
+import { Config, ConfigProvider, Effect, Layer } from "effect";
 import * as fs from "node:fs/promises";
 import path from "node:path";
 import { expect, it, vi } from "vitest";
-import { processQueue, writeToQueue } from "./queue.js";
+import { getQueueState, processQueue, writeToQueue } from "./queue.js";
 import { WorkflowsService } from "../workflows.js";
 import { AskQuestionService, LinksStorageService } from "../services.js";
 
@@ -476,6 +477,530 @@ it("Should process only information requests", async () => {
 
     // createAutoEditedVideoWorkflow should NOT have been called
     expect(createAutoEditedVideoWorkflow).not.toHaveBeenCalled();
+  } finally {
+    await fs.rm(tmpDir, { recursive: true });
+  }
+});
+
+it("Should handle code-request action type and store code content in temporaryData", async () => {
+  const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
+
+  try {
+    const QUEUE_LOCATION = path.join(tmpDir, "queue.json");
+    const QUEUE_LOCKFILE_LOCATION = path.join(tmpDir, "queue.lock");
+    const CODE_FILE_PATH = path.join(tmpDir, "test.ts");
+
+    // Create a test code file
+    await fs.writeFile(CODE_FILE_PATH, "console.log('hello world');");
+
+    const createAutoEditedVideoWorkflow = vi
+      .fn()
+      .mockReturnValue(Effect.succeed(undefined));
+
+    const addLinks = vi.fn().mockReturnValue(Effect.succeed(undefined));
+    const getLinks = vi.fn().mockReturnValue(Effect.succeed([]));
+    const askQuestion = vi.fn().mockReturnValue(Effect.succeed(CODE_FILE_PATH));
+
+    const { processInformationRequests } = await import("./queue.js");
+
+    await Effect.gen(function* () {
+      yield* writeToQueue([
+        {
+          id: "code-1",
+          createdAt: Date.now(),
+          action: {
+            type: "code-request",
+            transcriptPath: "/path/to/transcript.txt" as AbsolutePath,
+            originalVideoPath: "/path/to/video.mp4" as AbsolutePath,
+          },
+          status: "requires-user-input",
+        },
+      ]);
+
+      yield* processInformationRequests();
+    }).pipe(
+      Effect.provide(NodeFileSystem.layer),
+      Effect.provideService(
+        WorkflowsService,
+        new WorkflowsService({
+          createAutoEditedVideoWorkflow,
+        })
+      ),
+      Effect.provideService(
+        LinksStorageService,
+        new LinksStorageService({
+          addLinks,
+          getLinks,
+        })
+      ),
+      Effect.provideService(
+        AskQuestionService,
+        new AskQuestionService({
+          askQuestion,
+          select: vi.fn().mockReturnValue(Effect.succeed("test")),
+        })
+      ),
+      Effect.withConfigProvider(
+        ConfigProvider.fromJson({
+          QUEUE_LOCATION,
+          QUEUE_LOCKFILE_LOCATION,
+        })
+      ),
+      Effect.runPromise
+    );
+
+    const queueState = JSON.parse(
+      (await fs.readFile(QUEUE_LOCATION, "utf-8")).toString()
+    );
+
+    expect(queueState.queue[0]).toEqual({
+      id: "code-1",
+      createdAt: expect.any(Number),
+      completedAt: expect.any(Number),
+      action: {
+        type: "code-request",
+        transcriptPath: "/path/to/transcript.txt",
+        originalVideoPath: "/path/to/video.mp4",
+      },
+      status: "completed",
+      temporaryData: {
+        codePath: CODE_FILE_PATH,
+        codeContent: "console.log('hello world');",
+      },
+    });
+
+    expect(askQuestion).toHaveBeenCalledWith(
+      "Code file path (optional, leave empty if no code needed): "
+    );
+  } finally {
+    await fs.rm(tmpDir, { recursive: true });
+  }
+});
+
+it("Should handle empty code file path gracefully", async () => {
+  const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
+
+  try {
+    const QUEUE_LOCATION = path.join(tmpDir, "queue.json");
+    const QUEUE_LOCKFILE_LOCATION = path.join(tmpDir, "queue.lock");
+
+    const createAutoEditedVideoWorkflow = vi
+      .fn()
+      .mockReturnValue(Effect.succeed(undefined));
+
+    const addLinks = vi.fn().mockReturnValue(Effect.succeed(undefined));
+    const getLinks = vi.fn().mockReturnValue(Effect.succeed([]));
+    const askQuestion = vi.fn().mockReturnValue(Effect.succeed("  ")); // Empty/whitespace
+
+    const { processInformationRequests } = await import("./queue.js");
+
+    await Effect.gen(function* () {
+      yield* writeToQueue([
+        {
+          id: "code-1",
+          createdAt: Date.now(),
+          action: {
+            type: "code-request",
+            transcriptPath: "/path/to/transcript.txt" as AbsolutePath,
+            originalVideoPath: "/path/to/video.mp4" as AbsolutePath,
+          },
+          status: "requires-user-input",
+        },
+      ]);
+
+      yield* processInformationRequests();
+    }).pipe(
+      Effect.provide(NodeFileSystem.layer),
+      Effect.provideService(
+        WorkflowsService,
+        new WorkflowsService({
+          createAutoEditedVideoWorkflow,
+        })
+      ),
+      Effect.provideService(
+        LinksStorageService,
+        new LinksStorageService({
+          addLinks,
+          getLinks,
+        })
+      ),
+      Effect.provideService(
+        AskQuestionService,
+        new AskQuestionService({
+          askQuestion,
+          select: vi.fn().mockReturnValue(Effect.succeed("test")),
+        })
+      ),
+      Effect.withConfigProvider(
+        ConfigProvider.fromJson({
+          QUEUE_LOCATION,
+          QUEUE_LOCKFILE_LOCATION,
+        })
+      ),
+      Effect.runPromise
+    );
+
+    const queueState = JSON.parse(
+      (await fs.readFile(QUEUE_LOCATION, "utf-8")).toString()
+    );
+
+    expect(queueState.queue[0]).toEqual({
+      id: "code-1",
+      createdAt: expect.any(Number),
+      completedAt: expect.any(Number),
+      action: {
+        type: "code-request",
+        transcriptPath: "/path/to/transcript.txt",
+        originalVideoPath: "/path/to/video.mp4",
+      },
+      status: "completed",
+      temporaryData: {
+        codePath: "",
+        codeContent: "",
+      },
+    });
+  } finally {
+    await fs.rm(tmpDir, { recursive: true });
+  }
+});
+
+it("Should handle missing code file gracefully", async () => {
+  const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
+
+  try {
+    const QUEUE_LOCATION = path.join(tmpDir, "queue.json");
+    const QUEUE_LOCKFILE_LOCATION = path.join(tmpDir, "queue.lock");
+    const MISSING_FILE_PATH = path.join(tmpDir, "missing.ts");
+
+    const createAutoEditedVideoWorkflow = vi
+      .fn()
+      .mockReturnValue(Effect.succeed(undefined));
+
+    const addLinks = vi.fn().mockReturnValue(Effect.succeed(undefined));
+    const getLinks = vi.fn().mockReturnValue(Effect.succeed([]));
+    const askQuestion = vi.fn().mockReturnValue(Effect.succeed(MISSING_FILE_PATH));
+
+    const { processInformationRequests } = await import("./queue.js");
+
+    await Effect.gen(function* () {
+      yield* writeToQueue([
+        {
+          id: "code-1",
+          createdAt: Date.now(),
+          action: {
+            type: "code-request",
+            transcriptPath: "/path/to/transcript.txt" as AbsolutePath,
+            originalVideoPath: "/path/to/video.mp4" as AbsolutePath,
+          },
+          status: "requires-user-input",
+        },
+      ]);
+
+      yield* processInformationRequests();
+    }).pipe(
+      Effect.provide(NodeFileSystem.layer),
+      Effect.provideService(
+        WorkflowsService,
+        new WorkflowsService({
+          createAutoEditedVideoWorkflow,
+        })
+      ),
+      Effect.provideService(
+        LinksStorageService,
+        new LinksStorageService({
+          addLinks,
+          getLinks,
+        })
+      ),
+      Effect.provideService(
+        AskQuestionService,
+        new AskQuestionService({
+          askQuestion,
+          select: vi.fn().mockReturnValue(Effect.succeed("test")),
+        })
+      ),
+      Effect.withConfigProvider(
+        ConfigProvider.fromJson({
+          QUEUE_LOCATION,
+          QUEUE_LOCKFILE_LOCATION,
+        })
+      ),
+      Effect.runPromise
+    );
+
+    const queueState = JSON.parse(
+      (await fs.readFile(QUEUE_LOCATION, "utf-8")).toString()
+    );
+
+    expect(queueState.queue[0]).toEqual({
+      id: "code-1",
+      createdAt: expect.any(Number),
+      completedAt: expect.any(Number),
+      action: {
+        type: "code-request",
+        transcriptPath: "/path/to/transcript.txt",
+        originalVideoPath: "/path/to/video.mp4",
+      },
+      status: "completed",
+      temporaryData: {
+        codePath: MISSING_FILE_PATH,
+        codeContent: "",
+      },
+    });
+  } finally {
+    await fs.rm(tmpDir, { recursive: true });
+  }
+});
+
+it("Should include code-request in outstanding information requests", async () => {
+  const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
+
+  try {
+    const QUEUE_LOCATION = path.join(tmpDir, "queue.json");
+    const QUEUE_LOCKFILE_LOCATION = path.join(tmpDir, "queue.lock");
+
+    const { getOutstandingInformationRequests } = await import("./queue.js");
+
+    const informationRequests = await Effect.gen(function* () {
+      yield* writeToQueue([
+        {
+          id: "1",
+          createdAt: Date.now(),
+          action: {
+            type: "links-request",
+            linkRequests: ["test"],
+          },
+          status: "requires-user-input",
+        },
+        {
+          id: "2",
+          createdAt: Date.now(),
+          action: {
+            type: "code-request",
+            transcriptPath: "/path/to/transcript.txt" as AbsolutePath,
+            originalVideoPath: "/path/to/video.mp4" as AbsolutePath,
+          },
+          status: "requires-user-input",
+        },
+        {
+          id: "3",
+          createdAt: Date.now(),
+          action: {
+            type: "create-auto-edited-video",
+            inputVideo: "/Users/josh/Desktop/video.mp4" as AbsolutePath,
+            videoName: "test",
+            subtitles: false,
+            dryRun: false,
+          },
+          status: "ready-to-run",
+        },
+      ]);
+
+      return yield* getOutstandingInformationRequests();
+    }).pipe(
+      Effect.provide(NodeFileSystem.layer),
+      Effect.withConfigProvider(
+        ConfigProvider.fromJson({
+          QUEUE_LOCATION,
+          QUEUE_LOCKFILE_LOCATION,
+        })
+      ),
+      Effect.runPromise
+    );
+
+    expect(informationRequests).toHaveLength(2);
+    expect(informationRequests.map(r => r.action.type)).toEqual(["links-request", "code-request"]);
+    expect(informationRequests.map(r => r.id)).toEqual(["1", "2"]);
+  } finally {
+    await fs.rm(tmpDir, { recursive: true });
+  }
+});
+
+it("Should handle dependency chains with new action types", async () => {
+  const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
+
+  try {
+    const QUEUE_LOCATION = path.join(tmpDir, "queue.json");
+    const QUEUE_LOCKFILE_LOCATION = path.join(tmpDir, "queue.lock");
+
+    const { getNextQueueItem } = await import("./queue.js");
+
+    const queueState = await Effect.gen(function* () {
+      yield* writeToQueue([
+        {
+          id: "video-1",
+          createdAt: Date.now(),
+          action: {
+            type: "create-auto-edited-video",
+            inputVideo: "/Users/josh/Desktop/video.mp4" as AbsolutePath,
+            videoName: "test",
+            subtitles: false,
+            dryRun: false,
+          },
+          status: "completed",
+          completedAt: Date.now(),
+        },
+        {
+          id: "analysis-1",
+          createdAt: Date.now(),
+          action: {
+            type: "analyze-transcript-for-links",
+            transcriptPath: "/path/to/transcript.txt" as AbsolutePath,
+            originalVideoPath: "/path/to/video.mp4" as AbsolutePath,
+          },
+          status: "ready-to-run",
+          dependencies: ["video-1"],
+        },
+        {
+          id: "code-1",
+          createdAt: Date.now(),
+          action: {
+            type: "code-request",
+            transcriptPath: "/path/to/transcript.txt" as AbsolutePath,
+            originalVideoPath: "/path/to/video.mp4" as AbsolutePath,
+          },
+          status: "requires-user-input",
+          dependencies: ["analysis-1"],
+        },
+        {
+          id: "article-1",
+          createdAt: Date.now(),
+          action: {
+            type: "generate-article-from-transcript",
+            transcriptPath: "/path/to/transcript.txt" as AbsolutePath,
+            originalVideoPath: "/path/to/video.mp4" as AbsolutePath,
+            linksDependencyId: "links-1",
+            codeDependencyId: "code-1",
+          },
+          status: "ready-to-run",
+          dependencies: ["code-1", "links-1"],
+        },
+      ]);
+
+              return yield* getQueueState();
+    }).pipe(
+      Effect.provide(NodeFileSystem.layer),
+      Effect.withConfigProvider(
+        ConfigProvider.fromJson({
+          QUEUE_LOCATION,
+          QUEUE_LOCKFILE_LOCATION,
+        })
+      ),
+      Effect.runPromise
+    );
+
+    // Should be able to run analysis-1 since video-1 is completed
+    const nextItem = getNextQueueItem(queueState);
+    expect(nextItem?.id).toBe("analysis-1");
+    expect(nextItem?.action.type).toBe("analyze-transcript-for-links");
+
+    // Should not be able to run code-1 (requires user input) or article-1 (dependencies not met)
+    expect(queueState.queue.find(i => i.id === "code-1")?.status).toBe("requires-user-input");
+    expect(queueState.queue.find(i => i.id === "article-1")?.status).toBe("ready-to-run");
+  } finally {
+    await fs.rm(tmpDir, { recursive: true });
+  }
+});
+
+it("Should not process code-request or generate-article-from-transcript in processQueue", async () => {
+  const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
+
+  try {
+    const QUEUE_LOCATION = path.join(tmpDir, "queue.json");
+    const QUEUE_LOCKFILE_LOCATION = path.join(tmpDir, "queue.lock");
+
+    const createAutoEditedVideoWorkflow = vi
+      .fn()
+      .mockReturnValue(Effect.succeed(undefined));
+
+    await Effect.gen(function* () {
+      yield* writeToQueue([
+        {
+          id: "analysis-1",
+          createdAt: Date.now(),
+          action: {
+            type: "analyze-transcript-for-links",
+            transcriptPath: "/path/to/transcript.txt" as AbsolutePath,
+            originalVideoPath: "/path/to/video.mp4" as AbsolutePath,
+          },
+          status: "ready-to-run",
+        },
+        {
+          id: "article-1",
+          createdAt: Date.now(),
+          action: {
+            type: "generate-article-from-transcript",
+            transcriptPath: "/path/to/transcript.txt" as AbsolutePath,
+            originalVideoPath: "/path/to/video.mp4" as AbsolutePath,
+            linksDependencyId: "links-1",
+            codeDependencyId: "code-1",
+          },
+          status: "ready-to-run",
+        },
+      ]);
+
+      yield* processQueue();
+    }).pipe(
+      Effect.provide(NodeFileSystem.layer),
+      Effect.provideService(
+        WorkflowsService,
+        new WorkflowsService({
+          createAutoEditedVideoWorkflow,
+        })
+      ),
+      Effect.provideService(
+        LinksStorageService,
+        new LinksStorageService({
+          addLinks: vi.fn(),
+          getLinks: vi.fn().mockReturnValue(Effect.succeed([])),
+        })
+      ),
+      Effect.provideService(
+        AskQuestionService,
+        new AskQuestionService({
+          askQuestion: vi.fn().mockReturnValue(Effect.succeed("test")),
+          select: vi.fn().mockReturnValue(Effect.succeed("test")),
+        })
+      ),
+      Effect.withConfigProvider(
+        ConfigProvider.fromJson({
+          QUEUE_LOCATION,
+          QUEUE_LOCKFILE_LOCATION,
+        })
+      ),
+      Effect.runPromise
+    );
+
+    const queueState = JSON.parse(
+      (await fs.readFile(QUEUE_LOCATION, "utf-8")).toString()
+    );
+
+    // Both items should be processed and completed with TODO implementations
+    expect(queueState.queue[0]).toEqual({
+      id: "analysis-1",
+      createdAt: expect.any(Number),
+      completedAt: expect.any(Number),
+      action: {
+        type: "analyze-transcript-for-links",
+        transcriptPath: "/path/to/transcript.txt",
+        originalVideoPath: "/path/to/video.mp4",
+      },
+      status: "completed",
+    });
+
+    expect(queueState.queue[1]).toEqual({
+      id: "article-1",
+      createdAt: expect.any(Number),
+      completedAt: expect.any(Number),
+      action: {
+        type: "generate-article-from-transcript",
+        transcriptPath: "/path/to/transcript.txt",
+        originalVideoPath: "/path/to/video.mp4",
+        linksDependencyId: "links-1",
+        codeDependencyId: "code-1",
+      },
+      status: "completed",
+    });
   } finally {
     await fs.rm(tmpDir, { recursive: true });
   }

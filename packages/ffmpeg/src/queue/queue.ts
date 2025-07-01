@@ -27,6 +27,23 @@ export type QueueItemAction =
        */
       type: "links-request";
       linkRequests: string[];
+    }
+  | {
+      type: "analyze-transcript-for-links";
+      transcriptPath: AbsolutePath;
+      originalVideoPath: AbsolutePath;
+    }
+  | {
+      type: "code-request";
+      transcriptPath: AbsolutePath;
+      originalVideoPath: AbsolutePath;
+    }
+  | {
+      type: "generate-article-from-transcript";
+      transcriptPath: AbsolutePath;
+      originalVideoPath: AbsolutePath;
+      linksDependencyId: string;
+      codeDependencyId: string;
     };
 
 export type QueueItem = {
@@ -41,6 +58,14 @@ export type QueueItem = {
   dependencies?: string[];
   status: "ready-to-run" | "completed" | "failed" | "requires-user-input";
   error?: string;
+  /**
+   * Temporary data storage for workflow context
+   */
+  temporaryData?: {
+    codePath?: string;
+    codeContent?: string;
+    linkRequests?: string[];
+  };
 };
 
 export type QueueState = {
@@ -165,7 +190,7 @@ export const getOutstandingInformationRequests = () => {
     const queueState = yield* getQueueState();
     
     const informationRequests = queueState.queue.filter(
-      (item) => item.action.type === "links-request" && 
+      (item) => (item.action.type === "links-request" || item.action.type === "code-request") && 
                item.status === "requires-user-input"
     );
     
@@ -190,6 +215,7 @@ export const processInformationRequests = () => {
 
     const askQuestion = yield* AskQuestionService;
     const linkStorage = yield* LinksStorageService;
+    const fs = yield* FileSystem;
 
     for (const queueItem of informationRequests) {
       if (queueItem.action.type === "links-request") {
@@ -216,6 +242,48 @@ export const processInformationRequests = () => {
         });
         
         yield* Console.log(`Information request ${queueItem.id} completed`);
+      } else if (queueItem.action.type === "code-request") {
+        yield* Console.log(`Processing code request: ${queueItem.id}`);
+        
+        const codePath = yield* askQuestion.askQuestion(
+          `Code file path (optional, leave empty if no code needed): `
+        );
+
+        let codeContent = "";
+        let actualCodePath = "";
+        
+        if (codePath.trim()) {
+          actualCodePath = codePath.trim();
+          const codeExists = yield* fs.exists(actualCodePath).pipe(
+            Effect.catchAll(() => Effect.succeed(false))
+          );
+          
+          if (codeExists) {
+            codeContent = yield* fs.readFileString(actualCodePath).pipe(
+              Effect.catchAll((error) => {
+                return Effect.gen(function* () {
+                  yield* Console.log(`Warning: Could not read code file ${actualCodePath}: ${error}`);
+                  return "";
+                });
+              })
+            );
+          } else {
+            yield* Console.log(`Warning: Code file ${actualCodePath} does not exist`);
+          }
+        }
+
+        yield* updateQueueItem({
+          ...queueItem,
+          status: "completed",
+          completedAt: Date.now(),
+          temporaryData: {
+            ...queueItem.temporaryData,
+            codePath: actualCodePath,
+            codeContent,
+          },
+        });
+        
+        yield* Console.log(`Code request ${queueItem.id} completed`);
       }
     }
     
@@ -280,6 +348,28 @@ export const processQueue = () => {
           // This should never happen since getNextQueueItem filters out requires-user-input items
           yield* Console.log("ERROR: Links request found in processQueue - this should not happen");
           continue;
+        case "analyze-transcript-for-links":
+          yield* Console.log(`Processing analyze-transcript-for-links for ${queueItem.action.transcriptPath}`);
+          // TODO: Implement transcript analysis logic
+          yield* updateQueueItem({
+            ...queueItem,
+            status: "completed",
+            completedAt: Date.now(),
+          });
+          break;
+        case "code-request":
+          // This should be handled by processInformationRequests
+          yield* Console.log("ERROR: Code request found in processQueue - this should not happen");
+          continue;
+        case "generate-article-from-transcript":
+          yield* Console.log(`Processing generate-article-from-transcript for ${queueItem.action.transcriptPath}`);
+          // TODO: Implement article generation logic
+          yield* updateQueueItem({
+            ...queueItem,
+            status: "completed",
+            completedAt: Date.now(),
+          });
+          break;
         default:
           queueItem.action satisfies never;
           yield* Console.log("Unknown queue item type");
