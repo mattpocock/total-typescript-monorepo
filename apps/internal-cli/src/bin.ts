@@ -104,11 +104,12 @@ program
   .command("create-auto-edited-video")
   .aliases(["v", "video"])
   .description(
-    `Create a new auto-edited video from the latest OBS recording and save it to the export directory`
+    `Create a new auto-edited video from the latest OBS recording and save it to the export directory. Optionally generate an article from the video transcript.`
   )
   .option("-d, --dry-run", "Run without saving to Dropbox")
   .option("-ns, --no-subtitles", "Disable subtitle rendering")
-  .action(async (options: { dryRun?: boolean; subtitles?: boolean }) => {
+  .option("-a, --generate-article", "Generate article from video transcript using queue workflow")
+  .action(async (options: { dryRun?: boolean; subtitles?: boolean; generateArticle?: boolean }) => {
     await Effect.gen(function* () {
       const obs = yield* OBSIntegrationService;
       const askQuestion = yield* AskQuestionService;
@@ -123,9 +124,11 @@ program
 
       yield* validateWindowsFilename(videoName);
 
-      yield* writeToQueue([
+      // Generate unique IDs for the workflow
+      const videoId = crypto.randomUUID();
+      const queueItems: QueueItem[] = [
         {
-          id: crypto.randomUUID(),
+          id: videoId,
           createdAt: Date.now(),
           action: {
             type: "create-auto-edited-video",
@@ -136,7 +139,74 @@ program
           },
           status: "ready-to-run",
         },
-      ]);
+      ];
+
+      // If article generation is enabled, add additional queue items with dependencies
+      if (options.generateArticle) {
+        const analysisId = crypto.randomUUID();
+        const codeRequestId = crypto.randomUUID();
+        const linksRequestId = crypto.randomUUID();
+        const articleId = crypto.randomUUID();
+
+        // Get transcript path from video processing
+        const transcriptPath = inputVideo.replace(/\.[^/.]+$/, ".txt") as AbsolutePath;
+
+        queueItems.push(
+          // Step 2: Analyze transcript for links (depends on video completion)
+          {
+            id: analysisId,
+            createdAt: Date.now(),
+            action: {
+              type: "analyze-transcript-for-links",
+              transcriptPath,
+              originalVideoPath: inputVideo,
+            },
+            dependencies: [videoId],
+            status: "ready-to-run",
+          },
+          // Step 3: Code request (depends on transcript analysis)
+          {
+            id: codeRequestId,
+            createdAt: Date.now(),
+            action: {
+              type: "code-request",
+              transcriptPath,
+              originalVideoPath: inputVideo,
+            },
+            dependencies: [analysisId],
+            status: "requires-user-input",
+          },
+          // Step 4: Links request (depends on code request)
+          {
+            id: linksRequestId,
+            createdAt: Date.now(),
+            action: {
+              type: "links-request",
+              linkRequests: [], // Will be populated by transcript analysis
+            },
+            dependencies: [codeRequestId],
+            status: "requires-user-input",
+          },
+          // Step 5: Generate article (depends on both links and code requests)
+          {
+            id: articleId,
+            createdAt: Date.now(),
+            action: {
+              type: "generate-article-from-transcript",
+              transcriptPath,
+              originalVideoPath: inputVideo,
+              linksDependencyId: linksRequestId,
+              codeDependencyId: codeRequestId,
+            },
+            dependencies: [linksRequestId, codeRequestId],
+            status: "ready-to-run",
+          }
+        );
+
+        yield* Console.log(`Added article generation workflow: ${queueItems.length} queue items total`);
+      }
+
+      yield* writeToQueue(queueItems);
     }).pipe(
       Effect.catchAll((e) => {
         return Effect.gen(function* () {
