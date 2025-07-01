@@ -120,11 +120,16 @@ program
     "-ga, --generate-article",
     "Automatically generate an article from the video transcript"
   )
+  .option(
+    "-a, --alongside",
+    "Save generated article alongside the video (with video's name) instead of in article storage directory"
+  )
   .action(
     async (options: {
       upload?: boolean;
       subtitles?: boolean;
       generateArticle?: boolean;
+      alongside?: boolean;
     }) => {
       await Effect.gen(function* () {
         const obs = yield* OBSIntegrationService;
@@ -133,6 +138,17 @@ program
         const inputVideo = yield* obs.getLatestOBSVideo();
 
         yield* Console.log("Adding to queue...");
+
+        // Validate flag combinations
+        if (options.alongside && !options.generateArticle) {
+          yield* Console.error(
+            "❌ The --alongside flag can only be used with --generate-article."
+          );
+          yield* Console.log(
+            "💡 Use: pnpm cli create-auto-edited-video --generate-article --alongside"
+          );
+          process.exit(1);
+        }
 
         const videoName = yield* askQuestion.askQuestion(
           "What is the name of the video?"
@@ -146,12 +162,18 @@ program
           subtitles: Boolean(options.subtitles),
           dryRun: !Boolean(options.upload),
           generateArticle: Boolean(options.generateArticle),
+          alongside: Boolean(options.alongside),
         });
 
         if (options.generateArticle) {
           yield* Console.log(
             "Article generation enabled - adding workflow queue items..."
           );
+          if (options.alongside) {
+            yield* Console.log(
+              "Article will be saved alongside the video instead of in article storage directory."
+            );
+          }
         }
 
         yield* writeToQueue(queueItems);

@@ -9,12 +9,13 @@ export interface CreateAutoEditedVideoQueueItemsOptions {
   subtitles: boolean;
   dryRun: boolean;
   generateArticle: boolean;
+  alongside?: boolean;
 }
 
 export const createAutoEditedVideoQueueItems = Effect.fn(
   "createAutoEditedVideoQueueItems"
 )(function* (opts: CreateAutoEditedVideoQueueItemsOptions) {
-  const { inputVideo, videoName, subtitles, dryRun, generateArticle } = opts;
+  const { inputVideo, videoName, subtitles, dryRun, generateArticle, alongside } = opts;
 
   // Get environment configuration
   const transcriptionDirectory = yield* Config.string(
@@ -107,6 +108,9 @@ export const createAutoEditedVideoQueueItems = Effect.fn(
           originalVideoPath,
           linksDependencyId: linksRequestId,
           codeDependencyId: codeRequestId,
+          videoName,
+          dryRun,
+          alongside: Boolean(alongside),
         },
         dependencies: [linksRequestId],
         status: "ready-to-run",

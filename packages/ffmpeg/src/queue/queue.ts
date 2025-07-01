@@ -78,6 +78,9 @@ export type QueueItemAction =
       originalVideoPath: AbsolutePath;
       linksDependencyId: string;
       codeDependencyId: string;
+      videoName: string;
+      dryRun: boolean;
+      alongside: boolean;
     };
 
 export type QueueItem = {
@@ -610,6 +613,9 @@ export const processQueue = () => {
                 originalVideoPath: AbsolutePath;
                 linksDependencyId: string;
                 codeDependencyId: string;
+                videoName: string;
+                dryRun: boolean;
+                alongside: boolean;
               };
             };
 
