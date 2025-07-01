@@ -14,16 +14,12 @@ export interface CreateAutoEditedVideoQueueItemsOptions {
 export const createAutoEditedVideoQueueItems = Effect.fn(
   "createAutoEditedVideoQueueItems"
 )(function* (opts: CreateAutoEditedVideoQueueItemsOptions) {
-  const {
-    inputVideo,
-    videoName,
-    subtitles,
-    dryRun,
-    generateArticle,
-  } = opts;
+  const { inputVideo, videoName, subtitles, dryRun, generateArticle } = opts;
 
   // Get environment configuration
-  const transcriptionDirectory = yield* Config.string("TRANSCRIPTION_DIRECTORY");
+  const transcriptionDirectory = yield* Config.string(
+    "TRANSCRIPTION_DIRECTORY"
+  );
   const obsOutputDirectory = yield* Config.string("OBS_OUTPUT_DIRECTORY");
 
   // Generate unique IDs for all queue items
@@ -51,10 +47,12 @@ export const createAutoEditedVideoQueueItems = Effect.fn(
 
   // If article generation is enabled, add the additional queue items with dependencies
   if (generateArticle) {
+    const inputVideoName = path.parse(inputVideo).name;
+
     // Get the transcript path that will be created by the video processing
     const transcriptPath = path.join(
       transcriptionDirectory,
-      `${videoName}.txt`
+      `${inputVideoName}.txt`
     ) as AbsolutePath;
 
     // Get the original video path structure that matches the storage service
@@ -85,7 +83,7 @@ export const createAutoEditedVideoQueueItems = Effect.fn(
           transcriptPath,
           originalVideoPath,
         },
-        dependencies: [transcriptAnalysisId],
+        dependencies: [],
         status: "requires-user-input",
       },
       // 4. Links request (depends on code request)
@@ -96,7 +94,7 @@ export const createAutoEditedVideoQueueItems = Effect.fn(
           type: "links-request",
           linkRequests: [], // Will be populated by transcript analysis
         },
-        dependencies: [codeRequestId],
+        dependencies: [transcriptAnalysisId],
         status: "requires-user-input",
       },
       // 5. Article generation (depends on links request and code request)
@@ -110,7 +108,7 @@ export const createAutoEditedVideoQueueItems = Effect.fn(
           linksDependencyId: linksRequestId,
           codeDependencyId: codeRequestId,
         },
-        dependencies: [linksRequestId, codeRequestId],
+        dependencies: [linksRequestId],
         status: "ready-to-run",
       }
     );

@@ -111,7 +111,7 @@ const ensureQueueExists = () => {
     if (!exists) {
       yield* fs.writeFileString(
         queueLocation,
-        JSON.stringify(defaultQueueState)
+        JSON.stringify(defaultQueueState, null, 2)
       );
     }
   });
@@ -155,7 +155,10 @@ const updateQueueItem = (item: QueueItem) => {
     const queueState = yield* getQueueState();
     const index = queueState.queue.findIndex((i) => i.id === item.id);
     queueState.queue[index] = item;
-    yield* fs.writeFileString(queueLocation, JSON.stringify(queueState));
+    yield* fs.writeFileString(
+      queueLocation,
+      JSON.stringify(queueState, null, 2)
+    );
   });
 };
 
@@ -215,11 +218,19 @@ export const getOutstandingInformationRequests = () => {
   return Effect.gen(function* () {
     const queueState = yield* getQueueState();
 
+    const queueItemsAsMap = new Map(queueState.queue.map((i) => [i.id, i]));
+
     const informationRequests = queueState.queue.filter(
       (item) =>
         (item.action.type === "links-request" ||
           item.action.type === "code-request") &&
-        item.status === "requires-user-input"
+        item.status === "requires-user-input" &&
+        // Check that all dependencies are completed
+        (!item.dependencies ||
+          item.dependencies.every(
+            (dependency) =>
+              queueItemsAsMap.get(dependency)?.status === "completed"
+          ))
     );
 
     return informationRequests;
@@ -293,7 +304,10 @@ export const processInformationRequests = () => {
         );
 
         const codePath = yield* askQuestion.askQuestion(
-          `📂 Code file path (optional, press Enter to skip): `
+          `📂 Code file path (optional, press Enter to skip): `,
+          {
+            optional: true,
+          }
         );
 
         let codeContent = "";

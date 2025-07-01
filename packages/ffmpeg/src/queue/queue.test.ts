@@ -424,6 +424,112 @@ it("Should return outstanding information requests", async () => {
   }
 });
 
+it("Should not return information requests with unmet dependencies", async () => {
+  const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
+
+  try {
+    const QUEUE_LOCATION = path.join(tmpDir, "queue.json");
+    const QUEUE_LOCKFILE_LOCATION = path.join(tmpDir, "queue.lock");
+
+    const { getOutstandingInformationRequests } = await import("./queue.js");
+
+    const informationRequests = await Effect.gen(function* () {
+      yield* writeToQueue([
+        {
+          id: "dependency-1",
+          createdAt: Date.now(),
+          action: {
+            type: "create-auto-edited-video",
+            inputVideo: "/Users/josh/Desktop/video.mp4" as AbsolutePath,
+            videoName: "test",
+            subtitles: false,
+            dryRun: false,
+          },
+          status: "ready-to-run", // Not completed - dependency not met
+        },
+        {
+          id: "dependency-2",
+          createdAt: Date.now(),
+          action: {
+            type: "analyze-transcript-for-links",
+            transcriptPath: "/path/to/transcript.txt" as AbsolutePath,
+            originalVideoPath: "/path/to/video.mp4" as AbsolutePath,
+          },
+          status: "completed", // Completed - dependency met
+          completedAt: Date.now(),
+        },
+        {
+          id: "links-request-1",
+          createdAt: Date.now(),
+          action: {
+            type: "links-request",
+            linkRequests: ["test"],
+          },
+          status: "requires-user-input",
+          dependencies: ["dependency-1"], // Depends on incomplete item
+        },
+        {
+          id: "code-request-1",
+          createdAt: Date.now(),
+          action: {
+            type: "code-request",
+            transcriptPath: "/path/to/transcript.txt" as AbsolutePath,
+            originalVideoPath: "/path/to/video.mp4" as AbsolutePath,
+          },
+          status: "requires-user-input",
+          dependencies: ["dependency-2"], // Depends on completed item
+        },
+        {
+          id: "links-request-2",
+          createdAt: Date.now(),
+          action: {
+            type: "links-request",
+            linkRequests: ["another test"],
+          },
+          status: "requires-user-input",
+          // No dependencies - should be included
+        },
+      ]);
+
+      return yield* getOutstandingInformationRequests();
+    }).pipe(
+      Effect.provide(NodeFileSystem.layer),
+      Effect.withConfigProvider(
+        ConfigProvider.fromJson({
+          QUEUE_LOCATION,
+          QUEUE_LOCKFILE_LOCATION,
+        })
+      ),
+      Effect.runPromise
+    );
+
+    // Should only return information requests with met dependencies or no dependencies
+    expect(informationRequests).toHaveLength(2);
+
+    // Should include code-request-1 (dependency met)
+    const codeRequest = informationRequests.find(
+      (r) => r.id === "code-request-1"
+    );
+    expect(codeRequest).toBeDefined();
+    expect(codeRequest!.action.type).toBe("code-request");
+
+    // Should include links-request-2 (no dependencies)
+    const linksRequest2 = informationRequests.find(
+      (r) => r.id === "links-request-2"
+    );
+    expect(linksRequest2).toBeDefined();
+    expect(linksRequest2!.action.type).toBe("links-request");
+
+    // Should NOT include links-request-1 (dependency not met)
+    const linksRequest1 = informationRequests.find(
+      (r) => r.id === "links-request-1"
+    );
+    expect(linksRequest1).toBeUndefined();
+  } finally {
+    await fs.rm(tmpDir, { recursive: true });
+  }
+});
+
 it("Should process only information requests", async () => {
   const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
 
@@ -635,10 +741,6 @@ it("Should handle code-request action type and store code content in temporaryDa
       },
       status: "completed",
     });
-
-    expect(askQuestion).toHaveBeenCalledWith(
-      "📂 Code file path (optional, press Enter to skip): "
-    );
   } finally {
     await fs.rm(tmpDir, { recursive: true });
   }

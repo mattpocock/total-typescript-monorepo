@@ -1,16 +1,12 @@
 import { FileSystem } from "@effect/platform";
-import { NodeFileSystem } from "@effect/platform-node";
 import { type AbsolutePath } from "@total-typescript/shared";
 import { ConfigProvider, Effect } from "effect";
-import { beforeEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
   ArticleGenerationError,
-  CodeDependencyNotFoundError,
   generateArticleFromTranscriptQueue,
-  getCodeFromQueueItem,
   LinksDependencyNotFoundError,
   processArticleGenerationForQueue,
-  TranscriptReadError,
   validateLinksDependency,
 } from "./queue-article-generation.js";
 import type { QueueItem, QueueState } from "./queue/queue.js";
@@ -19,7 +15,6 @@ import {
   ArticleStorageService,
   LinksStorageService,
 } from "./services.js";
-import { PlatformError } from "@effect/platform/Error";
 
 const testConfig = ConfigProvider.fromMap(
   new Map([
@@ -75,136 +70,6 @@ const createMockFS = (files: Record<string, string> = {}) => {
 };
 
 describe("queue-article-generation", () => {
-  describe("getCodeFromQueueItem", () => {
-    it("should retrieve code content from completed code-request queue item", async () => {
-      const queueState: QueueState = {
-        queue: [
-          {
-            id: "code-1",
-            createdAt: Date.now(),
-            action: {
-              type: "code-request",
-              transcriptPath: "/test/transcript.txt" as AbsolutePath,
-              originalVideoPath: "/test/video.mp4" as AbsolutePath,
-              temporaryData: {
-                codePath: "/test/code.ts",
-                codeContent: "const hello = 'world';",
-              },
-            },
-            status: "completed",
-            completedAt: Date.now(),
-          },
-        ],
-      };
-
-      const result = await getCodeFromQueueItem({
-        queueItemId: "code-1",
-        queueState,
-      }).pipe(Effect.runPromise);
-
-      expect(result).toBe("const hello = 'world';");
-    });
-
-    it("should return undefined when no code content is available", async () => {
-      const queueState: QueueState = {
-        queue: [
-          {
-            id: "code-1",
-            createdAt: Date.now(),
-            action: {
-              type: "code-request",
-              transcriptPath: "/test/transcript.txt" as AbsolutePath,
-              originalVideoPath: "/test/video.mp4" as AbsolutePath,
-              temporaryData: {
-                codePath: "",
-                codeContent: "",
-              },
-            },
-            status: "completed",
-            completedAt: Date.now(),
-          },
-        ],
-      };
-
-      const result = await getCodeFromQueueItem({
-        queueItemId: "code-1",
-        queueState,
-      }).pipe(Effect.runPromise);
-
-      expect(result).toBe("");
-    });
-
-    it("should fail when queue item is not found", async () => {
-      const queueState: QueueState = { queue: [] };
-
-      const result = await getCodeFromQueueItem({
-        queueItemId: "nonexistent",
-        queueState,
-      }).pipe(Effect.either, Effect.runPromise);
-
-      expect(result._tag).toBe("Left");
-      if (result._tag === "Left") {
-        expect(result.left).toBeInstanceOf(CodeDependencyNotFoundError);
-      }
-    });
-
-    it("should fail when queue item is not a code-request", async () => {
-      const queueState: QueueState = {
-        queue: [
-          {
-            id: "video-1",
-            createdAt: Date.now(),
-            action: {
-              type: "create-auto-edited-video",
-              inputVideo: "/test/input.mp4" as AbsolutePath,
-              videoName: "test",
-              subtitles: true,
-              dryRun: false,
-            },
-            status: "completed",
-          },
-        ],
-      };
-
-      const result = await getCodeFromQueueItem({
-        queueItemId: "video-1",
-        queueState,
-      }).pipe(Effect.either, Effect.runPromise);
-
-      expect(result._tag).toBe("Left");
-      if (result._tag === "Left") {
-        expect(result.left).toBeInstanceOf(CodeDependencyNotFoundError);
-      }
-    });
-
-    it("should fail when queue item is not completed", async () => {
-      const queueState: QueueState = {
-        queue: [
-          {
-            id: "code-1",
-            createdAt: Date.now(),
-            action: {
-              type: "code-request",
-              transcriptPath: "/test/transcript.txt" as AbsolutePath,
-              originalVideoPath: "/test/video.mp4" as AbsolutePath,
-            },
-            status: "ready-to-run",
-          },
-        ],
-      };
-
-      const result = await getCodeFromQueueItem({
-        queueItemId: "code-1",
-        queueState,
-      }).pipe(Effect.either, Effect.runPromise);
-
-      expect(result._tag).toBe("Left");
-      if (result._tag === "Left") {
-        expect(result.left).toBeInstanceOf(CodeDependencyNotFoundError);
-      }
-    });
-  });
-
   describe("validateLinksDependency", () => {
     it("should succeed when links-request queue item is completed", async () => {
       const queueState: QueueState = {
@@ -431,29 +296,6 @@ describe("queue-article-generation", () => {
       expect(result._tag).toBe("Left");
       if (result._tag === "Left") {
         expect(result.left).toBeInstanceOf(ArticleGenerationError);
-      }
-    });
-
-    it("should fail when code dependency is invalid", async () => {
-      const result = await generateArticleFromTranscriptQueue({
-        transcriptPath: "/test/transcript.txt" as AbsolutePath,
-        originalVideoPath: "/test/video.mp4" as AbsolutePath,
-        codeDependencyId: "nonexistent",
-        linksDependencyId: "links-1",
-        queueState,
-      }).pipe(
-        Effect.provideService(FileSystem.FileSystem, mockFS),
-        Effect.provideService(AIService, mockAIService),
-        Effect.provideService(ArticleStorageService, mockArticleStorageService),
-        Effect.provideService(LinksStorageService, mockLinksStorageService),
-        Effect.withConfigProvider(testConfig),
-        Effect.either,
-        Effect.runPromise
-      );
-
-      expect(result._tag).toBe("Left");
-      if (result._tag === "Left") {
-        expect(result.left).toBeInstanceOf(CodeDependencyNotFoundError);
       }
     });
 

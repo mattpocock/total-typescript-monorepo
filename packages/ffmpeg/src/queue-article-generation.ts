@@ -33,44 +33,6 @@ export class ArticleGenerationError extends Data.TaggedError(
 }> {}
 
 /**
- * Retrieves code content from a completed queue item's temporaryData
- */
-export const getCodeFromQueueItem = Effect.fn("getCodeFromQueueItem")(
-  function* (opts: { queueItemId: string; queueState: QueueState }) {
-    const { queueItemId, queueState } = opts;
-
-    const queueItem = queueState.queue.find((item) => item.id === queueItemId);
-
-    if (!queueItem) {
-      return yield* Effect.fail(
-        new CodeDependencyNotFoundError({
-          codeDependencyId: queueItemId,
-        })
-      );
-    }
-
-    if (queueItem.action.type !== "code-request") {
-      return yield* Effect.fail(
-        new CodeDependencyNotFoundError({
-          codeDependencyId: queueItemId,
-        })
-      );
-    }
-
-    if (queueItem.status !== "completed") {
-      return yield* Effect.fail(
-        new CodeDependencyNotFoundError({
-          codeDependencyId: queueItemId,
-        })
-      );
-    }
-
-    // Return the code content from temporaryData, or undefined if not available
-    return queueItem.action.temporaryData?.codeContent;
-  }
-);
-
-/**
  * Validates that the links dependency queue item exists and is completed
  */
 export const validateLinksDependency = Effect.fn("validateLinksDependency")(
@@ -162,12 +124,6 @@ export const generateArticleFromTranscriptQueue = Effect.fn(
     queueState,
   });
 
-  // Get code content from queue item (optional, may be undefined)
-  const codeContent = yield* getCodeFromQueueItem({
-    queueItemId: codeDependencyId,
-    queueState,
-  });
-
   // Get links from storage (these were stored when links-request was processed)
   const storedLinks = yield* linksStorage.getLinks();
 
@@ -181,19 +137,11 @@ export const generateArticleFromTranscriptQueue = Effect.fn(
     `Found ${urls.length} stored links for article generation`
   );
 
-  if (codeContent) {
-    yield* Console.log(
-      `Using code content (${codeContent.length} characters) for article generation`
-    );
-  } else {
-    yield* Console.log("No code content available for article generation");
-  }
-
   // Use the shared core article generation logic
   const result = yield* generateArticleCore({
     originalVideoPath,
     transcript: transcriptContent,
-    code: codeContent,
+    code: "",
     urls,
   }).pipe(
     Effect.mapError((error) => {
