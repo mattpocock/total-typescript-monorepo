@@ -26,10 +26,6 @@ Here is the code for the article (if it exists):
 
 Use the code as the source of truth for the article.
 
-## Links
+## Available Links
 
-Here are some links that have been requested for the article:
-
-{{urls}}
-
-You MUST include these links somewhere in the article.
+{{links_section}}

@@ -18,6 +18,7 @@ it("Should generate an article given a transcript", async () => {
   await generateArticleFromTranscript({
     originalVideoPath: "test/fixtures/video.mp4" as AbsolutePath,
     transcript: "Awesome video",
+    urls: [],
   }).pipe(
     Effect.provideService(AIService, {
       articleFromTranscript,
@@ -32,6 +33,7 @@ it("Should generate an article given a transcript", async () => {
   expect(articleFromTranscript).toHaveBeenCalledWith({
     transcript: "Awesome video",
     mostRecentArticles: [],
+    urls: [],
   });
 
   expect(articleStorageService.storeArticle).toHaveBeenCalledWith({
