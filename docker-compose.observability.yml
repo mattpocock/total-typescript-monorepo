@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  # All-in-one observability stack for Effect tracing
+  observability:
+    image: grafana/otel-lgtm:latest
+    container_name: effect-observability
+    ports:
+      # Jaeger UI
+      - "16686:16686"
+      # OpenTelemetry Collector - OTLP gRPC
+      - "4317:4317"
+      # OpenTelemetry Collector - OTLP HTTP
+      - "4318:4318"
+      # Prometheus
+      - "9090:9090"
+      # Grafana
+      - "3000:3000"
+    environment:
+      - OTEL_SERVICE_NAME=effect-internal-cli
+      - JAEGER_ENDPOINT=http://localhost:14268/api/traces
+    volumes:
+      # Optional: mount config if you want to customize
+      - ./observability-config:/etc/otel-lgtm
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:16686"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+networks:
+  default:
+    name: effect-observability

@@ -24,7 +24,7 @@ import {
 import { type AbsolutePath } from "@total-typescript/shared";
 import { Command } from "commander";
 import { config } from "dotenv";
-import { ConfigProvider, Console, Effect } from "effect";
+import { ConfigProvider, Console, Effect, Layer } from "effect";
 import path from "node:path";
 import { styleText } from "node:util";
 import {
@@ -34,10 +34,16 @@ import {
   TranscriptStorageService,
 } from "../../../packages/ffmpeg/dist/services.js";
 import packageJson from "../package.json" with { type: "json" };
+import { OpenTelemetryLive } from "./tracing.js";
 
 config({
   path: path.resolve(import.meta.dirname, "../../../.env"),
 });
+
+/**
+ * Main Layer that combines the application layer with OpenTelemetry tracing
+ */
+const MainLayerLive = Layer.provide(AppLayerLive, OpenTelemetryLive);
 
 const program = new Command();
 
@@ -50,7 +56,7 @@ program
   .action(async () => {
     await moveRawFootageToLongTermStorage().pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(AppLayerLive),
+      Effect.provide(MainLayerLive),
       Effect.runPromise
     );
   });
@@ -61,7 +67,7 @@ program
   .action(async () => {
     await createTimeline().pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(AppLayerLive),
+      Effect.provide(MainLayerLive),
       Effect.runPromise
     );
   });
@@ -72,7 +78,7 @@ program
   .action(async () => {
     await addCurrentTimelineToRenderQueue().pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(AppLayerLive),
+      Effect.provide(MainLayerLive),
       Effect.runPromise
     );
   });
@@ -83,7 +89,7 @@ program
   .action(async () => {
     await exportSubtitles().pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(AppLayerLive),
+      Effect.provide(MainLayerLive),
       Effect.runPromise
     );
   });
@@ -97,7 +103,7 @@ program
       inputVideo: video as AbsolutePath,
     }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(AppLayerLive),
+      Effect.provide(MainLayerLive),
       Effect.runPromise
     );
   });
@@ -154,7 +160,7 @@ program
         });
       }),
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(AppLayerLive),
+      Effect.provide(MainLayerLive),
       Effect.runPromise
     );
   });
@@ -166,7 +172,7 @@ program
   .action(async () => {
     await transcribeVideoWorkflow().pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(AppLayerLive),
+      Effect.provide(MainLayerLive),
       Effect.runPromise
     );
   });
@@ -178,7 +184,7 @@ program
   .action(async () => {
     await processQueue().pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(AppLayerLive),
+      Effect.provide(MainLayerLive),
       Effect.runPromise
     );
   });
@@ -200,7 +206,7 @@ program
       yield* processInformationRequests();
     }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(AppLayerLive),
+      Effect.provide(MainLayerLive),
       Effect.runPromise
     );
   });
@@ -264,7 +270,7 @@ program
 
     await program.pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(AppLayerLive),
+      Effect.provide(MainLayerLive),
       Effect.runPromise
     );
   });
@@ -393,7 +399,7 @@ program
       }
     }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(AppLayerLive),
+      Effect.provide(MainLayerLive),
       Effect.runPromise
     );
   });
@@ -454,7 +460,7 @@ program
         });
       }),
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(AppLayerLive),
+      Effect.provide(MainLayerLive),
       Effect.runPromise
     );
   });
