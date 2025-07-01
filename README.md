@@ -138,12 +138,19 @@ The `--generate-article` flag enables automatic article creation from video tran
 #### Usage Examples
 
 ```bash
-# Basic article generation
+# Basic article generation (saves to article storage directory)
 pnpm cli create-auto-edited-video --generate-article
 
+# Generate article alongside the video (saves with video's name in video directory)
+pnpm cli create-auto-edited-video --generate-article --alongside
+
 # Combined with other options
-pnpm cli create-auto-edited-video --generate-article --upload --no-subtitles
+pnpm cli create-auto-edited-video --generate-article --alongside --upload --no-subtitles
 ```
+
+#### Output Options
+- **Default**: Articles saved to `ARTICLE_STORAGE_PATH` with numbered filenames (001-title.md) for iterative improvement
+- **With --alongside**: Articles saved alongside the finished video with the video's name (videoname.md)
 
 #### Interactive Steps
 - **Code File**: Prompted for optional TypeScript/JavaScript code file path
@@ -298,6 +305,10 @@ Each package contains its own README with detailed usage instructions:
 4. Update relevant documentation
 5. Submit a pull request
 
+## 📄 License
+
+ISC - See individual packages for specific licensing information.
+
 ## �️ Troubleshooting
 
 ### Article Generation Issues
@@ -339,10 +350,6 @@ pnpm cli process-info-requests   # Handle user input items
 - Failed items are marked with error details
 - Manual intervention may be required for complex dependency failures
 
-## �📄 License
-
-ISC - See individual packages for specific licensing information.
-
-## 👨‍💻 Author
+## �👨‍💻 Author
 
 Matt Pocock - Total TypeScript

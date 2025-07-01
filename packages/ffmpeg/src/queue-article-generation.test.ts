@@ -333,6 +333,9 @@ describe("queue-article-generation", () => {
         originalVideoPath: AbsolutePath;
         linksDependencyId: string;
         codeDependencyId: string;
+        videoName: string;
+        dryRun: boolean;
+        alongside: boolean;
       };
     } = {
       id: "article-1",
@@ -343,6 +346,9 @@ describe("queue-article-generation", () => {
         originalVideoPath: "/test/video.mp4" as AbsolutePath,
         linksDependencyId: "links-1",
         codeDependencyId: "code-1",
+        videoName: "test-video",
+        dryRun: true,
+        alongside: false,
       },
       status: "ready-to-run",
     };

@@ -1,10 +1,11 @@
 import { FileSystem } from "@effect/platform";
 import { type AbsolutePath } from "@total-typescript/shared";
-import { ConfigError, Console, Data, Effect } from "effect";
+import { Config, ConfigError, Console, Data, Effect } from "effect";
 import { generateArticleCore } from "./article-from-transcript.js";
 import type { QueueItem, QueueState } from "./queue/queue.js";
 import { LinksStorageService } from "./services.js";
 import type { PlatformError } from "@effect/platform/Error";
+import path from "node:path";
 
 export class TranscriptReadError extends Data.TaggedError(
   "TranscriptReadError"
@@ -82,6 +83,9 @@ export const generateArticleFromTranscriptQueue = Effect.fn(
   codeDependencyId: string;
   linksDependencyId: string;
   queueState: QueueState;
+  videoName?: string;
+  dryRun?: boolean;
+  alongside?: boolean;
 }) {
   const {
     transcriptPath,
@@ -89,6 +93,9 @@ export const generateArticleFromTranscriptQueue = Effect.fn(
     codeDependencyId,
     linksDependencyId,
     queueState,
+    videoName,
+    dryRun,
+    alongside,
   } = opts;
 
   const fs = yield* FileSystem.FileSystem;
@@ -137,13 +144,43 @@ export const generateArticleFromTranscriptQueue = Effect.fn(
     `Found ${urls.length} stored links for article generation`
   );
 
-  // Use the shared core article generation logic
-  const result = yield* generateArticleCore({
+  let generateOptions: {
+    originalVideoPath: AbsolutePath;
+    transcript: string;
+    code: string;
+    urls: { request: string; url: string }[];
+    storageMode?: "article-storage" | "alongside-video";
+    videoDirectory?: string;
+    videoName?: string;
+  } = {
     originalVideoPath,
     transcript: transcriptContent,
     code: "",
     urls,
-  }).pipe(
+  };
+
+  // If alongside flag is set and we have video info, save alongside the video
+  if (alongside && videoName && dryRun !== undefined) {
+    const exportDirectory = yield* Config.string("EXPORT_DIRECTORY");
+    const shortsExportDirectory = yield* Config.string("SHORTS_EXPORT_DIRECTORY");
+    
+    // Determine where the video is located based on dryRun flag
+    const videoDirectory = dryRun ? exportDirectory : shortsExportDirectory;
+    
+    generateOptions = {
+      ...generateOptions,
+      storageMode: "alongside-video" as const,
+      videoDirectory,
+      videoName,
+    };
+
+    yield* Console.log(
+      `Article will be saved alongside video in: ${videoDirectory}/${videoName}.md`
+    );
+  }
+
+  // Use the shared core article generation logic
+  const result = yield* generateArticleCore(generateOptions).pipe(
     Effect.mapError((error) => {
       return new ArticleGenerationError({
         transcriptPath,
@@ -152,9 +189,15 @@ export const generateArticleFromTranscriptQueue = Effect.fn(
     })
   );
 
-  yield* Console.log(
-    `Successfully generated and stored article: ${result.title}`
-  );
+  if (alongside) {
+    yield* Console.log(
+      `Successfully generated and saved article alongside video: ${result.title}`
+    );
+  } else {
+    yield* Console.log(
+      `Successfully generated and stored article: ${result.title}`
+    );
+  }
 
   return {
     title: result.title,
@@ -175,6 +218,9 @@ export const processArticleGenerationForQueue = Effect.fn(
       originalVideoPath: AbsolutePath;
       linksDependencyId: string;
       codeDependencyId: string;
+      videoName: string;
+      dryRun: boolean;
+      alongside: boolean;
     };
   };
   queueState: QueueState;
@@ -191,6 +237,9 @@ export const processArticleGenerationForQueue = Effect.fn(
     codeDependencyId: queueItem.action.codeDependencyId,
     linksDependencyId: queueItem.action.linksDependencyId,
     queueState,
+    videoName: queueItem.action.videoName,
+    dryRun: queueItem.action.dryRun,
+    alongside: queueItem.action.alongside,
   });
 
   yield* Console.log(
