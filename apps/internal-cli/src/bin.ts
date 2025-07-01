@@ -43,7 +43,7 @@ config({
 /**
  * Main Layer that combines the application layer with OpenTelemetry tracing
  */
-const MainLayerLive = Layer.provide(AppLayerLive, OpenTelemetryLive);
+const MainLayerLive = Layer.merge(AppLayerLive, OpenTelemetryLive);
 
 const program = new Command();
 
@@ -116,54 +116,67 @@ program
   )
   .option("-u, --upload", "Upload to shorts directory")
   .option("-ns, --no-subtitles", "Disable subtitle rendering")
-  .option("-ga, --generate-article", "Automatically generate an article from the video transcript")
-  .action(async (options: { upload?: boolean; subtitles?: boolean; generateArticle?: boolean }) => {
-    await Effect.gen(function* () {
-      const obs = yield* OBSIntegrationService;
-      const askQuestion = yield* AskQuestionService;
+  .option(
+    "-ga, --generate-article",
+    "Automatically generate an article from the video transcript"
+  )
+  .action(
+    async (options: {
+      upload?: boolean;
+      subtitles?: boolean;
+      generateArticle?: boolean;
+    }) => {
+      await Effect.gen(function* () {
+        const obs = yield* OBSIntegrationService;
+        const askQuestion = yield* AskQuestionService;
 
-      const inputVideo = yield* obs.getLatestOBSVideo();
+        const inputVideo = yield* obs.getLatestOBSVideo();
 
-      yield* Console.log("Adding to queue...");
+        yield* Console.log("Adding to queue...");
 
-      const videoName = yield* askQuestion.askQuestion(
-        "What is the name of the video?"
-      );
+        const videoName = yield* askQuestion.askQuestion(
+          "What is the name of the video?"
+        );
 
-      yield* validateWindowsFilename(videoName);
+        yield* validateWindowsFilename(videoName);
 
-      const queueItems = yield* createAutoEditedVideoQueueItems({
-        inputVideo,
-        videoName,
-        subtitles: Boolean(options.subtitles),
-        dryRun: !Boolean(options.upload),
-        generateArticle: Boolean(options.generateArticle),
-      });
-
-      if (options.generateArticle) {
-        yield* Console.log("Article generation enabled - adding workflow queue items...");
-      }
-
-      yield* writeToQueue(queueItems);
-
-      if (options.generateArticle) {
-        yield* Console.log(`Added ${queueItems.length} items to queue for video processing with article generation.`);
-      } else {
-        yield* Console.log("Added video processing item to queue.");
-      }
-    }).pipe(
-      Effect.catchAll((e) => {
-        return Effect.gen(function* () {
-          yield* Effect.logError(e);
-          yield* Effect.sleep(5000);
-          return yield* Effect.die(e);
+        const queueItems = yield* createAutoEditedVideoQueueItems({
+          inputVideo,
+          videoName,
+          subtitles: Boolean(options.subtitles),
+          dryRun: !Boolean(options.upload),
+          generateArticle: Boolean(options.generateArticle),
         });
-      }),
-      Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(MainLayerLive),
-      Effect.runPromise
-    );
-  });
+
+        if (options.generateArticle) {
+          yield* Console.log(
+            "Article generation enabled - adding workflow queue items..."
+          );
+        }
+
+        yield* writeToQueue(queueItems);
+
+        if (options.generateArticle) {
+          yield* Console.log(
+            `Added ${queueItems.length} items to queue for video processing with article generation.`
+          );
+        } else {
+          yield* Console.log("Added video processing item to queue.");
+        }
+      }).pipe(
+        Effect.catchAll((e) => {
+          return Effect.gen(function* () {
+            yield* Effect.logError(e);
+            yield* Effect.sleep(5000);
+            return yield* Effect.die(e);
+          });
+        }),
+        Effect.withConfigProvider(ConfigProvider.fromEnv()),
+        Effect.provide(MainLayerLive),
+        Effect.runPromise
+      );
+    }
+  );
 
 program
   .command("transcribe-video")
@@ -192,17 +205,21 @@ program
 program
   .command("process-information-requests")
   .aliases(["pir", "info-requests"])
-  .description("Check for and process outstanding information requests in the queue.")
+  .description(
+    "Check for and process outstanding information requests in the queue."
+  )
   .action(async () => {
     await Effect.gen(function* () {
       const informationRequests = yield* getOutstandingInformationRequests();
-      
+
       if (informationRequests.length === 0) {
         yield* Console.log("No outstanding information requests found.");
         return;
       }
-      
-      yield* Console.log(`Found ${informationRequests.length} outstanding information request(s).`);
+
+      yield* Console.log(
+        `Found ${informationRequests.length} outstanding information request(s).`
+      );
       yield* processInformationRequests();
     }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
@@ -294,23 +311,33 @@ program
 
       const filteredQueue = queueState.queue.filter((item: QueueItem) => {
         // Show all outstanding items
-        if (item.status === "ready-to-run" || item.status === "requires-user-input") {
+        if (
+          item.status === "ready-to-run" ||
+          item.status === "requires-user-input"
+        ) {
           return true;
         }
-        
+
         // Show all failed items
         if (item.status === "failed") {
           return true;
         }
-        
+
         // Show today's and yesterday's successful items
         if (item.status === "completed" && item.completedAt) {
           const completedDate = new Date(item.completedAt);
-          const completedDay = new Date(completedDate.getFullYear(), completedDate.getMonth(), completedDate.getDate());
-          
-          return completedDay.getTime() === today.getTime() || completedDay.getTime() === yesterday.getTime();
+          const completedDay = new Date(
+            completedDate.getFullYear(),
+            completedDate.getMonth(),
+            completedDate.getDate()
+          );
+
+          return (
+            completedDay.getTime() === today.getTime() ||
+            completedDay.getTime() === yesterday.getTime()
+          );
         }
-        
+
         return false;
       });
 
@@ -323,66 +350,63 @@ program
         (q: QueueItem) => q.status !== "completed"
       );
 
-      yield* Effect.forEach(
-        filteredQueue,
-        (item: QueueItem, idx: number) => {
-          return Effect.gen(function* () {
-            const completed = formatRelativeDate(item.completedAt);
-            let statusIcon = "";
-            switch (item.status) {
-              case "completed":
-                statusIcon = "✅";
-                break;
-              case "failed":
-                statusIcon = "❌";
-                break;
-              case "requires-user-input":
-                statusIcon = "❓";
-                break;
-              default:
-                statusIcon = "⏳";
-            }
+      yield* Effect.forEach(filteredQueue, (item: QueueItem, idx: number) => {
+        return Effect.gen(function* () {
+          const completed = formatRelativeDate(item.completedAt);
+          let statusIcon = "";
+          switch (item.status) {
+            case "completed":
+              statusIcon = "✅";
+              break;
+            case "failed":
+              statusIcon = "❌";
+              break;
+            case "requires-user-input":
+              statusIcon = "❓";
+              break;
+            default:
+              statusIcon = "⏳";
+          }
 
-            let actionContent = "";
-            if (item.action.type === "create-auto-edited-video") {
-              let options = [];
-              if (!item.action.dryRun) options.push("Upload");
-              if (item.action.subtitles) options.push("Subtitles");
-              
-              actionContent = 
-                `  ${styleText("dim", "Title")}      ${item.action.videoName}\n` +
-                (options.length > 0
-                  ? `  ${styleText("dim", "Options")}    ${options.join(", ")}\n`
-                  : "");
-            } else if (item.action.type === "links-request") {
-              actionContent = 
-                `  ${styleText("dim", "Type")}       Information Request\n` +
-                `  ${styleText("dim", "Links")}      ${item.action.linkRequests.length} link(s) requested\n`;
-            } else if (item.action.type === "concatenate-videos") {
-              let options = [];
-              if (!item.action.dryRun) options.push("Upload");
-              
-              actionContent = 
-                `  ${styleText("dim", "Title")}      ${item.action.outputVideoName}\n` +
-                `  ${styleText("dim", "Videos")}     ${item.action.videoIds.length} video(s)\n` +
-                (options.length > 0
-                  ? `  ${styleText("dim", "Options")}    ${options.join(", ")}\n`
-                  : "");
-            }
+          let actionContent = "";
+          if (item.action.type === "create-auto-edited-video") {
+            let options = [];
+            if (!item.action.dryRun) options.push("Upload");
+            if (item.action.subtitles) options.push("Subtitles");
 
-            yield* Console.log(
-              `${styleText("bold", `#${idx + 1}`)} ${statusIcon}\n` +
-                actionContent +
-                `  ${styleText("dim", "Status")}     ${item.status}\n` +
-                `  ${styleText("dim", "Completed")}  ${completed}` +
-                (item.error
-                  ? `\n  ${styleText("dim", "Error")}      ${item.error}`
-                  : "") +
-                "\n"
-            );
-          });
-        }
-      );
+            actionContent =
+              `  ${styleText("dim", "Title")}      ${item.action.videoName}\n` +
+              (options.length > 0
+                ? `  ${styleText("dim", "Options")}    ${options.join(", ")}\n`
+                : "");
+          } else if (item.action.type === "links-request") {
+            actionContent =
+              `  ${styleText("dim", "Type")}       Information Request\n` +
+              `  ${styleText("dim", "Links")}      ${item.action.linkRequests.length} link(s) requested\n`;
+          } else if (item.action.type === "concatenate-videos") {
+            let options = [];
+            if (!item.action.dryRun) options.push("Upload");
+
+            actionContent =
+              `  ${styleText("dim", "Title")}      ${item.action.outputVideoName}\n` +
+              `  ${styleText("dim", "Videos")}     ${item.action.videoIds.length} video(s)\n` +
+              (options.length > 0
+                ? `  ${styleText("dim", "Options")}    ${options.join(", ")}\n`
+                : "");
+          }
+
+          yield* Console.log(
+            `${styleText("bold", `#${idx + 1}`)} ${statusIcon}\n` +
+              actionContent +
+              `  ${styleText("dim", "Status")}     ${item.status}\n` +
+              `  ${styleText("dim", "Completed")}  ${completed}` +
+              (item.error
+                ? `\n  ${styleText("dim", "Error")}      ${item.error}`
+                : "") +
+              "\n"
+          );
+        });
+      });
 
       if (uncompleted.length === 0) {
         yield* Console.log("✅ All outstanding queue items are completed!");
@@ -400,6 +424,7 @@ program
     }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
+      Effect.withSpan("queue-status"),
       Effect.runPromise
     );
   });
@@ -412,17 +437,19 @@ program
   .action(async (options: { upload?: boolean }) => {
     await Effect.gen(function* () {
       const askQuestion = yield* AskQuestionService;
-      
+
       // Select videos using the multi-selection interface
       const selectedVideoIds = yield* multiSelectVideosFromQueue();
-      
+
       if (selectedVideoIds.length === 0) {
         yield* Console.log("No videos selected. Cancelling concatenation.");
         return;
       }
 
       if (selectedVideoIds.length === 1) {
-        yield* Console.log("Only one video selected. At least 2 videos are required for concatenation.");
+        yield* Console.log(
+          "Only one video selected. At least 2 videos are required for concatenation."
+        );
         return;
       }
 
@@ -450,7 +477,9 @@ program
         },
       ]);
 
-      yield* Console.log(`✅ Concatenation job added to queue with ${selectedVideoIds.length} videos.`);
+      yield* Console.log(
+        `✅ Concatenation job added to queue with ${selectedVideoIds.length} videos.`
+      );
     }).pipe(
       Effect.catchAll((e) => {
         return Effect.gen(function* () {
