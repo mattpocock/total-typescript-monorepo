@@ -29,12 +29,19 @@ import {
 } from "./constants.js";
 import { findSilenceInVideo } from "./silence-detection.js";
 import { FFmpegCommandsService } from "./ffmpeg-commands.js";
+import { getQueueState } from "./queue/queue.js";
 
 export interface CreateAutoEditedVideoWorkflowOptions {
   inputVideo: AbsolutePath;
   outputFilename: string;
   dryRun?: boolean;
   subtitles?: boolean;
+}
+
+export interface ConcatenateVideosWorkflowOptions {
+  videoIds: string[];
+  outputVideoName: string;
+  dryRun?: boolean;
 }
 
 export class NoSpeakingClipsError extends Data.TaggedError(
@@ -460,8 +467,135 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         return Math.round(num * 10 ** places) / 10 ** places;
       };
 
+      const concatenateVideosWorkflow = (
+        options: ConcatenateVideosWorkflowOptions
+      ) => {
+        return Effect.gen(function* () {
+          const queueState = yield* getQueueState();
+          
+          // Find the videos from queue items
+          const videoItems = options.videoIds.map(id => {
+            const item = queueState.queue.find(i => i.id === id);
+            if (!item || item.status !== "completed" || item.action.type !== "create-auto-edited-video") {
+              throw new Error(`Video with ID ${id} not found or not completed`);
+            }
+            return item;
+          });
+
+          // Determine output paths for each video
+          const videoPaths = yield* Effect.all(
+            videoItems.map(item => 
+              Effect.gen(function* () {
+                if (item.action.type !== "create-auto-edited-video") {
+                  return yield* Effect.fail(new Error(`Invalid action type for video ${item.id}`));
+                }
+                
+                const videoName = item.action.videoName;
+                let videoPath: AbsolutePath;
+                
+                if (item.action.dryRun) {
+                  // Video is in export directory
+                  if (item.action.subtitles) {
+                    videoPath = path.join(exportDirectory, `${videoName}-with-subtitles.mp4`) as AbsolutePath;
+                  } else {
+                    videoPath = path.join(exportDirectory, `${videoName}.mp4`) as AbsolutePath;
+                  }
+                } else {
+                  // Video is in shorts directory
+                  videoPath = path.join(shortsExportDirectory, `${videoName}.mp4`) as AbsolutePath;
+                }
+
+                // Verify the video exists
+                const exists = yield* fs.exists(videoPath);
+                if (!exists) {
+                  return yield* Effect.fail(new Error(`Video file not found: ${videoPath}`));
+                }
+
+                return { path: videoPath, item };
+              })
+            )
+          );
+
+          // Check if output already exists
+          const finalOutputDir = options.dryRun ? exportDirectory : shortsExportDirectory;
+          const outputPath = path.join(finalOutputDir, `${options.outputVideoName}.mp4`) as AbsolutePath;
+          
+          const outputExists = yield* fs.exists(outputPath);
+          if (outputExists) {
+            return yield* new FileAlreadyExistsError({
+              message: `Output file already exists: ${outputPath}`
+            });
+          }
+
+          // Create temporary directory for processed clips
+          const tempDir = join(tmpdir(), `concatenate-videos-${Date.now()}`);
+          yield* execAsync(`mkdir -p "${tempDir}"`);
+
+          try {
+            yield* Console.log(`🎬 Processing ${videoPaths.length} videos for concatenation...`);
+
+            // Process each video to remove existing padding and add proper transitions
+            const processedClips = yield* Effect.all(
+              videoPaths.map((videoInfo, index) =>
+                Effect.gen(function* () {
+                  const isLast = index === videoPaths.length - 1;
+                  const outputFile = join(tempDir, `processed-${index}.mp4`) as AbsolutePath;
+                  
+                  // Get video duration
+                  const duration = yield* ffmpeg.getVideoDuration(videoInfo.path);
+                  
+                  let trimmedDuration: number;
+                  if (isLast) {
+                    // For the last video, remove the existing AUTO_EDITED_END_PADDING and keep AUTO_EDITED_VIDEO_FINAL_END_PADDING
+                    trimmedDuration = duration - AUTO_EDITED_END_PADDING;
+                  } else {
+                    // For all other videos, remove both AUTO_EDITED_END_PADDING and AUTO_EDITED_VIDEO_FINAL_END_PADDING,
+                    // then add back the normal AUTO_EDITED_END_PADDING for transition
+                    trimmedDuration = duration - AUTO_EDITED_END_PADDING;
+                  }
+
+                  // Trim the video to remove existing padding
+                  yield* ffmpeg.trimVideo(
+                    videoInfo.path,
+                    outputFile,
+                    0,
+                    trimmedDuration
+                  );
+
+                  yield* Console.log(`✅ Processed video ${index + 1}/${videoPaths.length}`);
+                  return outputFile;
+                })
+              ),
+              {
+                concurrency: FFMPEG_CONCURRENCY_LIMIT,
+              }
+            );
+
+            // Create concat file
+            const concatFile = join(tempDir, "concat.txt") as AbsolutePath;
+            const concatContent = processedClips
+              .map((file: string) => `file '${file}'`)
+              .join("\n");
+
+            yield* fs.writeFileString(concatFile, concatContent);
+
+            // Concatenate all processed clips
+            yield* Console.log("🎥 Concatenating videos...");
+            yield* ffmpeg.concatenateClips(concatFile, outputPath);
+
+            yield* Console.log(`✅ Successfully concatenated videos to: ${outputPath}`);
+
+            return outputPath;
+          } finally {
+            // Clean up temporary files
+            yield* fs.remove(tempDir, { recursive: true, force: true });
+          }
+        });
+      };
+
       return {
         createAutoEditedVideoWorkflow,
+        concatenateVideosWorkflow,
       };
     }),
     dependencies: [
@@ -581,5 +715,79 @@ export const moveRawFootageToLongTermStorage = () => {
     yield* execAsync(
       `(cd "${longTermStorageDirectory}" && mv "${obsOutputDirectory}"/* .)`
     );
+  });
+};
+
+export const multiSelectVideosFromQueue = () => {
+  return Effect.gen(function* () {
+    const queueState = yield* getQueueState();
+    const askQuestion = yield* AskQuestionService;
+
+    // Find all completed video creation queue items
+    const completedVideoItems = queueState.queue.filter(
+      (item) =>
+        item.status === "completed" &&
+        item.action.type === "create-auto-edited-video"
+    );
+
+    if (completedVideoItems.length === 0) {
+      yield* Console.log("No completed videos found in the queue.");
+      return [];
+    }
+
+    const selectedVideoIds: string[] = [];
+
+    while (true) {
+      // Filter out already selected videos
+      const availableVideos = completedVideoItems.filter(
+        (item) => !selectedVideoIds.includes(item.id)
+      );
+
+      if (availableVideos.length === 0) {
+        yield* Console.log("All available videos have been selected.");
+        break;
+      }
+
+      // Prepare choices including "End" option
+      const choices = [
+        ...availableVideos.map((item) => {
+          if (item.action.type === "create-auto-edited-video") {
+            return {
+              title: `${item.action.videoName} (${new Date(item.createdAt).toLocaleDateString()})`,
+              value: item.id,
+            };
+          }
+          return { title: "Unknown", value: item.id };
+        }),
+        { title: "End - Finish selecting videos", value: "END" },
+      ];
+
+      const selectedMessage = selectedVideoIds.length > 0 
+        ? ` (${selectedVideoIds.length} videos selected)`
+        : "";
+
+      const selection = yield* askQuestion.select(
+        `Select a video to add to concatenation${selectedMessage}:`,
+        choices
+      );
+
+      if (selection === "END") {
+        break;
+      }
+
+      selectedVideoIds.push(selection as string);
+      const selectedItem = completedVideoItems.find(item => item.id === selection);
+      if (selectedItem && selectedItem.action.type === "create-auto-edited-video") {
+        yield* Console.log(`✅ Added "${selectedItem.action.videoName}" to selection`);
+      }
+    }
+
+    if (selectedVideoIds.length === 0) {
+      yield* Console.log("No videos selected for concatenation.");
+      return [];
+    }
+
+    yield* Console.log(`📝 Selected ${selectedVideoIds.length} videos for concatenation.`);
+    return selectedVideoIds;
   });
 };

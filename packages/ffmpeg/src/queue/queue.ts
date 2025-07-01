@@ -27,6 +27,21 @@ export type QueueItemAction =
        */
       type: "links-request";
       linkRequests: string[];
+    }
+  | {
+      /**
+       * Concatenate multiple completed videos together.
+       * The videos will have their existing padding removed
+       * and proper transitions added.
+       */
+      type: "concatenate-videos";
+      videoIds: string[];
+      outputVideoName: string;
+      /**
+       * Whether or not to save the video to the
+       * shorts directory.
+       */
+      dryRun: boolean;
     };
 
 export type QueueItem = {
@@ -264,7 +279,7 @@ export const processQueue = () => {
             yield* updateQueueItem({
               ...queueItem,
               status: "failed",
-              error: result.left.message,
+              error: result.left instanceof Error ? result.left.message : String(result.left),
             });
             continue;
           }
@@ -280,6 +295,32 @@ export const processQueue = () => {
           // This should never happen since getNextQueueItem filters out requires-user-input items
           yield* Console.log("ERROR: Links request found in processQueue - this should not happen");
           continue;
+        case "concatenate-videos":
+          const concatenateResult = yield* workflows
+            .concatenateVideosWorkflow({
+              videoIds: queueItem.action.videoIds,
+              outputVideoName: queueItem.action.outputVideoName,
+              dryRun: queueItem.action.dryRun,
+            })
+            .pipe(Effect.either);
+
+          if (Either.isLeft(concatenateResult)) {
+            yield* Effect.logError(concatenateResult.left);
+            yield* updateQueueItem({
+              ...queueItem,
+              status: "failed",
+              error: concatenateResult.left instanceof Error ? concatenateResult.left.message : String(concatenateResult.left),
+            });
+            continue;
+          }
+
+          yield* updateQueueItem({
+            ...queueItem,
+            status: "completed",
+            completedAt: Date.now(),
+          });
+
+          break;
         default:
           queueItem.action satisfies never;
           yield* Console.log("Unknown queue item type");

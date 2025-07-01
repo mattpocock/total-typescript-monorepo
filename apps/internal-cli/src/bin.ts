@@ -12,6 +12,7 @@ import {
   getOutstandingInformationRequests,
   getQueueState,
   moveRawFootageToLongTermStorage,
+  multiSelectVideosFromQueue,
   processInformationRequests,
   processQueue,
   transcribeVideoWorkflow,
@@ -344,6 +345,16 @@ program
               actionContent = 
                 `  ${styleText("dim", "Type")}       Information Request\n` +
                 `  ${styleText("dim", "Links")}      ${item.action.linkRequests.length} link(s) requested\n`;
+            } else if (item.action.type === "concatenate-videos") {
+              let options = [];
+              if (item.action.dryRun) options.push("Dry Run");
+              
+              actionContent = 
+                `  ${styleText("dim", "Title")}      ${item.action.outputVideoName}\n` +
+                `  ${styleText("dim", "Videos")}     ${item.action.videoIds.length} video(s)\n` +
+                (options.length > 0
+                  ? `  ${styleText("dim", "Options")}    ${options.join(", ")}\n`
+                  : "");
             }
 
             yield* Console.log(
@@ -374,6 +385,67 @@ program
         }
       }
     }).pipe(
+      Effect.withConfigProvider(ConfigProvider.fromEnv()),
+      Effect.provide(AppLayerLive),
+      Effect.runPromise
+    );
+  });
+
+program
+  .command("concatenate-videos")
+  .aliases(["concat", "c"])
+  .description("Concatenate multiple completed videos from the queue")
+  .option("-d, --dry-run", "Save to export directory instead of shorts directory")
+  .action(async (options: { dryRun?: boolean }) => {
+    await Effect.gen(function* () {
+      const askQuestion = yield* AskQuestionService;
+      
+      // Select videos using the multi-selection interface
+      const selectedVideoIds = yield* multiSelectVideosFromQueue();
+      
+      if (selectedVideoIds.length === 0) {
+        yield* Console.log("No videos selected. Cancelling concatenation.");
+        return;
+      }
+
+      if (selectedVideoIds.length === 1) {
+        yield* Console.log("Only one video selected. At least 2 videos are required for concatenation.");
+        return;
+      }
+
+      // Ask for output video name
+      const outputVideoName = yield* askQuestion.askQuestion(
+        "What is the name for the concatenated video?"
+      );
+
+      yield* validateWindowsFilename(outputVideoName);
+
+      yield* Console.log("Adding concatenation job to queue...");
+
+      yield* writeToQueue([
+        {
+          id: crypto.randomUUID(),
+          createdAt: Date.now(),
+          action: {
+            type: "concatenate-videos",
+            videoIds: selectedVideoIds,
+            outputVideoName,
+            dryRun: Boolean(options.dryRun),
+          },
+          dependencies: selectedVideoIds, // Depend on all selected videos being completed
+          status: "ready-to-run",
+        },
+      ]);
+
+      yield* Console.log(`✅ Concatenation job added to queue with ${selectedVideoIds.length} videos.`);
+    }).pipe(
+      Effect.catchAll((e) => {
+        return Effect.gen(function* () {
+          yield* Effect.logError(e);
+          yield* Effect.sleep(5000);
+          return yield* Effect.die(e);
+        });
+      }),
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(AppLayerLive),
       Effect.runPromise
