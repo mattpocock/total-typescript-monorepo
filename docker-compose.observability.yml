@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # All-in-one observability stack for Effect tracing
   observability:
@@ -15,7 +13,7 @@ services:
       # Prometheus
       - "9090:9090"
       # Grafana
-      - "3000:3000"
+      - "3010:3000"
     environment:
       - OTEL_SERVICE_NAME=effect-internal-cli
       - JAEGER_ENDPOINT=http://localhost:14268/api/traces

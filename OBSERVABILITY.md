@@ -30,7 +30,7 @@ docker run -d \
   -p 4317:4317 \
   -p 4318:4318 \
   -p 9090:9090 \
-  -p 3000:3000 \
+  -p 3010:3000 \
   grafana/otel-lgtm:latest
 ```
 
@@ -40,7 +40,7 @@ Once running, you can access:
 
 - **Jaeger UI**: http://localhost:16686 - View distributed traces
 - **Prometheus**: http://localhost:9090 - Query metrics
-- **Grafana**: http://localhost:3000 - Unified dashboards
+- **Grafana**: http://localhost:3010 - Unified dashboards
 
 ### 3. Run the Internal CLI
 
@@ -72,7 +72,7 @@ You can configure the observability setup using environment variables:
 # OpenTelemetry endpoint (defaults to http://localhost:4318/v1/traces)
 export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4318/v1/traces"
 
-# Service name (defaults to "total-typescript-internal-cli") 
+# Service name (defaults to "total-typescript-internal-cli")
 export OTEL_SERVICE_NAME="total-typescript-internal-cli"
 
 # Enable/disable tracing (defaults to enabled)
@@ -84,18 +84,18 @@ export OTEL_TRACES_EXPORTER="otlp"
 The `docker-compose.observability.yml` file provides a complete setup:
 
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   observability:
     image: grafana/otel-lgtm:latest
     container_name: effect-observability
     ports:
-      - "16686:16686"  # Jaeger UI
-      - "4317:4317"    # OTLP gRPC
-      - "4318:4318"    # OTLP HTTP
-      - "9090:9090"    # Prometheus
-      - "3000:3000"    # Grafana
+      - "16686:16686" # Jaeger UI
+      - "4317:4317" # OTLP gRPC
+      - "4318:4318" # OTLP HTTP
+      - "9090:9090" # Prometheus
+      - "3010:3000" # Grafana
     environment:
       - OTEL_SERVICE_NAME=effect-internal-cli
     restart: unless-stopped
@@ -150,9 +150,9 @@ export const OpenTelemetryLive = NodeSdk.layer(() => ({
       headers: {},
     })
   ),
-}))
+}));
 
-// apps/internal-cli/src/bin.ts  
+// apps/internal-cli/src/bin.ts
 const MainLayerLive = Layer.provide(AppLayerLive, OpenTelemetryLive);
 ```
 
@@ -163,12 +163,14 @@ const MainLayerLive = Layer.provide(AppLayerLive, OpenTelemetryLive);
 Access Jaeger at http://localhost:16686
 
 **Key Features:**
+
 - View end-to-end request traces
 - Analyze service dependencies
 - Identify performance bottlenecks
 - Debug error propagation
 
 **Usage:**
+
 1. Select service: `total-typescript-internal-cli`
 2. Choose operation (e.g., `queue-status`, `create-auto-edited-video`)
 3. Set time range and click "Find Traces"
@@ -179,6 +181,7 @@ Access Jaeger at http://localhost:16686
 Access Prometheus at http://localhost:9090
 
 **Useful Queries:**
+
 ```promql
 # Trace span metrics
 traces_spanmetrics_calls_total
@@ -191,15 +194,17 @@ up{job="jaeger"}
 
 ### Grafana - Unified Dashboard
 
-Access Grafana at http://localhost:3000
+Access Grafana at http://localhost:3010
 
 **Default Credentials:**
+
 - Username: `admin`
 - Password: `admin`
 
 **Pre-configured Data Sources:**
+
 - Prometheus (metrics)
-- Tempo (traces)  
+- Tempo (traces)
 - Loki (logs)
 
 ## CLI Command Tracing
@@ -213,8 +218,9 @@ pnpm tt create-auto-edited-video --upload --generate-article
 ```
 
 This creates a trace showing:
+
 1. **Root Span**: `create-auto-edited-video` command
-2. **Child Spans**: 
+2. **Child Spans**:
    - OBS video retrieval
    - User input collection
    - Queue item creation
@@ -228,6 +234,7 @@ pnpm tt process-queue
 ```
 
 This creates traces for:
+
 1. Queue state retrieval
 2. Individual item processing
 3. FFmpeg operations
@@ -241,6 +248,7 @@ This creates traces for:
 **1. No traces appearing in Jaeger**
 
 Check that the observability stack is running:
+
 ```bash
 docker ps | grep effect-observability
 curl http://localhost:16686/api/services
@@ -249,6 +257,7 @@ curl http://localhost:16686/api/services
 **2. Connection refused errors**
 
 Verify the OTLP endpoint is correct:
+
 ```bash
 curl http://localhost:4318/v1/traces
 export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4318/v1/traces"
@@ -257,6 +266,7 @@ export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4318/v1/traces"
 **3. CLI not sending traces**
 
 Ensure dependencies are installed:
+
 ```bash
 cd apps/internal-cli
 pnpm install
@@ -273,8 +283,8 @@ docker inspect effect-observability | grep Health -A 10
 
 # Manual health check
 curl -f http://localhost:16686 && echo "Jaeger OK"
-curl -f http://localhost:9090 && echo "Prometheus OK"  
-curl -f http://localhost:3000 && echo "Grafana OK"
+curl -f http://localhost:9090 && echo "Prometheus OK"
+curl -f http://localhost:3010 && echo "Grafana OK"
 ```
 
 ### Logs
@@ -316,7 +326,7 @@ export const OpenTelemetryLive = NodeSdk.layer(() => ({
     new OTLPTraceExporter({ url: getOtelEndpoint() })
   ),
   sampler: TraceIdRatioBasedSampler(0.1), // 10% sampling
-}))
+}));
 ```
 
 ### Production Deployment
