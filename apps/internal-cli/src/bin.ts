@@ -34,6 +34,7 @@ import {
   TranscriptStorageService,
 } from "../../../packages/ffmpeg/dist/services.js";
 import packageJson from "../package.json" with { type: "json" };
+import { validateCreateVideoFlags, FlagValidationError } from "./validate-cli-flags.js";
 import { OpenTelemetryLive } from "./tracing.js";
 
 config({
@@ -140,15 +141,17 @@ program
         yield* Console.log("Adding to queue...");
 
         // Validate flag combinations
-        if (options.alongside && !options.generateArticle) {
-          yield* Console.error(
-            "❌ The --alongside flag can only be used with --generate-article."
-          );
-          yield* Console.log(
-            "💡 Use: pnpm cli create-auto-edited-video --generate-article --alongside"
-          );
-          process.exit(1);
-        }
+        yield* validateCreateVideoFlags(options).pipe(
+          Effect.catchAll((error: FlagValidationError) =>
+            Effect.gen(function* () {
+              yield* Console.error(error.errorMessage);
+              for (const helpMessage of error.helpMessages) {
+                yield* Console.log(helpMessage);
+              }
+              process.exit(1);
+            })
+          )
+        );
 
         const videoName = yield* askQuestion.askQuestion(
           "What is the name of the video?"
