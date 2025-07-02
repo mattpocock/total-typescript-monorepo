@@ -166,9 +166,11 @@ const detectFileBasedExercises = (
     const problemFile = tsFiles.find(f => 
       f.includes(`${numberStr}-${name}.problem.${extension}`)
     );
-    const solutionFile = tsFiles.find(f => 
-      f.includes(`${numberStr}-${name}.solution.${extension}`)
-    );
+    // Look for solution files with optional numbering (e.g., .solution.1.ts, .solution.2.ts, etc.)
+    const solutionFile = tsFiles.find(f => {
+      const solutionPattern = new RegExp(`${numberStr}-${name}\\.solution(?:\\.\\d+)?\\.${extension}$`);
+      return solutionPattern.test(f);
+    });
 
     if (!problemFile) continue; // Must have a problem file
 
@@ -220,9 +222,12 @@ const detectFolderBasedExercises = (
     const problemFile = exerciseFiles.find((f: string) => 
       f.includes('.problem.') && config.allowedExtensions.some((ext: string) => f.endsWith(ext))
     );
-    const solutionFile = exerciseFiles.find((f: string) => 
-      f.includes('.solution.') && config.allowedExtensions.some((ext: string) => f.endsWith(ext))
-    );
+    // Look for solution files with optional numbering (e.g., .solution.1.ts, .solution.2.ts, etc.)
+    const solutionFile = exerciseFiles.find((f: string) => {
+      const hasSolutionPattern = /\.solution(?:\.\d+)?\./.test(f);
+      const hasValidExtension = config.allowedExtensions.some((ext: string) => f.endsWith(ext));
+      return hasSolutionPattern && hasValidExtension;
+    });
 
     if (!problemFile) continue; // Must have a problem file
 
