@@ -303,7 +303,7 @@ describe("queue-article-generation", () => {
       }
     });
 
-    it("should create meta folder with article, transcript, and code when alongside is true", async () => {
+    it("should save article, transcript, and code alongside video when alongside is true", async () => {
       const tmpdir = mkdtempSync(path.join(import.meta.dirname, "tmp"));
       
       try {
@@ -343,15 +343,11 @@ describe("queue-article-generation", () => {
 
         expect(result).toEqual({
           title: "Generated Title",
-          filename: "my-awesome-video.md",
+          filename: "my-awesome-video.article.md",
         });
 
-        // Verify meta folder was created with correct name
-        const metaFolderPath = path.join(videoDirectory, "my-awesome-video_meta");
-        expect(existsSync(metaFolderPath)).toBe(true);
-
-        // Verify article exists in meta folder
-        const articlePath = path.join(metaFolderPath, "my-awesome-video.md");
+        // Verify article exists alongside video
+        const articlePath = path.join(videoDirectory, "my-awesome-video.article.md");
         expect(existsSync(articlePath)).toBe(true);
         
         const articleContent = readFileSync(articlePath, "utf-8");
@@ -359,30 +355,33 @@ describe("queue-article-generation", () => {
         expect(articleContent).toContain('title: "Generated Title"');
         expect(articleContent).toContain('originalVideoPath: "/test/video.mp4"');
 
-        // Verify transcript was copied to meta folder
-        const metaTranscriptPath = path.join(metaFolderPath, "transcript.txt");
-        expect(existsSync(metaTranscriptPath)).toBe(true);
+        // Verify transcript was copied alongside video
+        const transcriptAlongsidePath = path.join(videoDirectory, "my-awesome-video.transcript.txt");
+        expect(existsSync(transcriptAlongsidePath)).toBe(true);
         
-        const transcriptContent = readFileSync(metaTranscriptPath, "utf-8");
+        const transcriptContent = readFileSync(transcriptAlongsidePath, "utf-8");
         expect(transcriptContent).toBe("This is a sample transcript about TypeScript.");
 
-        // Verify code was copied to meta folder with same name as original
-        const metaCodePath = path.join(metaFolderPath, "code.ts");
-        expect(existsSync(metaCodePath)).toBe(true);
+        // Verify code was saved alongside video with proper naming
+        const codeAlongsidePath = path.join(videoDirectory, "my-awesome-video.code.ts");
+        expect(existsSync(codeAlongsidePath)).toBe(true);
         
-        const codeContent = readFileSync(metaCodePath, "utf-8");
+        const codeContent = readFileSync(codeAlongsidePath, "utf-8");
         expect(codeContent).toBe("const example = 'test code';");
 
-        // Verify only expected files are in meta folder
-        const metaFiles = readdirSync(metaFolderPath);
-        expect(metaFiles.sort()).toEqual(["code.ts", "my-awesome-video.md", "transcript.txt"]);
+        // Verify expected files are in video directory
+        const videoDirectoryFiles = readdirSync(videoDirectory);
+        const expectedFiles = ["my-awesome-video.article.md", "my-awesome-video.transcript.txt", "my-awesome-video.code.ts"];
+        expectedFiles.forEach(file => {
+          expect(videoDirectoryFiles).toContain(file);
+        });
 
       } finally {
         rmSync(tmpdir, { recursive: true });
       }
     });
 
-    it("should create meta folder without code when code is not provided", async () => {
+    it("should save article and transcript alongside video without code when code is not provided", async () => {
       const tmpdir = mkdtempSync(path.join(import.meta.dirname, "tmp"));
       
       try {
@@ -420,31 +419,30 @@ describe("queue-article-generation", () => {
 
         expect(result).toEqual({
           title: "Generated Title",
-          filename: "video-without-code.md",
+          filename: "video-without-code.article.md",
         });
 
-        // Verify meta folder was created
-        const metaFolderPath = path.join(videoDirectory, "video-without-code_meta");
-        expect(existsSync(metaFolderPath)).toBe(true);
-
-        // Verify article exists in meta folder
-        const articlePath = path.join(metaFolderPath, "video-without-code.md");
+        // Verify article exists alongside video
+        const articlePath = path.join(videoDirectory, "video-without-code.article.md");
         expect(existsSync(articlePath)).toBe(true);
 
-        // Verify transcript was copied to meta folder
-        const metaTranscriptPath = path.join(metaFolderPath, "transcript.txt");
-        expect(existsSync(metaTranscriptPath)).toBe(true);
+        // Verify transcript was copied alongside video
+        const transcriptAlongsidePath = path.join(videoDirectory, "video-without-code.transcript.txt");
+        expect(existsSync(transcriptAlongsidePath)).toBe(true);
         
-        const transcriptContent = readFileSync(metaTranscriptPath, "utf-8");
+        const transcriptContent = readFileSync(transcriptAlongsidePath, "utf-8");
         expect(transcriptContent).toBe("This is a sample transcript without code.");
 
-        // Verify NO code file was added to meta folder
-        const metaFiles = readdirSync(metaFolderPath);
-        const codeFiles = metaFiles.filter(file => file.endsWith('.ts') || file.endsWith('.js'));
+        // Verify NO code file was created alongside video
+        const videoDirectoryFiles = readdirSync(videoDirectory);
+        const codeFiles = videoDirectoryFiles.filter(file => file.includes('.code.'));
         expect(codeFiles).toHaveLength(0);
 
-        // Should only contain article and transcript
-        expect(metaFiles.sort()).toEqual(["transcript.txt", "video-without-code.md"]);
+        // Should contain article and transcript
+        const expectedFiles = ["video-without-code.article.md", "video-without-code.transcript.txt"];
+        expectedFiles.forEach(file => {
+          expect(videoDirectoryFiles).toContain(file);
+        });
 
       } finally {
         rmSync(tmpdir, { recursive: true });
@@ -492,41 +490,41 @@ describe("queue-article-generation", () => {
 
         expect(result).toEqual({
           title: "Generated Title",
-          filename: "uploaded-video.md",
+          filename: "uploaded-video.article.md",
         });
 
-        // Verify meta folder was created in shorts directory (not export directory)
-        const metaFolderPath = path.join(shortsDirectory, "uploaded-video_meta");
-        expect(existsSync(metaFolderPath)).toBe(true);
-
-        // Verify meta folder was NOT created in export directory
-        const exportMetaFolderPath = path.join(exportDirectory, "uploaded-video_meta");
-        expect(existsSync(exportMetaFolderPath)).toBe(false);
-
-        // Verify article exists in meta folder
-        const articlePath = path.join(metaFolderPath, "uploaded-video.md");
+        // Verify files were created in shorts directory (not export directory)
+        const articlePath = path.join(shortsDirectory, "uploaded-video.article.md");
         expect(existsSync(articlePath)).toBe(true);
-        
+
+        // Verify files were NOT created in export directory
+        const exportArticlePath = path.join(exportDirectory, "uploaded-video.article.md");
+        expect(existsSync(exportArticlePath)).toBe(false);
+
+        // Verify article content
         const articleContent = readFileSync(articlePath, "utf-8");
         expect(articleContent).toContain("Generated article content");
 
-        // Verify transcript was copied to meta folder
-        const metaTranscriptPath = path.join(metaFolderPath, "transcript.txt");
-        expect(existsSync(metaTranscriptPath)).toBe(true);
+        // Verify transcript was copied to shorts directory
+        const transcriptAlongsidePath = path.join(shortsDirectory, "uploaded-video.transcript.txt");
+        expect(existsSync(transcriptAlongsidePath)).toBe(true);
         
-        const transcriptContent = readFileSync(metaTranscriptPath, "utf-8");
+        const transcriptContent = readFileSync(transcriptAlongsidePath, "utf-8");
         expect(transcriptContent).toBe("This is a transcript for shorts upload.");
 
-        // Verify code was copied to meta folder with same name as original
-        const metaCodePath = path.join(metaFolderPath, "example.ts");
-        expect(existsSync(metaCodePath)).toBe(true);
+        // Verify code was saved to shorts directory with proper naming
+        const codeAlongsidePath = path.join(shortsDirectory, "uploaded-video.code.ts");
+        expect(existsSync(codeAlongsidePath)).toBe(true);
         
-        const codeContent = readFileSync(metaCodePath, "utf-8");
+        const codeContent = readFileSync(codeAlongsidePath, "utf-8");
         expect(codeContent).toBe("const uploadExample = 'shorts';");
 
-        // Verify all expected files are in meta folder
-        const metaFiles = readdirSync(metaFolderPath);
-        expect(metaFiles.sort()).toEqual(["example.ts", "transcript.txt", "uploaded-video.md"]);
+        // Verify all expected files are in shorts directory
+        const shortsFiles = readdirSync(shortsDirectory);
+        const expectedFiles = ["uploaded-video.article.md", "uploaded-video.transcript.txt", "uploaded-video.code.ts"];
+        expectedFiles.forEach(file => {
+          expect(shortsFiles).toContain(file);
+        });
 
       } finally {
         rmSync(tmpdir, { recursive: true });

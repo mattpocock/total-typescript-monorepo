@@ -100,26 +100,22 @@ it("Should save article alongside video when storageMode is alongside-video", as
 
   expect(result).toEqual({
     title: "TypeScript Magic",
-    filename: "awesome-typescript-video.md",
+    filename: "awesome-typescript-video.article.md",
     content: "test article content",
-    savedAt: "/path/to/videos/awesome-typescript-video_meta/awesome-typescript-video.md",
-    metaFolderPath: "/path/to/videos/awesome-typescript-video_meta",
+    savedAt: "/path/to/videos/awesome-typescript-video.article.md",
   });
 
-  // Verify the meta directory was created
-  expect(capturedPaths).toContain("mkdir:/path/to/videos/awesome-typescript-video_meta");
-  
-  // Verify the article was written to the meta folder
-  expect(capturedPaths).toContain("/path/to/videos/awesome-typescript-video_meta/awesome-typescript-video.md");
+  // Verify the article was written alongside the video
+  expect(capturedPaths).toContain("/path/to/videos/awesome-typescript-video.article.md");
   expect(capturedContent).toContain("test article content");
   expect(capturedContent).toContain('title: "TypeScript Magic"');
   expect(capturedContent).toContain('originalVideoPath: "test/fixtures/video.mp4"');
   
-  // Verify the transcript was copied to the meta folder
-  expect(capturedPaths).toContain("copy:/path/to/transcript.txt->/path/to/videos/awesome-typescript-video_meta/transcript.txt");
+  // Verify the transcript was copied alongside the video
+  expect(capturedPaths).toContain("copy:/path/to/transcript.txt->/path/to/videos/awesome-typescript-video.transcript.txt");
   
-  // Verify the code file was written to the meta folder
-  expect(capturedPaths).toContain("/path/to/videos/awesome-typescript-video_meta/code.ts");
+  // Verify the code file was written alongside the video
+  expect(capturedPaths).toContain("/path/to/videos/awesome-typescript-video.code.ts");
   
   // Verify that the regular article storage was NOT called
   expect(articleStorageService.storeArticle).not.toHaveBeenCalled();
