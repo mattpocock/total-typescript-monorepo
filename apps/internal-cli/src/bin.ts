@@ -411,9 +411,12 @@ program
           } else if (item.action.type === "generate-article-from-transcript") {
             const transcriptName = item.action.transcriptPath.split('/').pop()?.replace('.txt', '') || 'Unknown';
             
+            // Type assertion to access codeDependencyId and linksDependencyId
+            const articleAction = item.action as any;
+            
             // Find dependency queue items to show context
-            const codeDep = queueState.queue.find((q: QueueItem) => q.id === item.action.codeDependencyId);
-            const linksDep = queueState.queue.find((q: QueueItem) => q.id === item.action.linksDependencyId);
+            const codeDep = queueState.queue.find((q: QueueItem) => q.id === articleAction.codeDependencyId);
+            const linksDep = queueState.queue.find((q: QueueItem) => q.id === articleAction.linksDependencyId);
             
             const codeStatus = codeDep?.status === "completed" ? 
               (codeDep.action.type === "code-request" && codeDep.action.temporaryData?.codeContent ? "✓ Code" : "✓ No code") : 
