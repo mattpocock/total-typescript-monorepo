@@ -47,13 +47,23 @@ it("Should generate an article given a transcript", async () => {
 });
 
 it("Should save article alongside video when storageMode is alongside-video", async () => {
-  let capturedPath: string | undefined;
+  let capturedPaths: string[] = [];
   let capturedContent: string | undefined;
 
   const mockFS = FileSystem.makeNoop({
     writeFileString: (path: string, content: string) => {
-      capturedPath = path;
-      capturedContent = content;
+      capturedPaths.push(path);
+      if (path.endsWith('.md')) {
+        capturedContent = content;
+      }
+      return Effect.succeed(undefined);
+    },
+    makeDirectory: (path: string) => {
+      capturedPaths.push(`mkdir:${path}`);
+      return Effect.succeed(undefined);
+    },
+    copyFile: (source: string, dest: string) => {
+      capturedPaths.push(`copy:${source}->${dest}`);
       return Effect.succeed(undefined);
     },
   });
@@ -70,9 +80,12 @@ it("Should save article alongside video when storageMode is alongside-video", as
     originalVideoPath: "test/fixtures/video.mp4" as AbsolutePath,
     transcript: "Awesome video about TypeScript",
     urls: [],
+    code: "const example = 'TypeScript code';",
     storageMode: "alongside-video",
     videoDirectory: "/path/to/videos",
     videoName: "awesome-typescript-video",
+    transcriptPath: "/path/to/transcript.txt" as AbsolutePath,
+    codePath: "/path/to/code.ts",
   }).pipe(
     Effect.provideService(AIService, {
       articleFromTranscript,
@@ -89,14 +102,24 @@ it("Should save article alongside video when storageMode is alongside-video", as
     title: "TypeScript Magic",
     filename: "awesome-typescript-video.md",
     content: "test article content",
-    savedAt: "/path/to/videos/awesome-typescript-video.md",
+    savedAt: "/path/to/videos/awesome-typescript-video_meta/awesome-typescript-video.md",
+    metaFolderPath: "/path/to/videos/awesome-typescript-video_meta",
   });
 
-  // Verify the file was written to the correct location with correct content
-  expect(capturedPath).toBe("/path/to/videos/awesome-typescript-video.md");
+  // Verify the meta directory was created
+  expect(capturedPaths).toContain("mkdir:/path/to/videos/awesome-typescript-video_meta");
+  
+  // Verify the article was written to the meta folder
+  expect(capturedPaths).toContain("/path/to/videos/awesome-typescript-video_meta/awesome-typescript-video.md");
   expect(capturedContent).toContain("test article content");
   expect(capturedContent).toContain('title: "TypeScript Magic"');
   expect(capturedContent).toContain('originalVideoPath: "test/fixtures/video.mp4"');
+  
+  // Verify the transcript was copied to the meta folder
+  expect(capturedPaths).toContain("copy:/path/to/transcript.txt->/path/to/videos/awesome-typescript-video_meta/transcript.txt");
+  
+  // Verify the code file was written to the meta folder
+  expect(capturedPaths).toContain("/path/to/videos/awesome-typescript-video_meta/code.ts");
   
   // Verify that the regular article storage was NOT called
   expect(articleStorageService.storeArticle).not.toHaveBeenCalled();
