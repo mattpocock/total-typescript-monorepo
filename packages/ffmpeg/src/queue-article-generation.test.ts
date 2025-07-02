@@ -300,15 +300,13 @@ describe("queue-article-generation", () => {
       }
     });
 
-    it("should save article alongside video in export directory when alongside is true and dryRun is true", async () => {
-      let capturedPath: string | undefined;
-      let capturedContent: string | undefined;
+    it("should create meta folder with article, transcript, and code when alongside is true", async () => {
+      let capturedOperations: Array<{ operation: string; path: string; content?: string }> = [];
 
       const mockFSWithCapture = FileSystem.makeNoop({
         readFileString: (path: string) => {
           const files = {
-            "/test/transcript.txt":
-              "This is a sample transcript about TypeScript.",
+            "/test/transcript.txt": "This is a sample transcript about TypeScript.",
           };
           const content = files[path as keyof typeof files];
           if (content === undefined) {
@@ -317,8 +315,15 @@ describe("queue-article-generation", () => {
           return Effect.succeed(content);
         },
         writeFileString: (path: string, content: string) => {
-          capturedPath = path;
-          capturedContent = content;
+          capturedOperations.push({ operation: "writeFile", path, content });
+          return Effect.succeed(undefined);
+        },
+        makeDirectory: (path: string) => {
+          capturedOperations.push({ operation: "makeDirectory", path });
+          return Effect.succeed(undefined);
+        },
+        copyFile: (source: string, dest: string) => {
+          capturedOperations.push({ operation: "copyFile", path: `${source} -> ${dest}` });
           return Effect.succeed(undefined);
         },
         exists: () => Effect.succeed(true),
@@ -332,7 +337,7 @@ describe("queue-article-generation", () => {
         videoName: "my-awesome-video",
         dryRun: true,
         alongside: true,
-        codeContent: "const example = 'test';",
+        codeContent: "const example = 'test code';",
         codePath: "/test/code.ts",
       }).pipe(
         Effect.provideService(FileSystem.FileSystem, mockFSWithCapture),
@@ -348,22 +353,43 @@ describe("queue-article-generation", () => {
         filename: "my-awesome-video.md",
       });
 
-      // Verify the article was saved to the export directory with the video name
-      expect(capturedPath).toBe("/path/to/export/my-awesome-video.md");
-      expect(capturedContent).toContain("Generated article content");
-      expect(capturedContent).toContain('title: "Generated Title"');
-      expect(capturedContent).toContain('originalVideoPath: "/test/video.mp4"');
+      // Verify meta folder was created with correct name
+      const makeDirOperation = capturedOperations.find(op => 
+        op.operation === "makeDirectory" && op.path.endsWith("my-awesome-video_meta")
+      );
+      expect(makeDirOperation).toBeDefined();
+      expect(makeDirOperation?.path).toBe("/path/to/export/my-awesome-video_meta");
+
+      // Verify article was written to meta folder
+      const articleOperation = capturedOperations.find(op => 
+        op.operation === "writeFile" && op.path.endsWith("my-awesome-video_meta/my-awesome-video.md")
+      );
+      expect(articleOperation).toBeDefined();
+      expect(articleOperation?.content).toContain("Generated article content");
+      expect(articleOperation?.content).toContain('title: "Generated Title"');
+
+      // Verify transcript was copied to meta folder
+      const transcriptOperation = capturedOperations.find(op => 
+        op.operation === "copyFile" && op.path.includes("transcript.txt")
+      );
+      expect(transcriptOperation).toBeDefined();
+      expect(transcriptOperation?.path).toBe("/test/transcript.txt -> /path/to/export/my-awesome-video_meta/transcript.txt");
+
+      // Verify code was written to meta folder with same name as original
+      const codeOperation = capturedOperations.find(op => 
+        op.operation === "writeFile" && op.path.endsWith("my-awesome-video_meta/code.ts")
+      );
+      expect(codeOperation).toBeDefined();
+      expect(codeOperation?.content).toBe("const example = 'test code';");
     });
 
-    it("should save article alongside video in shorts directory when alongside is true and dryRun is false", async () => {
-      let capturedPath: string | undefined;
-      let capturedContent: string | undefined;
+    it("should create meta folder without code when code is not provided", async () => {
+      let capturedOperations: Array<{ operation: string; path: string; content?: string }> = [];
 
       const mockFSWithCapture = FileSystem.makeNoop({
         readFileString: (path: string) => {
           const files = {
-            "/test/transcript.txt":
-              "This is a sample transcript about TypeScript.",
+            "/test/transcript.txt": "This is a sample transcript without code.",
           };
           const content = files[path as keyof typeof files];
           if (content === undefined) {
@@ -372,8 +398,96 @@ describe("queue-article-generation", () => {
           return Effect.succeed(content);
         },
         writeFileString: (path: string, content: string) => {
-          capturedPath = path;
-          capturedContent = content;
+          capturedOperations.push({ operation: "writeFile", path, content });
+          return Effect.succeed(undefined);
+        },
+        makeDirectory: (path: string) => {
+          capturedOperations.push({ operation: "makeDirectory", path });
+          return Effect.succeed(undefined);
+        },
+        copyFile: (source: string, dest: string) => {
+          capturedOperations.push({ operation: "copyFile", path: `${source} -> ${dest}` });
+          return Effect.succeed(undefined);
+        },
+        exists: () => Effect.succeed(true),
+      });
+
+      const result = await generateArticleFromTranscriptQueue({
+        transcriptPath: "/test/transcript.txt" as AbsolutePath,
+        originalVideoPath: "/test/video.mp4" as AbsolutePath,
+        linksDependencyId: "links-1",
+        queueState,
+        videoName: "video-without-code",
+        dryRun: true,
+        alongside: true,
+        codeContent: "", // No code provided
+        codePath: "",   // No code path provided
+      }).pipe(
+        Effect.provideService(FileSystem.FileSystem, mockFSWithCapture),
+        Effect.provideService(AIService, mockAIService),
+        Effect.provideService(ArticleStorageService, mockArticleStorageService),
+        Effect.provideService(LinksStorageService, mockLinksStorageService),
+        Effect.withConfigProvider(testConfig),
+        Effect.runPromise
+      );
+
+      expect(result).toEqual({
+        title: "Generated Title",
+        filename: "video-without-code.md",
+      });
+
+      // Verify meta folder was created
+      const makeDirOperation = capturedOperations.find(op => 
+        op.operation === "makeDirectory" && op.path.endsWith("video-without-code_meta")
+      );
+      expect(makeDirOperation).toBeDefined();
+
+      // Verify article was written to meta folder
+      const articleOperation = capturedOperations.find(op => 
+        op.operation === "writeFile" && op.path.endsWith("video-without-code_meta/video-without-code.md")
+      );
+      expect(articleOperation).toBeDefined();
+
+      // Verify transcript was copied to meta folder
+      const transcriptOperation = capturedOperations.find(op => 
+        op.operation === "copyFile" && op.path.includes("transcript.txt")
+      );
+      expect(transcriptOperation).toBeDefined();
+
+      // Verify NO code file was added to meta folder (should not have writeFile operation for code file)
+      const codeOperations = capturedOperations.filter(op => 
+        op.operation === "writeFile" && (op.path.endsWith('.ts') || op.path.endsWith('.js')) && !op.path.endsWith('.md')
+      );
+      expect(codeOperations).toHaveLength(0);
+
+      // Should have exactly 3 operations: makeDirectory, writeFile (article), copyFile (transcript)
+      expect(capturedOperations).toHaveLength(3);
+    });
+
+    it("should save article alongside video in shorts directory when alongside is true and dryRun is false", async () => {
+      let capturedOperations: Array<{ operation: string; path: string; content?: string }> = [];
+
+      const mockFSWithCapture = FileSystem.makeNoop({
+        readFileString: (path: string) => {
+          const files = {
+            "/test/transcript.txt": "This is a transcript for shorts upload.",
+          };
+          const content = files[path as keyof typeof files];
+          if (content === undefined) {
+            throw new Error(`File not found: ${path}`);
+          }
+          return Effect.succeed(content);
+        },
+        writeFileString: (path: string, content: string) => {
+          capturedOperations.push({ operation: "writeFile", path, content });
+          return Effect.succeed(undefined);
+        },
+        makeDirectory: (path: string) => {
+          capturedOperations.push({ operation: "makeDirectory", path });
+          return Effect.succeed(undefined);
+        },
+        copyFile: (source: string, dest: string) => {
+          capturedOperations.push({ operation: "copyFile", path: `${source} -> ${dest}` });
           return Effect.succeed(undefined);
         },
         exists: () => Effect.succeed(true),
@@ -385,10 +499,10 @@ describe("queue-article-generation", () => {
         linksDependencyId: "links-1",
         queueState,
         videoName: "uploaded-video",
-        dryRun: false,
+        dryRun: false, // This means it will go to shorts directory
         alongside: true,
-        codeContent: "const example = 'test';",
-        codePath: "/test/code.ts",
+        codeContent: "const uploadExample = 'shorts';",
+        codePath: "/test/example.ts",
       }).pipe(
         Effect.provideService(FileSystem.FileSystem, mockFSWithCapture),
         Effect.provideService(AIService, mockAIService),
@@ -403,11 +517,35 @@ describe("queue-article-generation", () => {
         filename: "uploaded-video.md",
       });
 
-      // Verify the article was saved to the shorts directory with the video name
-      expect(capturedPath).toBe("/path/to/shorts/uploaded-video.md");
-      expect(capturedContent).toContain("Generated article content");
-      expect(capturedContent).toContain('title: "Generated Title"');
-      expect(capturedContent).toContain('originalVideoPath: "/test/video.mp4"');
+      // Verify meta folder was created in shorts directory (not export directory)
+      const makeDirOperation = capturedOperations.find(op => 
+        op.operation === "makeDirectory" && op.path.endsWith("uploaded-video_meta")
+      );
+      expect(makeDirOperation).toBeDefined();
+      expect(makeDirOperation?.path).toBe("/path/to/shorts/uploaded-video_meta");
+
+      // Verify article was written to meta folder
+      const articleOperation = capturedOperations.find(op => 
+        op.operation === "writeFile" && op.path.endsWith("uploaded-video_meta/uploaded-video.md")
+      );
+      expect(articleOperation).toBeDefined();
+
+      // Verify transcript was copied to meta folder
+      const transcriptOperation = capturedOperations.find(op => 
+        op.operation === "copyFile" && op.path.includes("transcript.txt")
+      );
+      expect(transcriptOperation).toBeDefined();
+      expect(transcriptOperation?.path).toBe("/test/transcript.txt -> /path/to/shorts/uploaded-video_meta/transcript.txt");
+
+      // Verify code was written to meta folder with same name as original
+      const codeOperation = capturedOperations.find(op => 
+        op.operation === "writeFile" && op.path.endsWith("uploaded-video_meta/example.ts")
+      );
+      expect(codeOperation).toBeDefined();
+      expect(codeOperation?.content).toBe("const uploadExample = 'shorts';");
+
+      // Should have exactly 4 operations: makeDirectory, writeFile (article), copyFile (transcript), writeFile (code)
+      expect(capturedOperations).toHaveLength(4);
     });
 
     it("should use regular article storage when alongside is false", async () => {

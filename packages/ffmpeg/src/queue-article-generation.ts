@@ -159,11 +159,14 @@ export const generateArticleFromTranscriptQueue = Effect.fn(
     storageMode?: "article-storage" | "alongside-video";
     videoDirectory?: string;
     videoName?: string;
+    transcriptPath: AbsolutePath;
+    codePath?: string;
   } = {
     originalVideoPath,
     transcript: transcriptContent,
     code: codeContent,
     urls,
+    transcriptPath,
   };
 
   // If alongside flag is set and we have video info, save alongside the video
@@ -179,10 +182,11 @@ export const generateArticleFromTranscriptQueue = Effect.fn(
       storageMode: "alongside-video" as const,
       videoDirectory,
       videoName,
+      codePath: codePath || undefined,
     };
 
     yield* Console.log(
-      `Article will be saved alongside video in: ${videoDirectory}/${videoName}.md`
+      `Article will be saved in meta folder: ${videoDirectory}/${videoName}_meta/`
     );
   }
 
