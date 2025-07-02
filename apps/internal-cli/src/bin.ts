@@ -150,6 +150,19 @@ program
           process.exit(1);
         }
 
+        if (options.alongside && options.upload) {
+          yield* Console.error(
+            "❌ The --alongside and --upload flags cannot be used together."
+          );
+          yield* Console.log(
+            "💡 Use either: pnpm cli create-auto-edited-video --generate-article --alongside"
+          );
+          yield* Console.log(
+            "💡 Or: pnpm cli create-auto-edited-video --generate-article --upload"
+          );
+          process.exit(1);
+        }
+
         const videoName = yield* askQuestion.askQuestion(
           "What is the name of the video?"
         );
