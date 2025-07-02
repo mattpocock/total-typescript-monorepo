@@ -110,11 +110,15 @@ pnpm cli create-auto-edited-video --generate-article --alongside --upload
 
 ## Testing Strategy
 
-Used mocked filesystem approach to avoid environment-specific issues:
-- Captures all filesystem operations (makeDirectory, writeFile, copyFile)
-- Verifies correct paths and content for each operation
+Uses real filesystem operations with temporary directories following the established codebase pattern:
+- Creates temporary directories with `mkdtempSync(path.join(import.meta.dirname, "tmp"))`
+- Sets up real transcript and code files using `writeFileSync`
+- Uses `NodeFileSystem.layer` for real filesystem operations instead of mocked filesystem
+- Asserts against actual filesystem using `existsSync`, `readFileSync`, and `readdirSync`
+- Proper cleanup with `rmSync(tmpdir, { recursive: true })` in finally blocks
 - Tests both positive cases (with code) and negative cases (without code)
 - Validates directory selection logic for export vs shorts directories
+- Verifies file contents and folder structure using real filesystem reads
 
 ## Benefits
 
