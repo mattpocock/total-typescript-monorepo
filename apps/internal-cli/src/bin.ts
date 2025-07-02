@@ -816,7 +816,7 @@ program
   .aliases(["eo", "exercises"])
   .description("Analyze and organize TypeScript exercise files")
   .option("-v, --validate", "Validate exercises and exit with status code")
-  .option("--format <type>", "Output format: table, json, markdown", "table")
+  .option("--format <type>", "Output format: tui, table, json, markdown", "tui")
   .option("--verbose", "Enable verbose output")
   .action(async (directory: string | undefined, options: ExerciseOrganizerOptions) => {
     const result = await runExerciseOrganizer(directory, options).pipe(

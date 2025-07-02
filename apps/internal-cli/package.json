@@ -16,7 +16,8 @@
   "devDependencies": {
     "@total-typescript/ts-reset": "^0.5.1",
     "@types/node": "^22.0.0",
-    "@types/prompts": "^2.4.9"
+    "@types/prompts": "^2.4.9",
+    "@types/react": "^18.3.0"
   },
   "dependencies": {
     "@effect/opentelemetry": "^0.40.0",
@@ -35,6 +36,8 @@
     "dotenv": "^16.4.5",
     "effect": "^3.16.8",
     "fast-glob": "^3.3.2",
-    "prompts": "^2.4.2"
+    "ink": "^5.0.1",
+    "prompts": "^2.4.2",
+    "react": "^18.3.1"
   }
 }

@@ -63,7 +63,7 @@ export interface ExerciseParseResult {
 
 export interface ExerciseOrganizerOptions {
   readonly validate?: boolean;
-  readonly format?: 'table' | 'json' | 'markdown';
+  readonly format?: 'table' | 'json' | 'markdown' | 'tui';
   readonly verbose?: boolean;
 }
 
