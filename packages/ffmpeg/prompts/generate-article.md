@@ -6,13 +6,17 @@ Add paragraphs to the transcript.
 
 Fix any obvious typos or transcription mistakes.
 
-Edit the text lightly to make it more readable.
-
 Use quite short paragraphs - no more than 240 characters. Vary the length of the paragraphs to keep the article interesting.
 
 Do not use any section headings in the email. No titles, no subheadings.
 
 Use lists when appropriate.
+
+## Content
+
+Many of the transcripts will be set up to problems that the user will have to solve themselves.
+
+If the transcript sets up a problem, do not provide a solution - it's the user's job to solve it.
 
 ## Code
 
