@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import { Effect } from "effect";
 import { describe, expect, it } from "vitest";
 import { detectExercises } from "./exercise-detector.js";
