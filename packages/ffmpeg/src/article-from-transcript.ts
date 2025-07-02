@@ -67,16 +67,14 @@ export const generateArticleCore = Effect.fn("generateArticleCore")(
     ]);
 
     if (storageMode === "alongside-video" && videoDirectory && videoName) {
-      // Create meta folder with article, transcript, and code
+      // Save files directly alongside the video with new naming pattern
       const fs = yield* FileSystem.FileSystem;
-      const metaFolderName = `${videoName}_meta`;
-      const metaFolderPath = path.join(videoDirectory, metaFolderName);
       
-      // Create the meta directory
-      yield* fs.makeDirectory(metaFolderPath, { recursive: true });
+      // Ensure the video directory exists
+      yield* fs.makeDirectory(videoDirectory, { recursive: true });
       
-      // Save the article in the meta folder
-      const articlePath = path.join(metaFolderPath, `${videoName}.md`) as AbsolutePath;
+      // Save the article alongside the video
+      const articlePath = path.join(videoDirectory, `${videoName}.article.md`) as AbsolutePath;
       yield* fs.writeFileString(
         articlePath,
         [
@@ -90,26 +88,25 @@ export const generateArticleCore = Effect.fn("generateArticleCore")(
         ].join("\n")
       );
 
-      // Copy the transcript to the meta folder if available
+      // Copy the transcript alongside the video if available
       if (transcriptPath) {
-        const transcriptFileName = path.basename(transcriptPath);
-        const metaTranscriptPath = path.join(metaFolderPath, transcriptFileName);
-        yield* fs.copyFile(transcriptPath, metaTranscriptPath);
+        const transcriptAlongsidePath = path.join(videoDirectory, `${videoName}.transcript.txt`);
+        yield* fs.copyFile(transcriptPath, transcriptAlongsidePath);
       }
 
-      // Copy the code file to the meta folder if provided
+      // Save the code file alongside the video if provided
       if (codePath && code) {
-        const codeFileName = path.basename(codePath);
-        const metaCodePath = path.join(metaFolderPath, codeFileName);
-        yield* fs.writeFileString(metaCodePath, code);
+        // Extract the extension from the original code path
+        const codeExtension = path.extname(codePath);
+        const codeAlongsidePath = path.join(videoDirectory, `${videoName}.code${codeExtension}`);
+        yield* fs.writeFileString(codeAlongsidePath, code);
       }
 
       return {
         title,
-        filename: `${videoName}.md`,
+        filename: `${videoName}.article.md`,
         content: article,
         savedAt: articlePath,
-        metaFolderPath,
       };
     } else {
       // Use the existing article storage system

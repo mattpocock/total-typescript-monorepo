@@ -186,7 +186,7 @@ export const generateArticleFromTranscriptQueue = Effect.fn(
     };
 
     yield* Console.log(
-      `Article will be saved in meta folder: ${videoDirectory}/${videoName}_meta/`
+      `Article, transcript, and code will be saved alongside video in: ${videoDirectory}/`
     );
   }
 
