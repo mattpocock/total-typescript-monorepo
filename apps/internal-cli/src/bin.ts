@@ -475,15 +475,6 @@ program
               `  ${styleText("dim", "Type")}       Transcript Analysis\n` +
               `  ${styleText("dim", "Video")}      ${transcriptName}\n` +
               `  ${styleText("dim", "Purpose")}    Generate link requests for article\n`;
-          } else if (item.action.type === "code-request") {
-            const transcriptName = item.action.transcriptPath.split('/').pop()?.replace('.txt', '') || 'Unknown';
-            const hasCode = item.action.temporaryData?.codeContent ? 
-              `Yes (${item.action.temporaryData.codeContent.length} chars)` : 
-              item.status === "completed" ? "No code provided" : "Pending";
-            actionContent =
-              `  ${styleText("dim", "Type")}       Code Request\n` +
-              `  ${styleText("dim", "Video")}      ${transcriptName}\n` +
-              `  ${styleText("dim", "Code")}       ${hasCode}\n`;
           } else if (item.action.type === "generate-article-from-transcript") {
             const transcriptName = item.action.transcriptPath.split('/').pop()?.replace('.txt', '') || 'Unknown';
             
@@ -494,9 +485,7 @@ program
             const codeDep = queueState.queue.find((q: QueueItem) => q.id === articleAction.codeDependencyId);
             const linksDep = queueState.queue.find((q: QueueItem) => q.id === articleAction.linksDependencyId);
             
-            const codeStatus = codeDep?.status === "completed" ? 
-              (codeDep.action.type === "code-request" && codeDep.action.temporaryData?.codeContent ? "✓ Code" : "✓ No code") : 
-              "⏳ Code pending";
+            const codeStatus = codeDep?.status === "completed" ? "✓ No code" : "⏳ Code pending";
             const linksStatus = linksDep?.status === "completed" ? "✓ Links" : "⏳ Links pending";
             
             actionContent =
@@ -680,7 +669,6 @@ const analyzeArticleWorkflows = Effect.fn("analyzeArticleWorkflows")(
         videoKey = item.action.videoName;
       } else if (
         item.action.type === "analyze-transcript-for-links" ||
-        item.action.type === "code-request" ||
         item.action.type === "generate-article-from-transcript"
       ) {
         videoKey = item.action.transcriptPath.split('/').pop()?.replace('.txt', '') || 'Unknown';
@@ -706,7 +694,6 @@ const analyzeArticleWorkflows = Effect.fn("analyzeArticleWorkflows")(
       const stepOrder = [
         "create-auto-edited-video",
         "analyze-transcript-for-links", 
-        "code-request",
         "links-request",
         "generate-article-from-transcript"
       ];
@@ -716,7 +703,6 @@ const analyzeArticleWorkflows = Effect.fn("analyzeArticleWorkflows")(
         const stepNames = {
           "create-auto-edited-video": "Video Creation",
           "analyze-transcript-for-links": "Analysis", 
-          "code-request": "Code",
           "links-request": "Links",
           "generate-article-from-transcript": "Article"
         };
