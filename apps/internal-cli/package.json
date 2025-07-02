@@ -15,25 +15,26 @@
   },
   "devDependencies": {
     "@total-typescript/ts-reset": "^0.5.1",
-    "@types/prompts": "^2.4.9",
-    "@types/node": "^22.0.0"
+    "@types/node": "^22.0.0",
+    "@types/prompts": "^2.4.9"
   },
   "dependencies": {
-    "@total-typescript/shared": "workspace:*",
-    "@total-typescript/ffmpeg": "workspace:*",
-    "commander": "^12.0.0",
-    "dotenv": "^16.4.5",
-    "fast-glob": "^3.3.2",
-    "prompts": "^2.4.2",
-    "effect": "^3.16.8",
-    "@effect/platform": "^0.85.2",
     "@effect/opentelemetry": "^0.40.0",
+    "@effect/platform": "^0.85.2",
+    "@effect/platform-node": "^0.86.4",
     "@opentelemetry/exporter-trace-otlp-http": "^0.54.2",
+    "@opentelemetry/resources": "^1.28.0",
+    "@opentelemetry/sdk-metrics": "^1.28.0",
     "@opentelemetry/sdk-trace-base": "^1.28.0",
     "@opentelemetry/sdk-trace-node": "^1.28.0",
     "@opentelemetry/sdk-trace-web": "^1.28.0",
-    "@opentelemetry/sdk-metrics": "^1.28.0",
     "@opentelemetry/semantic-conventions": "^1.28.0",
-    "@opentelemetry/resources": "^1.28.0"
+    "@total-typescript/ffmpeg": "workspace:*",
+    "@total-typescript/shared": "workspace:*",
+    "commander": "^12.0.0",
+    "dotenv": "^16.4.5",
+    "effect": "^3.16.8",
+    "fast-glob": "^3.3.2",
+    "prompts": "^2.4.2"
   }
 }

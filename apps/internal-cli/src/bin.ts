@@ -36,6 +36,9 @@ import {
 import packageJson from "../package.json" with { type: "json" };
 import { validateCreateVideoFlags, FlagValidationError } from "./validate-cli-flags.js";
 import { OpenTelemetryLive } from "./tracing.js";
+import { runExerciseOrganizer } from "./exercise-organizer/cli-command.js";
+import { type ExerciseOrganizerOptions } from "./exercise-organizer/types.js";
+import { NodeFileSystem } from "@effect/platform-node";
 
 config({
   path: path.resolve(import.meta.dirname, "../../../.env"),
@@ -806,5 +809,26 @@ function generateProgressBar(
   const names = steps.map((s) => s.name);
   return names.map((name, i) => `${icons[i]} ${name}`).join(" → ");
 }
+
+// Exercise Organizer Command
+program
+  .command("exercise-organizer [directory]")
+  .aliases(["eo", "exercises"])
+  .description("Analyze and organize TypeScript exercise files")
+  .option("-v, --validate", "Validate exercises and exit with status code")
+  .option("--format <type>", "Output format: table, json, markdown", "table")
+  .option("--verbose", "Enable verbose output")
+  .action(async (directory: string | undefined, options: ExerciseOrganizerOptions) => {
+    const result = await runExerciseOrganizer(directory, options).pipe(
+      Effect.withConfigProvider(ConfigProvider.fromEnv()),
+      Effect.provide(NodeFileSystem.layer),
+      Effect.runPromise
+    );
+    
+    // Exit with non-zero code if there are errors (useful for CI)
+    if (options.validate && result.hasErrors) {
+      process.exit(1);
+    }
+  });
 
 program.parse(process.argv);
