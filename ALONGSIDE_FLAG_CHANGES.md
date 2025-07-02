@@ -133,6 +133,22 @@ pnpm cli create-auto-edited-video --generate-article --alongside --upload
 - ✅ Queue processing interface unchanged
 - ✅ No breaking changes for existing users
 
+## Additional Fix: TypeScript Compilation Errors
+
+### Issue Resolved
+During the implementation, discovered that the internal-cli package had TypeScript compilation errors due to references to the removed `"code-request"` queue action type.
+
+### Changes Made to `apps/internal-cli/src/bin.ts`
+1. **Removed `"code-request"` display logic**: Eliminated the else-if block that handled code-request queue items in the status display
+2. **Updated article generation display**: Simplified to use `codeContent` property directly instead of looking up code dependencies  
+3. **Fixed workflow analysis**: Removed `"code-request"` from step order and step names in article workflow tracking
+4. **Updated TypeScript type narrowing**: Added proper type assertions for article generation actions
+
+### Resolution Verification
+- ✅ **TypeScript compilation**: Both `@total-typescript/ffmpeg` and `@total-typescript/internal-cli` packages build successfully
+- ✅ **Test coverage maintained**: All 15 tests in ffmpeg package still passing
+- ✅ **No functionality loss**: Queue status and workflow tracking work correctly with simplified code handling
+
 ## Testing Strategy
 
 - **Real Filesystem Operations**: Uses temporary directories with actual file operations
@@ -141,3 +157,4 @@ pnpm cli create-auto-edited-video --generate-article --alongside --upload
 - **File Content Verification**: Confirms correct content in all generated files
 - **Extension Preservation**: Tests that code file extensions are maintained
 - **Error Handling**: Validates graceful handling of missing code files
+- **TypeScript Compilation**: Verified successful builds for both modified packages
