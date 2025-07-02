@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { Effect } from "effect";
-import { validateCreateVideoFlags, FlagValidationError, CreateVideoOptions } from "./validate-cli-flags.js";
+import { validateCreateVideoFlags, FlagValidationError, type CreateVideoOptions } from "./validate-cli-flags.js";
 
 describe("validateCreateVideoFlags", () => {
   describe("alongside flag validation", () => {
