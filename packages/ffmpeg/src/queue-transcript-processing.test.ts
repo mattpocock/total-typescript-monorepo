@@ -83,7 +83,7 @@ it("Should update existing links-request item with generated link requests", asy
   });
 });
 
-it("Should handle empty link requests gracefully", async () => {
+it("Should mark links-request item as completed when no links are required", async () => {
   const mockUpdateQueueItem = vi.fn().mockReturnValue(Effect.succeed(void 0));
 
   const transcriptAnalysisItem: QueueItem & {
@@ -103,8 +103,19 @@ it("Should handle empty link requests gracefully", async () => {
     status: "ready-to-run",
   };
 
+  const linksRequestItem: QueueItem = {
+    id: "links-1",
+    createdAt: Date.now(),
+    action: {
+      type: "links-request",
+      linkRequests: [],
+    },
+    dependencies: ["analysis-1"],
+    status: "requires-user-input",
+  };
+
   const queueState: QueueState = {
-    queue: [transcriptAnalysisItem],
+    queue: [transcriptAnalysisItem, linksRequestItem],
   };
 
   const result = await processTranscriptAnalysisForQueue({
@@ -132,7 +143,91 @@ it("Should handle empty link requests gracefully", async () => {
   );
 
   expect(result).toEqual([]);
-  expect(mockUpdateQueueItem).not.toHaveBeenCalled();
+  
+  // Should update the links-request item to mark it as completed
+  expect(mockUpdateQueueItem).toHaveBeenCalledWith({
+    ...linksRequestItem,
+    action: {
+      type: "links-request",
+      linkRequests: [],
+    },
+    status: "completed",
+    completedAt: expect.any(Number),
+  });
+});
+
+it("Should mark links-request item as requires-user-input when links are required", async () => {
+  const mockUpdateQueueItem = vi.fn().mockReturnValue(Effect.succeed(void 0));
+
+  const transcriptAnalysisItem: QueueItem & {
+    action: {
+      type: "analyze-transcript-for-links";
+      transcriptPath: AbsolutePath;
+      originalVideoPath: AbsolutePath;
+    };
+  } = {
+    id: "analysis-1",
+    createdAt: Date.now(),
+    action: {
+      type: "analyze-transcript-for-links",
+      transcriptPath: "/path/to/transcript.txt" as AbsolutePath,
+      originalVideoPath: "/path/to/video.mp4" as AbsolutePath,
+    },
+    status: "ready-to-run",
+  };
+
+  const linksRequestItem: QueueItem = {
+    id: "links-1",
+    createdAt: Date.now(),
+    action: {
+      type: "links-request",
+      linkRequests: [],
+    },
+    dependencies: ["analysis-1"],
+    status: "requires-user-input",
+  };
+
+  const queueState: QueueState = {
+    queue: [transcriptAnalysisItem, linksRequestItem],
+  };
+
+  const result = await processTranscriptAnalysisForQueue({
+    queueItem: transcriptAnalysisItem,
+    queueState,
+    updateQueueItem: mockUpdateQueueItem,
+  }).pipe(
+    Effect.provideService(
+      FileSystem.FileSystem,
+      FileSystem.makeNoop({
+        readFileString: vi
+          .fn()
+          .mockReturnValue(Effect.succeed("Test Transcript")),
+      })
+    ),
+    Effect.provideService(
+      AIService,
+      new AIService(
+        fromPartial({
+          askForLinks: vi
+            .fn()
+            .mockReturnValue(Effect.succeed(["Documentation link", "TypeScript handbook"])),
+        })
+      )
+    ),
+    Effect.runPromise
+  );
+
+  expect(result).toEqual(["Documentation link", "TypeScript handbook"]);
+  
+  // Should update the links-request item with links and mark as requires-user-input
+  expect(mockUpdateQueueItem).toHaveBeenCalledWith({
+    ...linksRequestItem,
+    action: {
+      type: "links-request",
+      linkRequests: ["Documentation link", "TypeScript handbook"],
+    },
+    status: "requires-user-input",
+  });
 });
 
 it("Should fail when no dependent links-request item is found", async () => {

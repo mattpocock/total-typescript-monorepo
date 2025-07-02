@@ -264,32 +264,51 @@ export const processInformationRequests = () => {
 
         const links: { description: string; url: string }[] = [];
 
-        yield* Console.log(
-          `📝 Please provide URLs for ${queueItem.action.linkRequests.length} link request(s):`
-        );
-
-        for (const linkRequest of queueItem.action.linkRequests) {
-          const link = yield* askQuestion.askQuestion(
-            `🌐 Link for "${linkRequest}": `
+        // Check if linkRequests array is empty
+        if (queueItem.action.linkRequests.length === 0) {
+          yield* Console.log(
+            `📝 No links required - marking as completed`
           );
 
-          links.push({
-            description: linkRequest,
-            url: link,
+          yield* linkStorage.addLinks(links);
+
+          yield* updateQueueItem({
+            ...queueItem,
+            status: "completed",
+            completedAt: Date.now(),
           });
+
+          yield* Console.log(
+            `✅ Links request completed - no links were required`
+          );
+        } else {
+          yield* Console.log(
+            `📝 Please provide URLs for ${queueItem.action.linkRequests.length} link request(s):`
+          );
+
+          for (const linkRequest of queueItem.action.linkRequests) {
+            const link = yield* askQuestion.askQuestion(
+              `🌐 Link for "${linkRequest}": `
+            );
+
+            links.push({
+              description: linkRequest,
+              url: link,
+            });
+          }
+
+          yield* linkStorage.addLinks(links);
+
+          yield* updateQueueItem({
+            ...queueItem,
+            status: "completed",
+            completedAt: Date.now(),
+          });
+
+          yield* Console.log(
+            `✅ Links request completed - added ${links.length} link(s)`
+          );
         }
-
-        yield* linkStorage.addLinks(links);
-
-        yield* updateQueueItem({
-          ...queueItem,
-          status: "completed",
-          completedAt: Date.now(),
-        });
-
-        yield* Console.log(
-          `✅ Links request completed - added ${links.length} link(s)`
-        );
       }
     }
 

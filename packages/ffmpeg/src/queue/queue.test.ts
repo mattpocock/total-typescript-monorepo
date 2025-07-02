@@ -633,12 +633,6 @@ it("Should process only information requests", async () => {
   }
 });
 
-
-
-
-
-
-
 it("Should include only links-request in outstanding information requests", async () => {
   const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
 
@@ -781,6 +775,215 @@ it("Should handle dependency chains with new action types", async () => {
     expect(queueState.queue.find((i) => i.id === "article-1")?.status).toBe(
       "ready-to-run"
     );
+  } finally {
+    await fs.rm(tmpDir, { recursive: true });
+  }
+});
+
+it("Should mark links-request items as completed when linkRequests array is empty", async () => {
+  const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
+
+  try {
+    const QUEUE_LOCATION = path.join(tmpDir, "queue.json");
+    const QUEUE_LOCKFILE_LOCATION = path.join(tmpDir, "queue.lock");
+
+    const addLinks = vi.fn().mockReturnValue(Effect.succeed(undefined));
+    const getLinks = vi.fn().mockReturnValue(Effect.succeed([]));
+    const askQuestion = vi.fn().mockReturnValue(Effect.succeed("awesome-url"));
+
+    const { processInformationRequests } = await import("./queue.js");
+
+    await Effect.gen(function* () {
+      yield* writeToQueue([
+        {
+          id: "1",
+          createdAt: Date.now(),
+          action: {
+            type: "links-request",
+            linkRequests: [], // Empty array - no links required
+          },
+          status: "requires-user-input",
+        },
+      ]);
+
+      yield* processInformationRequests();
+    }).pipe(
+      Effect.provide(NodeFileSystem.layer),
+      Effect.provideService(
+        LinksStorageService,
+        new LinksStorageService({
+          addLinks,
+          getLinks,
+        })
+      ),
+      Effect.provideService(
+        AskQuestionService,
+        new AskQuestionService({
+          askQuestion,
+          select: vi.fn().mockReturnValue(Effect.succeed("test")),
+        })
+      ),
+      Effect.withConfigProvider(
+        ConfigProvider.fromJson({
+          QUEUE_LOCATION,
+          QUEUE_LOCKFILE_LOCATION,
+        })
+      ),
+      Effect.runPromise
+    );
+
+    const queueState = JSON.parse(
+      (await fs.readFile(QUEUE_LOCATION, "utf-8")).toString()
+    );
+
+    // The links-request item should be marked as completed
+    expect(queueState.queue[0]).toEqual({
+      id: "1",
+      createdAt: expect.any(Number),
+      completedAt: expect.any(Number),
+      action: {
+        type: "links-request",
+        linkRequests: [],
+      },
+      status: "completed",
+    });
+
+    // No links should have been added since array was empty
+    expect(addLinks).toHaveBeenCalledWith([]);
+
+    // askQuestion should NOT have been called since no links were required
+    expect(askQuestion).not.toHaveBeenCalled();
+  } finally {
+    await fs.rm(tmpDir, { recursive: true });
+  }
+});
+
+it("Should process mixed links-request items (some empty, some with links)", async () => {
+  const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
+
+  try {
+    const QUEUE_LOCATION = path.join(tmpDir, "queue.json");
+    const QUEUE_LOCKFILE_LOCATION = path.join(tmpDir, "queue.lock");
+
+    const addLinks = vi.fn().mockReturnValue(Effect.succeed(undefined));
+    const getLinks = vi.fn().mockReturnValue(Effect.succeed([]));
+    const askQuestion = vi.fn().mockReturnValue(Effect.succeed("awesome-url"));
+
+    const { processInformationRequests } = await import("./queue.js");
+
+    await Effect.gen(function* () {
+      yield* writeToQueue([
+        {
+          id: "1",
+          createdAt: Date.now(),
+          action: {
+            type: "links-request",
+            linkRequests: [], // Empty array - no links required
+          },
+          status: "requires-user-input",
+        },
+        {
+          id: "2",
+          createdAt: Date.now(),
+          action: {
+            type: "links-request",
+            linkRequests: ["test link", "another link"], // Has links - requires user input
+          },
+          status: "requires-user-input",
+        },
+        {
+          id: "3",
+          createdAt: Date.now(),
+          action: {
+            type: "links-request",
+            linkRequests: [], // Empty array - no links required
+          },
+          status: "requires-user-input",
+        },
+      ]);
+
+      yield* processInformationRequests();
+    }).pipe(
+      Effect.provide(NodeFileSystem.layer),
+      Effect.provideService(
+        LinksStorageService,
+        new LinksStorageService({
+          addLinks,
+          getLinks,
+        })
+      ),
+      Effect.provideService(
+        AskQuestionService,
+        new AskQuestionService({
+          askQuestion,
+          select: vi.fn().mockReturnValue(Effect.succeed("test")),
+        })
+      ),
+      Effect.withConfigProvider(
+        ConfigProvider.fromJson({
+          QUEUE_LOCATION,
+          QUEUE_LOCKFILE_LOCATION,
+        })
+      ),
+      Effect.runPromise
+    );
+
+    const queueState = JSON.parse(
+      (await fs.readFile(QUEUE_LOCATION, "utf-8")).toString()
+    );
+
+    // All links-request items should be completed
+    expect(queueState.queue.every((item: any) => item.status === "completed")).toBe(true);
+
+    // Empty links-request items should be completed with empty arrays
+    expect(queueState.queue[0]).toEqual({
+      id: "1",
+      createdAt: expect.any(Number),
+      completedAt: expect.any(Number),
+      action: {
+        type: "links-request",
+        linkRequests: [],
+      },
+      status: "completed",
+    });
+
+    expect(queueState.queue[2]).toEqual({
+      id: "3",
+      createdAt: expect.any(Number),
+      completedAt: expect.any(Number),
+      action: {
+        type: "links-request",
+        linkRequests: [],
+      },
+      status: "completed",
+    });
+
+    // Item with actual links should be completed with the requests
+    expect(queueState.queue[1]).toEqual({
+      id: "2",
+      createdAt: expect.any(Number),
+      completedAt: expect.any(Number),
+      action: {
+        type: "links-request",
+        linkRequests: ["test link", "another link"],
+      },
+      status: "completed",
+    });
+
+    // addLinks should have been called 3 times:
+    // - Once for empty array (item 1)
+    // - Once for actual links (item 2)
+    // - Once for empty array (item 3)
+    expect(addLinks).toHaveBeenCalledTimes(3);
+    expect(addLinks).toHaveBeenNthCalledWith(1, []);
+    expect(addLinks).toHaveBeenNthCalledWith(2, [
+      { description: "test link", url: "awesome-url" },
+      { description: "another link", url: "awesome-url" },
+    ]);
+    expect(addLinks).toHaveBeenNthCalledWith(3, []);
+
+    // askQuestion should have been called only for the 2 actual link requests
+    expect(askQuestion).toHaveBeenCalledTimes(2);
   } finally {
     await fs.rm(tmpDir, { recursive: true });
   }
