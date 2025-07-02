@@ -1,21 +1,55 @@
-# Exercise Organizer CLI - Multi-Step Implementation Plan
+# Exercise Organizer CLI - Incremental Prototype Implementation Plan
 
 ## Overview
 
-This plan breaks down the Exercise Organizer CLI implementation into 8 strategic phases, each designed to be completed by a single agent within a manageable PR scope. Each phase builds upon the previous ones while maintaining independent functionality.
+This plan breaks down the Exercise Organizer CLI implementation into 6 incremental phases, where **each phase delivers a fully working prototype** that can be tested and used. Each prototype builds upon the previous one, allowing for continuous feedback and course correction.
+
+The approach ensures that at every stage, you have a functional tool that provides value, even if it doesn't have all the planned features yet.
 
 ---
 
-## Phase 1: Core Exercise Parsing & Data Models
+## Phase 1: Working CLI Scanner & Reporter
+**Deliverable**: A functional CLI that scans directories and reports exercise structure
 **PR Size**: Medium (400-500 lines)
 **Estimated Time**: 2-3 hours per agent
 **Dependencies**: None
 
-### 🎯 Goals
-- Establish foundational data structures
-- Implement exercise file parsing logic
-- Create validation framework
-- Set up basic TypeScript types
+### 🎯 What You Get (Working Prototype)
+A complete CLI command that:
+- Scans any directory for TypeScript exercises
+- Detects file-based and folder-based exercises
+- Validates naming conventions
+- Reports detailed analysis to console
+- Identifies problems, solutions, and orphaned files
+- Provides validation-only mode for CI/testing
+
+### 📦 User Experience
+```bash
+# Scan current directory
+tt exercise-organizer
+
+# Scan specific directory
+tt exercise-organizer /path/to/exercises
+
+# Validation mode for CI
+tt exercise-organizer --validate /path/to/exercises
+
+# Example output:
+📁 Section 01: TypeScript Fundamentals (12 exercises)
+  ✅ 001-variables.problem.ts / 001-variables.solution.ts
+  ✅ 002-functions.problem.ts / 002-functions.solution.ts
+  ❌ 003.5-arrays.problem.ts (invalid decimal number)
+  ⚠️  004-objects.problem.ts (missing solution)
+  ✅ 005-types/
+    ├── index.problem.ts
+    └── index.solution.ts
+
+🔍 Analysis Complete:
+  - 47 exercises found across 4 sections
+  - 3 validation errors
+  - 1 orphaned file
+  - Suggested: Run normalization to fix decimal numbers
+```
 
 ### 📁 Files to Create
 ```
@@ -24,18 +58,43 @@ apps/internal-cli/src/exercise-organizer/
 ├── parser.ts               # File parsing logic
 ├── validator.ts            # Exercise validation
 ├── exercise-detector.ts    # Exercise pattern detection
+├── cli-command.ts          # Main CLI command
+├── reporter.ts             # Console output formatting
 └── __tests__/
     ├── parser.test.ts      # Parser unit tests
     ├── validator.test.ts   # Validator unit tests
+    ├── cli-command.test.ts # CLI integration tests
     └── fixtures/           # Test fixture files
 ```
 
 ### 🔧 Key Components
 
-#### Types & Data Models
+#### Complete CLI Integration
 ```typescript
-// Exercise types (file-based vs folder-based)
-export type Exercise = FileBasedExercise | FolderBasedExercise;
+// Add to bin.ts
+program
+  .command("exercise-organizer [directory]")
+  .aliases(["eo", "exercises"])
+  .description("Analyze and organize TypeScript exercise files")
+  .option("-v, --validate", "Validate exercises and exit with status code")
+  .option("--format <type>", "Output format: table, json, markdown", "table")
+  .action(async (directory: string | undefined, options) => {
+    const result = await runExerciseOrganizer(directory, options);
+    process.exit(result.hasErrors ? 1 : 0);
+  });
+```
+
+#### Full Data Models & Parsing
+```typescript
+export interface Exercise {
+  type: 'file-based' | 'folder-based';
+  number: number;
+  name: string;
+  path: AbsolutePath;
+  problemFile: string;
+  solutionFile?: string;
+  validationErrors: ValidationError[];
+}
 
 export interface ExerciseSection {
   path: AbsolutePath;
@@ -45,991 +104,761 @@ export interface ExerciseSection {
   validationErrors: ValidationError[];
 }
 
-export interface ExerciseParseResult {
-  sections: ExerciseSection[];
-  orphanedFiles: string[];
-  validationErrors: ValidationError[];
-}
-```
-
-#### Core Functions
-```typescript
-// Parse directory structure into exercise data
-export const parseExerciseDirectory: (dir: AbsolutePath) => Effect<ExerciseParseResult>
-
-// Validate exercise naming conventions
-export const validateExercise: (exercise: Exercise) => ValidationError[]
-
-// Detect exercise type from file patterns  
-export const detectExerciseType: (filePath: string) => ExerciseType | null
-```
-
-### ✅ Success Criteria
-- [ ] Parse file-based and folder-based exercises correctly
-- [ ] Detect naming convention violations
-- [ ] Identify problem/solution pairs accurately
-- [ ] Handle edge cases (missing solutions, duplicates, etc.)
-- [ ] 95%+ test coverage for parsing logic
-- [ ] Clean TypeScript types with no compilation errors
-
-### 🧪 Testing Strategy
-- Unit tests for all parsing functions
-- Fixture-based testing with real exercise directory structures
-- Edge case testing (malformed names, missing files, etc.)
-- Performance testing with large directory trees
-
----
-
-## Phase 2: Basic CLI Command & Directory Scanning  
-**PR Size**: Small-Medium (200-300 lines)
-**Estimated Time**: 1-2 hours per agent
-**Dependencies**: Phase 1
-
-### 🎯 Goals
-- Integrate with existing CLI structure
-- Add basic `exercise-organizer` command
-- Implement directory scanning workflow
-- Provide console output and error reporting
-
-### 📁 Files to Modify/Create
-```
-apps/internal-cli/src/bin.ts                    # Add new command
-apps/internal-cli/src/exercise-organizer/
-├── cli-command.ts          # Command implementation
-└── __tests__/
-    └── cli-command.test.ts # CLI integration tests
-```
-
-### 🔧 Key Components
-
-#### CLI Integration
-```typescript
-// Add to bin.ts
-program
-  .command("exercise-organizer [directory]")
-  .aliases(["eo", "exercises"])
-  .description("Launch exercise organizer TUI for managing TypeScript exercises")
-  .option("-d, --dry-run", "Analyze without making changes")
-  .option("-v, --validate", "Validate exercises and exit")
-  .action(async (directory: string | undefined, options: ExerciseOrganizerOptions) => {
-    // Implementation using Effect patterns
-  });
-```
-
-#### Command Implementation
-```typescript
-export const exerciseOrganizerCommand = Effect.gen(function* () {
+export const parseExerciseDirectory = Effect.gen(function* (dir: AbsolutePath) {
   const fs = yield* FileSystem.FileSystem;
-  const targetDirectory = directory || process.cwd();
+  const files = yield* fs.readdir(dir);
   
-  // Parse directory structure
-  const parseResult = yield* parseExerciseDirectory(targetDirectory);
+  // Parse sections and exercises
+  const sections = yield* parseSections(files);
+  const orphanedFiles = yield* detectOrphanedFiles(files, sections);
   
-  // Validate and report results
-  if (options.validate) {
-    yield* reportValidationResults(parseResult);
-    return;
-  }
-  
-  // Launch TUI (placeholder for Phase 3)
-  yield* Console.log("Exercise organizer analysis complete!");
+  return {
+    sections,
+    orphanedFiles,
+    validationErrors: sections.flatMap(s => s.validationErrors),
+    hasErrors: sections.some(s => s.validationErrors.length > 0),
+  };
 });
 ```
 
-### ✅ Success Criteria
-- [ ] CLI command integrates seamlessly with existing `tt` commands
-- [ ] Directory scanning works for complex nested structures
-- [ ] Validation-only mode provides clear error reporting
-- [ ] Help text and command aliases work correctly
-- [ ] Follows existing CLI patterns and error handling
-- [ ] Effect-based architecture maintained
-
-### 🧪 Testing Strategy
-- CLI integration tests
-- Directory scanning with various structures
-- Validation mode testing
-- Error handling verification
+### ✅ Success Criteria & Testing
+- [ ] **End-to-End Functionality**: Can scan real exercise directories and produce accurate reports
+- [ ] **CLI Integration**: Works seamlessly with existing `tt` command structure
+- [ ] **Validation Mode**: Returns proper exit codes for CI integration
+- [ ] **Error Handling**: Gracefully handles permission errors, missing directories, etc.
+- [ ] **Performance**: Handles large directories (100+ exercises) efficiently
+- [ ] **Output Quality**: Clear, actionable reports that highlight problems
 
 ---
 
-## Phase 3: Terminal User Interface (TUI) Foundation
-**PR Size**: Large (600-700 lines) 
+## Phase 2: Interactive TUI Navigator
+**Deliverable**: A working terminal UI for browsing exercises interactively
+**PR Size**: Medium-Large (500-600 lines)
 **Estimated Time**: 3-4 hours per agent
-**Dependencies**: Phase 2
+**Dependencies**: Phase 1
 
-### 🎯 Goals
-- Implement TUI using Ink (React for terminal)
-- Create hierarchical exercise display
-- Add keyboard navigation
-- Build foundation for interactive operations
+### 🎯 What You Get (Working Prototype)
+Building on Phase 1, you now get:
+- Full interactive terminal interface using Ink
+- Navigate exercise hierarchy with keyboard
+- View exercise details and validation errors
+- Browse between sections and exercises
+- Real-time filtering and search
+- Help system and keyboard shortcuts
 
-### 📁 Files to Create
+### 📦 User Experience
+```bash
+# Launch interactive mode (default when no --validate flag)
+tt exercise-organizer
+
+# Interactive TUI with:
+# - Arrow keys or vim keys (j/k) for navigation
+# - Enter to view exercise details
+# - / to search exercises
+# - ? for help
+# - q to quit
+```
+
+```
+┌─ Exercise Organizer - TypeScript Fundamentals ─────────────────────────┐
+│                                                                        │
+│ 📁 01-typescript-fundamentals/ (12 exercises)                         │
+│   ✅ 001-variables.problem.ts → 001-variables.solution.ts            │
+│ ► ✅ 002-functions.problem.ts → 002-functions.solution.ts            │
+│   ❌ 003.5-arrays.problem.ts (invalid decimal number)                │
+│   ⚠️  004-objects.problem.ts (missing solution)                      │
+│                                                                        │
+│ 📁 02-advanced-types/ (8 exercises)                                   │
+│   ✅ 001-unions.problem.ts → 001-unions.solution.ts                  │
+│                                                                        │
+│ Filter: [      ] | ? Help | q Quit | 12/47 exercises                  │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+### 📁 Additional Files
 ```
 apps/internal-cli/src/exercise-organizer/
 ├── tui/
-│   ├── App.tsx                    # Main TUI component
-│   ├── ExerciseTree.tsx          # Exercise tree display
+│   ├── App.tsx                    # Main TUI application
+│   ├── ExerciseTree.tsx          # Exercise hierarchy display
+│   ├── ExerciseDetail.tsx        # Exercise detail view
 │   ├── StatusBar.tsx             # Status and help bar
-│   ├── ErrorDisplay.tsx          # Error highlighting
+│   ├── SearchBar.tsx             # Filtering interface
 │   └── hooks/
 │       ├── useKeyboard.ts        # Keyboard navigation
-│       └── useExerciseState.ts   # Exercise state management
+│       ├── useExerciseState.ts   # Exercise state management
+│       └── useSearch.ts          # Search/filtering logic
 └── __tests__/
-    └── tui/
-        ├── App.test.tsx          # TUI component tests
-        └── hooks.test.ts         # Hooks testing
-```
-
-### 🔧 Key Dependencies
-```bash
-# Add to package.json
-"ink": "^4.4.1",
-"react": "^18.2.0",
-"@types/react": "^18.2.0"
+    └── tui/                      # TUI component tests
 ```
 
 ### 🔧 Key Components
 
-#### Main TUI App
+#### Interactive TUI App
 ```typescript
 export const ExerciseOrganizerApp: React.FC<{
   parseResult: ExerciseParseResult;
-  targetDirectory: string;
-}> = ({ parseResult, targetDirectory }) => {
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [mode, setMode] = useState<'navigate' | 'move'>('navigate');
+}> = ({ parseResult }) => {
+  const [selectedPath, setSelectedPath] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [mode, setMode] = useState<'browse' | 'search' | 'detail'>('browse');
   
-  // Keyboard handling
+  const filteredSections = useMemo(() => 
+    filterSections(parseResult.sections, searchTerm), 
+    [parseResult.sections, searchTerm]
+  );
+
   useKeyboard((input, key) => {
-    if (key.upArrow || input === 'k') handleUp();
-    if (key.downArrow || input === 'j') handleDown();
-    if (input === 'q') process.exit(0);
+    switch (input) {
+      case 'q': process.exit(0); break;
+      case '/': setMode('search'); break;
+      case '?': setMode('help'); break;
+      default:
+        if (key.upArrow || input === 'k') handleUp();
+        if (key.downArrow || input === 'j') handleDown();
+        if (key.return) handleSelect();
+    }
   });
 
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" height="100%">
       <ExerciseTree 
-        sections={parseResult.sections}
-        selectedIndex={selectedIndex}
+        sections={filteredSections}
+        selectedPath={selectedPath}
+        onSelect={setSelectedPath}
       />
-      <StatusBar mode={mode} />
+      <SearchBar 
+        visible={mode === 'search'}
+        value={searchTerm}
+        onChange={setSearchTerm}
+      />
+      <StatusBar 
+        mode={mode}
+        exerciseCount={countExercises(filteredSections)}
+      />
     </Box>
   );
 };
 ```
 
-#### Exercise Tree Display
-```typescript
-export const ExerciseTree: React.FC<{
-  sections: ExerciseSection[];
-  selectedIndex: number;
-}> = ({ sections, selectedIndex }) => {
-  return (
-    <Box flexDirection="column">
-      {sections.map((section, index) => (
-        <SectionDisplay 
-          key={section.path}
-          section={section}
-          isSelected={index === selectedIndex}
-        />
-      ))}
-    </Box>
-  );
-};
-```
-
-### ✅ Success Criteria
-- [ ] TUI renders exercise hierarchy correctly
-- [ ] Keyboard navigation works (arrow keys, vim keys)
-- [ ] Exercise validation errors highlighted in red
-- [ ] Status bar shows available commands
-- [ ] Clean, readable terminal interface
-- [ ] Responsive to different terminal sizes
-
-### 🧪 Testing Strategy
-- Component testing with React Testing Library
-- Keyboard navigation simulation
-- Error display verification
-- Visual regression testing (if possible)
+### ✅ Success Criteria & Testing
+- [ ] **Full Navigation**: Smooth keyboard navigation through exercise hierarchy
+- [ ] **Search Works**: Real-time filtering of exercises by name/content
+- [ ] **Visual Clarity**: Clear indication of exercise status (valid, errors, missing solutions)
+- [ ] **Responsive UI**: Adapts to different terminal sizes
+- [ ] **Performance**: No lag when navigating large exercise sets
+- [ ] **User Experience**: Intuitive for both vim users and regular users
 
 ---
 
-## Phase 4: Exercise Operations (Move, Reorder)
-**PR Size**: Medium-Large (500-600 lines)
-**Estimated Time**: 3-4 hours per agent  
-**Dependencies**: Phase 3
+## Phase 3: Basic Exercise Operations
+**Deliverable**: Interactive move and reorder operations with immediate feedback
+**PR Size**: Medium-Large (500-600 lines)  
+**Estimated Time**: 3-4 hours per agent
+**Dependencies**: Phase 2
 
-### 🎯 Goals
-- Implement exercise moving operations
-- Add reordering within sections
-- Build file system operation safety
-- Create undo/redo functionality
+### 🎯 What You Get (Working Prototype)
+Building on Phase 2, you now can:
+- Move exercises between sections interactively
+- Reorder exercises within sections
+- See real-time preview before confirming operations
+- Undo the last operation if something goes wrong
+- Dry-run mode to see what would happen
+- Safe file operations with validation
 
-### 📁 Files to Create/Modify
+### 📦 User Experience
+```bash
+# Same command, now with move operations
+tt exercise-organizer
+
+# In TUI:
+# - 'm' to enter move mode
+# - Select target with arrow keys
+# - Enter to confirm move
+# - 'u' to undo last operation
+# - 'r' to reorder exercises in current section
+```
+
+```
+┌─ Move Mode: Select target for "002-functions.problem.ts" ──────────────┐
+│                                                                        │
+│ 📁 01-typescript-fundamentals/ (12 exercises)                         │
+│   ✅ 001-variables.problem.ts → 001-variables.solution.ts            │
+│ ► 🎯 [Move here as 003]                                               │
+│   ❌ 003.5-arrays.problem.ts                                          │
+│                                                                        │
+│ 📁 02-advanced-types/ (8 exercises)                                   │
+│ ► 🎯 [Move here as 009]                                               │
+│                                                                        │
+│ Preview: Moving "002-functions" to "01-fundamentals" as exercise 003   │
+│ Files: 002-functions.problem.ts → 003-functions.problem.ts           │
+│        002-functions.solution.ts → 003-functions.solution.ts          │
+│                                                                        │
+│ Enter: Confirm | Esc: Cancel | j/k: Navigate                          │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+### 📁 Additional Files
 ```
 apps/internal-cli/src/exercise-organizer/
 ├── operations/
 │   ├── move-exercise.ts          # Exercise moving logic
 │   ├── reorder-exercises.ts      # Reordering operations
-│   ├── file-operations.ts       # Safe file system ops
-│   └── undo-stack.ts            # Undo/redo management
+│   ├── file-operations.ts       # Safe file system operations
+│   ├── undo-manager.ts          # Undo/redo functionality
+│   └── operation-preview.ts     # Preview changes before applying
 ├── tui/
-│   ├── MoveMode.tsx             # Move operation UI
-│   └── ConfirmDialog.tsx        # Confirmation dialogs
+│   ├── MoveMode.tsx             # Move operation interface
+│   ├── ReorderMode.tsx          # Reordering interface
+│   ├── ConfirmDialog.tsx        # Operation confirmation
+│   └── PreviewPanel.tsx         # Change preview display
 └── __tests__/
-    └── operations/
-        ├── move-exercise.test.ts
-        ├── file-operations.test.ts  
-        └── undo-stack.test.ts
+    └── operations/              # Operation testing
 ```
 
 ### 🔧 Key Components
 
-#### Move Operations
+#### Move Operations with Preview
 ```typescript
-export const moveExercise = Effect.gen(function* (
+export const previewMoveOperation = Effect.gen(function* (
   exercise: Exercise,
   targetSection: ExerciseSection,
   targetIndex: number
 ) {
-  // Validate move operation
-  yield* validateMoveOperation(exercise, targetSection);
+  // Calculate new file paths
+  const newPaths = yield* calculateNewPaths(exercise, targetSection, targetIndex);
   
-  // Create backup
-  yield* createOperationBackup([exercise]);
+  // Check for conflicts
+  const conflicts = yield* checkForConflicts(newPaths);
   
-  // Perform atomic file operations
-  yield* moveExerciseFiles(exercise, targetSection, targetIndex);
-  
-  // Update exercise numbering
-  yield* renumberExercises(targetSection);
-  
-  // Add to undo stack
-  yield* addToUndoStack({
-    type: 'move',
-    exercise,
-    originalSection: exercise.section,
-    targetSection,
-    targetIndex,
-  });
-});
-```
-
-#### Safe File Operations
-```typescript
-export const moveExerciseFiles = Effect.gen(function* (
-  exercise: Exercise,
-  targetSection: ExerciseSection,
-  targetIndex: number
-) {
-  const fs = yield* FileSystem.FileSystem;
-  
-  // For file-based exercises: move individual files
-  if (exercise.type === 'file-based') {
-    for (const file of exercise.files) {
-      const newPath = generateNewFilePath(file, targetSection, targetIndex);
-      yield* fs.move(file.path, newPath);
-    }
-  }
-  
-  // For folder-based exercises: move entire folder
-  if (exercise.type === 'folder-based') {
-    const newPath = generateNewFolderPath(exercise, targetSection, targetIndex);
-    yield* fs.move(exercise.path, newPath);
-  }
-});
-```
-
-### ✅ Success Criteria
-- [ ] Move exercises between sections safely
-- [ ] Reorder exercises within sections
-- [ ] Maintain exercise integrity (problem/solution pairs)
-- [ ] Atomic file operations (all or nothing)
-- [ ] Undo/redo functionality works correctly
-- [ ] User confirmation for destructive operations
-- [ ] Progress indicators for long operations
-
-### 🧪 Testing Strategy
-- File operation testing with temporary directories
-- Edge case testing (permission errors, disk space)
-- Undo/redo stack validation
-- Atomic operation verification
-- Cross-platform compatibility testing
-
----
-
-## Phase 5: Normalization & Renumbering
-**PR Size**: Medium (400-500 lines)
-**Estimated Time**: 2-3 hours per agent
-**Dependencies**: Phase 4
-
-### 🎯 Goals
-- Implement exercise normalization (remove decimals)
-- Add sequential renumbering functionality  
-- Create dry-run preview mode
-- Handle numbering conflicts intelligently
-
-### 📁 Files to Create
-```
-apps/internal-cli/src/exercise-organizer/
-├── normalization/
-│   ├── normalize-exercises.ts    # Main normalization logic
-│   ├── renumber-exercises.ts     # Renumbering operations
-│   ├── conflict-resolution.ts   # Handle numbering conflicts
-│   └── dry-run-preview.ts       # Preview changes
-├── tui/
-│   ├── NormalizeMode.tsx        # Normalization UI
-│   └── PreviewDialog.tsx        # Dry-run preview display
-└── __tests__/
-    └── normalization/
-        ├── normalize-exercises.test.ts
-        ├── renumber-exercises.test.ts
-        └── conflict-resolution.test.ts
-```
-
-### 🔧 Key Components
-
-#### Normalization Logic
-```typescript
-export const normalizeExercises = Effect.gen(function* (
-  sections: ExerciseSection[],
-  options: NormalizationOptions
-) {
-  // Analyze current numbering
-  const conflicts = yield* detectNumberingConflicts(sections);
-  
-  // Generate renumbering plan
-  const renumberingPlan = yield* generateRenumberingPlan(sections, options);
-  
-  // Preview mode: return plan without executing
-  if (options.dryRun) {
-    return { plan: renumberingPlan, conflicts };
-  }
-  
-  // Execute renumbering
-  yield* executeRenumberingPlan(renumberingPlan);
-  
-  // Update exercise data structures
-  yield* refreshExerciseData(sections);
-});
-```
-
-#### Conflict Resolution
-```typescript
-export const resolveNumberingConflicts = Effect.gen(function* (
-  conflicts: NumberingConflict[],
-  strategy: ConflictResolutionStrategy
-) {
-  switch (strategy) {
-    case 'sequential':
-      return yield* resolveSequentially(conflicts);
-    case 'preserve-gaps':
-      return yield* resolvePreservingGaps(conflicts);
-    case 'manual':
-      return yield* resolveManually(conflicts);
-  }
-});
-```
-
-#### Dry-Run Preview
-```typescript
-export const generateNormalizationPreview = Effect.gen(function* (
-  sections: ExerciseSection[]
-) {
-  const changes: FileRenameOperation[] = [];
-  
-  for (const section of sections) {
-    for (const exercise of section.exercises) {
-      const normalizedNumber = Math.floor(exercise.number);
-      if (exercise.number !== normalizedNumber) {
-        const renameOps = yield* generateRenameOperations(exercise, normalizedNumber);
-        changes.push(...renameOps);
-      }
-    }
-  }
+  // Estimate renumbering needed
+  const renumberingNeeded = yield* calculateRenumbering(targetSection, targetIndex);
   
   return {
-    totalChanges: changes.length,
-    operations: changes,
-    estimatedTime: estimateOperationTime(changes),
+    operation: 'move',
+    exercise: exercise.name,
+    from: exercise.section.name,
+    to: targetSection.name,
+    newPaths,
+    conflicts,
+    renumberingNeeded,
+    safe: conflicts.length === 0,
   };
 });
+
+export const executeMoveOperation = Effect.gen(function* (
+  preview: MoveOperationPreview
+) {
+  // Create backup for undo
+  const backup = yield* createOperationBackup(preview);
+  
+  // Perform atomic file operations
+  yield* moveFiles(preview.newPaths);
+  
+  // Update exercise numbering
+  if (preview.renumberingNeeded.length > 0) {
+    yield* renumberExercises(preview.renumberingNeeded);
+  }
+  
+  // Register undo operation
+  yield* registerUndoOperation(backup);
+  
+  return { success: true, backup };
+});
 ```
 
-### ✅ Success Criteria
-- [ ] Remove decimal numbers correctly (001.5 → 002)
-- [ ] Renumber exercises sequentially
-- [ ] Handle global numbering conflicts across sections
-- [ ] Dry-run mode shows accurate preview
-- [ ] Preserve exercise order during normalization
-- [ ] Handle edge cases (gaps, duplicates, invalid numbers)
-
-### 🧪 Testing Strategy
-- Complex numbering scenario testing
-- Dry-run accuracy verification
-- Conflict resolution validation
-- File system operation testing
-- Performance testing with large exercise sets
+### ✅ Success Criteria & Testing
+- [ ] **Move Between Sections**: Successfully move exercises across different sections
+- [ ] **Reorder Within Section**: Change exercise order within the same section
+- [ ] **Preview Accuracy**: Preview exactly matches the actual operation results
+- [ ] **Undo Functionality**: Can undo the last move operation reliably
+- [ ] **File Safety**: All file operations are atomic (all succeed or all fail)
+- [ ] **Visual Feedback**: Clear indication of what will happen before confirmation
 
 ---
 
-## Phase 6: AI-Powered File Suggestions Foundation
-**PR Size**: Large (600-800 lines)
-**Estimated Time**: 4-5 hours per agent
-**Dependencies**: Phase 5
+## Phase 4: Enhanced Operations & Safety
+**Deliverable**: Robust operations with full undo/redo, batch operations, and error recovery
+**PR Size**: Medium (400-500 lines)
+**Estimated Time**: 2-3 hours per agent
+**Dependencies**: Phase 3
 
-### 🎯 Goals
-- Detect non-conforming files
-- Implement pattern matching for problem/solution pairs
-- Create AI service integration for intelligent suggestions
-- Build confidence scoring system
+### 🎯 What You Get (Working Prototype)
+Building on Phase 3, you now get:
+- Full undo/redo stack (not just last operation)
+- Batch operations (move multiple exercises at once)
+- Automatic backup creation before major operations
+- Error recovery and rollback on failed operations
+- Operation history and audit trail
+- Batch validation and conflict resolution
 
-### 📁 Files to Create
+### 📦 User Experience
+```bash
+# Same command, now with enhanced operations
+tt exercise-organizer
+
+# New TUI features:
+# - Ctrl+Z / Ctrl+Y for undo/redo
+# - Space to select multiple exercises
+# - 'b' for batch move mode
+# - 'h' to view operation history
+# - Automatic recovery on startup from incomplete operations
+```
+
+```
+┌─ Batch Move Mode: 3 exercises selected ────────────────────────────────┐
+│                                                                        │
+│ Selected for batch move:                                               │
+│ ✓ 002-functions.problem.ts (from 01-fundamentals)                     │
+│ ✓ 005-arrays.problem.ts (from 01-fundamentals)                        │ 
+│ ✓ 001-strings.problem.ts (from 02-advanced)                           │
+│                                                                        │
+│ Target: 📁 03-practice-exercises/                                      │
+│ ► Will become: 009, 010, 011                                          │
+│                                                                        │
+│ Conflicts: None detected                                               │
+│ Estimated time: <1 second                                             │
+│                                                                        │
+│ Enter: Execute batch move | Esc: Cancel | Space: Toggle selection     │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+### 📁 Additional Files
 ```
 apps/internal-cli/src/exercise-organizer/
-├── ai-suggestions/
-│   ├── file-detector.ts          # Detect non-conforming files
-│   ├── pattern-matcher.ts        # Problem/solution pair matching
-│   ├── suggestion-generator.ts   # Generate rename suggestions
-│   ├── confidence-scorer.ts      # Score suggestion confidence
-│   └── suggestion-types.ts       # Types for suggestions
-├── services/
-│   └── ai-naming-service.ts      # AI integration for naming
-└── __tests__/
-    └── ai-suggestions/
-        ├── file-detector.test.ts
-        ├── pattern-matcher.test.ts
-        ├── suggestion-generator.test.ts
-        └── confidence-scorer.test.ts
-```
-
-### 🔧 Key Components
-
-#### File Detection
-```typescript
-export const detectNonConformingFiles = Effect.gen(function* (
-  directory: AbsolutePath
-) {
-  const fs = yield* FileSystem.FileSystem;
-  const allFiles = yield* fs.readDirectory(directory);
-  
-  const nonConforming: NonConformingFile[] = [];
-  
-  for (const file of allFiles) {
-    const exerciseType = detectExerciseType(file);
-    if (!exerciseType) {
-      nonConforming.push({
-        path: file,
-        reason: 'invalid-naming-convention',
-        confidence: 'high'
-      });
-    }
-  }
-  
-  return nonConforming;
-});
-```
-
-#### Pattern Matching
-```typescript
-export const findProblemSolutionPairs = Effect.gen(function* (
-  files: NonConformingFile[]
-) {
-  const pairs: PotentialExercisePair[] = [];
-  
-  for (const file of files) {
-    const candidates = findPairCandidates(file, files);
-    
-    for (const candidate of candidates) {
-      const similarity = calculateFilenameSimilarity(file.path, candidate.path);
-      const relationship = detectRelationship(file, candidate);
-      
-      if (similarity > 0.7 && relationship !== 'none') {
-        pairs.push({
-          problem: relationship === 'problem' ? file : candidate,
-          solution: relationship === 'solution' ? file : candidate,
-          confidence: calculatePairConfidence(similarity, relationship),
-        });
-      }
-    }
-  }
-  
-  return pairs;
-});
-```
-
-#### AI Integration
-```typescript
-export const generateAIRenameSuggestions = Effect.gen(function* (
-  file: NonConformingFile,
-  context: ExerciseContext
-) {
-  const ai = yield* AIService;
-  
-  const prompt = `
-    Analyze this file and suggest an appropriate exercise name following the pattern:
-    {NUMBER}-{DESCRIPTION}.{TYPE}.{EXTENSION}
-    
-    File: ${file.path}
-    Context: ${JSON.stringify(context)}
-    Existing exercises: ${context.existingExercises.map(e => e.name).join(', ')}
-    
-    Suggest appropriate number, description, and type (problem/solution/explainer).
-  `;
-  
-  const response = yield* ai.generateContent({ prompt });
-  return parseAISuggestion(response);
-});
-```
-
-### ✅ Success Criteria
-- [ ] Accurately detect files that don't follow naming conventions
-- [ ] Identify problem/solution pairs with >85% accuracy
-- [ ] Generate intelligent exercise number suggestions
-- [ ] Convert various naming formats to dash-case
-- [ ] Score suggestions with meaningful confidence levels
-- [ ] Handle edge cases (orphaned files, unclear relationships)
-
-### 🧪 Testing Strategy
-- Pattern matching accuracy testing
-- AI service integration testing
-- Confidence scoring validation
-- Large dataset testing with real exercise files
-- Cross-validation with manual categorization
-
----
-
-## Phase 7: AI Suggestions UI & User Interaction
-**PR Size**: Medium-Large (500-600 lines)
-**Estimated Time**: 3-4 hours per agent
-**Dependencies**: Phase 6
-
-### 🎯 Goals
-- Build AI suggestions review interface
-- Implement batch and individual review modes
-- Add suggestion editing and conflict resolution
-- Create user-friendly interaction flow
-
-### 📁 Files to Create/Modify
-```
-apps/internal-cli/src/exercise-organizer/
+├── operations/
+│   ├── batch-operations.ts      # Multi-exercise operations
+│   ├── operation-history.ts     # Operation audit trail
+│   ├── backup-manager.ts        # Automatic backup creation
+│   ├── error-recovery.ts        # Recovery from failed operations
+│   └── conflict-resolver.ts     # Advanced conflict resolution
 ├── tui/
-│   ├── SuggestionsMode.tsx       # AI suggestions interface
-│   ├── SuggestionReview.tsx      # Individual suggestion review
-│   ├── BatchApplyDialog.tsx      # Batch operation interface
-│   └── SuggestionEditor.tsx      # Edit suggestions manually
-├── ai-suggestions/
-│   ├── user-interaction.ts       # User interaction workflow
-│   ├── batch-operations.ts       # Batch apply/reject logic
-│   └── conflict-resolver.ts      # Handle filename conflicts
-└── __tests__/
-    └── tui/
-        ├── SuggestionsMode.test.tsx
-        ├── SuggestionReview.test.tsx
-        └── BatchApplyDialog.test.tsx
+│   ├── BatchMode.tsx           # Batch operation interface
+│   ├── HistoryView.tsx         # Operation history display
+│   ├── SelectionManager.tsx    # Multi-selection UI
+│   └── RecoveryDialog.tsx      # Error recovery interface
 ```
 
 ### 🔧 Key Components
 
-#### Suggestions Review Interface
+#### Enhanced Undo/Redo System
 ```typescript
-export const SuggestionsMode: React.FC<{
-  suggestions: FileSuggestion[];
-  onApply: (suggestions: FileSuggestion[]) => void;
-  onReject: (suggestions: FileSuggestion[]) => void;
-}> = ({ suggestions, onApply, onReject }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [reviewMode, setReviewMode] = useState<'batch' | 'individual'>('batch');
+export class OperationHistory {
+  private undoStack: Operation[] = [];
+  private redoStack: Operation[] = [];
   
-  const highConfidenceCount = suggestions.filter(s => s.confidence > 0.8).length;
-  const mediumConfidenceCount = suggestions.filter(s => s.confidence > 0.6 && s.confidence <= 0.8).length;
+  async executeOperation(operation: Operation): Promise<OperationResult> {
+    // Create backup before operation
+    const backup = await this.createBackup(operation);
+    
+    try {
+      const result = await operation.execute();
+      
+      // Add to undo stack on success
+      this.undoStack.push({ ...operation, backup });
+      this.redoStack = []; // Clear redo stack
+      
+      return result;
+    } catch (error) {
+      // Automatic rollback on failure
+      await this.rollbackOperation(backup);
+      throw error;
+    }
+  }
   
-  return (
-    <Box flexDirection="column">
-      <Text bold>AI Suggestions ({suggestions.length} files, {calculateExerciseCount(suggestions)} exercises)</Text>
-      
-      {reviewMode === 'batch' && (
-        <BatchSuggestionView 
-          suggestions={suggestions}
-          highConfidenceCount={highConfidenceCount}
-          mediumConfidenceCount={mediumConfidenceCount}
-        />
-      )}
-      
-      {reviewMode === 'individual' && (
-        <IndividualSuggestionReview 
-          suggestion={suggestions[currentIndex]}
-          currentIndex={currentIndex}
-          totalCount={suggestions.length}
-        />
-      )}
-      
-      <SuggestionControls
-        mode={reviewMode}
-        onModeChange={setReviewMode}
-        onApplyAll={() => onApply(suggestions.filter(s => s.confidence > 0.8))}
-        onReviewEach={() => setReviewMode('individual')}
-        onSkipLowConfidence={() => onApply(suggestions.filter(s => s.confidence > 0.6))}
-      />
-    </Box>
-  );
-};
-```
-
-#### Individual Review Component
-```typescript
-export const IndividualSuggestionReview: React.FC<{
-  suggestion: FileSuggestion;
-  currentIndex: number;
-  totalCount: number;
-}> = ({ suggestion, currentIndex, totalCount }) => {
-  const [editMode, setEditMode] = useState(false);
-  const [editedSuggestion, setEditedSuggestion] = useState(suggestion);
-  
-  return (
-    <Box flexDirection="column" borderStyle="round" padding={1}>
-      <Text color="dim">Suggestion Review ({currentIndex + 1} of {totalCount})</Text>
-      
-      <Box marginY={1}>
-        <Text>Original: {suggestion.originalPath}</Text>
-        
-        {suggestion.alternatives.map((alt, index) => (
-          <Box key={index} marginTop={1}>
-            <Text color={getConfidenceColor(alt.confidence)}>
-              {index + 1}. {alt.suggestedPath} [{Math.round(alt.confidence * 100)}%]
-            </Text>
-          </Box>
-        ))}
-      </Box>
-      
-      {suggestion.reasoning && (
-        <Box marginY={1}>
-          <Text color="dim">Reasoning: {suggestion.reasoning}</Text>
-        </Box>
-      )}
-      
-      <SuggestionActions
-        suggestion={suggestion}
-        editMode={editMode}
-        onEdit={() => setEditMode(true)}
-        onAccept={(index) => handleAcceptSuggestion(suggestion, index)}
-        onReject={() => handleRejectSuggestion(suggestion)}
-        onSkip={() => handleSkipSuggestion(suggestion)}
-      />
-    </Box>
-  );
-};
+  async undo(): Promise<void> {
+    const operation = this.undoStack.pop();
+    if (!operation) return;
+    
+    await this.restoreFromBackup(operation.backup);
+    this.redoStack.push(operation);
+  }
+}
 ```
 
 #### Batch Operations
 ```typescript
-export const executeBatchSuggestions = Effect.gen(function* (
-  suggestions: FileSuggestion[],
-  options: BatchApplyOptions
+export const executeBatchMove = Effect.gen(function* (
+  exercises: Exercise[],
+  targetSection: ExerciseSection,
+  startIndex: number
 ) {
-  // Filter suggestions based on confidence threshold
-  const filteredSuggestions = suggestions.filter(s => s.confidence >= options.minConfidence);
-  
-  // Check for conflicts
-  const conflicts = yield* detectSuggestionConflicts(filteredSuggestions);
-  
-  if (conflicts.length > 0 && !options.autoResolveConflicts) {
-    return yield* promptForConflictResolution(conflicts);
+  // Validate entire batch first
+  const batchValidation = yield* validateBatchOperation(exercises, targetSection);
+  if (!batchValidation.safe) {
+    return yield* Effect.fail(new BatchOperationError(batchValidation.conflicts));
   }
   
-  // Execute renames in transaction
-  yield* executeRenameTransaction(filteredSuggestions);
+  // Create comprehensive backup
+  const backup = yield* createBatchBackup(exercises);
   
-  // Update exercise data
-  yield* refreshExerciseData();
-  
-  return {
-    applied: filteredSuggestions.length,
-    conflicts: conflicts.length,
-    errors: 0
-  };
+  try {
+    // Execute all moves atomically
+    for (const [index, exercise] of exercises.entries()) {
+      yield* moveExercise(exercise, targetSection, startIndex + index);
+    }
+    
+    // Update all affected sections
+    yield* refreshAffectedSections([...new Set(exercises.map(e => e.section))]);
+    
+    // Register batch operation for undo
+    yield* registerBatchOperation({ exercises, targetSection, backup });
+    
+  } catch (error) {
+    // Rollback entire batch on any failure
+    yield* rollbackBatchOperation(backup);
+    throw error;
+  }
 });
 ```
 
-### ✅ Success Criteria
-- [ ] Intuitive suggestions review interface
-- [ ] Batch apply with confidence filtering
-- [ ] Individual suggestion editing
-- [ ] Conflict detection and resolution
-- [ ] Progress indicators for batch operations
-- [ ] Clear visual confidence indicators
-- [ ] Undo functionality for applied suggestions
-
-### 🧪 Testing Strategy
-- User interaction simulation
-- Batch operation testing
-- Conflict resolution verification
-- UI component testing
-- Error handling validation
+### ✅ Success Criteria & Testing
+- [ ] **Full Undo/Redo**: Navigate through complete operation history
+- [ ] **Batch Operations**: Select and move multiple exercises efficiently
+- [ ] **Atomic Batch**: Either all exercises move or none do (no partial failures)
+- [ ] **Recovery System**: Gracefully recover from interrupted operations
+- [ ] **Operation History**: View and understand all past operations
+- [ ] **Error Handling**: Clear error messages and automatic rollback
 
 ---
 
-## Phase 8: Integration, Testing & Polish
+## Phase 5: Normalization & Auto-Fix
+**Deliverable**: Intelligent exercise normalization with one-click fixes
 **PR Size**: Medium (400-500 lines)
 **Estimated Time**: 2-3 hours per agent
-**Dependencies**: All previous phases
+**Dependencies**: Phase 4
 
-### 🎯 Goals
-- Integrate all features into cohesive TUI
-- Add comprehensive error handling
-- Implement help system and documentation
-- Performance optimization and testing
+### 🎯 What You Get (Working Prototype)
+Building on Phase 4, you now get:
+- Automatic detection of numbering issues
+- One-click normalization (remove decimals, fix gaps)
+- Smart conflict resolution strategies
+- Preview mode showing exactly what will be normalized
+- Bulk normalization across all sections
+- Integration with existing move/undo system
 
-### 📁 Files to Create/Modify
+### 📦 User Experience
+```bash
+# Same command, now with normalization features
+tt exercise-organizer
+
+# New TUI features:
+# - 'n' to enter normalization mode
+# - Auto-suggestions when issues detected
+# - One-click "Fix All" functionality
+# - Different normalization strategies
+```
+
+```
+┌─ Normalization Mode: Issues Detected ──────────────────────────────────┐
+│                                                                        │
+│ 🔍 Analysis Results:                                                   │
+│   • 3 exercises with decimal numbers (001.5, 002.5, 003.5)           │
+│   • 2 numbering gaps (missing 006, 008)                               │
+│   • 1 duplicate number (two exercises numbered 010)                   │
+│                                                                        │
+│ 🛠️  Recommended Actions:                                               │
+│ ► 1. Normalize decimals (001.5 → 002, 002.5 → 003, 003.5 → 004)     │
+│   2. Fill gaps sequentially (renumber 007→006, 009→007, 010→008)      │
+│   3. Resolve duplicate 010 (rename second to 011)                     │
+│                                                                        │
+│ Strategy: ● Sequential  ○ Preserve Gaps  ○ Custom                     │
+│                                                                        │
+│ Enter: Execute All | Space: Toggle action | Tab: Change strategy      │
+│ Preview showing 12 file renames, estimated time: 2 seconds            │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+### 📁 Additional Files
 ```
 apps/internal-cli/src/exercise-organizer/
+├── normalization/
+│   ├── normalize-exercises.ts    # Main normalization engine
+│   ├── issue-detector.ts        # Detect numbering issues
+│   ├── strategy-selector.ts     # Different normalization strategies
+│   ├── preview-generator.ts     # Generate normalization preview
+│   └── conflict-resolver.ts     # Resolve normalization conflicts
 ├── tui/
-│   ├── HelpDialog.tsx           # Help system
-│   ├── KeyboardShortcuts.tsx    # Keyboard reference
-│   └── ErrorBoundary.tsx       # Error handling
-├── performance/
-│   ├── optimization.ts          # Performance optimizations
-│   └── caching.ts              # Caching layer
-├── help/
-│   ├── help-content.ts         # Help text content
-│   └── keyboard-shortcuts.ts   # Shortcut definitions
-└── __tests__/
-    ├── integration/
-    │   ├── full-workflow.test.ts    # End-to-end tests
-    │   ├── performance.test.ts      # Performance tests
-    │   └── error-handling.test.ts   # Error scenarios
-    └── e2e/
-        └── exercise-organizer.e2e.ts # Complete workflow test
+│   ├── NormalizeMode.tsx        # Normalization interface
+│   ├── IssueDisplay.tsx         # Show detected issues
+│   ├── StrategySelector.tsx     # Choose normalization strategy
+│   └── NormalizePreview.tsx     # Preview normalization results
 ```
 
 ### 🔧 Key Components
 
-#### Integrated TUI Controller
+#### Issue Detection System
 ```typescript
-export const ExerciseOrganizerController = Effect.gen(function* (
-  initialDirectory: AbsolutePath,
-  options: CLIOptions
+export const detectNormalizationIssues = Effect.gen(function* (
+  sections: ExerciseSection[]
 ) {
-  // Initialize state
-  const [state, setState] = useState<OrganizerState>({
-    mode: 'navigate',
-    parseResult: null,
-    selectedIndex: 0,
-    undoStack: [],
-    redoStack: [],
-    suggestions: [],
-  });
+  const issues: NormalizationIssue[] = [];
   
-  // Load initial data
-  const parseResult = yield* parseExerciseDirectory(initialDirectory);
-  setState(prev => ({ ...prev, parseResult }));
-  
-  // Setup keyboard handling
-  const keyboardHandler = createKeyboardHandler({
-    onNavigate: handleNavigation,
-    onMove: handleMoveMode,
-    onNormalize: handleNormalization,
-    onSuggestions: handleSuggestionsMode,
-    onHelp: showHelp,
-    onUndo: handleUndo,
-    onRedo: handleRedo,
-    onQuit: handleQuit,
-  });
-  
-  // Render TUI with current state
-  return <ExerciseOrganizerTUI state={state} onKeyboard={keyboardHandler} />;
-});
-```
-
-#### Help System
-```typescript
-export const HelpDialog: React.FC<{
-  currentMode: OrganizerMode;
-  onClose: () => void;
-}> = ({ currentMode, onClose }) => {
-  const shortcuts = getKeyboardShortcutsForMode(currentMode);
-  
-  return (
-    <Box flexDirection="column" borderStyle="double" padding={1}>
-      <Text bold>Exercise Organizer - Help</Text>
-      
-      <Box marginY={1}>
-        <Text color="yellow">Current Mode: {currentMode}</Text>
-      </Box>
-      
-      <Box flexDirection="column">
-        {shortcuts.map(shortcut => (
-          <Box key={shortcut.key} justifyContent="space-between">
-            <Text color="cyan">{shortcut.key.padEnd(15)}</Text>
-            <Text>{shortcut.description}</Text>
-          </Box>
-        ))}
-      </Box>
-      
-      <Box marginTop={1}>
-        <Text color="dim">Press 'q' to close help, 'Esc' to exit current mode</Text>
-      </Box>
-    </Box>
-  );
-};
-```
-
-#### Performance Optimization
-```typescript
-export const optimizeExerciseData = Effect.gen(function* (
-  parseResult: ExerciseParseResult
-) {
-  // Cache frequently accessed data
-  const cache = yield* createExerciseCache(parseResult);
-  
-  // Optimize large directory operations
-  const optimizedSections = yield* Effect.forEach(
-    parseResult.sections,
-    section => optimizeSection(section),
-    { concurrency: 'inherit' }
-  );
-  
-  // Create search indices for quick lookup
-  const searchIndex = yield* createSearchIndex(optimizedSections);
+  for (const section of sections) {
+    // Check for decimal numbers
+    const decimalIssues = section.exercises
+      .filter(ex => ex.number % 1 !== 0)
+      .map(ex => ({
+        type: 'decimal' as const,
+        exercise: ex,
+        severity: 'high' as const,
+        suggestion: `Rename to ${Math.floor(ex.number + 1)}`
+      }));
+    
+    // Check for gaps in numbering
+    const gapIssues = yield* detectNumberingGaps(section.exercises);
+    
+    // Check for duplicates
+    const duplicateIssues = yield* detectDuplicateNumbers(section.exercises);
+    
+    issues.push(...decimalIssues, ...gapIssues, ...duplicateIssues);
+  }
   
   return {
-    sections: optimizedSections,
-    cache,
-    searchIndex,
-    validationErrors: parseResult.validationErrors,
+    issues,
+    hasHighPriority: issues.some(i => i.severity === 'high'),
+    estimatedFixes: issues.length,
   };
 });
 ```
 
-#### Error Handling & Recovery
+#### One-Click Normalization
 ```typescript
-export const ExerciseOrganizerErrorBoundary: React.FC<{
-  children: React.ReactNode;
-}> = ({ children }) => {
-  const [error, setError] = useState<Error | null>(null);
+export const executeNormalizationPlan = Effect.gen(function* (
+  plan: NormalizationPlan,
+  strategy: NormalizationStrategy
+) {
+  // Create backup before major changes
+  const backup = yield* createNormalizationBackup(plan);
   
-  if (error) {
-    return (
-      <Box flexDirection="column" padding={1}>
-        <Text color="red" bold>Exercise Organizer Error</Text>
-        <Text color="red">{error.message}</Text>
-        
-        <Box marginTop={1}>
-          <Text color="dim">
-            This error has been logged. Please check your exercise directory structure
-            and try again. Press 'r' to retry or 'q' to quit.
-          </Text>
-        </Box>
-        
-        <ErrorRecoveryActions
-          error={error}
-          onRetry={() => setError(null)}
-          onQuit={() => process.exit(1)}
-        />
-      </Box>
-    );
+  try {
+    // Execute normalization steps in order
+    for (const step of plan.steps) {
+      switch (step.type) {
+        case 'rename':
+          yield* renameExercise(step.exercise, step.newNumber);
+          break;
+        case 'renumber':
+          yield* renumberSection(step.section, step.startNumber);
+          break;
+        case 'resolve-duplicate':
+          yield* resolveDuplicate(step.exercises, strategy);
+          break;
+      }
+    }
+    
+    // Verify normalization completed successfully
+    const verification = yield* verifyNormalization(plan.sections);
+    if (!verification.success) {
+      throw new NormalizationError(verification.errors);
+    }
+    
+    // Register for undo
+    yield* registerNormalizationOperation({ plan, backup });
+    
+  } catch (error) {
+    // Rollback on any failure
+    yield* rollbackNormalization(backup);
+    throw error;
   }
-  
-  return <>{children}</>;
-};
+});
 ```
 
-### ✅ Success Criteria
-- [ ] All features work together seamlessly
-- [ ] Comprehensive help system with context-aware shortcuts
-- [ ] Robust error handling with graceful degradation
-- [ ] Performance optimized for large exercise directories
-- [ ] Complete keyboard navigation without mouse dependency
-- [ ] Clear visual feedback for all operations
-- [ ] Cross-platform compatibility (Windows, macOS, Linux)
-- [ ] Memory usage optimization
-- [ ] Comprehensive end-to-end testing
-
-### 🧪 Testing Strategy
-- Full workflow integration testing
-- Performance benchmarking with large datasets
-- Error scenario simulation
-- Cross-platform compatibility testing
-- Memory leak detection
-- User acceptance testing
-- Accessibility testing (screen readers, high contrast)
+### ✅ Success Criteria & Testing
+- [ ] **Issue Detection**: Accurately identifies all numbering problems
+- [ ] **Strategy Options**: Multiple normalization approaches work correctly
+- [ ] **One-Click Fix**: "Fix All" resolves all issues in one operation
+- [ ] **Preview Accuracy**: Preview exactly matches normalization results
+- [ ] **Integration**: Works seamlessly with undo/redo system
+- [ ] **Performance**: Fast normalization even with 100+ exercises
 
 ---
 
-## 🎯 Overall Success Metrics
+## Phase 6: AI-Powered Suggestions & Advanced Features
+**Deliverable**: Complete tool with AI naming suggestions and advanced analysis
+**PR Size**: Large (600-800 lines)
+**Estimated Time**: 4-5 hours per agent
+**Dependencies**: Phase 5
 
-### Functional Requirements
-- [ ] Parse complex exercise directory structures (100+ exercises)
-- [ ] Accurately identify validation errors with specific error messages
-- [ ] Enable seamless exercise reordering within and between sections
-- [ ] Safely normalize numbering while preserving exercise integrity
-- [ ] Generate AI suggestions with >85% user acceptance rate
-- [ ] Handle batch renaming operations without data loss
-- [ ] Provide undo/redo functionality for all operations
+### 🎯 What You Get (Final Complete Prototype)
+Building on Phase 5, you now get the complete tool with:
+- AI-powered naming suggestions for non-conforming files
+- Intelligent pattern matching for problem/solution pairs
+- Advanced analytics and insights about exercise structure
+- Export functionality (reports, scripts, etc.)
+- Configuration system for different exercise styles
+- Full integration with existing Total TypeScript workflow
 
-### Performance Requirements
-- [ ] Load and parse directories with 1000+ files in <2 seconds
-- [ ] Smooth TUI navigation with <50ms response time
-- [ ] Memory usage <100MB for typical exercise directories
-- [ ] File operations complete in <5 seconds for most use cases
+### 📦 User Experience
+```bash
+# Complete command with all features
+tt exercise-organizer
 
-### User Experience Requirements
-- [ ] Intuitive navigation requiring minimal learning curve
-- [ ] Clear visual feedback for all operations and states
-- [ ] Comprehensive help system accessible via 'h' key
-- [ ] Graceful error handling with actionable error messages
+# Advanced features:
+# - 'a' for AI suggestions mode
+# - 's' for statistics and analytics
+# - 'c' for configuration
+# - 'e' for export options
+# - Full integration with workspace patterns
+```
 
-### Technical Quality Requirements
-- [ ] 95%+ test coverage for core logic
-- [ ] Zero TypeScript compilation errors
-- [ ] Effect-based functional programming patterns maintained
-- [ ] Integration with existing internal-cli architecture
-- [ ] Cross-platform file system compatibility
+```
+┌─ AI Suggestions: Smart Naming Detected ────────────────────────────────┐
+│                                                                        │
+│ 🤖 AI Analysis of Non-Conforming Files:                               │
+│                                                                        │
+│ 📄 "string-manipulation-exercise.ts"                                   │
+│ ✨ Suggested: "015-string-manipulation.problem.ts"                     │
+│ 🎯 Confidence: 94% (content analysis + naming patterns)               │
+│ 📝 Reasoning: Contains TypeScript exercises, follows curriculum order  │
+│                                                                        │
+│ 📄 "array-methods-solution.ts"                                        │
+│ ✨ Suggested: "012-array-methods.solution.ts"                         │
+│ 🎯 Confidence: 98% (matches existing problem file pattern)            │
+│ 📝 Reasoning: Pairs with "012-array-methods.problem.ts"               │
+│                                                                        │
+│ 📄 "bonus/advanced-generics.ts"                                       │
+│ ✨ Suggested: Move to "04-advanced-types/020-generics.problem.ts"     │
+│ 🎯 Confidence: 87% (content classification + section analysis)        │
+│                                                                        │
+│ Enter: Accept suggestions | j/k: Navigate | Space: Toggle | r: Refresh│
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+### 📁 Additional Files
+```
+apps/internal-cli/src/exercise-organizer/
+├── ai-suggestions/
+│   ├── ai-naming-service.ts      # AI integration for naming
+│   ├── content-analyzer.ts       # Analyze file content for patterns
+│   ├── suggestion-generator.ts   # Generate intelligent suggestions
+│   ├── confidence-scorer.ts      # Score suggestion quality
+│   └── pattern-matcher.ts        # Match files to exercise patterns
+├── analytics/
+│   ├── exercise-analytics.ts     # Exercise structure analysis
+│   ├── curriculum-analyzer.ts    # Curriculum flow analysis
+│   └── report-generator.ts       # Generate insights reports
+├── export/
+│   ├── export-manager.ts         # Export functionality
+│   ├── script-generator.ts       # Generate automation scripts
+│   └── report-exporter.ts        # Export analysis reports
+├── config/
+│   ├── workspace-config.ts       # Workspace-specific settings
+│   └── pattern-config.ts         # Exercise pattern configuration
+└── tui/
+    ├── AiSuggestionsMode.tsx     # AI suggestions interface
+    ├── AnalyticsView.tsx         # Analytics dashboard
+    ├── ExportDialog.tsx          # Export options
+    └── ConfigurationPanel.tsx    # Settings interface
+```
+
+### 🔧 Key Components
+
+#### AI Naming Service
+```typescript
+export const generateNamingSuggestions = Effect.gen(function* (
+  file: string,
+  context: ExerciseContext
+) {
+  // Analyze file content
+  const content = yield* FileSystem.readFileString(file);
+  const contentAnalysis = yield* analyzeExerciseContent(content);
+  
+  // Generate suggestions using AI
+  const aiService = yield* AiService;
+  const suggestions = yield* aiService.generateNamingSuggestions({
+    fileName: file,
+    content: contentAnalysis,
+    existingExercises: context.exercises,
+    sectionContext: context.section,
+  });
+  
+  // Score suggestions
+  const scoredSuggestions = yield* scoreSuggestions(suggestions, context);
+  
+  return scoredSuggestions.sort((a, b) => b.confidence - a.confidence);
+});
+
+export const analyzeExerciseContent = Effect.gen(function* (content: string) {
+  // Extract TypeScript patterns
+  const hasProblems = /\/\/ TODO|\/\/ TASK|\/\/ FIX/.test(content);
+  const hasSolutions = /\/\/ SOLUTION|\/\/ ANSWER/.test(content);
+  const complexity = calculateComplexity(content);
+  const topics = extractTypeScriptTopics(content);
+  
+  return {
+    type: hasProblems ? 'problem' : hasSolutions ? 'solution' : 'unknown',
+    complexity,
+    topics,
+    estimatedDifficulty: calculateDifficulty(content),
+  };
+});
+```
+
+#### Advanced Analytics
+```typescript
+export const generateExerciseAnalytics = Effect.gen(function* (
+  sections: ExerciseSection[]
+) {
+  const analytics = {
+    overview: {
+      totalSections: sections.length,
+      totalExercises: sections.reduce((sum, s) => sum + s.exercises.length, 0),
+      averageExercisesPerSection: 0,
+      completionRate: 0,
+    },
+    curriculum: {
+      difficultyProgression: yield* analyzeDifficultyProgression(sections),
+      topicCoverage: yield* analyzeTopicCoverage(sections),
+      gapsAndDuplicates: yield* findCurriculumGaps(sections),
+    },
+    health: {
+      namingConsistency: yield* analyzeNamingConsistency(sections),
+      fileOrganization: yield* analyzeFileOrganization(sections),
+      solutionCoverage: yield* analyzeSolutionCoverage(sections),
+    },
+    recommendations: yield* generateRecommendations(sections),
+  };
+  
+  return analytics;
+});
+```
+
+### ✅ Success Criteria & Testing
+- [ ] **AI Integration**: AI suggestions are accurate and helpful
+- [ ] **Content Analysis**: Correctly identifies exercise types from content
+- [ ] **Analytics Value**: Provides actionable insights about exercise structure
+- [ ] **Export Functionality**: Can export useful reports and automation scripts
+- [ ] **Configuration**: Adaptable to different exercise organizational patterns
+- [ ] **Complete Workflow**: Seamlessly integrates with Total TypeScript development process
 
 ---
 
-## 🚀 Deployment Strategy
+## Testing Strategy & Quality Assurance
 
-### Phase-by-Phase Rollout
-1. **Phases 1-2**: Core functionality available, validation-only mode
-2. **Phases 3-4**: Full TUI with basic operations
-3. **Phases 5-6**: Normalization and AI suggestions
-4. **Phases 7-8**: Complete feature set with polish
+### Continuous Testing Approach
+Each phase includes comprehensive testing that builds on previous phases:
 
-### Feature Flags
-- Enable AI suggestions via environment variable
-- Debug mode for verbose logging
-- Performance profiling mode
-- Safe mode (read-only operations)
+1. **Unit Tests**: Core functionality tested in isolation
+2. **Integration Tests**: Cross-component functionality 
+3. **End-to-End Tests**: Complete user workflows
+4. **Performance Tests**: Handling large exercise repositories
+5. **User Acceptance Tests**: Real-world usage scenarios
 
-### Rollback Plan
-- Each phase maintains backward compatibility
-- Feature flags allow disabling problematic features
-- Undo functionality provides operation-level rollback
-- Backup creation before destructive operations
+### Quality Gates
+Before proceeding to the next phase:
+- [ ] All tests pass
+- [ ] Performance benchmarks met
+- [ ] User feedback incorporated
+- [ ] Documentation updated
+- [ ] No regressions in previous functionality
 
----
+### Feedback Integration Points
+At the end of each phase:
+1. **Demo the working prototype** to stakeholders
+2. **Gather feedback** on user experience and functionality
+3. **Adjust subsequent phases** based on learnings
+4. **Refine requirements** for remaining features
+5. **Update timeline** if needed based on complexity discoveries
 
-## 📚 Documentation Requirements
-
-### User Documentation
-- [ ] Command-line interface documentation
-- [ ] Keyboard shortcuts reference
-- [ ] Exercise naming convention guide
-- [ ] Troubleshooting guide
-
-### Developer Documentation
-- [ ] Architecture overview
-- [ ] Contributing guide
-- [ ] Testing strategy documentation
-- [ ] Performance optimization guide
-
-### Integration Documentation
-- [ ] Effect-based patterns used
-- [ ] Service layer integration
-- [ ] Error handling patterns
-- [ ] Extension points for future features
-
----
-
-This plan provides a comprehensive roadmap for implementing the Exercise Organizer CLI while ensuring each phase can be completed by a single agent within a manageable PR scope. Each phase builds upon the previous ones while maintaining independent, testable functionality.
+This approach ensures that you always have a working tool that provides value, while building confidence in the direction before investing in more complex features.
