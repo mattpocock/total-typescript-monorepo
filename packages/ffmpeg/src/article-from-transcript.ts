@@ -16,8 +16,10 @@ export const generateArticleCore = Effect.fn("generateArticleCore")(
     storageMode?: "article-storage" | "alongside-video";
     videoDirectory?: string;
     videoName?: string;
+    transcriptPath?: AbsolutePath;
+    codePath?: string;
   }) {
-    const { originalVideoPath, transcript, code, urls, storageMode = "article-storage", videoDirectory, videoName } = opts;
+    const { originalVideoPath, transcript, code, urls, storageMode = "article-storage", videoDirectory, videoName, transcriptPath, codePath } = opts;
 
     const ai = yield* AIService;
     const articleStorage = yield* ArticleStorageService;
@@ -65,10 +67,16 @@ export const generateArticleCore = Effect.fn("generateArticleCore")(
     ]);
 
     if (storageMode === "alongside-video" && videoDirectory && videoName) {
-      // Save alongside the video with the video's name
+      // Create meta folder with article, transcript, and code
       const fs = yield* FileSystem.FileSystem;
-      const articlePath = path.join(videoDirectory, `${videoName}.md`) as AbsolutePath;
+      const metaFolderName = `${videoName}_meta`;
+      const metaFolderPath = path.join(videoDirectory, metaFolderName);
       
+      // Create the meta directory
+      yield* fs.makeDirectory(metaFolderPath, { recursive: true });
+      
+      // Save the article in the meta folder
+      const articlePath = path.join(metaFolderPath, `${videoName}.md`) as AbsolutePath;
       yield* fs.writeFileString(
         articlePath,
         [
@@ -82,11 +90,26 @@ export const generateArticleCore = Effect.fn("generateArticleCore")(
         ].join("\n")
       );
 
+      // Copy the transcript to the meta folder if available
+      if (transcriptPath) {
+        const transcriptFileName = path.basename(transcriptPath);
+        const metaTranscriptPath = path.join(metaFolderPath, transcriptFileName);
+        yield* fs.copyFile(transcriptPath, metaTranscriptPath);
+      }
+
+      // Copy the code file to the meta folder if provided
+      if (codePath && code) {
+        const codeFileName = path.basename(codePath);
+        const metaCodePath = path.join(metaFolderPath, codeFileName);
+        yield* fs.writeFileString(metaCodePath, code);
+      }
+
       return {
         title,
         filename: `${videoName}.md`,
         content: article,
         savedAt: articlePath,
+        metaFolderPath,
       };
     } else {
       // Use the existing article storage system
@@ -135,13 +158,17 @@ export const generateArticleAlongsideVideo = Effect.fn(
   code?: string;
   videoDirectory: string;
   videoName: string;
+  transcriptPath?: AbsolutePath;
+  codePath?: string;
 }) {
-  const { videoDirectory, videoName, ...coreOpts } = opts;
+  const { videoDirectory, videoName, transcriptPath, codePath, ...coreOpts } = opts;
   
   yield* generateArticleCore({
     ...coreOpts,
     storageMode: "alongside-video",
     videoDirectory,
     videoName,
+    transcriptPath,
+    codePath,
   });
 });

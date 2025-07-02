@@ -15,6 +15,9 @@ import {
   ArticleStorageService,
   LinksStorageService,
 } from "./services.js";
+import { mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync, readdirSync } from "node:fs";
+import path from "node:path";
+import { NodeFileSystem } from "@effect/platform-node";
 
 const testConfig = ConfigProvider.fromMap(
   new Map([
@@ -300,114 +303,234 @@ describe("queue-article-generation", () => {
       }
     });
 
-    it("should save article alongside video in export directory when alongside is true and dryRun is true", async () => {
-      let capturedPath: string | undefined;
-      let capturedContent: string | undefined;
+    it("should create meta folder with article, transcript, and code when alongside is true", async () => {
+      const tmpdir = mkdtempSync(path.join(import.meta.dirname, "tmp"));
+      
+      try {
+        // Set up temporary files
+        const transcriptPath = path.join(tmpdir, "transcript.txt");
+        const codePath = path.join(tmpdir, "code.ts");
+        const videoDirectory = path.join(tmpdir, "videos");
+        
+        writeFileSync(transcriptPath, "This is a sample transcript about TypeScript.");
+        writeFileSync(codePath, "const example = 'test code';");
 
-      const mockFSWithCapture = FileSystem.makeNoop({
-        readFileString: (path: string) => {
-          const files = {
-            "/test/transcript.txt":
-              "This is a sample transcript about TypeScript.",
-          };
-          const content = files[path as keyof typeof files];
-          if (content === undefined) {
-            throw new Error(`File not found: ${path}`);
-          }
-          return Effect.succeed(content);
-        },
-        writeFileString: (path: string, content: string) => {
-          capturedPath = path;
-          capturedContent = content;
-          return Effect.succeed(undefined);
-        },
-        exists: () => Effect.succeed(true),
-      });
+        const result = await generateArticleFromTranscriptQueue({
+          transcriptPath: transcriptPath as AbsolutePath,
+          originalVideoPath: "/test/video.mp4" as AbsolutePath,
+          linksDependencyId: "links-1",
+          queueState,
+          videoName: "my-awesome-video",
+          dryRun: true,
+          alongside: true,
+          codeContent: "const example = 'test code';",
+          codePath: codePath,
+        }).pipe(
+          Effect.provideService(AIService, mockAIService),
+          Effect.provideService(ArticleStorageService, mockArticleStorageService),
+          Effect.provideService(LinksStorageService, mockLinksStorageService),
+          Effect.provide(NodeFileSystem.layer),
+          Effect.withConfigProvider(
+            ConfigProvider.fromJson({
+              EXPORT_DIRECTORY: videoDirectory,
+              SHORTS_EXPORT_DIRECTORY: videoDirectory,
+              ARTICLES_TO_TAKE: "5",
+              PADDED_NUMBER_LENGTH: "3",
+            })
+          ),
+          Effect.runPromise
+        );
 
-      const result = await generateArticleFromTranscriptQueue({
-        transcriptPath: "/test/transcript.txt" as AbsolutePath,
-        originalVideoPath: "/test/video.mp4" as AbsolutePath,
-        linksDependencyId: "links-1",
-        queueState,
-        videoName: "my-awesome-video",
-        dryRun: true,
-        alongside: true,
-        codeContent: "const example = 'test';",
-        codePath: "/test/code.ts",
-      }).pipe(
-        Effect.provideService(FileSystem.FileSystem, mockFSWithCapture),
-        Effect.provideService(AIService, mockAIService),
-        Effect.provideService(ArticleStorageService, mockArticleStorageService),
-        Effect.provideService(LinksStorageService, mockLinksStorageService),
-        Effect.withConfigProvider(testConfig),
-        Effect.runPromise
-      );
+        expect(result).toEqual({
+          title: "Generated Title",
+          filename: "my-awesome-video.md",
+        });
 
-      expect(result).toEqual({
-        title: "Generated Title",
-        filename: "my-awesome-video.md",
-      });
+        // Verify meta folder was created with correct name
+        const metaFolderPath = path.join(videoDirectory, "my-awesome-video_meta");
+        expect(existsSync(metaFolderPath)).toBe(true);
 
-      // Verify the article was saved to the export directory with the video name
-      expect(capturedPath).toBe("/path/to/export/my-awesome-video.md");
-      expect(capturedContent).toContain("Generated article content");
-      expect(capturedContent).toContain('title: "Generated Title"');
-      expect(capturedContent).toContain('originalVideoPath: "/test/video.mp4"');
+        // Verify article exists in meta folder
+        const articlePath = path.join(metaFolderPath, "my-awesome-video.md");
+        expect(existsSync(articlePath)).toBe(true);
+        
+        const articleContent = readFileSync(articlePath, "utf-8");
+        expect(articleContent).toContain("Generated article content");
+        expect(articleContent).toContain('title: "Generated Title"');
+        expect(articleContent).toContain('originalVideoPath: "/test/video.mp4"');
+
+        // Verify transcript was copied to meta folder
+        const metaTranscriptPath = path.join(metaFolderPath, "transcript.txt");
+        expect(existsSync(metaTranscriptPath)).toBe(true);
+        
+        const transcriptContent = readFileSync(metaTranscriptPath, "utf-8");
+        expect(transcriptContent).toBe("This is a sample transcript about TypeScript.");
+
+        // Verify code was copied to meta folder with same name as original
+        const metaCodePath = path.join(metaFolderPath, "code.ts");
+        expect(existsSync(metaCodePath)).toBe(true);
+        
+        const codeContent = readFileSync(metaCodePath, "utf-8");
+        expect(codeContent).toBe("const example = 'test code';");
+
+        // Verify only expected files are in meta folder
+        const metaFiles = readdirSync(metaFolderPath);
+        expect(metaFiles.sort()).toEqual(["code.ts", "my-awesome-video.md", "transcript.txt"]);
+
+      } finally {
+        rmSync(tmpdir, { recursive: true });
+      }
+    });
+
+    it("should create meta folder without code when code is not provided", async () => {
+      const tmpdir = mkdtempSync(path.join(import.meta.dirname, "tmp"));
+      
+      try {
+        // Set up temporary files (no code file)
+        const transcriptPath = path.join(tmpdir, "transcript.txt");
+        const videoDirectory = path.join(tmpdir, "videos");
+        
+        writeFileSync(transcriptPath, "This is a sample transcript without code.");
+
+        const result = await generateArticleFromTranscriptQueue({
+          transcriptPath: transcriptPath as AbsolutePath,
+          originalVideoPath: "/test/video.mp4" as AbsolutePath,
+          linksDependencyId: "links-1",
+          queueState,
+          videoName: "video-without-code",
+          dryRun: true,
+          alongside: true,
+          codeContent: "", // No code provided
+          codePath: "",   // No code path provided
+        }).pipe(
+          Effect.provideService(AIService, mockAIService),
+          Effect.provideService(ArticleStorageService, mockArticleStorageService),
+          Effect.provideService(LinksStorageService, mockLinksStorageService),
+          Effect.provide(NodeFileSystem.layer),
+          Effect.withConfigProvider(
+            ConfigProvider.fromJson({
+              EXPORT_DIRECTORY: videoDirectory,
+              SHORTS_EXPORT_DIRECTORY: videoDirectory,
+              ARTICLES_TO_TAKE: "5",
+              PADDED_NUMBER_LENGTH: "3",
+            })
+          ),
+          Effect.runPromise
+        );
+
+        expect(result).toEqual({
+          title: "Generated Title",
+          filename: "video-without-code.md",
+        });
+
+        // Verify meta folder was created
+        const metaFolderPath = path.join(videoDirectory, "video-without-code_meta");
+        expect(existsSync(metaFolderPath)).toBe(true);
+
+        // Verify article exists in meta folder
+        const articlePath = path.join(metaFolderPath, "video-without-code.md");
+        expect(existsSync(articlePath)).toBe(true);
+
+        // Verify transcript was copied to meta folder
+        const metaTranscriptPath = path.join(metaFolderPath, "transcript.txt");
+        expect(existsSync(metaTranscriptPath)).toBe(true);
+        
+        const transcriptContent = readFileSync(metaTranscriptPath, "utf-8");
+        expect(transcriptContent).toBe("This is a sample transcript without code.");
+
+        // Verify NO code file was added to meta folder
+        const metaFiles = readdirSync(metaFolderPath);
+        const codeFiles = metaFiles.filter(file => file.endsWith('.ts') || file.endsWith('.js'));
+        expect(codeFiles).toHaveLength(0);
+
+        // Should only contain article and transcript
+        expect(metaFiles.sort()).toEqual(["transcript.txt", "video-without-code.md"]);
+
+      } finally {
+        rmSync(tmpdir, { recursive: true });
+      }
     });
 
     it("should save article alongside video in shorts directory when alongside is true and dryRun is false", async () => {
-      let capturedPath: string | undefined;
-      let capturedContent: string | undefined;
+      const tmpdir = mkdtempSync(path.join(import.meta.dirname, "tmp"));
+      
+      try {
+        // Set up temporary files
+        const transcriptPath = path.join(tmpdir, "transcript.txt");
+        const codePath = path.join(tmpdir, "example.ts");
+        const exportDirectory = path.join(tmpdir, "export");
+        const shortsDirectory = path.join(tmpdir, "shorts");
+        
+        writeFileSync(transcriptPath, "This is a transcript for shorts upload.");
+        writeFileSync(codePath, "const uploadExample = 'shorts';");
 
-      const mockFSWithCapture = FileSystem.makeNoop({
-        readFileString: (path: string) => {
-          const files = {
-            "/test/transcript.txt":
-              "This is a sample transcript about TypeScript.",
-          };
-          const content = files[path as keyof typeof files];
-          if (content === undefined) {
-            throw new Error(`File not found: ${path}`);
-          }
-          return Effect.succeed(content);
-        },
-        writeFileString: (path: string, content: string) => {
-          capturedPath = path;
-          capturedContent = content;
-          return Effect.succeed(undefined);
-        },
-        exists: () => Effect.succeed(true),
-      });
+        const result = await generateArticleFromTranscriptQueue({
+          transcriptPath: transcriptPath as AbsolutePath,
+          originalVideoPath: "/test/video.mp4" as AbsolutePath,
+          linksDependencyId: "links-1",
+          queueState,
+          videoName: "uploaded-video",
+          dryRun: false, // This means it will go to shorts directory
+          alongside: true,
+          codeContent: "const uploadExample = 'shorts';",
+          codePath: codePath,
+        }).pipe(
+          Effect.provideService(AIService, mockAIService),
+          Effect.provideService(ArticleStorageService, mockArticleStorageService),
+          Effect.provideService(LinksStorageService, mockLinksStorageService),
+          Effect.provide(NodeFileSystem.layer),
+          Effect.withConfigProvider(
+            ConfigProvider.fromJson({
+              EXPORT_DIRECTORY: exportDirectory,
+              SHORTS_EXPORT_DIRECTORY: shortsDirectory,
+              ARTICLES_TO_TAKE: "5",
+              PADDED_NUMBER_LENGTH: "3",
+            })
+          ),
+          Effect.runPromise
+        );
 
-      const result = await generateArticleFromTranscriptQueue({
-        transcriptPath: "/test/transcript.txt" as AbsolutePath,
-        originalVideoPath: "/test/video.mp4" as AbsolutePath,
-        linksDependencyId: "links-1",
-        queueState,
-        videoName: "uploaded-video",
-        dryRun: false,
-        alongside: true,
-        codeContent: "const example = 'test';",
-        codePath: "/test/code.ts",
-      }).pipe(
-        Effect.provideService(FileSystem.FileSystem, mockFSWithCapture),
-        Effect.provideService(AIService, mockAIService),
-        Effect.provideService(ArticleStorageService, mockArticleStorageService),
-        Effect.provideService(LinksStorageService, mockLinksStorageService),
-        Effect.withConfigProvider(testConfig),
-        Effect.runPromise
-      );
+        expect(result).toEqual({
+          title: "Generated Title",
+          filename: "uploaded-video.md",
+        });
 
-      expect(result).toEqual({
-        title: "Generated Title",
-        filename: "uploaded-video.md",
-      });
+        // Verify meta folder was created in shorts directory (not export directory)
+        const metaFolderPath = path.join(shortsDirectory, "uploaded-video_meta");
+        expect(existsSync(metaFolderPath)).toBe(true);
 
-      // Verify the article was saved to the shorts directory with the video name
-      expect(capturedPath).toBe("/path/to/shorts/uploaded-video.md");
-      expect(capturedContent).toContain("Generated article content");
-      expect(capturedContent).toContain('title: "Generated Title"');
-      expect(capturedContent).toContain('originalVideoPath: "/test/video.mp4"');
+        // Verify meta folder was NOT created in export directory
+        const exportMetaFolderPath = path.join(exportDirectory, "uploaded-video_meta");
+        expect(existsSync(exportMetaFolderPath)).toBe(false);
+
+        // Verify article exists in meta folder
+        const articlePath = path.join(metaFolderPath, "uploaded-video.md");
+        expect(existsSync(articlePath)).toBe(true);
+        
+        const articleContent = readFileSync(articlePath, "utf-8");
+        expect(articleContent).toContain("Generated article content");
+
+        // Verify transcript was copied to meta folder
+        const metaTranscriptPath = path.join(metaFolderPath, "transcript.txt");
+        expect(existsSync(metaTranscriptPath)).toBe(true);
+        
+        const transcriptContent = readFileSync(metaTranscriptPath, "utf-8");
+        expect(transcriptContent).toBe("This is a transcript for shorts upload.");
+
+        // Verify code was copied to meta folder with same name as original
+        const metaCodePath = path.join(metaFolderPath, "example.ts");
+        expect(existsSync(metaCodePath)).toBe(true);
+        
+        const codeContent = readFileSync(metaCodePath, "utf-8");
+        expect(codeContent).toBe("const uploadExample = 'shorts';");
+
+        // Verify all expected files are in meta folder
+        const metaFiles = readdirSync(metaFolderPath);
+        expect(metaFiles.sort()).toEqual(["example.ts", "transcript.txt", "uploaded-video.md"]);
+
+      } finally {
+        rmSync(tmpdir, { recursive: true });
+      }
     });
 
     it("should use regular article storage when alongside is false", async () => {
