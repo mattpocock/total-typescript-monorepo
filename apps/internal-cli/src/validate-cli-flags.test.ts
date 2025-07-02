@@ -12,21 +12,18 @@ describe("validateCreateVideoFlags", () => {
         subtitles: true,
       };
 
-      const result = await validateCreateVideoFlags(options).pipe(
-        Effect.either,
+      const error = await validateCreateVideoFlags(options).pipe(
+        Effect.flip,
         Effect.runPromise
       );
 
-      expect(result._tag).toBe("Left");
-      if (result._tag === "Left") {
-        expect(result.left).toBeInstanceOf(FlagValidationError);
-        expect(result.left.errorMessage).toBe(
-          "❌ The --alongside flag can only be used with --generate-article."
-        );
-        expect(result.left.helpMessages).toEqual([
-          "💡 Use: pnpm cli create-auto-edited-video --generate-article --alongside"
-        ]);
-      }
+      expect(error).toBeInstanceOf(FlagValidationError);
+      expect(error.errorMessage).toBe(
+        "❌ The --alongside flag can only be used with --generate-article."
+      );
+      expect(error.helpMessages).toEqual([
+        "💡 Use: pnpm cli create-auto-edited-video --generate-article --alongside"
+      ]);
     });
 
     it("should fail when alongside is true but generateArticle is undefined", async () => {
@@ -37,18 +34,15 @@ describe("validateCreateVideoFlags", () => {
         subtitles: true,
       };
 
-      const result = await validateCreateVideoFlags(options).pipe(
-        Effect.either,
+      const error = await validateCreateVideoFlags(options).pipe(
+        Effect.flip,
         Effect.runPromise
       );
 
-      expect(result._tag).toBe("Left");
-      if (result._tag === "Left") {
-        expect(result.left).toBeInstanceOf(FlagValidationError);
-        expect(result.left.errorMessage).toBe(
-          "❌ The --alongside flag can only be used with --generate-article."
-        );
-      }
+      expect(error).toBeInstanceOf(FlagValidationError);
+      expect(error.errorMessage).toBe(
+        "❌ The --alongside flag can only be used with --generate-article."
+      );
     });
 
     it("should pass when alongside is true and generateArticle is true", async () => {
@@ -59,12 +53,9 @@ describe("validateCreateVideoFlags", () => {
         subtitles: true,
       };
 
-      const result = await validateCreateVideoFlags(options).pipe(
-        Effect.either,
-        Effect.runPromise
-      );
-
-      expect(result._tag).toBe("Right");
+      await expect(
+        validateCreateVideoFlags(options).pipe(Effect.runPromise)
+      ).resolves.toBeUndefined();
     });
 
     it("should pass when alongside is false", async () => {
@@ -75,12 +66,9 @@ describe("validateCreateVideoFlags", () => {
         subtitles: true,
       };
 
-      const result = await validateCreateVideoFlags(options).pipe(
-        Effect.either,
-        Effect.runPromise
-      );
-
-      expect(result._tag).toBe("Right");
+      await expect(
+        validateCreateVideoFlags(options).pipe(Effect.runPromise)
+      ).resolves.toBeUndefined();
     });
 
     it("should pass when alongside is undefined", async () => {
@@ -91,12 +79,9 @@ describe("validateCreateVideoFlags", () => {
         subtitles: true,
       };
 
-      const result = await validateCreateVideoFlags(options).pipe(
-        Effect.either,
-        Effect.runPromise
-      );
-
-      expect(result._tag).toBe("Right");
+      await expect(
+        validateCreateVideoFlags(options).pipe(Effect.runPromise)
+      ).resolves.toBeUndefined();
     });
   });
 
@@ -109,22 +94,19 @@ describe("validateCreateVideoFlags", () => {
         subtitles: true,
       };
 
-      const result = await validateCreateVideoFlags(options).pipe(
-        Effect.either,
+      const error = await validateCreateVideoFlags(options).pipe(
+        Effect.flip,
         Effect.runPromise
       );
 
-      expect(result._tag).toBe("Left");
-      if (result._tag === "Left") {
-        expect(result.left).toBeInstanceOf(FlagValidationError);
-        expect(result.left.errorMessage).toBe(
-          "❌ The --alongside and --upload flags cannot be used together."
-        );
-        expect(result.left.helpMessages).toEqual([
-          "💡 Use either: pnpm cli create-auto-edited-video --generate-article --alongside",
-          "💡 Or: pnpm cli create-auto-edited-video --generate-article --upload"
-        ]);
-      }
+      expect(error).toBeInstanceOf(FlagValidationError);
+      expect(error.errorMessage).toBe(
+        "❌ The --alongside and --upload flags cannot be used together."
+      );
+      expect(error.helpMessages).toEqual([
+        "💡 Use either: pnpm cli create-auto-edited-video --generate-article --alongside",
+        "💡 Or: pnpm cli create-auto-edited-video --generate-article --upload"
+      ]);
     });
 
     it("should pass when alongside is true and upload is false", async () => {
@@ -135,12 +117,9 @@ describe("validateCreateVideoFlags", () => {
         subtitles: true,
       };
 
-      const result = await validateCreateVideoFlags(options).pipe(
-        Effect.either,
-        Effect.runPromise
-      );
-
-      expect(result._tag).toBe("Right");
+      await expect(
+        validateCreateVideoFlags(options).pipe(Effect.runPromise)
+      ).resolves.toBeUndefined();
     });
 
     it("should pass when alongside is true and upload is undefined", async () => {
@@ -151,12 +130,9 @@ describe("validateCreateVideoFlags", () => {
         subtitles: true,
       };
 
-      const result = await validateCreateVideoFlags(options).pipe(
-        Effect.either,
-        Effect.runPromise
-      );
-
-      expect(result._tag).toBe("Right");
+      await expect(
+        validateCreateVideoFlags(options).pipe(Effect.runPromise)
+      ).resolves.toBeUndefined();
     });
 
     it("should pass when alongside is false and upload is true", async () => {
@@ -167,12 +143,9 @@ describe("validateCreateVideoFlags", () => {
         subtitles: true,
       };
 
-      const result = await validateCreateVideoFlags(options).pipe(
-        Effect.either,
-        Effect.runPromise
-      );
-
-      expect(result._tag).toBe("Right");
+      await expect(
+        validateCreateVideoFlags(options).pipe(Effect.runPromise)
+      ).resolves.toBeUndefined();
     });
 
     it("should pass when alongside is undefined and upload is true", async () => {
@@ -183,12 +156,9 @@ describe("validateCreateVideoFlags", () => {
         subtitles: true,
       };
 
-      const result = await validateCreateVideoFlags(options).pipe(
-        Effect.either,
-        Effect.runPromise
-      );
-
-      expect(result._tag).toBe("Right");
+      await expect(
+        validateCreateVideoFlags(options).pipe(Effect.runPromise)
+      ).resolves.toBeUndefined();
     });
   });
 
@@ -202,20 +172,17 @@ describe("validateCreateVideoFlags", () => {
         subtitles: true,
       };
 
-      const result = await validateCreateVideoFlags(options).pipe(
-        Effect.either,
+      const error = await validateCreateVideoFlags(options).pipe(
+        Effect.flip,
         Effect.runPromise
       );
 
-      expect(result._tag).toBe("Left");
-      if (result._tag === "Left") {
-        expect(result.left).toBeInstanceOf(FlagValidationError);
-        expect(result.left.errorMessage).toBe(
-          "❌ The --alongside flag can only be used with --generate-article."
-        );
-        // Should NOT be the upload/alongside conflict error
-        expect(result.left.errorMessage).not.toContain("upload");
-      }
+      expect(error).toBeInstanceOf(FlagValidationError);
+      expect(error.errorMessage).toBe(
+        "❌ The --alongside flag can only be used with --generate-article."
+      );
+      // Should NOT be the upload/alongside conflict error
+      expect(error.errorMessage).not.toContain("upload");
     });
   });
 
@@ -228,23 +195,17 @@ describe("validateCreateVideoFlags", () => {
         subtitles: false,
       };
 
-      const result = await validateCreateVideoFlags(options).pipe(
-        Effect.either,
-        Effect.runPromise
-      );
-
-      expect(result._tag).toBe("Right");
+      await expect(
+        validateCreateVideoFlags(options).pipe(Effect.runPromise)
+      ).resolves.toBeUndefined();
     });
 
     it("should pass with minimal flags", async () => {
       const options: CreateVideoOptions = {};
 
-      const result = await validateCreateVideoFlags(options).pipe(
-        Effect.either,
-        Effect.runPromise
-      );
-
-      expect(result._tag).toBe("Right");
+      await expect(
+        validateCreateVideoFlags(options).pipe(Effect.runPromise)
+      ).resolves.toBeUndefined();
     });
 
     it("should pass with generateArticle and alongside only", async () => {
@@ -253,12 +214,9 @@ describe("validateCreateVideoFlags", () => {
         alongside: true,
       };
 
-      const result = await validateCreateVideoFlags(options).pipe(
-        Effect.either,
-        Effect.runPromise
-      );
-
-      expect(result._tag).toBe("Right");
+      await expect(
+        validateCreateVideoFlags(options).pipe(Effect.runPromise)
+      ).resolves.toBeUndefined();
     });
 
     it("should pass with generateArticle and upload only", async () => {
@@ -267,12 +225,9 @@ describe("validateCreateVideoFlags", () => {
         upload: true,
       };
 
-      const result = await validateCreateVideoFlags(options).pipe(
-        Effect.either,
-        Effect.runPromise
-      );
-
-      expect(result._tag).toBe("Right");
+      await expect(
+        validateCreateVideoFlags(options).pipe(Effect.runPromise)
+      ).resolves.toBeUndefined();
     });
   });
 });
