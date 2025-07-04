@@ -1,0 +1,86 @@
+# Environment Variables and Configuration
+
+## Environment File Location
+
+**ALL environment variables for the entire monorepo should be defined in the root `.env` file.**
+
+Do not create `.env` files in individual packages or applications. The root `.env` file serves all packages and applications in the monorepo.
+
+### Structure
+
+```
+total-typescript-monorepo/
+├── .env                    # ✅ Main environment file
+├── .env.example           # ✅ Example environment file
+├── apps/
+│   ├── internal-cli/
+│   │   └── .env           # ❌ DON'T create package-specific .env files
+│   └── written-content/
+└── packages/
+```
+
+### Environment Variable Loading
+
+The root `.env` file is automatically loaded by:
+- Applications via `dotenv` configuration pointing to `../../../.env`
+- Services that use `ConfigProvider.fromEnv()`
+- Development and build scripts
+
+### Example Root .env Structure
+
+```bash
+# Application Configuration
+NODE_ENV=development
+
+# Database Configuration
+WRITTEN_CONTENT_DATABASE_URL=postgresql://user:pass@localhost:5432/written_content
+WRITTEN_CONTENT_DB_BACKUP_FILE_PATH=/backups/written_content.dump
+
+# API Keys and Secrets
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=...
+
+# Storage Paths
+LINKS_STORAGE_PATH=/storage/links
+ARTICLE_STORAGE_PATH=/storage/articles
+
+# External Services
+OBS_RECORDINGS_PATH=/recordings
+DAVINCI_EXPORT_DIRECTORY=/exports
+```
+
+### Naming Conventions
+
+- Use `SCREAMING_SNAKE_CASE` for environment variable names
+- Prefix variables with the relevant domain/package when appropriate:
+  - `WRITTEN_CONTENT_*` for written content related variables
+  - `VIDEO_*` for video processing variables
+  - `DAVINCI_*` for DaVinci Resolve related variables
+- Use descriptive names that clearly indicate the purpose
+- For file paths, suffix with `_PATH` or `_DIRECTORY`
+- For URLs, suffix with `_URL`
+
+### Configuration Access
+
+Use Effect's `Config` for type-safe environment variable access:
+
+```typescript
+const databaseUrl = yield* Config.string("WRITTEN_CONTENT_DATABASE_URL");
+const backupPath = yield* Config.string("WRITTEN_CONTENT_DB_BACKUP_FILE_PATH");
+```
+
+### Security
+
+- Never commit actual `.env` files to version control
+- Use `.env.example` to document required environment variables
+- Use `Config.redacted()` for sensitive values like API keys and passwords
+- Ensure `.env` is in `.gitignore`
+
+### Documentation
+
+When adding new environment variables:
+
+1. Add them to the root `.env.example` file with example values
+2. Document their purpose and format in relevant README files
+3. Update any configuration documentation
+4. Use clear, descriptive variable names that don't require additional explanation
