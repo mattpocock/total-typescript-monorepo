@@ -12,31 +12,30 @@ The `dump-database` command allows you to create a backup of a remote PostgreSQL
 # Basic usage
 pnpm cli dump-database
 
-# With aliases
-pnpm cli dump
-pnpm cli backup
+# Basic usage only (no aliases)
+pnpm cli dump-database
 ```
 
 ### Required Environment Variables
 
-- `DATABASE_URL`: PostgreSQL connection URL in the format `postgresql://username:password@host:port/database`
-- `BACKUP_FILE_PATH`: Local file path where the backup should be saved
+- `WRITTEN_CONTENT_DATABASE_URL`: PostgreSQL connection URL in the format `postgresql://username:password@host:port/database`
+- `WRITTEN_CONTENT_DB_BACKUP_FILE_PATH`: Local file path where the backup should be saved
 
 ### Environment File Example
 
-Create a `.env` file or set environment variables:
+Add to the **root `.env` file** (not package-specific):
 
 ```bash
-DATABASE_URL=postgresql://myuser:mypass@db.example.com:5432/myapp_production
-BACKUP_FILE_PATH=/path/to/backup.dump
+WRITTEN_CONTENT_DATABASE_URL=postgresql://myuser:mypass@db.example.com:5432/myapp_production
+WRITTEN_CONTENT_DB_BACKUP_FILE_PATH=/path/to/backup.dump
 ```
 
 ### Example
 
 ```bash
 # Set environment variables and run the command
-DATABASE_URL="postgresql://user:pass@db.example.com:5432/production" \
-BACKUP_FILE_PATH="/backups/$(date +%Y%m%d_%H%M%S)_production.dump" \
+WRITTEN_CONTENT_DATABASE_URL="postgresql://user:pass@db.example.com:5432/production" \
+WRITTEN_CONTENT_DB_BACKUP_FILE_PATH="/backups/$(date +%Y%m%d_%H%M%S)_production.dump" \
 pnpm cli dump-database
 ```
 
@@ -46,6 +45,7 @@ pnpm cli dump-database
 - **Secure**: Uses environment variables for credentials (PGPASSWORD)
 - **Compressed Format**: Uses `pg_dump -Fc` for efficient compressed backups
 - **Effect Integration**: Follows Effect-TS patterns with proper error handling and logging
+- **Shared Utilities**: Uses `execAsync` from the shared package for consistent command execution
 - **Tracing**: Includes OpenTelemetry tracing for observability
 
 ### Requirements

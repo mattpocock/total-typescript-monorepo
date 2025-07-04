@@ -21,7 +21,7 @@ import {
   writeToQueue,
   type QueueItem,
 } from "@total-typescript/ffmpeg";
-import { type AbsolutePath } from "@total-typescript/shared";
+import { type AbsolutePath, execAsync } from "@total-typescript/shared";
 import { Command } from "commander";
 import { config } from "dotenv";
 import { ConfigProvider, Console, Effect, Layer, Config, Data } from "effect";
@@ -868,8 +868,8 @@ const parseDatabaseUrl = Effect.fn("parseDatabaseUrl")(function* (databaseUrl: s
 });
 
 const dumpDatabase = Effect.fn("dumpDatabase")(function* () {
-  const databaseUrl = yield* Config.string("DATABASE_URL");
-  const backupFilePath = yield* Config.string("BACKUP_FILE_PATH");
+  const databaseUrl = yield* Config.string("WRITTEN_CONTENT_DATABASE_URL");
+  const backupFilePath = yield* Config.string("WRITTEN_CONTENT_DB_BACKUP_FILE_PATH");
   
   // Parse database URL
   const dbConfig = yield* parseDatabaseUrl(databaseUrl);
@@ -895,24 +895,12 @@ const dumpDatabase = Effect.fn("dumpDatabase")(function* () {
   const env = { ...process.env, PGPASSWORD: dbConfig.password };
   
   // Execute pg_dump command
-  yield* Effect.tryPromise({
-    try: async () => {
-      const { exec } = await import("child_process");
-      return new Promise<void>((resolve, reject) => {
-        exec(pgDumpCommand, { env }, (error: any, stdout: string, stderr: string) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve();
-          }
-        });
-      });
-    },
-    catch: (error) => new DatabaseDumpError({ 
-      cause: error as Error, 
+  yield* execAsync(pgDumpCommand, { env }).pipe(
+    Effect.mapError((error) => new DatabaseDumpError({ 
+      cause: error, 
       command: pgDumpCommand 
-    }),
-  });
+    }))
+  );
   
   yield* Effect.logInfo("Database dump completed successfully", { 
     outputFile: backupFilePath 
@@ -923,7 +911,6 @@ const dumpDatabase = Effect.fn("dumpDatabase")(function* () {
 
 program
   .command("dump-database")
-  .aliases(["dump", "backup"])
   .description("Dump a remote PostgreSQL database to a file using pg_dump")
   .action(async () => {
     await dumpDatabase().pipe(
