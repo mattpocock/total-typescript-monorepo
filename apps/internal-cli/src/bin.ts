@@ -844,27 +844,28 @@ export class DatabaseDumpError extends Data.TaggedError("DatabaseDumpError")<{
 
 // Database dump functionality
 const parseDatabaseUrl = Effect.fn("parseDatabaseUrl")(function* (databaseUrl: string) {
-  return yield* Effect.try({
-    try: () => {
-      const url = new URL(databaseUrl);
-      
-      if (url.protocol !== "postgresql:") {
-        throw new Error("Only PostgreSQL URLs are supported");
-      }
-      
-      return {
-        host: url.hostname,
-        port: url.port || "5432",
-        username: url.username,
-        password: url.password,
-        database: url.pathname.slice(1), // Remove leading slash
-      };
-    },
+  const url = yield* Effect.try({
+    try: () => new URL(databaseUrl),
     catch: (error) => new DatabaseUrlParseError({ 
       url: databaseUrl, 
       cause: error as Error 
     }),
   });
+  
+  if (url.protocol !== "postgresql:") {
+    return yield* Effect.fail(new DatabaseUrlParseError({ 
+      url: databaseUrl, 
+      cause: new Error("Only PostgreSQL URLs are supported") 
+    }));
+  }
+  
+  return {
+    host: url.hostname,
+    port: url.port || "5432",
+    username: url.username,
+    password: url.password,
+    database: url.pathname.slice(1), // Remove leading slash
+  };
 });
 
 const dumpDatabase = Effect.fn("dumpDatabase")(function* () {
