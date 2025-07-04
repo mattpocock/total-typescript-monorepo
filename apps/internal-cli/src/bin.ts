@@ -24,7 +24,7 @@ import {
 import { type AbsolutePath } from "@total-typescript/shared";
 import { Command } from "commander";
 import { config } from "dotenv";
-import { ConfigProvider, Console, Effect, Layer } from "effect";
+import { ConfigProvider, Console, Effect, Layer, Config, Data } from "effect";
 import path from "node:path";
 import { styleText } from "node:util";
 import {
@@ -829,6 +829,109 @@ program
     if (options.validate && result.hasErrors) {
       process.exit(1);
     }
+  });
+
+// Add database dump error classes
+export class DatabaseUrlParseError extends Data.TaggedError("DatabaseUrlParseError")<{
+  url: string;
+  cause: Error;
+}> {}
+
+export class DatabaseDumpError extends Data.TaggedError("DatabaseDumpError")<{
+  cause: Error;
+  command: string;
+}> {}
+
+// Database dump functionality
+const parseDatabaseUrl = Effect.fn("parseDatabaseUrl")(function* (databaseUrl: string) {
+  return yield* Effect.try({
+    try: () => {
+      const url = new URL(databaseUrl);
+      
+      if (url.protocol !== "postgresql:") {
+        throw new Error("Only PostgreSQL URLs are supported");
+      }
+      
+      return {
+        host: url.hostname,
+        port: url.port || "5432",
+        username: url.username,
+        password: url.password,
+        database: url.pathname.slice(1), // Remove leading slash
+      };
+    },
+    catch: (error) => new DatabaseUrlParseError({ 
+      url: databaseUrl, 
+      cause: error as Error 
+    }),
+  });
+});
+
+const dumpDatabase = Effect.fn("dumpDatabase")(function* () {
+  const databaseUrl = yield* Config.string("DATABASE_URL");
+  const backupFilePath = yield* Config.string("BACKUP_FILE_PATH");
+  
+  // Parse database URL
+  const dbConfig = yield* parseDatabaseUrl(databaseUrl);
+  
+  // Build pg_dump command
+  const pgDumpCommand = [
+    "pg_dump",
+    "-h", dbConfig.host,
+    "-p", dbConfig.port,
+    "-U", dbConfig.username,
+    "-d", dbConfig.database,
+    "-Fc", // Custom format (compressed)
+    ">", backupFilePath
+  ].join(" ");
+  
+  yield* Effect.logInfo("Starting database dump", { 
+    host: dbConfig.host,
+    database: dbConfig.database,
+    outputFile: backupFilePath 
+  });
+  
+  // Set PGPASSWORD environment variable for pg_dump
+  const env = { ...process.env, PGPASSWORD: dbConfig.password };
+  
+  // Execute pg_dump command
+  yield* Effect.tryPromise({
+    try: async () => {
+      const { exec } = await import("child_process");
+      return new Promise<void>((resolve, reject) => {
+        exec(pgDumpCommand, { env }, (error: any, stdout: string, stderr: string) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve();
+          }
+        });
+      });
+    },
+    catch: (error) => new DatabaseDumpError({ 
+      cause: error as Error, 
+      command: pgDumpCommand 
+    }),
+  });
+  
+  yield* Effect.logInfo("Database dump completed successfully", { 
+    outputFile: backupFilePath 
+  });
+  
+  return backupFilePath;
+});
+
+program
+  .command("dump-database")
+  .aliases(["dump", "backup"])
+  .description("Dump a remote PostgreSQL database to a file using pg_dump")
+  .action(async () => {
+    await dumpDatabase().pipe(
+      Effect.withConfigProvider(ConfigProvider.fromEnv()),
+      Effect.provide(OpenTelemetryLive),
+      Effect.withSpan("dump-database"),
+      Effect.runPromise
+    );
   });
 
 program.parse(process.argv);
