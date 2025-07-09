@@ -9,13 +9,16 @@ The approach ensures that at every stage, you have a functional tool that provid
 ---
 
 ## Phase 1: Working CLI Scanner & Reporter
+
 **Deliverable**: A functional CLI that scans directories and reports exercise structure
 **PR Size**: Medium (400-500 lines)
 **Estimated Time**: 2-3 hours per agent
 **Dependencies**: None
 
 ### 🎯 What You Get (Working Prototype)
+
 A complete CLI command that:
+
 - Scans any directory for TypeScript exercises
 - Detects file-based and folder-based exercises
 - Validates naming conventions
@@ -24,6 +27,7 @@ A complete CLI command that:
 - Provides validation-only mode for CI/testing
 
 ### 📦 User Experience
+
 ```bash
 # Scan current directory
 tt exercise-organizer
@@ -52,6 +56,7 @@ tt exercise-organizer --validate /path/to/exercises
 ```
 
 ### 📁 Files to Create
+
 ```
 apps/internal-cli/src/exercise-organizer/
 ├── types.ts                 # Core types and interfaces
@@ -70,6 +75,7 @@ apps/internal-cli/src/exercise-organizer/
 ### 🔧 Key Components
 
 #### Complete CLI Integration
+
 ```typescript
 // Add to bin.ts
 program
@@ -85,9 +91,10 @@ program
 ```
 
 #### Full Data Models & Parsing
+
 ```typescript
 export interface Exercise {
-  type: 'file-based' | 'folder-based';
+  type: "file-based" | "folder-based";
   number: number;
   name: string;
   path: AbsolutePath;
@@ -107,21 +114,22 @@ export interface ExerciseSection {
 export const parseExerciseDirectory = Effect.gen(function* (dir: AbsolutePath) {
   const fs = yield* FileSystem.FileSystem;
   const files = yield* fs.readdir(dir);
-  
+
   // Parse sections and exercises
   const sections = yield* parseSections(files);
   const orphanedFiles = yield* detectOrphanedFiles(files, sections);
-  
+
   return {
     sections,
     orphanedFiles,
-    validationErrors: sections.flatMap(s => s.validationErrors),
-    hasErrors: sections.some(s => s.validationErrors.length > 0),
+    validationErrors: sections.flatMap((s) => s.validationErrors),
+    hasErrors: sections.some((s) => s.validationErrors.length > 0),
   };
 });
 ```
 
 ### ✅ Success Criteria & Testing
+
 - [ ] **End-to-End Functionality**: Can scan real exercise directories and produce accurate reports
 - [ ] **CLI Integration**: Works seamlessly with existing `tt` command structure
 - [ ] **Validation Mode**: Returns proper exit codes for CI integration
@@ -132,13 +140,16 @@ export const parseExerciseDirectory = Effect.gen(function* (dir: AbsolutePath) {
 ---
 
 ## Phase 2: Interactive TUI Navigator
+
 **Deliverable**: A working terminal UI for browsing exercises interactively
 **PR Size**: Medium-Large (500-600 lines)
 **Estimated Time**: 3-4 hours per agent
 **Dependencies**: Phase 1
 
 ### 🎯 What You Get (Working Prototype)
+
 Building on Phase 1, you now get:
+
 - Full interactive terminal interface using Ink
 - Navigate exercise hierarchy with keyboard
 - View exercise details and validation errors
@@ -147,6 +158,7 @@ Building on Phase 1, you now get:
 - Help system and keyboard shortcuts
 
 ### 📦 User Experience
+
 ```bash
 # Launch interactive mode (default when no --validate flag)
 tt exercise-organizer
@@ -176,6 +188,7 @@ tt exercise-organizer
 ```
 
 ### 📁 Additional Files
+
 ```
 apps/internal-cli/src/exercise-organizer/
 ├── tui/
@@ -195,6 +208,7 @@ apps/internal-cli/src/exercise-organizer/
 ### 🔧 Key Components
 
 #### Interactive TUI App
+
 ```typescript
 export const ExerciseOrganizerApp: React.FC<{
   parseResult: ExerciseParseResult;
@@ -202,9 +216,9 @@ export const ExerciseOrganizerApp: React.FC<{
   const [selectedPath, setSelectedPath] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   const [mode, setMode] = useState<'browse' | 'search' | 'detail'>('browse');
-  
-  const filteredSections = useMemo(() => 
-    filterSections(parseResult.sections, searchTerm), 
+
+  const filteredSections = useMemo(() =>
+    filterSections(parseResult.sections, searchTerm),
     [parseResult.sections, searchTerm]
   );
 
@@ -222,17 +236,17 @@ export const ExerciseOrganizerApp: React.FC<{
 
   return (
     <Box flexDirection="column" height="100%">
-      <ExerciseTree 
+      <ExerciseTree
         sections={filteredSections}
         selectedPath={selectedPath}
         onSelect={setSelectedPath}
       />
-      <SearchBar 
+      <SearchBar
         visible={mode === 'search'}
         value={searchTerm}
         onChange={setSearchTerm}
       />
-      <StatusBar 
+      <StatusBar
         mode={mode}
         exerciseCount={countExercises(filteredSections)}
       />
@@ -242,6 +256,7 @@ export const ExerciseOrganizerApp: React.FC<{
 ```
 
 ### ✅ Success Criteria & Testing
+
 - [ ] **Full Navigation**: Smooth keyboard navigation through exercise hierarchy
 - [ ] **Search Works**: Real-time filtering of exercises by name/content
 - [ ] **Visual Clarity**: Clear indication of exercise status (valid, errors, missing solutions)
@@ -252,13 +267,16 @@ export const ExerciseOrganizerApp: React.FC<{
 ---
 
 ## Phase 3: Basic Exercise Operations
+
 **Deliverable**: Interactive move and reorder operations with immediate feedback
 **PR Size**: Medium-Large (500-600 lines)  
 **Estimated Time**: 3-4 hours per agent
 **Dependencies**: Phase 2
 
 ### 🎯 What You Get (Working Prototype)
+
 Building on Phase 2, you now can:
+
 - Move exercises between sections interactively
 - Reorder exercises within sections
 - See real-time preview before confirming operations
@@ -267,6 +285,7 @@ Building on Phase 2, you now can:
 - Safe file operations with validation
 
 ### 📦 User Experience
+
 ```bash
 # Same command, now with move operations
 tt exercise-organizer
@@ -299,6 +318,7 @@ tt exercise-organizer
 ```
 
 ### 📁 Additional Files
+
 ```
 apps/internal-cli/src/exercise-organizer/
 ├── operations/
@@ -319,6 +339,7 @@ apps/internal-cli/src/exercise-organizer/
 ### 🔧 Key Components
 
 #### Move Operations with Preview
+
 ```typescript
 export const previewMoveOperation = Effect.gen(function* (
   exercise: Exercise,
@@ -326,16 +347,23 @@ export const previewMoveOperation = Effect.gen(function* (
   targetIndex: number
 ) {
   // Calculate new file paths
-  const newPaths = yield* calculateNewPaths(exercise, targetSection, targetIndex);
-  
+  const newPaths = yield* calculateNewPaths(
+    exercise,
+    targetSection,
+    targetIndex
+  );
+
   // Check for conflicts
   const conflicts = yield* checkForConflicts(newPaths);
-  
+
   // Estimate renumbering needed
-  const renumberingNeeded = yield* calculateRenumbering(targetSection, targetIndex);
-  
+  const renumberingNeeded = yield* calculateRenumbering(
+    targetSection,
+    targetIndex
+  );
+
   return {
-    operation: 'move',
+    operation: "move",
     exercise: exercise.name,
     from: exercise.section.name,
     to: targetSection.name,
@@ -351,23 +379,24 @@ export const executeMoveOperation = Effect.gen(function* (
 ) {
   // Create backup for undo
   const backup = yield* createOperationBackup(preview);
-  
+
   // Perform atomic file operations
   yield* moveFiles(preview.newPaths);
-  
+
   // Update exercise numbering
   if (preview.renumberingNeeded.length > 0) {
     yield* renumberExercises(preview.renumberingNeeded);
   }
-  
+
   // Register undo operation
   yield* registerUndoOperation(backup);
-  
+
   return { success: true, backup };
 });
 ```
 
 ### ✅ Success Criteria & Testing
+
 - [ ] **Move Between Sections**: Successfully move exercises across different sections
 - [ ] **Reorder Within Section**: Change exercise order within the same section
 - [ ] **Preview Accuracy**: Preview exactly matches the actual operation results
@@ -378,13 +407,16 @@ export const executeMoveOperation = Effect.gen(function* (
 ---
 
 ## Phase 4: Enhanced Operations & Safety
+
 **Deliverable**: Robust operations with full undo/redo, batch operations, and error recovery
 **PR Size**: Medium (400-500 lines)
 **Estimated Time**: 2-3 hours per agent
 **Dependencies**: Phase 3
 
 ### 🎯 What You Get (Working Prototype)
+
 Building on Phase 3, you now get:
+
 - Full undo/redo stack (not just last operation)
 - Batch operations (move multiple exercises at once)
 - Automatic backup creation before major operations
@@ -393,6 +425,7 @@ Building on Phase 3, you now get:
 - Batch validation and conflict resolution
 
 ### 📦 User Experience
+
 ```bash
 # Same command, now with enhanced operations
 tt exercise-organizer
@@ -410,7 +443,7 @@ tt exercise-organizer
 │                                                                        │
 │ Selected for batch move:                                               │
 │ ✓ 002-functions.problem.ts (from 01-fundamentals)                     │
-│ ✓ 005-arrays.problem.ts (from 01-fundamentals)                        │ 
+│ ✓ 005-arrays.problem.ts (from 01-fundamentals)                        │
 │ ✓ 001-strings.problem.ts (from 02-advanced)                           │
 │                                                                        │
 │ Target: 📁 03-practice-exercises/                                      │
@@ -424,6 +457,7 @@ tt exercise-organizer
 ```
 
 ### 📁 Additional Files
+
 ```
 apps/internal-cli/src/exercise-organizer/
 ├── operations/
@@ -442,22 +476,23 @@ apps/internal-cli/src/exercise-organizer/
 ### 🔧 Key Components
 
 #### Enhanced Undo/Redo System
+
 ```typescript
 export class OperationHistory {
   private undoStack: Operation[] = [];
   private redoStack: Operation[] = [];
-  
+
   async executeOperation(operation: Operation): Promise<OperationResult> {
     // Create backup before operation
     const backup = await this.createBackup(operation);
-    
+
     try {
       const result = await operation.execute();
-      
+
       // Add to undo stack on success
       this.undoStack.push({ ...operation, backup });
       this.redoStack = []; // Clear redo stack
-      
+
       return result;
     } catch (error) {
       // Automatic rollback on failure
@@ -465,11 +500,11 @@ export class OperationHistory {
       throw error;
     }
   }
-  
+
   async undo(): Promise<void> {
     const operation = this.undoStack.pop();
     if (!operation) return;
-    
+
     await this.restoreFromBackup(operation.backup);
     this.redoStack.push(operation);
   }
@@ -477,6 +512,7 @@ export class OperationHistory {
 ```
 
 #### Batch Operations
+
 ```typescript
 export const executeBatchMove = Effect.gen(function* (
   exercises: Exercise[],
@@ -484,26 +520,32 @@ export const executeBatchMove = Effect.gen(function* (
   startIndex: number
 ) {
   // Validate entire batch first
-  const batchValidation = yield* validateBatchOperation(exercises, targetSection);
+  const batchValidation = yield* validateBatchOperation(
+    exercises,
+    targetSection
+  );
   if (!batchValidation.safe) {
-    return yield* Effect.fail(new BatchOperationError(batchValidation.conflicts));
+    return yield* Effect.fail(
+      new BatchOperationError(batchValidation.conflicts)
+    );
   }
-  
+
   // Create comprehensive backup
   const backup = yield* createBatchBackup(exercises);
-  
+
   try {
     // Execute all moves atomically
     for (const [index, exercise] of exercises.entries()) {
       yield* moveExercise(exercise, targetSection, startIndex + index);
     }
-    
+
     // Update all affected sections
-    yield* refreshAffectedSections([...new Set(exercises.map(e => e.section))]);
-    
+    yield* refreshAffectedSections([
+      ...new Set(exercises.map((e) => e.section)),
+    ]);
+
     // Register batch operation for undo
     yield* registerBatchOperation({ exercises, targetSection, backup });
-    
   } catch (error) {
     // Rollback entire batch on any failure
     yield* rollbackBatchOperation(backup);
@@ -513,6 +555,7 @@ export const executeBatchMove = Effect.gen(function* (
 ```
 
 ### ✅ Success Criteria & Testing
+
 - [ ] **Full Undo/Redo**: Navigate through complete operation history
 - [ ] **Batch Operations**: Select and move multiple exercises efficiently
 - [ ] **Atomic Batch**: Either all exercises move or none do (no partial failures)
@@ -523,13 +566,16 @@ export const executeBatchMove = Effect.gen(function* (
 ---
 
 ## Phase 5: Normalization & Auto-Fix
+
 **Deliverable**: Intelligent exercise normalization with one-click fixes
 **PR Size**: Medium (400-500 lines)
 **Estimated Time**: 2-3 hours per agent
 **Dependencies**: Phase 4
 
 ### 🎯 What You Get (Working Prototype)
+
 Building on Phase 4, you now get:
+
 - Automatic detection of numbering issues
 - One-click normalization (remove decimals, fix gaps)
 - Smart conflict resolution strategies
@@ -538,6 +584,7 @@ Building on Phase 4, you now get:
 - Integration with existing move/undo system
 
 ### 📦 User Experience
+
 ```bash
 # Same command, now with normalization features
 tt exercise-organizer
@@ -570,6 +617,7 @@ tt exercise-organizer
 ```
 
 ### 📁 Additional Files
+
 ```
 apps/internal-cli/src/exercise-organizer/
 ├── normalization/
@@ -588,41 +636,43 @@ apps/internal-cli/src/exercise-organizer/
 ### 🔧 Key Components
 
 #### Issue Detection System
+
 ```typescript
 export const detectNormalizationIssues = Effect.gen(function* (
   sections: ExerciseSection[]
 ) {
   const issues: NormalizationIssue[] = [];
-  
+
   for (const section of sections) {
     // Check for decimal numbers
     const decimalIssues = section.exercises
-      .filter(ex => ex.number % 1 !== 0)
-      .map(ex => ({
-        type: 'decimal' as const,
+      .filter((ex) => ex.number % 1 !== 0)
+      .map((ex) => ({
+        type: "decimal" as const,
         exercise: ex,
-        severity: 'high' as const,
-        suggestion: `Rename to ${Math.floor(ex.number + 1)}`
+        severity: "high" as const,
+        suggestion: `Rename to ${Math.floor(ex.number + 1)}`,
       }));
-    
+
     // Check for gaps in numbering
     const gapIssues = yield* detectNumberingGaps(section.exercises);
-    
+
     // Check for duplicates
     const duplicateIssues = yield* detectDuplicateNumbers(section.exercises);
-    
+
     issues.push(...decimalIssues, ...gapIssues, ...duplicateIssues);
   }
-  
+
   return {
     issues,
-    hasHighPriority: issues.some(i => i.severity === 'high'),
+    hasHighPriority: issues.some((i) => i.severity === "high"),
     estimatedFixes: issues.length,
   };
 });
 ```
 
 #### One-Click Normalization
+
 ```typescript
 export const executeNormalizationPlan = Effect.gen(function* (
   plan: NormalizationPlan,
@@ -630,32 +680,31 @@ export const executeNormalizationPlan = Effect.gen(function* (
 ) {
   // Create backup before major changes
   const backup = yield* createNormalizationBackup(plan);
-  
+
   try {
     // Execute normalization steps in order
     for (const step of plan.steps) {
       switch (step.type) {
-        case 'rename':
+        case "rename":
           yield* renameExercise(step.exercise, step.newNumber);
           break;
-        case 'renumber':
+        case "renumber":
           yield* renumberSection(step.section, step.startNumber);
           break;
-        case 'resolve-duplicate':
+        case "resolve-duplicate":
           yield* resolveDuplicate(step.exercises, strategy);
           break;
       }
     }
-    
+
     // Verify normalization completed successfully
     const verification = yield* verifyNormalization(plan.sections);
     if (!verification.success) {
       throw new NormalizationError(verification.errors);
     }
-    
+
     // Register for undo
     yield* registerNormalizationOperation({ plan, backup });
-    
   } catch (error) {
     // Rollback on any failure
     yield* rollbackNormalization(backup);
@@ -665,6 +714,7 @@ export const executeNormalizationPlan = Effect.gen(function* (
 ```
 
 ### ✅ Success Criteria & Testing
+
 - [ ] **Issue Detection**: Accurately identifies all numbering problems
 - [ ] **Strategy Options**: Multiple normalization approaches work correctly
 - [ ] **One-Click Fix**: "Fix All" resolves all issues in one operation
@@ -675,13 +725,16 @@ export const executeNormalizationPlan = Effect.gen(function* (
 ---
 
 ## Phase 6: AI-Powered Suggestions & Advanced Features
+
 **Deliverable**: Complete tool with AI naming suggestions and advanced analysis
 **PR Size**: Large (600-800 lines)
 **Estimated Time**: 4-5 hours per agent
 **Dependencies**: Phase 5
 
 ### 🎯 What You Get (Final Complete Prototype)
+
 Building on Phase 5, you now get the complete tool with:
+
 - AI-powered naming suggestions for non-conforming files
 - Intelligent pattern matching for problem/solution pairs
 - Advanced analytics and insights about exercise structure
@@ -690,6 +743,7 @@ Building on Phase 5, you now get the complete tool with:
 - Full integration with existing Total TypeScript workflow
 
 ### 📦 User Experience
+
 ```bash
 # Complete command with all features
 tt exercise-organizer
@@ -726,6 +780,7 @@ tt exercise-organizer
 ```
 
 ### 📁 Additional Files
+
 ```
 apps/internal-cli/src/exercise-organizer/
 ├── ai-suggestions/
@@ -755,6 +810,7 @@ apps/internal-cli/src/exercise-organizer/
 ### 🔧 Key Components
 
 #### AI Naming Service
+
 ```typescript
 export const generateNamingSuggestions = Effect.gen(function* (
   file: string,
@@ -763,7 +819,7 @@ export const generateNamingSuggestions = Effect.gen(function* (
   // Analyze file content
   const content = yield* FileSystem.readFileString(file);
   const contentAnalysis = yield* analyzeExerciseContent(content);
-  
+
   // Generate suggestions using AI
   const aiService = yield* AiService;
   const suggestions = yield* aiService.generateNamingSuggestions({
@@ -772,10 +828,10 @@ export const generateNamingSuggestions = Effect.gen(function* (
     existingExercises: context.exercises,
     sectionContext: context.section,
   });
-  
+
   // Score suggestions
   const scoredSuggestions = yield* scoreSuggestions(suggestions, context);
-  
+
   return scoredSuggestions.sort((a, b) => b.confidence - a.confidence);
 });
 
@@ -785,9 +841,9 @@ export const analyzeExerciseContent = Effect.gen(function* (content: string) {
   const hasSolutions = /\/\/ SOLUTION|\/\/ ANSWER/.test(content);
   const complexity = calculateComplexity(content);
   const topics = extractTypeScriptTopics(content);
-  
+
   return {
-    type: hasProblems ? 'problem' : hasSolutions ? 'solution' : 'unknown',
+    type: hasProblems ? "problem" : hasSolutions ? "solution" : "unknown",
     complexity,
     topics,
     estimatedDifficulty: calculateDifficulty(content),
@@ -796,6 +852,7 @@ export const analyzeExerciseContent = Effect.gen(function* (content: string) {
 ```
 
 #### Advanced Analytics
+
 ```typescript
 export const generateExerciseAnalytics = Effect.gen(function* (
   sections: ExerciseSection[]
@@ -819,12 +876,13 @@ export const generateExerciseAnalytics = Effect.gen(function* (
     },
     recommendations: yield* generateRecommendations(sections),
   };
-  
+
   return analytics;
 });
 ```
 
 ### ✅ Success Criteria & Testing
+
 - [ ] **AI Integration**: AI suggestions are accurate and helpful
 - [ ] **Content Analysis**: Correctly identifies exercise types from content
 - [ ] **Analytics Value**: Provides actionable insights about exercise structure
@@ -837,16 +895,19 @@ export const generateExerciseAnalytics = Effect.gen(function* (
 ## Testing Strategy & Quality Assurance
 
 ### Continuous Testing Approach
+
 Each phase includes comprehensive testing that builds on previous phases:
 
 1. **Unit Tests**: Core functionality tested in isolation
-2. **Integration Tests**: Cross-component functionality 
+2. **Integration Tests**: Cross-component functionality
 3. **End-to-End Tests**: Complete user workflows
 4. **Performance Tests**: Handling large exercise repositories
 5. **User Acceptance Tests**: Real-world usage scenarios
 
 ### Quality Gates
+
 Before proceeding to the next phase:
+
 - [ ] All tests pass
 - [ ] Performance benchmarks met
 - [ ] User feedback incorporated
@@ -854,7 +915,9 @@ Before proceeding to the next phase:
 - [ ] No regressions in previous functionality
 
 ### Feedback Integration Points
+
 At the end of each phase:
+
 1. **Demo the working prototype** to stakeholders
 2. **Gather feedback** on user experience and functionality
 3. **Adjust subsequent phases** based on learnings
