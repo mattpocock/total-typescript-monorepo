@@ -60,7 +60,6 @@ export type QueueItemAction =
       transcriptPath: AbsolutePath;
       originalVideoPath: AbsolutePath;
     }
-
   | {
       type: "generate-article-from-transcript";
       transcriptPath: AbsolutePath;
@@ -266,9 +265,7 @@ export const processInformationRequests = () => {
 
         // Check if linkRequests array is empty
         if (queueItem.action.linkRequests.length === 0) {
-          yield* Console.log(
-            `📝 No links required - marking as completed`
-          );
+          yield* Console.log(`📝 No links required - marking as completed`);
 
           yield* linkStorage.addLinks(links);
 
@@ -288,13 +285,18 @@ export const processInformationRequests = () => {
 
           for (const linkRequest of queueItem.action.linkRequests) {
             const link = yield* askQuestion.askQuestion(
-              `🌐 Link for "${linkRequest}": `
+              `🌐 Link for "${linkRequest}": `,
+              {
+                optional: true,
+              }
             );
 
-            links.push({
-              description: linkRequest,
-              url: link,
-            });
+            if (link) {
+              links.push({
+                description: linkRequest,
+                url: link,
+              });
+            }
           }
 
           yield* linkStorage.addLinks(links);
