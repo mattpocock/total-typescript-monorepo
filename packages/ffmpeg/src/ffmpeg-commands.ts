@@ -241,7 +241,9 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           input: AbsolutePath,
           output: AbsolutePath
         ) {
-          return yield* execAsync(`ffmpeg-normalize -f ${input} -o ${output}`);
+          return yield* execAsync(
+            `ffmpeg -y -i "${input}" -af "loudnorm=I=-16:TP=-1.5:LRA=11" "${output}"`
+          );
         }),
 
         extractAudioFromVideo: Effect.fn("extractAudioFromVideo")(function* (

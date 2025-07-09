@@ -400,8 +400,10 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           });
 
           // Create a temporary directory for clips
-          const tempDir = join(tmpdir(), `speaking-clips-${Date.now()}`);
-          yield* execAsync(`mkdir -p "${tempDir}"`);
+          const tempDir = yield* fs.makeTempDirectoryScoped({
+            directory: tmpdir(),
+            prefix: "speaking-clips",
+          });
 
           // Create individual clips
           yield* Console.log("🎬 Creating individual clips...");
@@ -444,23 +446,29 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
           yield* fs.writeFileString(concatFile, concatContent);
 
+          const concatenatedVideoPath = join(
+            tempDir,
+            "concatenated-video.mp4"
+          ) as AbsolutePath;
+
           // Concatenate all clips
           yield* Console.log("🎥 Concatenating clips...");
           const concatStart = Date.now();
-          yield* ffmpeg.concatenateClips(concatFile, outputVideo);
+          yield* ffmpeg.concatenateClips(concatFile, concatenatedVideoPath);
           yield* Console.log(
             `✅ Concatenated all clips (took ${(Date.now() - concatStart) / 1000}s)`
           );
 
-          // Clean up temporary files
-          yield* fs.remove(tempDir, { recursive: true, force: true });
+          // Normalize audio
+          yield* Console.log("🎥 Normalizing audio...");
+          yield* ffmpeg.normalizeAudio(concatenatedVideoPath, outputVideo);
 
           const totalTime = (Date.now() - startTime) / 1000;
           yield* Console.log(
             `✅ Successfully created speaking-only video! (Total time: ${totalTime}s)`
           );
           return { speakingClips: clips };
-        });
+        }).pipe(Effect.scoped);
       };
 
       const roundToDecimalPlaces = (num: number, places: number) => {
@@ -472,11 +480,15 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       ) => {
         return Effect.gen(function* () {
           const queueState = yield* getQueueState();
-          
+
           // Find the videos from queue items
-          const videoItems = options.videoIds.map(id => {
-            const item = queueState.queue.find(i => i.id === id);
-            if (!item || item.status !== "completed" || item.action.type !== "create-auto-edited-video") {
+          const videoItems = options.videoIds.map((id) => {
+            const item = queueState.queue.find((i) => i.id === id);
+            if (
+              !item ||
+              item.status !== "completed" ||
+              item.action.type !== "create-auto-edited-video"
+            ) {
               throw new Error(`Video with ID ${id} not found or not completed`);
             }
             return item;
@@ -484,31 +496,44 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
           // Determine output paths for each video
           const videoPaths = yield* Effect.all(
-            videoItems.map(item => 
+            videoItems.map((item) =>
               Effect.gen(function* () {
                 if (item.action.type !== "create-auto-edited-video") {
-                  return yield* Effect.fail(new Error(`Invalid action type for video ${item.id}`));
+                  return yield* Effect.fail(
+                    new Error(`Invalid action type for video ${item.id}`)
+                  );
                 }
-                
+
                 const videoName = item.action.videoName;
                 let videoPath: AbsolutePath;
-                
+
                 if (item.action.dryRun) {
                   // Video is in export directory
                   if (item.action.subtitles) {
-                    videoPath = path.join(exportDirectory, `${videoName}-with-subtitles.mp4`) as AbsolutePath;
+                    videoPath = path.join(
+                      exportDirectory,
+                      `${videoName}-with-subtitles.mp4`
+                    ) as AbsolutePath;
                   } else {
-                    videoPath = path.join(exportDirectory, `${videoName}.mp4`) as AbsolutePath;
+                    videoPath = path.join(
+                      exportDirectory,
+                      `${videoName}.mp4`
+                    ) as AbsolutePath;
                   }
                 } else {
                   // Video is in shorts directory
-                  videoPath = path.join(shortsExportDirectory, `${videoName}.mp4`) as AbsolutePath;
+                  videoPath = path.join(
+                    shortsExportDirectory,
+                    `${videoName}.mp4`
+                  ) as AbsolutePath;
                 }
 
                 // Verify the video exists
                 const exists = yield* fs.exists(videoPath);
                 if (!exists) {
-                  return yield* Effect.fail(new Error(`Video file not found: ${videoPath}`));
+                  return yield* Effect.fail(
+                    new Error(`Video file not found: ${videoPath}`)
+                  );
                 }
 
                 return { path: videoPath, item };
@@ -517,80 +542,102 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           );
 
           // Check if output already exists
-          const finalOutputDir = options.dryRun ? exportDirectory : shortsExportDirectory;
-          const outputPath = path.join(finalOutputDir, `${options.outputVideoName}.mp4`) as AbsolutePath;
-          
+          const finalOutputDir = options.dryRun
+            ? exportDirectory
+            : shortsExportDirectory;
+          const outputPath = path.join(
+            finalOutputDir,
+            `${options.outputVideoName}.mp4`
+          ) as AbsolutePath;
+
           const outputExists = yield* fs.exists(outputPath);
           if (outputExists) {
             return yield* new FileAlreadyExistsError({
-              message: `Output file already exists: ${outputPath}`
+              message: `Output file already exists: ${outputPath}`,
             });
           }
 
           // Create temporary directory for processed clips
-          const tempDir = join(tmpdir(), `concatenate-videos-${Date.now()}`);
-          yield* execAsync(`mkdir -p "${tempDir}"`);
+          const tempDir = yield* fs.makeTempDirectoryScoped({
+            directory: tmpdir(),
+            prefix: "concatenate-videos",
+          });
 
-          try {
-            yield* Console.log(`🎬 Processing ${videoPaths.length} videos for concatenation...`);
+          yield* Console.log(
+            `🎬 Processing ${videoPaths.length} videos for concatenation...`
+          );
 
-            // Process each video to remove existing padding and add proper transitions
-            const processedClips = yield* Effect.all(
-              videoPaths.map((videoInfo, index) =>
-                Effect.gen(function* () {
-                  const isLast = index === videoPaths.length - 1;
-                  const outputFile = join(tempDir, `processed-${index}.mp4`) as AbsolutePath;
-                  
-                  // Get video duration
-                  const duration = yield* ffmpeg.getVideoDuration(videoInfo.path);
-                  
-                  let trimmedDuration: number;
-                  if (isLast) {
-                    // For the last video, keep the existing AUTO_EDITED_VIDEO_FINAL_END_PADDING
-                    trimmedDuration = duration;
-                  } else {
-                    // For all other videos, replace AUTO_EDITED_VIDEO_FINAL_END_PADDING with AUTO_EDITED_END_PADDING
-                    // Remove the large padding and add back the small padding
-                    trimmedDuration = duration - AUTO_EDITED_VIDEO_FINAL_END_PADDING + AUTO_EDITED_END_PADDING;
-                  }
+          // Process each video to remove existing padding and add proper transitions
+          const processedClips = yield* Effect.all(
+            videoPaths.map((videoInfo, index) =>
+              Effect.gen(function* () {
+                const isLast = index === videoPaths.length - 1;
+                const outputFile = join(
+                  tempDir,
+                  `processed-${index}.mp4`
+                ) as AbsolutePath;
 
-                  // Trim the video to remove existing padding
-                  yield* ffmpeg.trimVideo(
-                    videoInfo.path,
-                    outputFile,
-                    0,
-                    trimmedDuration
-                  );
+                // Get video duration
+                const duration = yield* ffmpeg.getVideoDuration(videoInfo.path);
 
-                  yield* Console.log(`✅ Processed video ${index + 1}/${videoPaths.length}`);
-                  return outputFile;
-                })
-              ),
-              {
-                concurrency: FFMPEG_CONCURRENCY_LIMIT,
-              }
-            );
+                let trimmedDuration: number;
+                if (isLast) {
+                  // For the last video, keep the existing AUTO_EDITED_VIDEO_FINAL_END_PADDING
+                  trimmedDuration = duration;
+                } else {
+                  // For all other videos, replace AUTO_EDITED_VIDEO_FINAL_END_PADDING with AUTO_EDITED_END_PADDING
+                  // Remove the large padding and add back the small padding
+                  trimmedDuration =
+                    duration -
+                    AUTO_EDITED_VIDEO_FINAL_END_PADDING +
+                    AUTO_EDITED_END_PADDING;
+                }
 
-            // Create concat file
-            const concatFile = join(tempDir, "concat.txt") as AbsolutePath;
-            const concatContent = processedClips
-              .map((file: string) => `file '${file}'`)
-              .join("\n");
+                // Trim the video to remove existing padding
+                yield* ffmpeg.trimVideo(
+                  videoInfo.path,
+                  outputFile,
+                  0,
+                  trimmedDuration
+                );
 
-            yield* fs.writeFileString(concatFile, concatContent);
+                yield* Console.log(
+                  `✅ Processed video ${index + 1}/${videoPaths.length}`
+                );
+                return outputFile;
+              })
+            ),
+            {
+              concurrency: FFMPEG_CONCURRENCY_LIMIT,
+            }
+          );
 
-            // Concatenate all processed clips
-            yield* Console.log("🎥 Concatenating videos...");
-            yield* ffmpeg.concatenateClips(concatFile, outputPath);
+          // Create concat file
+          const concatFile = join(tempDir, "concat.txt") as AbsolutePath;
+          const concatContent = processedClips
+            .map((file: string) => `file '${file}'`)
+            .join("\n");
 
-            yield* Console.log(`✅ Successfully concatenated videos to: ${outputPath}`);
+          yield* fs.writeFileString(concatFile, concatContent);
 
-            return outputPath;
-          } finally {
-            // Clean up temporary files
-            yield* fs.remove(tempDir, { recursive: true, force: true });
-          }
-        });
+          const concatenatedVideosPath = join(
+            tempDir,
+            "concatenated-videos.mp4"
+          ) as AbsolutePath;
+
+          // Concatenate all processed clips
+          yield* Console.log("🎥 Concatenating videos...");
+          yield* ffmpeg.concatenateClips(concatFile, concatenatedVideosPath);
+          yield* Console.log(
+            `✅ Successfully concatenated videos to: ${outputPath}`
+          );
+
+          yield* Console.log("🎥 Normalizing audio...");
+
+          yield* ffmpeg.normalizeAudio(concatenatedVideosPath, outputPath);
+
+          return outputPath;
+        }).pipe(Effect.scoped);
       };
 
       return {
@@ -759,10 +806,13 @@ export const multiSelectVideosFromQueue = () => {
         ...availableVideos.map((item) => {
           if (item.action.type === "create-auto-edited-video") {
             const createdDate = new Date(item.createdAt).toLocaleDateString();
-            const createdTime = new Date(item.createdAt).toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit'
-            });
+            const createdTime = new Date(item.createdAt).toLocaleTimeString(
+              [],
+              {
+                hour: "2-digit",
+                minute: "2-digit",
+              }
+            );
             return {
               title: `${item.action.videoName} (${createdDate} ${createdTime})`,
               value: item.id,
@@ -772,9 +822,10 @@ export const multiSelectVideosFromQueue = () => {
         }),
       ];
 
-      const selectedMessage = selectedVideoIds.length > 0 
-        ? ` (${selectedVideoIds.length} videos selected)`
-        : "";
+      const selectedMessage =
+        selectedVideoIds.length > 0
+          ? ` (${selectedVideoIds.length} videos selected)`
+          : "";
 
       const selection = yield* askQuestion.select(
         `Select a video to add to concatenation${selectedMessage}:`,
@@ -786,9 +837,16 @@ export const multiSelectVideosFromQueue = () => {
       }
 
       selectedVideoIds.push(selection as string);
-      const selectedItem = sortedVideoItems.find(item => item.id === selection);
-      if (selectedItem && selectedItem.action.type === "create-auto-edited-video") {
-        yield* Console.log(`✅ Added "${selectedItem.action.videoName}" to selection`);
+      const selectedItem = sortedVideoItems.find(
+        (item) => item.id === selection
+      );
+      if (
+        selectedItem &&
+        selectedItem.action.type === "create-auto-edited-video"
+      ) {
+        yield* Console.log(
+          `✅ Added "${selectedItem.action.videoName}" to selection`
+        );
       }
     }
 
@@ -797,7 +855,9 @@ export const multiSelectVideosFromQueue = () => {
       return [];
     }
 
-    yield* Console.log(`📝 Selected ${selectedVideoIds.length} videos for concatenation.`);
+    yield* Console.log(
+      `📝 Selected ${selectedVideoIds.length} videos for concatenation.`
+    );
     return selectedVideoIds;
   });
 };
