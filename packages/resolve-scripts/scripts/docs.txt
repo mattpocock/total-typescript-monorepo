@@ -1,5 +1,5 @@
-Last Updated: 28 October 2024
------------------------------
+Last Updated: 7 May 2025
+------------------------
 In this package, you will find a brief introduction to the Scripting API for DaVinci Resolve Studio. Apart from this README.txt file, this package contains folders containing the basic import
 modules for scripting access (DaVinciResolve.py) and some representative examples.
 
@@ -296,8 +296,10 @@ MediaPoolItem
                                                                          # If no argument is specified, a dict of all clip properties is returned. Check the section below for more information.
   SetClipProperty(propertyName, propertyValue)    --> Bool               # Sets the given property to propertyValue (string). Check the section below for more information.
   LinkProxyMedia(proxyMediaFilePath)              --> Bool               # Links proxy media located at path specified by arg 'proxyMediaFilePath' with the current clip. 'proxyMediaFilePath' should be absolute clip path.
+  LinkFullResolutionMedia(fullResMediaPath)       --> Bool               # Links proxy media to full resolution media files specified via its path.
   UnlinkProxyMedia()                              --> Bool               # Unlinks any proxy media associated with clip.
   ReplaceClip(filePath)                           --> Bool               # Replaces the underlying asset and metadata of MediaPoolItem with the specified absolute clip path.
+  ReplaceClipPreserveSubClip(filePath)            --> Bool               # Replaces the underlying asset and metadata of a video or audio clip with the specified absolute clip path, preserving original sub clip extents.
   GetUniqueId()                                   --> string             # Returns a unique ID for the media pool item
   TranscribeAudio()                               --> Bool               # Transcribes audio of the MediaPoolItem. Returns True if successful; False otherwise
   ClearTranscription()                            --> Bool               # Clears audio transcription of the MediaPoolItem. Returns True if successful; False otherwise.
@@ -306,6 +308,7 @@ MediaPoolItem
                                                                          # {'video': {'in': 0, 'out': 134}, 'audio': {'in': 0, 'out': 134}}
   SetMarkInOut(in, out, type="all")               --> Bool               # Sets mark in/out of type "video", "audio" or "all" (default).
   ClearMarkInOut(type="all")                      --> Bool               # Clears mark in/out of type "video", "audio" or "all" (default).
+  MonitorGrowingFile()                            --> Bool               # Monitor a file as long as it keeps growing (stops if the file does not grow for some time).
 
 Timeline
   GetName()                                       --> string             # Returns the timeline name.
