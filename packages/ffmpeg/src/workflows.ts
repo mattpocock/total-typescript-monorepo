@@ -620,21 +620,12 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
           yield* fs.writeFileString(concatFile, concatContent);
 
-          const concatenatedVideosPath = join(
-            tempDir,
-            "concatenated-videos.mp4"
-          ) as AbsolutePath;
-
           // Concatenate all processed clips
           yield* Console.log("🎥 Concatenating videos...");
-          yield* ffmpeg.concatenateClips(concatFile, concatenatedVideosPath);
+          yield* ffmpeg.concatenateClips(concatFile, outputPath);
           yield* Console.log(
             `✅ Successfully concatenated videos to: ${outputPath}`
           );
-
-          yield* Console.log("🎥 Normalizing audio...");
-
-          yield* ffmpeg.normalizeAudio(concatenatedVideosPath, outputPath);
 
           return outputPath;
         }).pipe(Effect.scoped);
