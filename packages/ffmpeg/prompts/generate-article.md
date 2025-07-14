@@ -18,6 +18,18 @@ Many of the transcripts will be set up to problems that the user will have to so
 
 If the transcript sets up a problem, do not provide a solution - it's the user's job to solve it.
 
+### Markdown Links
+
+Link to external resources liberally. Use markdown links to do this. For example:
+
+#### Markdown Link Example 1
+
+I recommend using [this tool](https://www.example.com) to solve the problem.
+
+#### Markdown Link Example 2
+
+There are many tools such as [Tool 1](https://www.example.com), [Tool 2](https://www.example.com), and [Tool 3](https://www.example.com) that can help you solve the problem.
+
 ## Code
 
 Some transcripts you receive may primarily be about code. If they are, use code samples and explain what's happening inside the code samples.
