@@ -165,6 +165,26 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           );
         }),
 
+        getResolution: Effect.fn("getResolution")(function* (
+          inputVideo: AbsolutePath
+        ) {
+          return yield* execAsync(
+            `ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of json "${inputVideo}"`
+          ).pipe(
+            Effect.map(
+              (
+                output
+              ): {
+                width: number;
+                height: number;
+              } => {
+                const { width, height } = JSON.parse(output.stdout);
+                return { width, height };
+              }
+            )
+          );
+        }),
+
         getVideoDuration: Effect.fn("getVideoDuration")(function* (
           inputVideo: AbsolutePath
         ) {
@@ -248,10 +268,14 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
 
         extractAudioFromVideo: Effect.fn("extractAudioFromVideo")(function* (
           inputPath: AbsolutePath,
-          outputPath: AbsolutePath
+          outputPath: AbsolutePath,
+          opts?: {
+            startTime?: number;
+            endTime?: number;
+          }
         ) {
           return yield* execAsync(
-            `nice -n 19 ffmpeg -y -hide_banner -hwaccel cuda -i "${inputPath}" -vn -acodec libmp3lame -q:a 2 "${outputPath}"`
+            `nice -n 19 ffmpeg -y -hide_banner -hwaccel cuda -i "${inputPath}" -vn -acodec libmp3lame -q:a 2 "${outputPath}" ${opts?.startTime ? `-ss ${opts.startTime}` : ""} ${opts?.endTime ? `-t ${opts.endTime}` : ""}`
           ).pipe(
             Effect.mapError((e) => {
               return new CouldNotExtractAudioError({

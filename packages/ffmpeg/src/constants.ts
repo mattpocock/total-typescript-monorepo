@@ -22,3 +22,13 @@ export const DEFINITELY_BAD_TAKE_PADDING = 2;
  * and ignore it.
  */
 export const MAX_BAD_TAKE_DISTANCE = 5;
+
+/**
+ * The maximum number of ffmpeg processes that can run at once.
+ */
+export const FFMPEG_CONCURRENCY_LIMIT = 6;
+
+/**
+ * The maximum number of transcription processes that can run at once.
+ */
+export const TRANSCRIPTION_CONCURRENCY_LIMIT = 10;

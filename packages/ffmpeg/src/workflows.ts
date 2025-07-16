@@ -67,8 +67,6 @@ export class FFMPegWithComplexFilterError extends Data.TaggedError(
   stderr: string | undefined;
 }> {}
 
-const FFMPEG_CONCURRENCY_LIMIT = 6;
-
 export class WorkflowsService extends Effect.Service<WorkflowsService>()(
   "WorkflowsService",
   {
