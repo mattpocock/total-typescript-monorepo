@@ -12,10 +12,7 @@ import path from "node:path";
 import { OpenAI } from "openai";
 import prompts from "prompts";
 import { z } from "zod";
-import {
-  createMetadataForRawVideo,
-  type RawVideoMetadata,
-} from "./raw-video-metadata/raw-video-metadata-types.js";
+import { type RawVideoMetadata } from "./raw-video-metadata/raw-video-metadata-types.js";
 import { FFmpegCommandsService } from "./ffmpeg-commands.js";
 import { findSilenceInVideo } from "./silence-detection.js";
 import {
