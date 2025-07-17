@@ -77,8 +77,14 @@ export const getClipsOfSpeakingFromFFmpeg = (
     const startTime = currentSilence.silenceEnd;
     const endTime = nextSilence.silenceEnd - nextSilence.duration;
 
-    const startFrame = Math.floor(startTime * opts.fps);
-    const endFrame = Math.ceil(endTime * opts.fps);
+    const startFrame = getValueInFrames(startTime, {
+      fps: opts.fps,
+      bias: "floor",
+    });
+    const endFrame = getValueInFrames(endTime, {
+      fps: opts.fps,
+      bias: "ceil",
+    });
 
     if (startFrame === endFrame) return;
 
@@ -99,6 +105,15 @@ export const getClipsOfSpeakingFromFFmpeg = (
   });
 
   return clipsOfSpeaking;
+};
+
+export const getValueInFrames = (
+  value: number,
+  opts: { fps: number; bias: "floor" | "ceil" }
+) => {
+  return opts.bias === "floor"
+    ? Math.floor(value * opts.fps)
+    : Math.ceil(value * opts.fps);
 };
 
 export const findSilenceInVideo = (

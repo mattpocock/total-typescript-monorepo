@@ -76,6 +76,10 @@ export interface ChaptersResponse {
   chapters: RawChapter[];
 }
 
+const formatTimecodeForFFmpeg = (timecode: number) => {
+  return timecode.toFixed(3);
+};
+
 export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>()(
   "FFmpegCommandsService",
   {
@@ -239,12 +243,8 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           startTime: number,
           endTime: number
         ) {
-          const formatFloat = yield* Effect.sync(
-            () => (num: number) => num.toFixed(3)
-          );
-
           return yield* execAsync(
-            `ffmpeg -y -hide_banner -ss ${formatFloat(startTime)} -to ${formatFloat(endTime)} -i "${inputVideo}" -c copy "${outputVideo.replaceAll("\\", "")}"`
+            `ffmpeg -y -hide_banner -ss ${formatTimecodeForFFmpeg(startTime)} -to ${formatTimecodeForFFmpeg(endTime)} -i "${inputVideo}" -c copy "${outputVideo.replaceAll("\\", "")}"`
           );
         }),
 
@@ -274,8 +274,13 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
             endTime?: number;
           }
         ) {
+          const duration =
+            opts?.endTime && opts?.startTime
+              ? opts.endTime - opts.startTime
+              : undefined;
+
           return yield* execAsync(
-            `nice -n 19 ffmpeg -y -hide_banner -hwaccel cuda -i "${inputPath}" -vn -acodec libmp3lame -q:a 2 "${outputPath}" ${opts?.startTime ? `-ss ${opts.startTime}` : ""} ${opts?.endTime ? `-t ${opts.endTime}` : ""}`
+            `nice -n 19 ffmpeg -y -hide_banner -hwaccel cuda ${opts?.startTime ? `-ss ${formatTimecodeForFFmpeg(opts.startTime)}` : ""} -i "${inputPath}" -vn -acodec libmp3lame -q:a 2 "${outputPath}" ${duration ? `-t ${formatTimecodeForFFmpeg(duration)}` : ""}`
           ).pipe(
             Effect.mapError((e) => {
               return new CouldNotExtractAudioError({
@@ -292,7 +297,7 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           duration: number
         ) {
           return yield* execAsync(
-            `nice -n 19 ffmpeg -y -hide_banner -ss ${startTime} -i "${inputVideo}" -t ${duration} -c:v h264_nvenc -preset slow -rc:v vbr -cq:v 19 -b:v 8000k -maxrate 12000k -bufsize 16000k -c:a aac -b:a 384k "${outputFile}"`
+            `nice -n 19 ffmpeg -y -hide_banner -ss ${formatTimecodeForFFmpeg(startTime)} -i "${inputVideo}" -t ${formatTimecodeForFFmpeg(duration)} -c:v h264_nvenc -preset slow -rc:v vbr -cq:v 19 -b:v 8000k -maxrate 12000k -bufsize 16000k -c:a aac -b:a 384k "${outputFile}"`
           ).pipe(
             Effect.mapError((e) => {
               return new CouldNotCreateClipError({

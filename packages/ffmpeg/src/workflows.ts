@@ -17,19 +17,13 @@ import { NodeFileSystem } from "@effect/platform-node";
 import { tmpdir } from "os";
 import { join } from "path";
 import {
-  extractBadTakeMarkersFromFile,
-  isBadTake,
-} from "./chapter-extraction.js";
-import {
   AUTO_EDITED_END_PADDING,
-  AUTO_EDITED_START_PADDING,
   AUTO_EDITED_VIDEO_FINAL_END_PADDING,
-  SILENCE_DURATION,
-  THRESHOLD,
+  FFMPEG_CONCURRENCY_LIMIT,
 } from "./constants.js";
-import { findSilenceInVideo } from "./silence-detection.js";
 import { FFmpegCommandsService } from "./ffmpeg-commands.js";
 import { getQueueState } from "./queue/queue.js";
+import { VideoMetadataService } from "./raw-video-metadata/video-metadata-service.js";
 
 export interface CreateAutoEditedVideoWorkflowOptions {
   inputVideo: AbsolutePath;
@@ -77,6 +71,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         "SHORTS_EXPORT_DIRECTORY"
       );
       const transcriptStorage = yield* TranscriptStorageService;
+      const videoMetadata = yield* VideoMetadataService;
 
       const ffmpeg = yield* FFmpegCommandsService;
 
@@ -319,59 +314,11 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           yield* Console.log("🎥 Processing video:", inputVideo);
           yield* Console.log("📝 Output will be saved to:", outputVideo);
 
-          // Get the video's FPS
-          yield* Console.log("⏱️  Detecting video FPS...");
-          const fpsStart = Date.now();
-          const fps = yield* ffmpeg.getFPS(inputVideo);
-          yield* Console.log(
-            `✅ Detected FPS: ${fps} (took ${(Date.now() - fpsStart) / 1000}s)`
-          );
-
-          // First, find all speaking clips
-          yield* Console.log("🔍 Finding speaking clips...");
-          const speakingStart = Date.now();
-          const { speakingClips } = yield* findSilenceInVideo(inputVideo, {
-            threshold: THRESHOLD,
-            silenceDuration: SILENCE_DURATION,
-            startPadding: AUTO_EDITED_START_PADDING,
-            endPadding: AUTO_EDITED_END_PADDING,
-            fps,
-            ffmpeg,
+          const metadata = yield* videoMetadata.getVideoMetadata({
+            videoPath: inputVideo,
           });
-          yield* Console.log(
-            `✅ Found ${speakingClips.length} speaking clips (took ${(Date.now() - speakingStart) / 1000}s)`
-          );
 
-          // Then get all bad take markers
-          yield* Console.log("🎯 Extracting bad take markers...");
-          const markersStart = Date.now();
-          const badTakeMarkers = yield* extractBadTakeMarkersFromFile(
-            inputVideo,
-            fps,
-            ffmpeg
-          );
-          yield* Console.log(
-            `✅ Found ${badTakeMarkers.length} bad take markers (took ${(Date.now() - markersStart) / 1000}s)`
-          );
-
-          // Filter out bad takes
-          yield* Console.log("🔍 Filtering out bad takes...");
-          const filterStart = Date.now();
-          const goodClips = speakingClips.filter((clip, index) => {
-            const quality = isBadTake(
-              clip,
-              badTakeMarkers,
-              index,
-              speakingClips,
-              fps
-            );
-            return quality === "good";
-          });
-          yield* Console.log(
-            `✅ Found ${goodClips.length} good clips (took ${(Date.now() - filterStart) / 1000}s)`
-          );
-
-          if (goodClips.length === 0) {
+          if (metadata.clips.length === 0) {
             yield* Console.log("❌ No good clips found");
             return yield* Effect.fail(
               new CouldNotCreateSpeakingOnlyVideoError({
@@ -380,9 +327,11 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             );
           }
 
-          const clips = goodClips.map((clip, i, clips) => {
+          console.dir(metadata, { depth: null });
+
+          const clips = metadata.clips.map((clip, i, clips) => {
             const resolvedDuration = roundToDecimalPlaces(
-              clip.durationInFrames / fps,
+              clip.durationInFrames,
               2
             );
             const duration =
@@ -392,7 +341,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
                   AUTO_EDITED_END_PADDING
                 : resolvedDuration;
             return {
-              startTime: clip.startTime,
+              startTime: clip.startTimeInFrames,
               duration,
             };
           });
@@ -423,7 +372,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
                 );
 
                 yield* Console.log(
-                  `✅ Created clip ${i + 1}/${goodClips.length} (took ${(Date.now() - clipStart) / 1000}s)`
+                  `✅ Created clip ${i + 1}/${clips.length} (took ${(Date.now() - clipStart) / 1000}s)`
                 );
                 return outputFile;
               })
@@ -433,7 +382,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             }
           );
           yield* Console.log(
-            `✅ Created all ${goodClips.length} clips (took ${(Date.now() - clipsStart) / 1000}s)`
+            `✅ Created all ${clips.length} clips (took ${(Date.now() - clipsStart) / 1000}s)`
           );
 
           // Create a concat file
@@ -635,6 +584,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       };
     }),
     dependencies: [
+      VideoMetadataService.Default,
       FFmpegCommandsService.Default,
       TranscriptStorageService.Default,
       AskQuestionService.Default,
