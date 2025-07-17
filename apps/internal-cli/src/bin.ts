@@ -34,7 +34,10 @@ import {
   TranscriptStorageService,
 } from "../../../packages/ffmpeg/dist/services.js";
 import packageJson from "../package.json" with { type: "json" };
-import { validateCreateVideoFlags, FlagValidationError } from "./validate-cli-flags.js";
+import {
+  validateCreateVideoFlags,
+  FlagValidationError,
+} from "./validate-cli-flags.js";
 import { OpenTelemetryLive } from "./tracing.js";
 import { runExerciseOrganizer } from "./exercise-organizer/cli-command.js";
 import { type ExerciseOrganizerOptions } from "./exercise-organizer/types.js";
@@ -818,21 +821,28 @@ program
   .option("-v, --validate", "Validate exercises and exit with status code")
   .option("--format <type>", "Output format: table, json, markdown", "table")
   .option("--verbose", "Enable verbose output")
-  .action(async (directory: string | undefined, options: ExerciseOrganizerOptions) => {
-    const result = await runExerciseOrganizer(directory, options).pipe(
-      Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(NodeFileSystem.layer),
-      Effect.runPromise
-    );
-    
-    // Exit with non-zero code if there are errors (useful for CI)
-    if (options.validate && result.hasErrors) {
-      process.exit(1);
+  .action(
+    async (
+      directory: string | undefined,
+      options: ExerciseOrganizerOptions
+    ) => {
+      const result = await runExerciseOrganizer(directory, options).pipe(
+        Effect.withConfigProvider(ConfigProvider.fromEnv()),
+        Effect.provide(NodeFileSystem.layer),
+        Effect.runPromise
+      );
+
+      // Exit with non-zero code if there are errors (useful for CI)
+      if (options.validate && result.hasErrors) {
+        process.exit(1);
+      }
     }
-  });
+  );
 
 // Add database dump error classes
-export class DatabaseUrlParseError extends Data.TaggedError("DatabaseUrlParseError")<{
+export class DatabaseUrlParseError extends Data.TaggedError(
+  "DatabaseUrlParseError"
+)<{
   url: string;
   cause: Error;
 }> {}
@@ -843,22 +853,27 @@ export class DatabaseDumpError extends Data.TaggedError("DatabaseDumpError")<{
 }> {}
 
 // Database dump functionality
-const parseDatabaseUrl = Effect.fn("parseDatabaseUrl")(function* (databaseUrl: string) {
+const parseDatabaseUrl = Effect.fn("parseDatabaseUrl")(function* (
+  databaseUrl: string
+) {
   const url = yield* Effect.try({
     try: () => new URL(databaseUrl),
-    catch: (error) => new DatabaseUrlParseError({ 
-      url: databaseUrl, 
-      cause: error as Error 
-    }),
+    catch: (error) =>
+      new DatabaseUrlParseError({
+        url: databaseUrl,
+        cause: error as Error,
+      }),
   });
-  
+
   if (url.protocol !== "postgresql:") {
-    return yield* Effect.fail(new DatabaseUrlParseError({ 
-      url: databaseUrl, 
-      cause: new Error("Only PostgreSQL URLs are supported") 
-    }));
+    return yield* Effect.fail(
+      new DatabaseUrlParseError({
+        url: databaseUrl,
+        cause: new Error("Only PostgreSQL URLs are supported"),
+      })
+    );
   }
-  
+
   return {
     host: url.hostname,
     port: url.port || "5432",
@@ -870,43 +885,53 @@ const parseDatabaseUrl = Effect.fn("parseDatabaseUrl")(function* (databaseUrl: s
 
 const dumpDatabase = Effect.fn("dumpDatabase")(function* () {
   const databaseUrl = yield* Config.string("WRITTEN_CONTENT_DATABASE_URL");
-  const backupFilePath = yield* Config.string("WRITTEN_CONTENT_DB_BACKUP_FILE_PATH");
-  
+  const backupFilePath = yield* Config.string(
+    "WRITTEN_CONTENT_DB_BACKUP_FILE_PATH"
+  );
+
   // Parse database URL
   const dbConfig = yield* parseDatabaseUrl(databaseUrl);
-  
+
   // Build pg_dump command
   const pgDumpCommand = [
     "pg_dump",
-    "-h", dbConfig.host,
-    "-p", dbConfig.port,
-    "-U", dbConfig.username,
-    "-d", dbConfig.database,
+    "-h",
+    dbConfig.host,
+    "-p",
+    dbConfig.port,
+    "-U",
+    dbConfig.username,
+    "-d",
+    dbConfig.database,
     "-Fc", // Custom format (compressed)
-    ">", backupFilePath
+    ">",
+    backupFilePath,
   ].join(" ");
-  
-  yield* Effect.logInfo("Starting database dump", { 
+
+  yield* Effect.logInfo("Starting database dump", {
     host: dbConfig.host,
     database: dbConfig.database,
-    outputFile: backupFilePath 
+    outputFile: backupFilePath,
   });
-  
+
   // Set PGPASSWORD environment variable for pg_dump
   const env = { ...process.env, PGPASSWORD: dbConfig.password };
-  
+
   // Execute pg_dump command
   yield* execAsync(pgDumpCommand, { env }).pipe(
-    Effect.mapError((error) => new DatabaseDumpError({ 
-      cause: error, 
-      command: pgDumpCommand 
-    }))
+    Effect.mapError(
+      (error) =>
+        new DatabaseDumpError({
+          cause: error,
+          command: pgDumpCommand,
+        })
+    )
   );
-  
-  yield* Effect.logInfo("Database dump completed successfully", { 
-    outputFile: backupFilePath 
+
+  yield* Effect.logInfo("Database dump completed successfully", {
+    outputFile: backupFilePath,
   });
-  
+
   return backupFilePath;
 });
 

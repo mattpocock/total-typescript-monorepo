@@ -4,6 +4,7 @@
     "target": "ESNext",
     "outDir": "dist",
     "rootDir": "src",
+    "lib": ["ESNext"],
     "plugins": [
       {
         "name": "@effect/language-service"
