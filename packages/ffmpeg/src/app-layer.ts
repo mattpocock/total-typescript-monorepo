@@ -11,6 +11,7 @@ import {
   TranscriptStorageService,
 } from "./services.js";
 import { WorkflowsService } from "./workflows.js";
+import { OBSWatcherService } from "./obs-watcher-service.js";
 
 export const AppLayerLive = Layer.mergeAll(
   FFmpegCommandsService.Default,
@@ -22,5 +23,6 @@ export const AppLayerLive = Layer.mergeAll(
   AIService.Default,
   NodeFileSystem.layer,
   LinksStorageService.Default,
-  WorkflowsService.Default
+  WorkflowsService.Default,
+  OBSWatcherService.Default
 );

@@ -6,6 +6,7 @@ import { processTranscriptAnalysisForQueue } from "../queue-transcript-processin
 import { processArticleGenerationForQueue } from "../queue-article-generation.js";
 import { AskQuestionService, LinksStorageService } from "../services.js";
 import { WorkflowsService } from "../workflows.js";
+import { OBSWatcherService } from "../obs-watcher-service.js";
 
 class InvalidQueueItemTypeError extends Error {
   constructor(expectedType: string, actualType: string) {
@@ -329,6 +330,8 @@ export const processInformationRequests = () => {
 
 export const processQueue = () => {
   return Effect.gen(function* () {
+    const obsWatcher = yield* OBSWatcherService;
+
     if (yield* doesQueueLockfileExist()) {
       return yield* Console.log("⏸️  Queue is locked, skipping processing");
     }
@@ -340,6 +343,9 @@ export const processQueue = () => {
     let processedCount = 0;
 
     while (true) {
+      if (yield* obsWatcher.isOBSRunning) {
+        return yield* Console.log("⏸️  OBS is running, skipping processing");
+      }
       const queueState = yield* getQueueState();
       const queueItem = getNextQueueItem(queueState);
 

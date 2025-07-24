@@ -18,6 +18,7 @@
     "ai": "4.3.16",
     "effect": "^3.16.8",
     "front-matter": "^4.0.2",
+    "obs-websocket-js": "^5.0.6",
     "openai": "^5.0.1",
     "p-limit": "^6.2.0",
     "prompts": "^2.4.2",

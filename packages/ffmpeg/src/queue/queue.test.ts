@@ -13,6 +13,7 @@ import {
   AskQuestionService,
   LinksStorageService,
 } from "../services.js";
+import { OBSWatcherService } from "../obs-watcher-service.js";
 
 it("Should create the queue.json if it does not exist", async () => {
   const tmpDir = await fs.mkdtemp(path.join(import.meta.dirname, "queue"));
@@ -73,6 +74,12 @@ it("Should create the queue.json if it does not exist", async () => {
           countArticles: vi.fn().mockReturnValue(Effect.succeed(0)),
           getLatestArticles: vi.fn().mockReturnValue(Effect.succeed([])),
           storeArticle: vi.fn().mockReturnValue(Effect.succeed(undefined)),
+        })
+      ),
+      Effect.provideService(
+        OBSWatcherService,
+        new OBSWatcherService({
+          isOBSRunning: Effect.succeed(false),
         })
       ),
       Effect.runPromise
@@ -330,6 +337,12 @@ it("Should not process links requests (processQueue ignores information requests
           countArticles: vi.fn().mockReturnValue(Effect.succeed(0)),
           getLatestArticles: vi.fn().mockReturnValue(Effect.succeed([])),
           storeArticle: vi.fn().mockReturnValue(Effect.succeed(undefined)),
+        })
+      ),
+      Effect.provideService(
+        OBSWatcherService,
+        new OBSWatcherService({
+          isOBSRunning: Effect.succeed(false),
         })
       ),
       Effect.runPromise
@@ -933,7 +946,9 @@ it("Should process mixed links-request items (some empty, some with links)", asy
     );
 
     // All links-request items should be completed
-    expect(queueState.queue.every((item: any) => item.status === "completed")).toBe(true);
+    expect(
+      queueState.queue.every((item: any) => item.status === "completed")
+    ).toBe(true);
 
     // Empty links-request items should be completed with empty arrays
     expect(queueState.queue[0]).toEqual({
