@@ -30,6 +30,8 @@ export class OBSWatcherService extends Effect.Service<OBSWatcherService>()(
             result.right.call("GetRecordStatus")
           );
 
+          yield* Effect.tryPromise(() => result.right.disconnect());
+
           return outputActive;
         }),
       };
