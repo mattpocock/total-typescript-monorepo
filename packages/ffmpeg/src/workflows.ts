@@ -156,6 +156,10 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             });
             finalVideoPath = withSubtitlesPath;
           } else {
+            yield* Console.log(
+              "🎥 No subtitles requested, skipping subtitle generation"
+            );
+
             const audioPath =
               `${videoInExportDirectoryPath}.mp3` as AbsolutePath;
 
@@ -164,8 +168,10 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
               audioPath
             );
 
+            yield* Console.log("🎥 Creating subtitles from audio");
             const subtitles = yield* ffmpeg.createSubtitleFromAudio(audioPath);
 
+            yield* Console.log("🎥 Storing transcript");
             yield* transcriptStorage.storeTranscript({
               transcript: subtitles.segments
                 .map((s) => s.text)
