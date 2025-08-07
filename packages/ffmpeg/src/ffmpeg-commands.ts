@@ -467,7 +467,7 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           const outputPath = path.join(tempDir, "combined.mp4") as AbsolutePath;
 
           return yield* runFFMpegConcurrencyAwareCommand(
-            `ffmpeg -i "${videoPath}" -i "${audioPath}" -c:v copy -c:a libmp3lame -b:a 384k "${outputPath}"`
+            `ffmpeg -i "${videoPath}" -i "${audioPath}" -c:v copy -c:a libmp3lame -b:a 384k -map 0:v:0 -map 1:a:0 "${outputPath}"`
           ).pipe(Effect.map(() => outputPath));
         }),
 

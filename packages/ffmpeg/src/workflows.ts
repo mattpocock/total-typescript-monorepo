@@ -220,11 +220,11 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
               originalFileName: path.parse(options.inputVideo).name,
             });
 
-            // Move the video to the final path
-            yield* fs.rename(withSubtitlesPath, finalVideoPath);
+            // Copy the video to the final path
+            yield* fs.copyFile(withSubtitlesPath, finalVideoPath);
           } else {
-            // Move the video to the final path
-            yield* fs.rename(yield* outputVideoFork, finalVideoPath);
+            // Copy the video to the final path
+            yield* fs.copyFile(yield* outputVideoFork, finalVideoPath);
 
             yield* Console.log(
               "🎥 No subtitles requested, skipping subtitle generation"
