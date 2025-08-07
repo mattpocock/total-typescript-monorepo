@@ -1,5 +1,9 @@
 import { FileSystem } from "@effect/platform/FileSystem";
-import { execAsync, type AbsolutePath } from "@total-typescript/shared";
+import {
+  execAsync,
+  runDavinciResolveScript,
+  type AbsolutePath,
+} from "@total-typescript/shared";
 import { Config, Console, Data, Effect } from "effect";
 import path from "path";
 import {
@@ -41,6 +45,11 @@ import type {
   PlatformError,
   SystemError,
 } from "@effect/platform/Error";
+import {
+  serializeMultiTrackClipsForAppendScript,
+  type MultiTrackClip,
+} from "./davinci-integration.js";
+import { options } from "@effect/platform/HttpClientRequest";
 
 export interface CreateAutoEditedVideoWorkflowOptions {
   inputVideo: AbsolutePath;
@@ -651,6 +660,124 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         }
       );
 
+      const moveInterviewToDavinciResolve = Effect.fn(
+        "moveInterviewToDavinciResolve"
+      )(function* (opts: {
+        hostVideo: AbsolutePath;
+        guestVideo: AbsolutePath;
+      }) {
+        const fpsFork = yield* Effect.fork(ffmpeg.getFPS(opts.hostVideo));
+        const hostClipsFork = yield* Effect.fork(
+          findClips({ inputVideo: opts.hostVideo })
+        );
+        const guestClipsFork = yield* Effect.fork(
+          findClips({ inputVideo: opts.guestVideo })
+        );
+
+        const hostClips = yield* hostClipsFork;
+        const guestClips = yield* guestClipsFork;
+
+        const rawEvents: RawClipEvent[] = [];
+
+        for (const clip of hostClips) {
+          rawEvents.push({
+            type: "clip-start",
+            time: clip.startTime,
+            speaker: "host",
+          });
+
+          rawEvents.push({
+            type: "clip-end",
+            time: clip.startTime + clip.duration,
+            speaker: "host",
+          });
+        }
+
+        for (const clip of guestClips) {
+          rawEvents.push({
+            type: "clip-start",
+            time: clip.startTime,
+            speaker: "guest",
+          });
+
+          rawEvents.push({
+            type: "clip-end",
+            time: clip.startTime + clip.duration,
+            speaker: "guest",
+          });
+        }
+
+        const events = rawEvents.sort((a, b) => a.time - b.time);
+
+        let state: State = "silence";
+
+        const interviewSpeakingClips: InterviewSpeakingClip[] = [];
+
+        for (let i = 0; i < events.length; i++) {
+          const event = events[i]!;
+          const nextEvent = events[i + 1];
+
+          if (!nextEvent) {
+            break;
+          }
+
+          const newState: State =
+            stateMachine[state][`${event.speaker}-${event.type}`];
+
+          if (newState !== "silence") {
+            interviewSpeakingClips.push({
+              state: newState,
+              startTime: event.time,
+              duration: nextEvent.time - event.time,
+            });
+          }
+
+          state = newState;
+        }
+
+        const fps = yield* fpsFork;
+
+        const multiTrackClips: MultiTrackClip[] = [];
+
+        for (const clip of interviewSpeakingClips) {
+          const inputStartFrame = Math.floor(clip.startTime * fps);
+          const inputEndFrame = Math.ceil(
+            (clip.startTime + clip.duration) * fps
+          );
+
+          if (clip.state === "host-speaking") {
+            multiTrackClips.push({
+              startFrame: inputStartFrame,
+              endFrame: inputEndFrame,
+              videoIndex: 1, // Host goes on track 2
+            });
+          }
+
+          // TODO: handle the case where the guest is speaking over the host
+          // properly
+          if (
+            clip.state === "guest-speaking" ||
+            clip.state === "guest-speaking-over-host"
+          ) {
+            multiTrackClips.push({
+              startFrame: inputStartFrame,
+              endFrame: inputEndFrame,
+              videoIndex: 0, // Guest goes on track 1
+            });
+          }
+        }
+
+        const output = yield* runDavinciResolveScript("clip-and-append.lua", {
+          INPUT_VIDEOS: [opts.guestVideo, opts.hostVideo].join(":::"),
+          CLIPS_TO_APPEND:
+            serializeMultiTrackClipsForAppendScript(multiTrackClips),
+          WSLENV: "INPUT_VIDEOS/p:CLIPS_TO_APPEND",
+        });
+
+        yield* Console.log(output.stdout);
+        yield* Console.log(output.stderr);
+      });
+
       const concatenateVideosWorkflow = (
         options: ConcatenateVideosWorkflowOptions
       ) => {
@@ -803,6 +930,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         createAutoEditedVideoWorkflow,
         concatenateVideosWorkflow,
         editInterviewWorkflow,
+        moveInterviewToDavinciResolve,
       };
     }),
     dependencies: [

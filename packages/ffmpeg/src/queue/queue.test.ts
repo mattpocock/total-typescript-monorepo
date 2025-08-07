@@ -37,6 +37,7 @@ it("Should create the queue.json if it does not exist", async () => {
           createAutoEditedVideoWorkflow,
           concatenateVideosWorkflow,
           editInterviewWorkflow: {} as any,
+          moveInterviewToDavinciResolve: {} as any,
         })
       ),
       Effect.provideService(
@@ -136,6 +137,7 @@ it("Should update the queue.json when a new item is added", async () => {
           createAutoEditedVideoWorkflow,
           concatenateVideosWorkflow,
           editInterviewWorkflow: {} as any,
+          moveInterviewToDavinciResolve: {} as any,
         })
       ),
       Effect.withConfigProvider(
@@ -212,6 +214,7 @@ it("Should allow you to add a link request to the queue and process it with proc
           createAutoEditedVideoWorkflow,
           concatenateVideosWorkflow,
           editInterviewWorkflow: {} as any,
+          moveInterviewToDavinciResolve: {} as any,
         })
       ),
       Effect.provideService(
@@ -304,6 +307,7 @@ it("Should not process links requests (processQueue ignores information requests
           createAutoEditedVideoWorkflow,
           concatenateVideosWorkflow,
           editInterviewWorkflow: {} as any,
+          moveInterviewToDavinciResolve: {} as any,
         })
       ),
       Effect.provideService(
@@ -585,6 +589,7 @@ it("Should process only information requests", async () => {
           createAutoEditedVideoWorkflow,
           concatenateVideosWorkflow,
           editInterviewWorkflow: {} as any,
+          moveInterviewToDavinciResolve: {} as any,
         })
       ),
       Effect.provideService(

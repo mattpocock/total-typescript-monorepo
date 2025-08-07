@@ -22,23 +22,20 @@ export interface AppendVideoToTimelineOptions {
   inputVideo?: AbsolutePath;
 }
 
+export type MultiTrackClip = {
+  startFrame: number;
+  endFrame: number;
+  videoIndex: number;
+  timelineStartFrame?: number;
+};
+
 export interface AppendMultipleVideosToTimelineOptions {
   inputVideos: AbsolutePath[];
-  clips: {
-    startFrame: number;
-    endFrame: number;
-    videoIndex: number;
-    timelineStartFrame?: number;
-  }[];
+  clips: MultiTrackClip[];
 }
 
 export const serializeMultiTrackClipsForAppendScript = (
-  clips: {
-    startFrame: number;
-    endFrame: number;
-    videoIndex: number;
-    timelineStartFrame?: number;
-  }[]
+  clips: MultiTrackClip[]
 ) => {
   return clips
     .map((clip) => {

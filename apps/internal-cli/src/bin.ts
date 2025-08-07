@@ -136,6 +136,31 @@ program
   });
 
 program
+  .command("move-interview-to-davinci-resolve <hostVideo> <guestVideo>")
+  .action(async (hostVideo, guestVideo) => {
+    await Effect.gen(function* () {
+      const workflows = yield* WorkflowsService;
+
+      const fullHostPath = path.resolve(
+        process.cwd(),
+        hostVideo
+      ) as AbsolutePath;
+      const fullGuestPath = path.resolve(
+        process.cwd(),
+        guestVideo
+      ) as AbsolutePath;
+
+      yield* workflows.moveInterviewToDavinciResolve({
+        hostVideo: fullHostPath,
+        guestVideo: fullGuestPath,
+      });
+    }).pipe(
+      Effect.withConfigProvider(ConfigProvider.fromEnv()),
+      Effect.provide(MainLayerLive),
+      Effect.runPromise
+    );
+  });
+program
   .command("create-auto-edited-video")
   .aliases(["v", "video"])
   .description(

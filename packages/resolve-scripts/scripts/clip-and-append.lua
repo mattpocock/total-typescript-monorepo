@@ -67,7 +67,7 @@ local function split(pString, pPattern)
 end
 
 -- Parse input videos
-local videoPaths = split(inputVideos, ':::')
+local videoPaths = split(inputVideos, ';')
 
 -- Add all videos to media pool and create a mapping of video index to media pool item
 local videoIndexToClip = {}
@@ -91,12 +91,17 @@ for videoIndex, videoPath in ipairs(videoPaths) do
   videoIndexToClip[videoIndex - 1] = clip
 end
 
+-- Get current timeline
+local timeline = project:GetCurrentTimeline()
+
+local globalTimelineStartFrame = timeline:GetStartFrame()
+
+print(globalTimelineStartFrame)
+
 -- Parse clips to append
 local clipData = split(clipsToAppend, ':::')
 
--- Group clips by track index for proper placement
-local clipsByTrack = {}
-
+-- Process clips in the order they appear in CLIPS_TO_APPEND
 for i, clipInfo in ipairs(clipData) do
   local parts = split(clipInfo, '___')
   local startFrame = tonumber(parts[1])
@@ -109,51 +114,35 @@ for i, clipInfo in ipairs(clipData) do
     error('Video index ' .. videoIndex .. ' not found in input videos')
   end
   
-  -- Initialize track array if it doesn't exist
-  if not clipsByTrack[videoIndex] then
-    clipsByTrack[videoIndex] = {}
-  end
-  
-  -- Add clip info to the appropriate track
-  local clipInfo = {
-    startFrame = startFrame,
-    endFrame = endFrame,
-    mediaPoolItem = clip
-  }
-  
-  -- Only add recordFrame if timelineStartFrame is provided
-  if timelineStartFrame then
-    clipInfo.recordFrame = timelineStartFrame
-  end
-  
-  table.insert(clipsByTrack[videoIndex], clipInfo)
-end
-
--- Get current timeline
-local timeline = project:GetCurrentTimeline()
-
--- Add clips to timeline, track by track
-for trackIndex, trackClips in pairs(clipsByTrack) do
-  -- Ensure we have enough video tracks
+  -- Ensure we have enough video tracks for this clip
   local currentVideoTracks = timeline:GetTrackCount("video")
-  while currentVideoTracks <= trackIndex do
+  local requiredTrack = videoIndex + 1
+  while currentVideoTracks < requiredTrack do
     timeline:AddTrack("video")
     currentVideoTracks = currentVideoTracks + 1
   end
   
-  -- Add clips to this track
-  for _, clipInfo in ipairs(trackClips) do
-    -- Add trackIndex to the clip info for proper track placement
-    clipInfo.trackIndex = trackIndex + 1
-    local clipInfos = {clipInfo}
-    local appendedItems = mediaPool:AppendToTimeline(clipInfos)
+  -- Create clip info for this clip
+  local clipInfo = {
+    startFrame = startFrame,
+    endFrame = endFrame,
+    mediaPoolItem = clip,
+    trackIndex = requiredTrack
+  }
+  
+  -- Only add recordFrame if timelineStartFrame is provided
+  if timelineStartFrame then
+    clipInfo.recordFrame = timelineStartFrame + globalTimelineStartFrame
   end
+  
+  -- Append this clip to the timeline immediately
+  local clipInfos = {clipInfo}
+  local appendedItems = mediaPool:AppendToTimeline(clipInfos)
 end
 
 -- Add a marker to the timeline
-local endFrame = timeline:GetEndFrame()
-local startFrame = timeline:GetStartFrame()
-timeline:AddMarker((endFrame - startFrame), "Blue", "Multi-Track Append Point", "Content appended after this point", 1)
+local globalTimelineEndFrame = timeline:GetEndFrame()
+timeline:AddMarker((globalTimelineEndFrame - globalTimelineStartFrame), "Blue", "Multi-Track Append Point", "Content appended after this point", 1)
 
 resolve:OpenPage("cut")
 
