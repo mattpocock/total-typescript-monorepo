@@ -134,13 +134,6 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
           const clips = yield* findClips({ inputVideo: options.inputVideo });
 
-          const outputVideoFork = yield* Effect.fork(
-            createAutoEditedVideo({
-              inputVideo: options.inputVideo,
-              clips,
-            })
-          );
-
           const outputAudioPathFork = yield* Effect.fork(
             Effect.gen(function* () {
               const audioPath = yield* ffmpeg.extractAudioFromVideo(
@@ -170,7 +163,33 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
               const concatenatedAudioPath =
                 yield* ffmpeg.concatenateAudioClips(audioClips);
 
-              return concatenatedAudioPath;
+              const normalizedAudioPath = join(
+                tempDir,
+                "normalized-audio.mp3"
+              ) as AbsolutePath;
+
+              yield* ffmpeg.normalizeAudio(
+                concatenatedAudioPath,
+                normalizedAudioPath
+              );
+
+              return normalizedAudioPath;
+            })
+          );
+
+          const nonNormalizedVideoFork = yield* Effect.fork(
+            createAutoEditedVideo({
+              inputVideo: options.inputVideo,
+              clips,
+            })
+          );
+
+          const outputVideoFork = yield* Effect.fork(
+            Effect.gen(function* () {
+              return yield* ffmpeg.combineAudioAndVideo(
+                yield* outputAudioPathFork,
+                yield* nonNormalizedVideoFork
+              );
             })
           );
 
@@ -450,25 +469,12 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             `✅ Concatenated all clips (took ${(Date.now() - concatStart) / 1000}s)`
           );
 
-          // Normalize audio
-          yield* Console.log("🎥 Normalizing audio...");
-
-          const normalizedVideoPath = join(
-            tempDir,
-            "normalized-video.mp4"
-          ) as AbsolutePath;
-
-          yield* ffmpeg.normalizeAudio(
-            concatenatedVideoPath,
-            normalizedVideoPath
-          );
-
           const totalTime = (Date.now() - startTime) / 1000;
           yield* Console.log(
             `✅ Successfully created speaking-only video! (Total time: ${totalTime}s)`
           );
 
-          return normalizedVideoPath;
+          return concatenatedVideoPath;
         });
       };
 
@@ -602,7 +608,6 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
           const tempDir = yield* fs.makeTempDirectoryScoped({
             directory: tmpdir(),
-            prefix: "interview-speaking-clips",
           });
 
           const clipFiles = yield* Effect.all(
