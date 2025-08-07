@@ -1,12 +1,7 @@
 import { Effect } from "effect";
 import { FFmpegCommandsService } from "../ffmpeg-commands.js";
 import type { AbsolutePath } from "@total-typescript/shared";
-import {
-  FFMPEG_CONCURRENCY_LIMIT,
-  SILENCE_DURATION,
-  TRANSCRIPTION_CONCURRENCY_LIMIT,
-  THRESHOLD,
-} from "../constants.js";
+import { SILENCE_DURATION, THRESHOLD } from "../constants.js";
 import { findSilenceInVideo } from "../silence-detection.js";
 import { FileSystem } from "@effect/platform";
 import path from "node:path";
@@ -124,7 +119,7 @@ export const createMetadataForRawVideo = Effect.fn("createMetadataForRawVideo")(
         });
       }),
       {
-        concurrency: FFMPEG_CONCURRENCY_LIMIT,
+        concurrency: "unbounded",
       }
     );
 
@@ -142,7 +137,7 @@ export const createMetadataForRawVideo = Effect.fn("createMetadataForRawVideo")(
         });
       }),
       {
-        concurrency: TRANSCRIPTION_CONCURRENCY_LIMIT,
+        concurrency: "unbounded",
       }
     );
 

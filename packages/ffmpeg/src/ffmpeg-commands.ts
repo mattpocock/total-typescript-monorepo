@@ -3,6 +3,13 @@ import { execAsync, type AbsolutePath } from "@total-typescript/shared";
 import { generateObject } from "ai";
 import { Config, Data, Effect } from "effect";
 import { OpenAIService, ReadStreamService } from "./services.js";
+import {
+  FFMPEG_CONCURRENCY_LIMIT,
+  TRANSCRIPTION_CONCURRENCY_LIMIT,
+} from "./constants.js";
+import { FileSystem } from "@effect/platform";
+import { NodeFileSystem } from "@effect/platform-node";
+import { join } from "node:path";
 
 // Error classes
 export class CouldNotTranscribeAudioError extends Data.TaggedError(
@@ -80,28 +87,42 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
   "FFmpegCommandsService",
   {
     effect: Effect.gen(function* () {
+      const fs = yield* FileSystem.FileSystem;
       const openaiService = yield* OpenAIService;
       const { createReadStream } = yield* ReadStreamService;
+
+      const ffmpegMutex = yield* Effect.makeSemaphore(FFMPEG_CONCURRENCY_LIMIT);
+      const transcriptionMutex = yield* Effect.makeSemaphore(
+        TRANSCRIPTION_CONCURRENCY_LIMIT
+      );
+
+      const runConcurrencyAwareCommand = (command: string) => {
+        return ffmpegMutex.withPermits(1)(execAsync(command));
+      };
 
       return {
         createSubtitleFromAudio: Effect.fn("createSubtitleFromAudio")(
           function* (audioPath: AbsolutePath) {
             const stream = yield* createReadStream(audioPath);
 
-            const response = yield* Effect.tryPromise(async () => {
-              return openaiService.audio.transcriptions.create({
-                file: stream,
-                model: "whisper-1",
-                response_format: "verbose_json",
-                timestamp_granularities: ["segment", "word"],
-              });
-            }).pipe(
-              Effect.mapError((e) => {
-                return new CouldNotTranscribeAudioError({
-                  cause: e,
-                });
-              })
-            );
+            const response = yield* transcriptionMutex
+              .withPermits(1)(
+                Effect.tryPromise(async () => {
+                  return openaiService.audio.transcriptions.create({
+                    file: stream,
+                    model: "whisper-1",
+                    response_format: "verbose_json",
+                    timestamp_granularities: ["segment", "word"],
+                  });
+                })
+              )
+              .pipe(
+                Effect.mapError((e) => {
+                  return new CouldNotTranscribeAudioError({
+                    cause: e,
+                  });
+                })
+              );
 
             return {
               segments: response.segments!.map((segment) => ({
@@ -133,24 +154,28 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
 
           const stream = yield* createReadStream(audioPath);
 
-          const response = yield* Effect.tryPromise(async () => {
-            return openaiService.audio.transcriptions.create({
-              file: stream,
-              model: "whisper-1",
-            });
-          }).pipe(
-            Effect.mapError((e) => {
-              return new CouldNotTranscribeAudioError({
-                cause: e,
-              });
-            })
-          );
+          const response = yield* transcriptionMutex
+            .withPermits(1)(
+              Effect.tryPromise(async () => {
+                return openaiService.audio.transcriptions.create({
+                  file: stream,
+                  model: "whisper-1",
+                });
+              })
+            )
+            .pipe(
+              Effect.mapError((e) => {
+                return new CouldNotTranscribeAudioError({
+                  cause: e,
+                });
+              })
+            );
 
           return response.text;
         }),
 
         getFPS: Effect.fn("getFPS")(function* (inputVideo: AbsolutePath) {
-          return yield* execAsync(
+          return yield* runConcurrencyAwareCommand(
             `ffprobe -v error -select_streams v:0 -show_entries stream=r_frame_rate -of default=noprint_wrappers=1:nokey=1 "${inputVideo}"`
           ).pipe(
             Effect.map((output) => {
@@ -168,7 +193,7 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
         getResolution: Effect.fn("getResolution")(function* (
           inputVideo: AbsolutePath
         ) {
-          return yield* execAsync(
+          return yield* runConcurrencyAwareCommand(
             `ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of json "${inputVideo}"`
           ).pipe(
             Effect.map(
@@ -188,7 +213,7 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
         getVideoDuration: Effect.fn("getVideoDuration")(function* (
           inputVideo: AbsolutePath
         ) {
-          return yield* execAsync(
+          return yield* runConcurrencyAwareCommand(
             `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${inputVideo}"`
           ).pipe(
             Effect.map((output) => {
@@ -200,7 +225,7 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
         getChapters: Effect.fn("getChapters")(function* (
           inputVideo: AbsolutePath
         ) {
-          return yield* execAsync(
+          return yield* runConcurrencyAwareCommand(
             `ffprobe -i "${inputVideo}" -show_chapters -v quiet -print_format json`
           ).pipe(
             Effect.map(({ stdout }) => {
@@ -216,7 +241,7 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           inputVideo: AbsolutePath,
           outputVideoPath: AbsolutePath
         ) {
-          return yield* execAsync(
+          return yield* runConcurrencyAwareCommand(
             `ffmpeg -y -hide_banner -i "${inputVideo}" -c:v libx264 -profile high -b:v 7000k -pix_fmt yuv420p -maxrate 16000k "${outputVideoPath}"`
           ).pipe(
             Effect.mapError((e) => {
@@ -243,7 +268,7 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
             () => (num: number) => num.toFixed(3)
           );
 
-          return yield* execAsync(
+          return yield* runConcurrencyAwareCommand(
             `ffmpeg -y -hide_banner -ss ${formatFloat(startTime)} -to ${formatFloat(endTime)} -i "${inputVideo}" -c copy "${outputVideo.replaceAll("\\", "")}"`
           );
         }),
@@ -252,7 +277,7 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           inputPath: AbsolutePath,
           outputPath: AbsolutePath
         ) {
-          return yield* execAsync(
+          return yield* runConcurrencyAwareCommand(
             `ffmpeg -i ${inputPath} -ar 16000 -ac 1 -c:a pcm_s16le ${outputPath}`
           );
         }),
@@ -261,7 +286,7 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           input: AbsolutePath,
           output: AbsolutePath
         ) {
-          return yield* execAsync(
+          return yield* runConcurrencyAwareCommand(
             `ffmpeg -y -i "${input}" -af "loudnorm=I=-16:TP=-1.5:LRA=11" "${output}"`
           );
         }),
@@ -274,7 +299,7 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
             endTime?: number;
           }
         ) {
-          return yield* execAsync(
+          return yield* runConcurrencyAwareCommand(
             `nice -n 19 ffmpeg -y -hide_banner -hwaccel cuda -i "${inputPath}" -vn -acodec libmp3lame -q:a 2 "${outputPath}" ${opts?.startTime ? `-ss ${opts.startTime}` : ""} ${opts?.endTime ? `-t ${opts.endTime}` : ""}`
           ).pipe(
             Effect.mapError((e) => {
@@ -291,7 +316,7 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           startTime: number,
           duration: number
         ) {
-          return yield* execAsync(
+          return yield* runConcurrencyAwareCommand(
             `nice -n 19 ffmpeg -y -hide_banner -ss ${startTime} -i "${inputVideo}" -t ${duration} -c:v h264_nvenc -preset slow -rc:v vbr -cq:v 19 -b:v 8000k -maxrate 12000k -bufsize 16000k -c:a aac -b:a 384k "${outputFile}"`
           ).pipe(
             Effect.mapError((e) => {
@@ -303,20 +328,29 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
         }),
 
         concatenateClips: Effect.fn("concatenateClips")(function* (
-          concatFile: AbsolutePath,
+          clipFiles: AbsolutePath[],
           outputVideo: AbsolutePath
         ) {
-          return yield* execAsync(
+          const tempDir = yield* fs.makeTempDirectoryScoped();
+
+          const concatFile = join(tempDir, "concat.txt") as AbsolutePath;
+          const concatContent = clipFiles
+            .map((file: string) => `file '${file}'`)
+            .join("\n");
+
+          yield* fs.writeFileString(concatFile, concatContent);
+
+          return yield* runConcurrencyAwareCommand(
             `nice -n 19 ffmpeg -y -hide_banner -f concat -safe 0 -i "${concatFile}" -c:v h264_nvenc -preset slow -rc:v vbr -cq:v 19 -b:v 8000k -maxrate 12000k -bufsize 16000k -c:a aac -b:a 384k "${outputVideo}"`
           );
-        }),
+        }, Effect.scoped),
 
         overlaySubtitles: Effect.fn("overlaySubtitles")(function* (
           inputPath: AbsolutePath,
           subtitlesOverlayPath: AbsolutePath,
           outputPath: AbsolutePath
         ) {
-          return yield* execAsync(
+          return yield* runConcurrencyAwareCommand(
             `nice -n 19 ffmpeg -y -i "${inputPath}" -i "${subtitlesOverlayPath}" -filter_complex "[0:v][1:v]overlay" -c:a copy "${outputPath}"`
           );
         }),
@@ -326,7 +360,7 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           threshold: number | string,
           silenceDuration: number | string
         ) {
-          return yield* execAsync(
+          return yield* runConcurrencyAwareCommand(
             `ffmpeg -hide_banner -vn -i "${inputVideo}" -af "silencedetect=n=${threshold}dB:d=${silenceDuration}" -f null - 2>&1`
           ).pipe(
             Effect.mapError((e) => {
@@ -385,6 +419,10 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
         }),
       };
     }),
-    dependencies: [OpenAIService.Default, ReadStreamService.Default],
+    dependencies: [
+      OpenAIService.Default,
+      ReadStreamService.Default,
+      NodeFileSystem.layer,
+    ],
   }
 ) {}

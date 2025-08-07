@@ -15,12 +15,7 @@ import { z } from "zod";
 import { type RawVideoMetadata } from "./raw-video-metadata/raw-video-metadata-types.js";
 import { FFmpegCommandsService } from "./ffmpeg-commands.js";
 import { findSilenceInVideo } from "./silence-detection.js";
-import {
-  FFMPEG_CONCURRENCY_LIMIT,
-  SILENCE_DURATION,
-  THRESHOLD,
-  TRANSCRIPTION_CONCURRENCY_LIMIT,
-} from "./constants.js";
+import { SILENCE_DURATION, THRESHOLD } from "./constants.js";
 
 export class OpenAIService extends Effect.Service<OpenAIService>()(
   "OpenAIService",
@@ -561,108 +556,80 @@ export class VideoMetadataService extends Effect.Service<VideoMetadataService>()
     effect: Effect.gen(function* () {
       const ffmpeg = yield* FFmpegCommandsService;
       const fs = yield* FileSystem.FileSystem;
-      const createVideoMetadata = Effect.fn("createVideoMetadata")(
-        function* (rawVideoPath: AbsolutePath) {
-          const fpsFork = yield* Effect.fork(ffmpeg.getFPS(rawVideoPath));
+      const createVideoMetadata = Effect.fn("createVideoMetadata")(function* (
+        rawVideoPath: AbsolutePath
+      ) {
+        const fpsFork = yield* Effect.fork(ffmpeg.getFPS(rawVideoPath));
 
-          const resolutionFork = yield* Effect.fork(
-            ffmpeg.getResolution(rawVideoPath).pipe(
-              Effect.map((resolution) => {
-                return {
-                  widthInPixels: resolution.width,
-                  heightInPixels: resolution.height,
-                };
-              })
-            )
-          );
-
-          const { speakingClips } = yield* findSilenceInVideo(rawVideoPath, {
-            threshold: THRESHOLD,
-            silenceDuration: SILENCE_DURATION,
-            startPadding: 0,
-            endPadding: 0,
-            fps: yield* fpsFork,
-            ffmpeg,
-          });
-
-          const tmpDir = yield* fs.makeTempDirectoryScoped();
-
-          yield* Effect.addFinalizer(() => {
-            return fs
-              .remove(tmpDir, {
-                recursive: true,
-                force: true,
-              })
-              .pipe(Effect.orDie);
-          });
-
-          const audioFiles = yield* Effect.all(
-            speakingClips.map((clipLength, index) => {
-              return Effect.gen(function* () {
-                const audioPath = path.join(
-                  tmpDir,
-                  `audio-${index}.mp3`
-                ) as AbsolutePath;
-
-                yield* ffmpeg.extractAudioFromVideo(rawVideoPath, audioPath, {
-                  startTime: clipLength.startTime,
-                  endTime: clipLength.endTime,
-                });
-
-                return {
-                  audioPath,
-                  startTime: clipLength.startTime,
-                  endTime: clipLength.endTime,
-                };
-              });
-            }),
-            {
-              concurrency: FFMPEG_CONCURRENCY_LIMIT,
-            }
-          );
-
-          const transcriptSegments = yield* Effect.all(
-            audioFiles.map((audioFile) => {
-              return Effect.gen(function* () {
-                const transcript = yield* ffmpeg.transcribeAudio(
-                  audioFile.audioPath
-                );
-
-                return {
-                  audioPath: audioFile.audioPath,
-                  startTime: audioFile.startTime,
-                  endTime: audioFile.endTime,
-                  transcript,
-                };
-              });
-            }),
-            {
-              concurrency: TRANSCRIPTION_CONCURRENCY_LIMIT,
-            }
-          );
-
-          const metadata: RawVideoMetadata = {
-            id: rawVideoPath,
-            videoPath: rawVideoPath,
-            fps: yield* fpsFork,
-            resolution: yield* resolutionFork,
-            clips: transcriptSegments.map((segment) => {
+        const resolutionFork = yield* Effect.fork(
+          ffmpeg.getResolution(rawVideoPath).pipe(
+            Effect.map((resolution) => {
               return {
-                id: segment.audioPath,
-                videoPath: segment.audioPath,
-                startTimeInSeconds: segment.startTime,
-                endTimeInSeconds: segment.endTime,
-                transcript: segment.transcript,
-                deleted: false,
+                widthInPixels: resolution.width,
+                heightInPixels: resolution.height,
               };
-            }),
-          };
+            })
+          )
+        );
 
-          return metadata;
-        },
+        const { speakingClips } = yield* findSilenceInVideo(rawVideoPath, {
+          threshold: THRESHOLD,
+          silenceDuration: SILENCE_DURATION,
+          startPadding: 0,
+          endPadding: 0,
+          fps: yield* fpsFork,
+          ffmpeg,
+        });
 
-        Effect.scoped
-      );
+        const tmpDir = yield* fs.makeTempDirectoryScoped();
+
+        const transcriptSegments = yield* Effect.all(
+          speakingClips.map((clipLength, index) => {
+            return Effect.gen(function* () {
+              const audioPath = path.join(
+                tmpDir,
+                `audio-${index}.mp3`
+              ) as AbsolutePath;
+
+              yield* ffmpeg.extractAudioFromVideo(rawVideoPath, audioPath, {
+                startTime: clipLength.startTime,
+                endTime: clipLength.endTime,
+              });
+
+              const transcript = yield* ffmpeg.transcribeAudio(audioPath);
+
+              return {
+                audioPath,
+                startTime: clipLength.startTime,
+                endTime: clipLength.endTime,
+                transcript,
+              };
+            });
+          }),
+          {
+            concurrency: "unbounded",
+          }
+        );
+
+        const metadata: RawVideoMetadata = {
+          id: rawVideoPath,
+          videoPath: rawVideoPath,
+          fps: yield* fpsFork,
+          resolution: yield* resolutionFork,
+          clips: transcriptSegments.map((segment) => {
+            return {
+              id: segment.audioPath,
+              videoPath: segment.audioPath,
+              startTimeInSeconds: segment.startTime,
+              endTimeInSeconds: segment.endTime,
+              transcript: segment.transcript,
+              deleted: false,
+            };
+          }),
+        };
+
+        return metadata;
+      }, Effect.scoped);
 
       const getMetadataPath = (videoPath: AbsolutePath) => {
         const parsed = path.parse(videoPath);

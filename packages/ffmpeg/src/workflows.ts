@@ -24,7 +24,6 @@ import {
   AUTO_EDITED_END_PADDING,
   AUTO_EDITED_START_PADDING,
   AUTO_EDITED_VIDEO_FINAL_END_PADDING,
-  FFMPEG_CONCURRENCY_LIMIT,
   SILENCE_DURATION,
   THRESHOLD,
 } from "./constants.js";
@@ -425,20 +424,12 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
               })
             ),
             {
-              concurrency: FFMPEG_CONCURRENCY_LIMIT,
+              concurrency: "unbounded",
             }
           );
           yield* Console.log(
             `✅ Created all ${clips.length} clips (took ${(Date.now() - clipsStart) / 1000}s)`
           );
-
-          // Create a concat file
-          const concatFile = join(tempDir, "concat.txt") as AbsolutePath;
-          const concatContent = clipFiles
-            .map((file: string) => `file '${file}'`)
-            .join("\n");
-
-          yield* fs.writeFileString(concatFile, concatContent);
 
           const concatenatedVideoPath = join(
             tempDir,
@@ -448,7 +439,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           // Concatenate all clips
           yield* Console.log("🎥 Concatenating clips...");
           const concatStart = Date.now();
-          yield* ffmpeg.concatenateClips(concatFile, concatenatedVideoPath);
+          yield* ffmpeg.concatenateClips(clipFiles, concatenatedVideoPath);
           yield* Console.log(
             `✅ Concatenated all clips (took ${(Date.now() - concatStart) / 1000}s)`
           );
@@ -624,23 +615,16 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
               })
             ),
             {
-              concurrency: FFMPEG_CONCURRENCY_LIMIT,
+              concurrency: "unbounded",
             }
           );
-
-          const concatFile = join(tempDir, "concat.txt") as AbsolutePath;
-          const concatContent = clipFiles
-            .map((file: string) => `file '${file}'`)
-            .join("\n");
-
-          yield* fs.writeFileString(concatFile, concatContent);
 
           const concatenatedVideoPath = join(
             tempDir,
             "concatenated-video.mp4"
           ) as AbsolutePath;
 
-          yield* ffmpeg.concatenateClips(concatFile, concatenatedVideoPath);
+          yield* ffmpeg.concatenateClips(clipFiles, concatenatedVideoPath);
 
           yield* ffmpeg.normalizeAudio(concatenatedVideoPath, opts.outputPath);
         },
@@ -780,21 +764,13 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
               })
             ),
             {
-              concurrency: FFMPEG_CONCURRENCY_LIMIT,
+              concurrency: "unbounded",
             }
           );
 
-          // Create concat file
-          const concatFile = join(tempDir, "concat.txt") as AbsolutePath;
-          const concatContent = processedClips
-            .map((file: string) => `file '${file}'`)
-            .join("\n");
-
-          yield* fs.writeFileString(concatFile, concatContent);
-
           // Concatenate all processed clips
           yield* Console.log("🎥 Concatenating videos...");
-          yield* ffmpeg.concatenateClips(concatFile, outputPath);
+          yield* ffmpeg.concatenateClips(processedClips, outputPath);
           yield* Console.log(
             `✅ Successfully concatenated videos to: ${outputPath}`
           );
