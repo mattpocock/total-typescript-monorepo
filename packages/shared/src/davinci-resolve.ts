@@ -4,6 +4,11 @@ import { Effect } from "effect";
 
 type Scripts = {
   "clip-and-append.lua": {
+    INPUT_VIDEOS: string;
+    CLIPS_TO_APPEND: string;
+    WSLENV: string;
+  };
+  "clip-and-append-multiple.lua": {
     INPUT_VIDEO: string;
     CLIPS_TO_APPEND: string;
     WSLENV: string;

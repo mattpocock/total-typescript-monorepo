@@ -22,6 +22,34 @@ export interface AppendVideoToTimelineOptions {
   inputVideo?: AbsolutePath;
 }
 
+export interface AppendMultipleVideosToTimelineOptions {
+  inputVideos: AbsolutePath[];
+  clips: {
+    startFrame: number;
+    endFrame: number;
+    videoIndex: number;
+    timelineStartFrame?: number;
+  }[];
+}
+
+export const serializeMultiTrackClipsForAppendScript = (
+  clips: {
+    startFrame: number;
+    endFrame: number;
+    videoIndex: number;
+    timelineStartFrame?: number;
+  }[]
+) => {
+  return clips
+    .map((clip) => {
+      const base = `${clip.startFrame}___${clip.endFrame}___${clip.videoIndex}`;
+      return clip.timelineStartFrame !== undefined
+        ? `${base}___${clip.timelineStartFrame}`
+        : base;
+    })
+    .join(":::");
+};
+
 export const appendVideoToTimeline = (
   options: AppendVideoToTimelineOptions
 ) => {
@@ -52,29 +80,47 @@ export const appendVideoToTimeline = (
       extractBadTakeMarkersFromFile(inputVideo, fps, ffmpeg),
     ]);
 
-    const serialisedClipsOfSpeaking = silenceResult.speakingClips
-      .map((clip, index) => {
-        const takeQuality = isBadTake(
-          clip,
-          badTakeMarkers,
-          index,
-          silenceResult.speakingClips,
-          fps
-        );
-        return {
-          clip,
-          takeQuality,
-          serialized: `${clip.startFrame}___${clip.endFrame}___${takeQuality === "maybe-bad" ? "1" : "0"}`,
-        };
-      })
-      .filter(({ takeQuality }) => takeQuality !== "definitely-bad")
-      .map(({ serialized }) => serialized)
-      .join(":::");
+    const serialisedClipsOfSpeaking = serializeMultiTrackClipsForAppendScript(
+      silenceResult.speakingClips
+        .filter((clip, index) => {
+          const takeQuality = isBadTake(
+            clip,
+            badTakeMarkers,
+            index,
+            silenceResult.speakingClips,
+            fps
+          );
+
+          return takeQuality === "good";
+        })
+        .map((clip) => ({
+          startFrame: clip.startFrame,
+          endFrame: clip.endFrame,
+          videoIndex: 0, // Single video goes on track 1
+        }))
+    );
 
     yield* runDavinciResolveScript("clip-and-append.lua", {
-      INPUT_VIDEO: inputVideo,
+      INPUT_VIDEOS: inputVideo,
       CLIPS_TO_APPEND: serialisedClipsOfSpeaking,
-      WSLENV: "INPUT_VIDEO/p:CLIPS_TO_APPEND",
+      WSLENV: "INPUT_VIDEOS/p:CLIPS_TO_APPEND",
+    });
+  });
+};
+
+export const appendMultipleVideosToTimeline = (
+  options: AppendMultipleVideosToTimelineOptions
+) => {
+  return Effect.gen(function* () {
+    const serialisedClips = serializeMultiTrackClipsForAppendScript(
+      options.clips
+    );
+    const inputVideosString = options.inputVideos.join(":::");
+
+    yield* runDavinciResolveScript("clip-and-append.lua", {
+      INPUT_VIDEOS: inputVideosString,
+      CLIPS_TO_APPEND: serialisedClips,
+      WSLENV: "INPUT_VIDEOS/p:CLIPS_TO_APPEND",
     });
   });
 };
