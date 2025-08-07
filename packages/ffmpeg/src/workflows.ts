@@ -491,56 +491,6 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         return Math.round(num * 10 ** places) / 10 ** places;
       };
 
-      type RawClipEvent = {
-        type: "clip-start" | "clip-end";
-        time: number;
-        speaker: "host" | "guest";
-      };
-
-      type InterviewSpeakingClip = {
-        state: "host-speaking" | "guest-speaking" | "guest-speaking-over-host";
-        startTime: number;
-        duration: number;
-      };
-
-      type State =
-        | "silence"
-        | "host-speaking"
-        | "guest-speaking"
-        | "guest-speaking-over-host";
-      type Event =
-        | "host-clip-start"
-        | "guest-clip-start"
-        | "host-clip-end"
-        | "guest-clip-end";
-
-      const stateMachine = {
-        silence: {
-          "host-clip-start": "host-speaking",
-          "guest-clip-start": "guest-speaking",
-          "host-clip-end": "silence",
-          "guest-clip-end": "silence",
-        },
-        "host-speaking": {
-          "host-clip-start": "host-speaking",
-          "guest-clip-start": "guest-speaking",
-          "host-clip-end": "silence",
-          "guest-clip-end": "host-speaking",
-        },
-        "guest-speaking": {
-          "guest-clip-start": "guest-speaking",
-          "guest-clip-end": "silence",
-          "host-clip-start": "guest-speaking-over-host",
-          "host-clip-end": "guest-speaking",
-        },
-        "guest-speaking-over-host": {
-          "guest-clip-start": "guest-speaking-over-host",
-          "guest-clip-end": "host-speaking",
-          "host-clip-start": "guest-speaking-over-host",
-          "host-clip-end": "guest-speaking",
-        },
-      } satisfies Record<State, Record<Event, State>>;
-
       const editInterviewWorkflow = Effect.fn("editInterviewWorkflow")(
         function* (opts: {
           hostVideo: AbsolutePath;
@@ -557,63 +507,10 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           const hostClips = yield* hostClipsFork;
           const guestClips = yield* guestClipsFork;
 
-          const rawEvents: RawClipEvent[] = [];
-
-          for (const clip of hostClips) {
-            rawEvents.push({
-              type: "clip-start",
-              time: clip.startTime,
-              speaker: "host",
-            });
-
-            rawEvents.push({
-              type: "clip-end",
-              time: clip.startTime + clip.duration,
-              speaker: "host",
-            });
-          }
-
-          for (const clip of guestClips) {
-            rawEvents.push({
-              type: "clip-start",
-              time: clip.startTime,
-              speaker: "guest",
-            });
-
-            rawEvents.push({
-              type: "clip-end",
-              time: clip.startTime + clip.duration,
-              speaker: "guest",
-            });
-          }
-
-          const events = rawEvents.sort((a, b) => a.time - b.time);
-
-          let state: State = "silence";
-
-          const interviewSpeakingClips: InterviewSpeakingClip[] = [];
-
-          for (let i = 0; i < events.length; i++) {
-            const event = events[i]!;
-            const nextEvent = events[i + 1];
-
-            if (!nextEvent) {
-              break;
-            }
-
-            const newState: State =
-              stateMachine[state][`${event.speaker}-${event.type}`];
-
-            if (newState !== "silence") {
-              interviewSpeakingClips.push({
-                state: newState,
-                startTime: event.time,
-                duration: nextEvent.time - event.time,
-              });
-            }
-
-            state = newState;
-          }
+          const interviewSpeakingClips = rawClipsToInterviewSpeakingClips({
+            hostClips: hostClips,
+            guestClips: guestClips,
+          });
 
           const tempDir = yield* fs.makeTempDirectoryScoped({
             directory: tmpdir(),
@@ -677,63 +574,10 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         const hostClips = yield* hostClipsFork;
         const guestClips = yield* guestClipsFork;
 
-        const rawEvents: RawClipEvent[] = [];
-
-        for (const clip of hostClips) {
-          rawEvents.push({
-            type: "clip-start",
-            time: clip.startTime,
-            speaker: "host",
-          });
-
-          rawEvents.push({
-            type: "clip-end",
-            time: clip.startTime + clip.duration,
-            speaker: "host",
-          });
-        }
-
-        for (const clip of guestClips) {
-          rawEvents.push({
-            type: "clip-start",
-            time: clip.startTime,
-            speaker: "guest",
-          });
-
-          rawEvents.push({
-            type: "clip-end",
-            time: clip.startTime + clip.duration,
-            speaker: "guest",
-          });
-        }
-
-        const events = rawEvents.sort((a, b) => a.time - b.time);
-
-        let state: State = "silence";
-
-        const interviewSpeakingClips: InterviewSpeakingClip[] = [];
-
-        for (let i = 0; i < events.length; i++) {
-          const event = events[i]!;
-          const nextEvent = events[i + 1];
-
-          if (!nextEvent) {
-            break;
-          }
-
-          const newState: State =
-            stateMachine[state][`${event.speaker}-${event.type}`];
-
-          if (newState !== "silence") {
-            interviewSpeakingClips.push({
-              state: newState,
-              startTime: event.time,
-              duration: nextEvent.time - event.time,
-            });
-          }
-
-          state = newState;
-        }
+        const interviewSpeakingClips = rawClipsToInterviewSpeakingClips({
+          hostClips: hostClips,
+          guestClips: guestClips,
+        });
 
         // Hard coded to 60fps for now, since that's what
         // we use in Davinci Resolve
@@ -1152,3 +996,118 @@ export const multiSelectVideosFromQueue = () => {
     return selectedVideoIds;
   });
 };
+
+const rawClipsToInterviewSpeakingClips = (opts: {
+  hostClips: { startTime: number; duration: number }[];
+  guestClips: { startTime: number; duration: number }[];
+}) => {
+  const rawEvents: RawClipEvent[] = [];
+
+  for (const clip of opts.hostClips) {
+    rawEvents.push({
+      type: "clip-start",
+      time: clip.startTime,
+      speaker: "host",
+    });
+
+    rawEvents.push({
+      type: "clip-end",
+      time: clip.startTime + clip.duration,
+      speaker: "host",
+    });
+  }
+
+  for (const clip of opts.guestClips) {
+    rawEvents.push({
+      type: "clip-start",
+      time: clip.startTime,
+      speaker: "guest",
+    });
+
+    rawEvents.push({
+      type: "clip-end",
+      time: clip.startTime + clip.duration,
+      speaker: "guest",
+    });
+  }
+
+  const events = rawEvents.sort((a, b) => a.time - b.time);
+
+  let state: InterviewState = "silence";
+
+  const interviewSpeakingClips: InterviewSpeakingClip[] = [];
+
+  for (let i = 0; i < events.length; i++) {
+    const event = events[i]!;
+    const nextEvent = events[i + 1];
+
+    if (!nextEvent) {
+      break;
+    }
+
+    const newState: InterviewState =
+      stateMachine[state][`${event.speaker}-${event.type}`];
+
+    if (newState !== "silence") {
+      interviewSpeakingClips.push({
+        state: newState,
+        startTime: event.time,
+        duration: nextEvent.time - event.time,
+      });
+    }
+
+    state = newState;
+  }
+
+  return interviewSpeakingClips;
+};
+
+type RawClipEvent = {
+  type: "clip-start" | "clip-end";
+  time: number;
+  speaker: "host" | "guest";
+};
+
+type InterviewSpeakingClip = {
+  state: "host-speaking" | "guest-speaking" | "guest-speaking-over-host";
+  startTime: number;
+  duration: number;
+};
+
+type InterviewState =
+  | "silence"
+  | "host-speaking"
+  | "guest-speaking"
+  | "guest-speaking-over-host";
+type InterviewEvent =
+  | "host-clip-start"
+  | "guest-clip-start"
+  | "host-clip-end"
+  | "guest-clip-end";
+
+const stateMachine = {
+  silence: {
+    "host-clip-start": "host-speaking",
+    "guest-clip-start": "guest-speaking",
+    "host-clip-end": "silence",
+    "guest-clip-end": "silence",
+  },
+  "host-speaking": {
+    "host-clip-start": "host-speaking",
+    "guest-clip-start": "guest-speaking",
+    "host-clip-end": "silence",
+    "guest-clip-end": "host-speaking",
+  },
+  "guest-speaking": {
+    "guest-clip-start": "guest-speaking",
+    "guest-clip-end": "silence",
+    "host-clip-start": "guest-speaking-over-host",
+    "host-clip-end": "guest-speaking",
+  },
+  "guest-speaking-over-host": {
+    "guest-clip-start": "guest-speaking-over-host",
+    "guest-clip-end": "host-speaking",
+    "host-clip-start": "guest-speaking-over-host",
+    "host-clip-end": "guest-speaking",
+  },
+} satisfies Record<InterviewState, Record<InterviewEvent, InterviewState>>;
