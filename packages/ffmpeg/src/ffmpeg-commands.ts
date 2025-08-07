@@ -310,6 +310,17 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           );
         }),
 
+        createAudioClip: Effect.fn("createAudioClip")(function* (
+          inputAudio: AbsolutePath,
+          outputAudio: AbsolutePath,
+          startTime: number,
+          duration: number
+        ) {
+          return yield* runConcurrencyAwareCommand(
+            `nice -n 19 ffmpeg -y -hide_banner -hwaccel cuda -ss ${startTime} -i "${inputAudio}" -t ${duration} -c:a aac -b:a 384k "${outputAudio}"`
+          );
+        }),
+
         createClip: Effect.fn("createClip")(function* (
           inputVideo: AbsolutePath,
           outputFile: AbsolutePath,

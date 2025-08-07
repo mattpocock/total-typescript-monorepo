@@ -80,6 +80,9 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
       const ffmpeg = yield* FFmpegCommandsService;
 
+      /**
+       * Create a speaking-only video from a raw video.
+       */
       const createAutoEditedVideoWorkflow = (
         options: CreateAutoEditedVideoWorkflowOptions
       ) => {
@@ -108,7 +111,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             });
           }
 
-          const fps = yield* ffmpeg.getFPS(options.inputVideo);
+          const fpsFork = yield* Effect.fork(ffmpeg.getFPS(options.inputVideo));
 
           // First create in the export directory
           const videoInExportDirectoryPath = path.join(
@@ -116,9 +119,14 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             `${options.outputFilename}.mp4`
           ) as AbsolutePath;
 
+          const clipsFork = yield* Effect.fork(
+            findClips({ inputVideo: options.inputVideo })
+          );
+
           const result = yield* createAutoEditedVideo({
             inputVideo: options.inputVideo,
             outputVideo: videoInExportDirectoryPath,
+            clips: yield* clipsFork,
           });
 
           const speakingClips = result.speakingClips;
@@ -135,6 +143,8 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
               `${options.outputFilename}-with-subtitles.mp4`
             ) as AbsolutePath;
 
+            const fps = yield* fpsFork;
+
             const firstClipLength = speakingClips[0]!.duration * fps;
 
             const totalDurationInFrames = speakingClips.reduce(
@@ -147,7 +157,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             }
 
             yield* renderSubtitles({
-              inputPath: videoInExportDirectoryPath,
+              inputVideoPath: videoInExportDirectoryPath,
               outputPath: withSubtitlesPath,
               ctaDurationInFrames: firstClipLength,
               durationInFrames: totalDurationInFrames * fps,
@@ -203,13 +213,13 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       };
 
       const renderSubtitles = ({
-        inputPath,
+        inputVideoPath: inputPath,
         outputPath,
         ctaDurationInFrames,
         durationInFrames,
         originalFileName,
       }: {
-        inputPath: AbsolutePath;
+        inputVideoPath: AbsolutePath;
         outputPath: AbsolutePath;
         ctaDurationInFrames: number;
         durationInFrames: number;
@@ -220,7 +230,9 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           yield* Console.log("🎥 Processing video for subtitles:", inputPath);
           yield* Console.log("📝 Output will be saved to:", outputPath);
 
-          const audioPath = `${inputPath}.mp3` as AbsolutePath;
+          const tempDir = yield* fs.makeTempDirectoryScoped();
+
+          const audioPath = join(tempDir, "audio.mp3") as AbsolutePath;
 
           yield* Console.log("🎵 Extracting audio...");
           const audioStart = Date.now();
@@ -310,7 +322,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           yield* Console.log(
             `✅ Successfully rendered subtitles! (Total time: ${totalTime}s)`
           );
-        });
+        }).pipe(Effect.scoped);
       };
 
       const findClips = Effect.fn("findClips")(function* (opts: {
@@ -381,16 +393,19 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       const createAutoEditedVideo = ({
         inputVideo,
         outputVideo,
+        clips,
       }: {
         inputVideo: AbsolutePath;
         outputVideo: AbsolutePath;
+        clips: {
+          startTime: number;
+          duration: number;
+        }[];
       }) => {
         return Effect.gen(function* () {
           const startTime = Date.now();
           yield* Console.log("🎥 Processing video:", inputVideo);
           yield* Console.log("📝 Output will be saved to:", outputVideo);
-
-          const clips = yield* findClips({ inputVideo });
 
           // Create a temporary directory for clips
           const tempDir = yield* fs.makeTempDirectoryScoped({
