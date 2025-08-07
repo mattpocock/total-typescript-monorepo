@@ -735,26 +735,34 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           state = newState;
         }
 
-        const fps = yield* fpsFork;
+        // Hard coded to 60fps for now, since that's what
+        // we use in Davinci Resolve
+        const OUTPUT_FPS = 60;
+
+        const inputFPS = yield* fpsFork;
 
         const multiTrackClips: MultiTrackClip[] = [];
 
+        let currentTimelineFrame = 0;
+
         for (const clip of interviewSpeakingClips) {
-          const inputStartFrame = Math.floor(clip.startTime * fps);
+          const inputStartFrame = Math.floor(clip.startTime * inputFPS);
           const inputEndFrame = Math.ceil(
-            (clip.startTime + clip.duration) * fps
+            (clip.startTime + clip.duration) * inputFPS
           );
+
+          const timelineStartFrame = currentTimelineFrame;
+          currentTimelineFrame += Math.ceil(clip.duration * OUTPUT_FPS);
 
           if (clip.state === "host-speaking") {
             multiTrackClips.push({
               startFrame: inputStartFrame,
               endFrame: inputEndFrame,
-              videoIndex: 1, // Host goes on track 2
+              videoIndex: 0, // Host goes on track 1
+              timelineStartFrame,
             });
           }
 
-          // TODO: handle the case where the guest is speaking over the host
-          // properly
           if (
             clip.state === "guest-speaking" ||
             clip.state === "guest-speaking-over-host"
@@ -762,13 +770,14 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             multiTrackClips.push({
               startFrame: inputStartFrame,
               endFrame: inputEndFrame,
-              videoIndex: 0, // Guest goes on track 1
+              videoIndex: 1, // Guest goes on track 2
+              timelineStartFrame,
             });
           }
         }
 
         const output = yield* runDavinciResolveScript("clip-and-append.lua", {
-          INPUT_VIDEOS: [opts.guestVideo, opts.hostVideo].join(":::"),
+          INPUT_VIDEOS: [opts.hostVideo, opts.guestVideo].join(":::"),
           CLIPS_TO_APPEND:
             serializeMultiTrackClipsForAppendScript(multiTrackClips),
           WSLENV: "INPUT_VIDEOS/p:CLIPS_TO_APPEND",
