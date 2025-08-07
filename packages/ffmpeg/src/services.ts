@@ -584,17 +584,15 @@ export class VideoMetadataService extends Effect.Service<VideoMetadataService>()
         const tmpDir = yield* fs.makeTempDirectoryScoped();
 
         const transcriptSegments = yield* Effect.all(
-          speakingClips.map((clipLength, index) => {
+          speakingClips.map((clipLength) => {
             return Effect.gen(function* () {
-              const audioPath = path.join(
-                tmpDir,
-                `audio-${index}.mp3`
-              ) as AbsolutePath;
-
-              yield* ffmpeg.extractAudioFromVideo(rawVideoPath, audioPath, {
-                startTime: clipLength.startTime,
-                endTime: clipLength.endTime,
-              });
+              const audioPath = yield* ffmpeg.extractAudioFromVideo(
+                rawVideoPath,
+                {
+                  startTime: clipLength.startTime,
+                  endTime: clipLength.endTime,
+                }
+              );
 
               const transcript = yield* ffmpeg.transcribeAudio(audioPath);
 

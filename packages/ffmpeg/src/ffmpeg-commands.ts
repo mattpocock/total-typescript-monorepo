@@ -9,7 +9,8 @@ import {
 } from "./constants.js";
 import { FileSystem } from "@effect/platform";
 import { NodeFileSystem } from "@effect/platform-node";
-import { join } from "node:path";
+import path, { join } from "node:path";
+import { REMOTION_DIR } from "./subtitle-rendering.js";
 
 // Error classes
 export class CouldNotTranscribeAudioError extends Data.TaggedError(
@@ -66,6 +67,12 @@ export class CouldNotFigureOutWhichCTAToShowError extends Data.TaggedError(
   cause: Error;
 }> {}
 
+export class CouldNotCreateAudioClipError extends Data.TaggedError(
+  "CouldNotCreateAudioClipError"
+)<{
+  cause: Error;
+}> {}
+
 // Interfaces
 export interface RawChapter {
   id: number;
@@ -95,6 +102,9 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
       const transcriptionMutex = yield* Effect.makeSemaphore(
         TRANSCRIPTION_CONCURRENCY_LIMIT
       );
+      const remotionMutex = yield* Effect.makeSemaphore(1);
+
+      const audioExtension = yield* Config.string("AUDIO_FILE_EXTENSION");
 
       const runConcurrencyAwareCommand = (command: string) => {
         return ffmpegMutex.withPermits(1)(execAsync(command));
@@ -273,15 +283,6 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           );
         }),
 
-        convertToWav: Effect.fn("convertToWav")(function* (
-          inputPath: AbsolutePath,
-          outputPath: AbsolutePath
-        ) {
-          return yield* runConcurrencyAwareCommand(
-            `ffmpeg -i ${inputPath} -ar 16000 -ac 1 -c:a pcm_s16le ${outputPath}`
-          );
-        }),
-
         normalizeAudio: Effect.fn("normalizeAudio")(function* (
           input: AbsolutePath,
           output: AbsolutePath
@@ -293,12 +294,18 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
 
         extractAudioFromVideo: Effect.fn("extractAudioFromVideo")(function* (
           inputPath: AbsolutePath,
-          outputPath: AbsolutePath,
           opts?: {
             startTime?: number;
             endTime?: number;
           }
         ) {
+          const tempDir = yield* fs.makeTempDirectoryScoped();
+
+          const outputPath = path.join(
+            tempDir,
+            `extracted-audio.${audioExtension}`
+          ) as AbsolutePath;
+
           return yield* runConcurrencyAwareCommand(
             `nice -n 19 ffmpeg -y -hide_banner -hwaccel cuda -i "${inputPath}" -vn -acodec libmp3lame -q:a 2 "${outputPath}" ${opts?.startTime ? `-ss ${opts.startTime}` : ""} ${opts?.endTime ? `-t ${opts.endTime}` : ""}`
           ).pipe(
@@ -306,18 +313,31 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
               return new CouldNotExtractAudioError({
                 cause: e,
               });
-            })
+            }),
+            Effect.map(() => outputPath)
           );
         }),
 
         createAudioClip: Effect.fn("createAudioClip")(function* (
           inputAudio: AbsolutePath,
-          outputAudio: AbsolutePath,
           startTime: number,
           duration: number
         ) {
+          const tempDir = yield* fs.makeTempDirectoryScoped();
+
+          const outputPath = path.join(
+            tempDir,
+            `clip.${audioExtension}`
+          ) as AbsolutePath;
           return yield* runConcurrencyAwareCommand(
-            `nice -n 19 ffmpeg -y -hide_banner -hwaccel cuda -ss ${startTime} -i "${inputAudio}" -t ${duration} -c:a aac -b:a 384k "${outputAudio}"`
+            `nice -n 19 ffmpeg -y -hide_banner -hwaccel cuda -ss ${startTime} -i "${inputAudio}" -t ${duration} -c:a libmp3lame -b:a 384k "${outputPath}"`
+          ).pipe(
+            Effect.mapError((e) => {
+              return new CouldNotCreateAudioClipError({
+                cause: e,
+              });
+            }),
+            Effect.map(() => outputPath)
           );
         }),
 
@@ -338,7 +358,7 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           );
         }),
 
-        concatenateClips: Effect.fn("concatenateClips")(function* (
+        concatenateVideoClips: Effect.fn("concatenateVideoClips")(function* (
           clipFiles: AbsolutePath[],
           outputVideo: AbsolutePath
         ) {
@@ -354,7 +374,29 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           return yield* runConcurrencyAwareCommand(
             `nice -n 19 ffmpeg -y -hide_banner -f concat -safe 0 -i "${concatFile}" -c:v h264_nvenc -preset slow -rc:v vbr -cq:v 19 -b:v 8000k -maxrate 12000k -bufsize 16000k -c:a aac -b:a 384k "${outputVideo}"`
           );
-        }, Effect.scoped),
+        }),
+
+        concatenateAudioClips: Effect.fn("concatenateAudioClips")(function* (
+          clipFiles: AbsolutePath[]
+        ) {
+          const tempDir = yield* fs.makeTempDirectoryScoped();
+
+          const concatFile = join(tempDir, "concat.txt") as AbsolutePath;
+          const concatContent = clipFiles
+            .map((file: string) => `file '${file}'`)
+            .join("\n");
+
+          yield* fs.writeFileString(concatFile, concatContent);
+
+          const outputAudio = path.join(
+            tempDir,
+            `concatenated-audio.${audioExtension}`
+          ) as AbsolutePath;
+
+          return yield* runConcurrencyAwareCommand(
+            `nice -n 19 ffmpeg -y -hide_banner -f concat -safe 0 -i "${concatFile}" -c:a libmp3lame -b:a 384k "${outputAudio}"`
+          ).pipe(Effect.map(() => outputAudio));
+        }),
 
         overlaySubtitles: Effect.fn("overlaySubtitles")(function* (
           inputPath: AbsolutePath,
@@ -417,15 +459,38 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           }
         ),
 
+        combineAudioAndVideo: Effect.fn("combineAudioAndVideo")(function* (
+          audioPath: AbsolutePath,
+          videoPath: AbsolutePath
+        ) {
+          const tempDir = yield* fs.makeTempDirectoryScoped();
+          const outputPath = path.join(tempDir, "combined.mp4") as AbsolutePath;
+
+          return yield* runConcurrencyAwareCommand(
+            `ffmpeg -i "${videoPath}" -i "${audioPath}" -c:v copy -c:a libmp3lame -b:a 384k "${outputPath}"`
+          ).pipe(Effect.map(() => outputPath));
+        }),
+
         renderRemotion: Effect.fn("renderRemotion")(function* (
           outputPath: AbsolutePath,
-          cwd: string
+          meta: {
+            subtitles: {
+              startFrame: number;
+              endFrame: number;
+              text: string;
+            }[];
+            cta: "ai" | "typescript";
+            ctaDurationInFrames: number;
+            durationInFrames: number;
+          }
         ) {
-          return yield* execAsync(
-            `nice -n 19 npx remotion render MyComp "${outputPath}"`,
-            {
-              cwd,
-            }
+          const META_FILE_PATH = path.join(REMOTION_DIR, "src", "meta.json");
+          yield* fs.writeFileString(META_FILE_PATH, JSON.stringify(meta));
+
+          return yield* remotionMutex.withPermits(1)(
+            execAsync(`nice -n 19 npx remotion render MyComp "${outputPath}"`, {
+              cwd: REMOTION_DIR,
+            })
           );
         }),
       };

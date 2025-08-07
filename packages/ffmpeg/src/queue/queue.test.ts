@@ -83,6 +83,7 @@ it("Should create the queue.json if it does not exist", async () => {
           isOBSRunning: Effect.succeed(false),
         })
       ),
+      Effect.scoped,
       Effect.runPromise
     );
 
@@ -349,6 +350,7 @@ it("Should not process links requests (processQueue ignores information requests
           isOBSRunning: Effect.succeed(false),
         })
       ),
+      Effect.scoped,
       Effect.runPromise
     );
 

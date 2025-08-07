@@ -130,6 +130,7 @@ program
     }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
+      Effect.scoped,
       Effect.runPromise
     );
   });
@@ -319,6 +320,7 @@ program
     await transcribeVideoWorkflow().pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
+      Effect.scoped,
       Effect.runPromise
     );
   });
@@ -331,6 +333,7 @@ program
     await processQueue().pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
+      Effect.scoped,
       Effect.runPromise
     );
   });

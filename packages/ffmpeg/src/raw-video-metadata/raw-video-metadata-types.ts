@@ -101,12 +101,7 @@ export const createMetadataForRawVideo = Effect.fn("createMetadataForRawVideo")(
     const audioFiles = yield* Effect.all(
       speakingClips.map((clipLength, index) => {
         return Effect.gen(function* () {
-          const audioPath = path.join(
-            tmpDir,
-            `audio-${index}.mp3`
-          ) as AbsolutePath;
-
-          yield* ffmpeg.extractAudioFromVideo(rawVideoPath, audioPath, {
+          const audioPath = yield* ffmpeg.extractAudioFromVideo(rawVideoPath, {
             startTime: clipLength.startTime,
             endTime: clipLength.endTime,
           });

@@ -28,8 +28,19 @@ import {
   THRESHOLD,
 } from "./constants.js";
 import { findSilenceInVideo } from "./silence-detection.js";
-import { FFmpegCommandsService } from "./ffmpeg-commands.js";
+import {
+  CouldNotCreateClipError,
+  CouldNotExtractAudioError,
+  CouldNotGetFPSError,
+  FFmpegCommandsService,
+} from "./ffmpeg-commands.js";
 import { getQueueState } from "./queue/queue.js";
+import type { ExecException } from "child_process";
+import type {
+  BadArgument,
+  PlatformError,
+  SystemError,
+} from "@effect/platform/Error";
 
 export interface CreateAutoEditedVideoWorkflowOptions {
   inputVideo: AbsolutePath;
@@ -87,98 +98,123 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         options: CreateAutoEditedVideoWorkflowOptions
       ) => {
         return Effect.gen(function* () {
-          const [
-            alreadyExistsInExportDirectory,
-            alreadyExistsInShortsDirectory,
-          ] = yield* Effect.all([
-            fs.exists(
-              path.join(exportDirectory, `${options.outputFilename}.mp4`)
-            ),
-            fs.exists(
-              path.join(shortsExportDirectory, `${options.outputFilename}.mp4`)
-            ),
-          ]);
+          const filename = `${options.outputFilename}.mp4`;
 
-          if (alreadyExistsInExportDirectory) {
+          const pathInExportDirectory = path.join(
+            exportDirectory,
+            filename
+          ) as AbsolutePath;
+          const pathInShortsDirectory = path.join(
+            shortsExportDirectory,
+            filename
+          ) as AbsolutePath;
+
+          if (yield* fs.exists(pathInExportDirectory)) {
             return yield* new FileAlreadyExistsError({
               message: "File already exists in export directory",
             });
           }
 
-          if (alreadyExistsInShortsDirectory) {
+          if (yield* fs.exists(pathInShortsDirectory)) {
             return yield* new FileAlreadyExistsError({
               message: "File already exists in shorts directory",
             });
           }
 
+          const finalVideoPath = options.dryRun
+            ? pathInExportDirectory
+            : pathInShortsDirectory;
+
           const fpsFork = yield* Effect.fork(ffmpeg.getFPS(options.inputVideo));
 
-          // First create in the export directory
-          const videoInExportDirectoryPath = path.join(
-            exportDirectory,
-            `${options.outputFilename}.mp4`
-          ) as AbsolutePath;
-
-          const clipsFork = yield* Effect.fork(
-            findClips({ inputVideo: options.inputVideo })
-          );
-
-          const result = yield* createAutoEditedVideo({
-            inputVideo: options.inputVideo,
-            outputVideo: videoInExportDirectoryPath,
-            clips: yield* clipsFork,
+          const tempDir = yield* fs.makeTempDirectoryScoped({
+            directory: tmpdir(),
+            prefix: "create-auto-edited-video",
           });
 
-          const speakingClips = result.speakingClips;
+          const clips = yield* findClips({ inputVideo: options.inputVideo });
 
-          yield* Console.log(
-            `Video created successfully at: ${videoInExportDirectoryPath}`
+          const outputVideoFork = yield* Effect.fork(
+            createAutoEditedVideo({
+              inputVideo: options.inputVideo,
+              clips,
+            })
           );
 
-          let finalVideoPath = videoInExportDirectoryPath;
+          const outputAudioPathFork = yield* Effect.fork(
+            Effect.gen(function* () {
+              const audioPath = yield* ffmpeg.extractAudioFromVideo(
+                options.inputVideo
+              );
+
+              const audioClips = yield* Effect.all(
+                clips.map((clip, index) => {
+                  return Effect.gen(function* () {
+                    const audioClipPath = yield* ffmpeg.createAudioClip(
+                      audioPath,
+                      clip.startTime,
+                      clip.duration
+                    );
+
+                    yield* Console.log(
+                      `✅ Created audio clip for clip ${index + 1}/${
+                        clips.length
+                      }`
+                    );
+
+                    return audioClipPath;
+                  });
+                })
+              );
+
+              const concatenatedAudioPath =
+                yield* ffmpeg.concatenateAudioClips(audioClips);
+
+              return concatenatedAudioPath;
+            })
+          );
+
+          yield* Console.log(`Video created successfully`);
 
           if (options.subtitles) {
             const withSubtitlesPath = path.join(
-              exportDirectory,
-              `${options.outputFilename}-with-subtitles.mp4`
+              tempDir,
+              `with-subtitles.mp4`
             ) as AbsolutePath;
 
             const fps = yield* fpsFork;
 
-            const firstClipLength = speakingClips[0]!.duration * fps;
+            const firstClipLength = clips[0]!.duration * fps;
 
-            const totalDurationInFrames = speakingClips.reduce(
+            const totalDurationInFrames = clips.reduce(
               (acc, clip) => acc + clip.duration,
               0
             );
 
-            if (!firstClipLength) {
-              return yield* new NoSpeakingClipsError();
-            }
-
             yield* renderSubtitles({
-              inputVideoPath: videoInExportDirectoryPath,
+              inputAudioPathFork: outputAudioPathFork,
+              inputVideoPathFork: outputVideoFork,
+              fpsFork: fpsFork,
               outputPath: withSubtitlesPath,
               ctaDurationInFrames: firstClipLength,
               durationInFrames: totalDurationInFrames * fps,
               originalFileName: path.parse(options.inputVideo).name,
             });
-            finalVideoPath = withSubtitlesPath;
+
+            // Move the video to the final path
+            yield* fs.rename(withSubtitlesPath, finalVideoPath);
           } else {
+            // Move the video to the final path
+            yield* fs.rename(yield* outputVideoFork, finalVideoPath);
+
             yield* Console.log(
               "🎥 No subtitles requested, skipping subtitle generation"
             );
 
-            const audioPath =
-              `${videoInExportDirectoryPath}.mp3` as AbsolutePath;
-
-            yield* ffmpeg.extractAudioFromVideo(
-              videoInExportDirectoryPath,
-              audioPath
+            yield* Console.log("🎥 Creating transcript from audio");
+            const subtitles = yield* ffmpeg.createSubtitleFromAudio(
+              yield* outputAudioPathFork
             );
-
-            yield* Console.log("🎥 Creating subtitles from audio");
-            const subtitles = yield* ffmpeg.createSubtitleFromAudio(audioPath);
 
             yield* Console.log("🎥 Storing transcript");
             yield* transcriptStorage.storeTranscript({
@@ -188,38 +224,28 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
                 .trim(),
               filename: path.parse(options.inputVideo).name,
             });
-
-            yield* fs.remove(audioPath);
           }
-
-          if (options.dryRun) {
-            yield* Console.log(
-              "Dry run mode: Skipping move to shorts directory"
-            );
-            return finalVideoPath;
-          }
-
-          // Then move to shorts directory
-          const finalOutputPath = path.join(
-            yield* Config.string("SHORTS_EXPORT_DIRECTORY"),
-            `${options.outputFilename}.mp4`
-          ) as AbsolutePath;
-
-          yield* fs.rename(finalVideoPath, finalOutputPath);
-          yield* Console.log(`Video moved to: ${finalOutputPath}`);
-
-          return finalOutputPath;
         });
       };
 
       const renderSubtitles = ({
-        inputVideoPath: inputPath,
+        inputVideoPathFork,
+        inputAudioPathFork,
         outputPath,
         ctaDurationInFrames,
         durationInFrames,
         originalFileName,
+        fpsFork,
       }: {
-        inputVideoPath: AbsolutePath;
+        inputVideoPathFork: Effect.Effect<
+          AbsolutePath,
+          ExecException | CouldNotCreateClipError | PlatformError
+        >;
+        inputAudioPathFork: Effect.Effect<
+          AbsolutePath,
+          PlatformError | ExecException
+        >;
+        fpsFork: Effect.Effect<number, CouldNotGetFPSError>;
         outputPath: AbsolutePath;
         ctaDurationInFrames: number;
         durationInFrames: number;
@@ -227,50 +253,26 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       }) => {
         return Effect.gen(function* () {
           const startTime = Date.now();
-          yield* Console.log("🎥 Processing video for subtitles:", inputPath);
-          yield* Console.log("📝 Output will be saved to:", outputPath);
 
-          const tempDir = yield* fs.makeTempDirectoryScoped();
-
-          const audioPath = join(tempDir, "audio.mp3") as AbsolutePath;
-
-          yield* Console.log("🎵 Extracting audio...");
-          const audioStart = Date.now();
-          yield* ffmpeg.extractAudioFromVideo(inputPath, audioPath);
-          yield* Console.log(
-            `✅ Audio extracted successfully (took ${(Date.now() - audioStart) / 1000}s)`
+          const subtitles = yield* ffmpeg.createSubtitleFromAudio(
+            yield* inputAudioPathFork
           );
-
-          yield* Console.log("🎙️ Transcribing audio...");
-          const transcribeStart = Date.now();
-          const subtitles = yield* ffmpeg.createSubtitleFromAudio(audioPath);
-
-          yield* Console.log(
-            `✅ Audio transcribed successfully (took ${(Date.now() - transcribeStart) / 1000}s)`
-          );
-
-          const transcriptionPath = path.join(
-            yield* Config.string("TRANSCRIPTION_DIRECTORY"),
-            `${originalFileName}.txt`
-          ) as AbsolutePath;
 
           const fullTranscriptText = subtitles.segments
             .map((s) => s.text)
             .join("")
             .trim();
 
-          yield* fs.writeFileString(transcriptionPath, fullTranscriptText);
+          yield* transcriptStorage.storeTranscript({
+            transcript: fullTranscriptText,
+            filename: originalFileName,
+          });
 
           const processedSubtitles = subtitles.segments.flatMap(
             splitSubtitleSegments
           );
 
-          yield* Console.log("⏱️ Detecting video FPS...");
-          const fpsStart = Date.now();
-          const fps = yield* ffmpeg.getFPS(inputPath);
-          yield* Console.log(
-            `✅ Detected FPS: ${fps} (took ${(Date.now() - fpsStart) / 1000}s)`
-          );
+          const fps = yield* fpsFork;
 
           const subtitlesAsFrames = processedSubtitles.map(
             (subtitle: Subtitle) => ({
@@ -286,16 +288,6 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
           yield* Console.log(`✅ Decided on CTA: ${cta}`);
 
-          const meta = {
-            subtitles: subtitlesAsFrames,
-            cta,
-            ctaDurationInFrames,
-            durationInFrames,
-          };
-
-          const META_FILE_PATH = path.join(REMOTION_DIR, "src", "meta.json");
-          yield* fs.writeFileString(META_FILE_PATH, JSON.stringify(meta));
-
           const subtitlesOverlayPath = path.join(
             REMOTION_DIR,
             "out",
@@ -304,25 +296,28 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
           yield* Console.log("🎬 Rendering subtitles...");
           const renderStart = Date.now();
-          yield* ffmpeg.renderRemotion(subtitlesOverlayPath, REMOTION_DIR);
+          yield* ffmpeg.renderRemotion(subtitlesOverlayPath, {
+            subtitles: subtitlesAsFrames,
+            cta,
+            ctaDurationInFrames,
+            durationInFrames,
+          });
 
           yield* Console.log(
             `✅ Subtitles rendered (took ${(Date.now() - renderStart) / 1000}s)`
           );
 
           yield* ffmpeg.overlaySubtitles(
-            inputPath,
+            yield* inputVideoPathFork,
             subtitlesOverlayPath,
             outputPath
           );
-
-          yield* fs.remove(audioPath);
 
           const totalTime = (Date.now() - startTime) / 1000;
           yield* Console.log(
             `✅ Successfully rendered subtitles! (Total time: ${totalTime}s)`
           );
-        }).pipe(Effect.scoped);
+        });
       };
 
       const findClips = Effect.fn("findClips")(function* (opts: {
@@ -392,11 +387,9 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
       const createAutoEditedVideo = ({
         inputVideo,
-        outputVideo,
         clips,
       }: {
         inputVideo: AbsolutePath;
-        outputVideo: AbsolutePath;
         clips: {
           startTime: number;
           duration: number;
@@ -405,12 +398,10 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         return Effect.gen(function* () {
           const startTime = Date.now();
           yield* Console.log("🎥 Processing video:", inputVideo);
-          yield* Console.log("📝 Output will be saved to:", outputVideo);
 
           // Create a temporary directory for clips
           const tempDir = yield* fs.makeTempDirectoryScoped({
             directory: tmpdir(),
-            prefix: "speaking-clips",
           });
 
           // Create individual clips
@@ -454,21 +445,31 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           // Concatenate all clips
           yield* Console.log("🎥 Concatenating clips...");
           const concatStart = Date.now();
-          yield* ffmpeg.concatenateClips(clipFiles, concatenatedVideoPath);
+          yield* ffmpeg.concatenateVideoClips(clipFiles, concatenatedVideoPath);
           yield* Console.log(
             `✅ Concatenated all clips (took ${(Date.now() - concatStart) / 1000}s)`
           );
 
           // Normalize audio
           yield* Console.log("🎥 Normalizing audio...");
-          yield* ffmpeg.normalizeAudio(concatenatedVideoPath, outputVideo);
+
+          const normalizedVideoPath = join(
+            tempDir,
+            "normalized-video.mp4"
+          ) as AbsolutePath;
+
+          yield* ffmpeg.normalizeAudio(
+            concatenatedVideoPath,
+            normalizedVideoPath
+          );
 
           const totalTime = (Date.now() - startTime) / 1000;
           yield* Console.log(
             `✅ Successfully created speaking-only video! (Total time: ${totalTime}s)`
           );
-          return { speakingClips: clips };
-        }).pipe(Effect.scoped);
+
+          return normalizedVideoPath;
+        });
       };
 
       const roundToDecimalPlaces = (num: number, places: number) => {
@@ -639,11 +640,10 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             "concatenated-video.mp4"
           ) as AbsolutePath;
 
-          yield* ffmpeg.concatenateClips(clipFiles, concatenatedVideoPath);
+          yield* ffmpeg.concatenateVideoClips(clipFiles, concatenatedVideoPath);
 
           yield* ffmpeg.normalizeAudio(concatenatedVideoPath, opts.outputPath);
-        },
-        Effect.scoped
+        }
       );
 
       const concatenateVideosWorkflow = (
@@ -785,13 +785,13 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
           // Concatenate all processed clips
           yield* Console.log("🎥 Concatenating videos...");
-          yield* ffmpeg.concatenateClips(processedClips, outputPath);
+          yield* ffmpeg.concatenateVideoClips(processedClips, outputPath);
           yield* Console.log(
             `✅ Successfully concatenated videos to: ${outputPath}`
           );
 
           return outputPath;
-        }).pipe(Effect.scoped);
+        });
       };
 
       return {
@@ -891,16 +891,10 @@ export const transcribeVideoWorkflow = () => {
 
     yield* Console.log("Transcribing video...");
 
-    const audioPath = path.join(
-      path.dirname(selectedVideo),
-      `${path.basename(selectedVideo)}.${yield* Config.string("AUDIO_FILE_EXTENSION")}`
-    ) as AbsolutePath;
-
-    yield* ffmpeg.extractAudioFromVideo(selectedVideo, audioPath);
+    const audioPath = yield* ffmpeg.extractAudioFromVideo(selectedVideo);
 
     const transcript = yield* ffmpeg.transcribeAudio(audioPath);
 
-    yield* fs.remove(audioPath);
     yield* Console.log("\nTranscript:");
     yield* Console.log(transcript);
   });

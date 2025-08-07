@@ -382,12 +382,13 @@ export const processQueue = () => {
             .pipe(Effect.either);
 
           if (Either.isLeft(result)) {
-            const errorMessage =
-              result.left instanceof Error
-                ? result.left.message
-                : String(result.left);
+            yield* Console.log(
+              `❌ Video creation failed: ${result.left.message}`
+            );
+            if ("cause" in result.left) {
+              yield* Console.log(result.left.cause);
+            }
 
-            yield* Console.log(`❌ Video creation failed: ${errorMessage}`);
             yield* Effect.logError("Video creation workflow failed", {
               queueItemId: queueItem.id,
               videoName: queueItem.action.videoName,
@@ -398,7 +399,7 @@ export const processQueue = () => {
             yield* updateQueueItem({
               ...queueItem,
               status: "failed",
-              error: `Video creation failed: ${errorMessage}`,
+              error: `Video creation failed: ${result.left.message}`,
             });
             continue;
           }
