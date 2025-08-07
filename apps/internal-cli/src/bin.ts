@@ -20,6 +20,7 @@ import {
   validateWindowsFilename,
   writeToQueue,
   type QueueItem,
+  WorkflowsService,
 } from "@total-typescript/ffmpeg";
 import { type AbsolutePath, execAsync } from "@total-typescript/shared";
 import { Command } from "commander";
@@ -108,6 +109,24 @@ program
   .action(async (video: string | undefined) => {
     await appendVideoToTimeline({
       inputVideo: video as AbsolutePath,
+    }).pipe(
+      Effect.withConfigProvider(ConfigProvider.fromEnv()),
+      Effect.provide(MainLayerLive),
+      Effect.runPromise
+    );
+  });
+
+program
+  .command("edit-interview <hostVideo> <guestVideo> <outputPath>")
+  .action(async (hostVideo, guestVideo, outputPath) => {
+    await Effect.gen(function* () {
+      const workflows = yield* WorkflowsService;
+
+      yield* workflows.editInterviewWorkflow({
+        hostVideo,
+        guestVideo,
+        outputPath,
+      });
     }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),

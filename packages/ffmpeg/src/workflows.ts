@@ -314,6 +314,71 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         });
       };
 
+      const findClips = Effect.fn("findClips")(function* (opts: {
+        inputVideo: AbsolutePath;
+      }) {
+        const fpsFork = yield* Effect.fork(ffmpeg.getFPS(opts.inputVideo));
+
+        const badTakeMarkersFork = yield* Effect.fork(
+          extractBadTakeMarkersFromFile(opts.inputVideo, yield* fpsFork, ffmpeg)
+        );
+
+        const fps = yield* fpsFork;
+
+        const silenceResultFork = yield* Effect.fork(
+          findSilenceInVideo(opts.inputVideo, {
+            threshold: THRESHOLD,
+            silenceDuration: SILENCE_DURATION,
+            startPadding: AUTO_EDITED_START_PADDING,
+            endPadding: AUTO_EDITED_END_PADDING,
+            fps,
+            ffmpeg,
+          })
+        );
+
+        const { speakingClips } = yield* silenceResultFork;
+        const badTakeMarkers = yield* badTakeMarkersFork;
+
+        const goodClips = speakingClips.filter((clip, index) => {
+          const quality = isBadTake(
+            clip,
+            badTakeMarkers,
+            index,
+            speakingClips,
+            fps
+          );
+          return quality === "good";
+        });
+
+        if (goodClips.length === 0) {
+          yield* Console.log("❌ No good clips found");
+          return yield* Effect.fail(
+            new CouldNotCreateSpeakingOnlyVideoError({
+              cause: new Error("No good clips found"),
+            })
+          );
+        }
+
+        const clips = goodClips.map((clip, i, clips) => {
+          const resolvedDuration = roundToDecimalPlaces(
+            clip.durationInFrames / fps,
+            2
+          );
+          const duration =
+            i === clips.length - 1
+              ? resolvedDuration +
+                AUTO_EDITED_VIDEO_FINAL_END_PADDING -
+                AUTO_EDITED_END_PADDING
+              : resolvedDuration;
+          return {
+            startTime: clip.startTime,
+            duration,
+          };
+        });
+
+        return clips;
+      });
+
       const createAutoEditedVideo = ({
         inputVideo,
         outputVideo,
@@ -326,83 +391,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           yield* Console.log("🎥 Processing video:", inputVideo);
           yield* Console.log("📝 Output will be saved to:", outputVideo);
 
-          // Get the video's FPS
-          yield* Console.log("⏱️  Detecting video FPS...");
-          const fpsStart = Date.now();
-          const fps = yield* ffmpeg.getFPS(inputVideo);
-          yield* Console.log(
-            `✅ Detected FPS: ${fps} (took ${(Date.now() - fpsStart) / 1000}s)`
-          );
-
-          // First, find all speaking clips
-          yield* Console.log("🔍 Finding speaking clips...");
-          const speakingStart = Date.now();
-          const { speakingClips } = yield* findSilenceInVideo(inputVideo, {
-            threshold: THRESHOLD,
-            silenceDuration: SILENCE_DURATION,
-            startPadding: AUTO_EDITED_START_PADDING,
-            endPadding: AUTO_EDITED_END_PADDING,
-            fps,
-            ffmpeg,
-          });
-          yield* Console.log(
-            `✅ Found ${speakingClips.length} speaking clips (took ${(Date.now() - speakingStart) / 1000}s)`
-          );
-
-          // Then get all bad take markers
-          yield* Console.log("🎯 Extracting bad take markers...");
-          const markersStart = Date.now();
-          const badTakeMarkers = yield* extractBadTakeMarkersFromFile(
-            inputVideo,
-            fps,
-            ffmpeg
-          );
-          yield* Console.log(
-            `✅ Found ${badTakeMarkers.length} bad take markers (took ${(Date.now() - markersStart) / 1000}s)`
-          );
-
-          // Filter out bad takes
-          yield* Console.log("🔍 Filtering out bad takes...");
-          const filterStart = Date.now();
-          const goodClips = speakingClips.filter((clip, index) => {
-            const quality = isBadTake(
-              clip,
-              badTakeMarkers,
-              index,
-              speakingClips,
-              fps
-            );
-            return quality === "good";
-          });
-          yield* Console.log(
-            `✅ Found ${goodClips.length} good clips (took ${(Date.now() - filterStart) / 1000}s)`
-          );
-
-          if (goodClips.length === 0) {
-            yield* Console.log("❌ No good clips found");
-            return yield* Effect.fail(
-              new CouldNotCreateSpeakingOnlyVideoError({
-                cause: new Error("No good clips found"),
-              })
-            );
-          }
-
-          const clips = goodClips.map((clip, i, clips) => {
-            const resolvedDuration = roundToDecimalPlaces(
-              clip.durationInFrames / fps,
-              2
-            );
-            const duration =
-              i === clips.length - 1
-                ? resolvedDuration +
-                  AUTO_EDITED_VIDEO_FINAL_END_PADDING -
-                  AUTO_EDITED_END_PADDING
-                : resolvedDuration;
-            return {
-              startTime: clip.startTime,
-              duration,
-            };
-          });
+          const clips = yield* findClips({ inputVideo });
 
           // Create a temporary directory for clips
           const tempDir = yield* fs.makeTempDirectoryScoped({
@@ -430,7 +419,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
                 );
 
                 yield* Console.log(
-                  `✅ Created clip ${i + 1}/${goodClips.length} (took ${(Date.now() - clipStart) / 1000}s)`
+                  `✅ Created clip ${i + 1}/${clips.length} (took ${(Date.now() - clipStart) / 1000}s)`
                 );
                 return outputFile;
               })
@@ -440,7 +429,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             }
           );
           yield* Console.log(
-            `✅ Created all ${goodClips.length} clips (took ${(Date.now() - clipsStart) / 1000}s)`
+            `✅ Created all ${clips.length} clips (took ${(Date.now() - clipsStart) / 1000}s)`
           );
 
           // Create a concat file
@@ -479,6 +468,184 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       const roundToDecimalPlaces = (num: number, places: number) => {
         return Math.round(num * 10 ** places) / 10 ** places;
       };
+
+      type RawClipEvent = {
+        type: "clip-start" | "clip-end";
+        time: number;
+        speaker: "host" | "guest";
+      };
+
+      type InterviewSpeakingClip = {
+        state: "host-speaking" | "guest-speaking" | "guest-speaking-over-host";
+        startTime: number;
+        duration: number;
+      };
+
+      type State =
+        | "silence"
+        | "host-speaking"
+        | "guest-speaking"
+        | "guest-speaking-over-host";
+      type Event =
+        | "host-clip-start"
+        | "guest-clip-start"
+        | "host-clip-end"
+        | "guest-clip-end";
+
+      const stateMachine = {
+        silence: {
+          "host-clip-start": "host-speaking",
+          "guest-clip-start": "guest-speaking",
+          "host-clip-end": "silence",
+          "guest-clip-end": "silence",
+        },
+        "host-speaking": {
+          "host-clip-start": "host-speaking",
+          "guest-clip-start": "guest-speaking",
+          "host-clip-end": "silence",
+          "guest-clip-end": "host-speaking",
+        },
+        "guest-speaking": {
+          "guest-clip-start": "guest-speaking",
+          "guest-clip-end": "silence",
+          "host-clip-start": "guest-speaking-over-host",
+          "host-clip-end": "guest-speaking",
+        },
+        "guest-speaking-over-host": {
+          "guest-clip-start": "guest-speaking-over-host",
+          "guest-clip-end": "host-speaking",
+          "host-clip-start": "guest-speaking-over-host",
+          "host-clip-end": "guest-speaking",
+        },
+      } satisfies Record<State, Record<Event, State>>;
+
+      const editInterviewWorkflow = Effect.fn("editInterviewWorkflow")(
+        function* (opts: {
+          hostVideo: AbsolutePath;
+          guestVideo: AbsolutePath;
+          outputPath: AbsolutePath;
+        }) {
+          const hostClipsFork = yield* Effect.fork(
+            findClips({ inputVideo: opts.hostVideo })
+          );
+          const guestClipsFork = yield* Effect.fork(
+            findClips({ inputVideo: opts.guestVideo })
+          );
+
+          const hostClips = yield* hostClipsFork;
+          const guestClips = yield* guestClipsFork;
+
+          const rawEvents: RawClipEvent[] = [];
+
+          for (const clip of hostClips) {
+            rawEvents.push({
+              type: "clip-start",
+              time: clip.startTime,
+              speaker: "host",
+            });
+
+            rawEvents.push({
+              type: "clip-end",
+              time: clip.startTime + clip.duration,
+              speaker: "host",
+            });
+          }
+
+          for (const clip of guestClips) {
+            rawEvents.push({
+              type: "clip-start",
+              time: clip.startTime,
+              speaker: "guest",
+            });
+
+            rawEvents.push({
+              type: "clip-end",
+              time: clip.startTime + clip.duration,
+              speaker: "guest",
+            });
+          }
+
+          const events = rawEvents.sort((a, b) => a.time - b.time);
+
+          let state: State = "silence";
+
+          const interviewSpeakingClips: InterviewSpeakingClip[] = [];
+
+          for (let i = 0; i < events.length; i++) {
+            const event = events[i]!;
+            const nextEvent = events[i + 1];
+
+            if (!nextEvent) {
+              break;
+            }
+
+            const newState: State =
+              stateMachine[state][`${event.speaker}-${event.type}`];
+
+            if (newState !== "silence") {
+              interviewSpeakingClips.push({
+                state: newState,
+                startTime: event.time,
+                duration: nextEvent.time - event.time,
+              });
+            }
+
+            state = newState;
+          }
+
+          const tempDir = yield* fs.makeTempDirectoryScoped({
+            directory: tmpdir(),
+            prefix: "interview-speaking-clips",
+          });
+
+          const clipFiles = yield* Effect.all(
+            interviewSpeakingClips.map((clip, i) =>
+              Effect.gen(function* () {
+                const clipStart = Date.now();
+                const outputFile = join(
+                  tempDir,
+                  `clip-${i}.mp4`
+                ) as AbsolutePath;
+
+                // TODO: create clips to handle the case where the guest is speaking over the host
+                yield* ffmpeg.createClip(
+                  clip.state === "host-speaking"
+                    ? opts.hostVideo
+                    : opts.guestVideo,
+                  outputFile,
+                  clip.startTime,
+                  clip.duration
+                );
+
+                yield* Console.log(
+                  `✅ Created clip ${i + 1}/${interviewSpeakingClips.length} of ${clip.state} (took ${(Date.now() - clipStart) / 1000}s)`
+                );
+                return outputFile;
+              })
+            ),
+            {
+              concurrency: FFMPEG_CONCURRENCY_LIMIT,
+            }
+          );
+
+          const concatFile = join(tempDir, "concat.txt") as AbsolutePath;
+          const concatContent = clipFiles
+            .map((file: string) => `file '${file}'`)
+            .join("\n");
+
+          yield* fs.writeFileString(concatFile, concatContent);
+
+          const concatenatedVideoPath = join(
+            tempDir,
+            "concatenated-video.mp4"
+          ) as AbsolutePath;
+
+          yield* ffmpeg.concatenateClips(concatFile, concatenatedVideoPath);
+
+          yield* ffmpeg.normalizeAudio(concatenatedVideoPath, opts.outputPath);
+        },
+        Effect.scoped
+      );
 
       const concatenateVideosWorkflow = (
         options: ConcatenateVideosWorkflowOptions
@@ -639,6 +806,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       return {
         createAutoEditedVideoWorkflow,
         concatenateVideosWorkflow,
+        editInterviewWorkflow,
       };
     }),
     dependencies: [
