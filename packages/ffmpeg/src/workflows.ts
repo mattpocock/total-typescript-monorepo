@@ -98,7 +98,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         "SHORTS_EXPORT_DIRECTORY"
       );
       const transcriptStorage = yield* TranscriptStorageService;
-
+      const audioExtension = yield* Config.string("AUDIO_FILE_EXTENSION");
       const ffmpeg = yield* FFmpegCommandsService;
 
       /**
@@ -175,7 +175,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
               const normalizedAudioPath = join(
                 tempDir,
-                "normalized-audio.mp3"
+                `normalized-audio.${audioExtension}`
               ) as AbsolutePath;
 
               yield* ffmpeg.normalizeAudio(

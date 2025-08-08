@@ -299,7 +299,7 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           ) as AbsolutePath;
 
           return yield* runCPULimitsAwareCommand(
-            `nice -n 19 ffmpeg -y -hide_banner -hwaccel cuda -i "${inputPath}" -vn -acodec libmp3lame -q:a 2 "${outputPath}" ${opts?.startTime ? `-ss ${opts.startTime}` : ""} ${opts?.endTime ? `-t ${opts.endTime}` : ""}`
+            `nice -n 19 ffmpeg -y -hide_banner -hwaccel cuda -i "${inputPath}" -vn -c:a copy "${outputPath}" ${opts?.startTime ? `-ss ${opts.startTime}` : ""} ${opts?.endTime ? `-t ${opts.endTime}` : ""}`
           ).pipe(
             Effect.mapError((e) => {
               return new CouldNotExtractAudioError({
@@ -322,7 +322,7 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
             `clip.${audioExtension}`
           ) as AbsolutePath;
           return yield* runCPULimitsAwareCommand(
-            `nice -n 19 ffmpeg -y -hide_banner -hwaccel cuda -ss ${startTime} -i "${inputAudio}" -t ${duration} -c:a libmp3lame -b:a 384k "${outputPath}"`
+            `nice -n 19 ffmpeg -y -hide_banner -hwaccel cuda -ss ${startTime} -i "${inputAudio}" -t ${duration} -c:a copy "${outputPath}"`
           ).pipe(
             Effect.mapError((e) => {
               return new CouldNotCreateAudioClipError({
@@ -386,7 +386,7 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           ) as AbsolutePath;
 
           return yield* runCPULimitsAwareCommand(
-            `nice -n 19 ffmpeg -y -hide_banner -f concat -safe 0 -i "${concatFile}" -c:a libmp3lame -b:a 384k "${outputAudio}"`
+            `nice -n 19 ffmpeg -y -hide_banner -f concat -safe 0 -i "${concatFile}" -c:a copy "${outputAudio}"`
           ).pipe(Effect.map(() => outputAudio));
         }),
 
@@ -459,7 +459,7 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           const outputPath = path.join(tempDir, "combined.mp4") as AbsolutePath;
 
           return yield* runCPULimitsAwareCommand(
-            `ffmpeg -i "${videoPath}" -i "${audioPath}" -c:v copy -c:a libmp3lame -b:a 384k -map 0:v:0 -map 1:a:0 "${outputPath}"`
+            `ffmpeg -i "${videoPath}" -i "${audioPath}" -c:v copy -c:a copy -map 0:v:0 -map 1:a:0 "${outputPath}"`
           ).pipe(Effect.map(() => outputPath));
         }),
 
