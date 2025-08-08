@@ -50,6 +50,7 @@ import {
   type MultiTrackClip,
 } from "./davinci-integration.js";
 import { options } from "@effect/platform/HttpClientRequest";
+import type { VideoClip } from "./video-clip-types.js";
 
 export interface CreateAutoEditedVideoWorkflowOptions {
   inputVideo: AbsolutePath;
@@ -232,9 +233,6 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             // Copy the video to the final path
             yield* fs.copyFile(withSubtitlesPath, finalVideoPath);
           } else {
-            // Copy the video to the final path
-            yield* fs.copyFile(yield* outputVideoFork, finalVideoPath);
-
             yield* Console.log(
               "🎥 No subtitles requested, skipping subtitle generation"
             );
@@ -252,6 +250,9 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
                 .trim(),
               filename: path.parse(options.inputVideo).name,
             });
+
+            // Copy the video to the final path
+            yield* fs.copyFile(yield* outputVideoFork, finalVideoPath);
           }
         });
       };
@@ -557,6 +558,45 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         }
       );
 
+      const exportInterviewWorkflow = Effect.fn("exportInterviewWorkflow")(
+        function* (opts: {
+          hostVideo: AbsolutePath;
+          guestVideo: AbsolutePath;
+          outputJsonPath: AbsolutePath;
+        }) {
+          const hostClipsFork = yield* Effect.fork(
+            findClips({ inputVideo: opts.hostVideo })
+          );
+          const guestClipsFork = yield* Effect.fork(
+            findClips({ inputVideo: opts.guestVideo })
+          );
+
+          const hostClips = yield* hostClipsFork;
+          const guestClips = yield* guestClipsFork;
+
+          const interviewSpeakingClips = rawClipsToInterviewSpeakingClips({
+            hostClips: hostClips,
+            guestClips: guestClips,
+          });
+
+          const videoClips: VideoClip[] = interviewSpeakingClips.map((clip) => {
+            return {
+              sourceVideoPath:
+                clip.state === "host-speaking"
+                  ? opts.hostVideo
+                  : opts.guestVideo,
+              sourceVideoStartTime: clip.startTime,
+              sourceVideoEndTime: clip.startTime + clip.duration,
+            };
+          });
+
+          yield* fs.writeFileString(
+            opts.outputJsonPath,
+            JSON.stringify(videoClips, null, 2)
+          );
+        }
+      );
+
       const moveInterviewToDavinciResolve = Effect.fn(
         "moveInterviewToDavinciResolve"
       )(function* (opts: {
@@ -784,6 +824,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         concatenateVideosWorkflow,
         editInterviewWorkflow,
         moveInterviewToDavinciResolve,
+        exportInterviewWorkflow,
       };
     }),
     dependencies: [
@@ -1000,7 +1041,7 @@ export const multiSelectVideosFromQueue = () => {
 const rawClipsToInterviewSpeakingClips = (opts: {
   hostClips: { startTime: number; duration: number }[];
   guestClips: { startTime: number; duration: number }[];
-}) => {
+}): InterviewSpeakingClip[] => {
   const rawEvents: RawClipEvent[] = [];
 
   for (const clip of opts.hostClips) {

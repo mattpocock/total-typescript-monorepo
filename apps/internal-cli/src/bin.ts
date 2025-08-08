@@ -136,6 +136,27 @@ program
   });
 
 program
+  .command("export-interview <hostVideo> <guestVideo> <outputJsonPath>")
+  .action(async (hostVideo, guestVideo, outputJsonPath) => {
+    await Effect.gen(function* () {
+      const workflows = yield* WorkflowsService;
+
+      yield* workflows.exportInterviewWorkflow({
+        hostVideo: path.join(process.cwd(), hostVideo) as AbsolutePath,
+        guestVideo: path.join(process.cwd(), guestVideo) as AbsolutePath,
+        outputJsonPath: path.join(
+          process.cwd(),
+          outputJsonPath
+        ) as AbsolutePath,
+      });
+    }).pipe(
+      Effect.withConfigProvider(ConfigProvider.fromEnv()),
+      Effect.provide(MainLayerLive),
+      Effect.runPromise
+    );
+  });
+
+program
   .command("move-interview-to-davinci-resolve <hostVideo> <guestVideo>")
   .action(async (hostVideo, guestVideo) => {
     await Effect.gen(function* () {
