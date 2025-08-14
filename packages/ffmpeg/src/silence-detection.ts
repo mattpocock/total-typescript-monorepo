@@ -113,12 +113,8 @@ export const findSilenceInVideo = (
   }
 ) => {
   return Effect.gen(function* () {
-    const processStartTime = Date.now();
-    console.log("🎥 Processing video:", inputVideo);
+    yield* Effect.log(`[findSilenceInVideo] Processing video: ${inputVideo}`);
 
-    console.log("🔍 Finding speaking clips...");
-
-    const speakingStart = Date.now();
     const { stdout } = yield* opts.ffmpeg.detectSilence(
       inputVideo,
       opts.threshold,
@@ -126,8 +122,8 @@ export const findSilenceInVideo = (
     );
 
     const speakingClips = getClipsOfSpeakingFromFFmpeg(stdout, opts);
-    console.log(
-      `✅ Found ${speakingClips.length} speaking clips (took ${(Date.now() - speakingStart) / 1000}s)`
+    yield* Effect.log(
+      `[findSilenceInVideo] Found ${speakingClips.length} speaking clips`
     );
 
     if (!speakingClips[0]) {
@@ -143,20 +139,14 @@ export const findSilenceInVideo = (
     const clipStartTime = speakingClips[0].startTime;
     const endTime = endClip.endTime;
 
-    console.log("🔍 Filtering clips...");
-    const filterStart = Date.now();
-
     const filteredClips = speakingClips.filter(
       (clip) =>
         clip.durationInFrames > MINIMUM_CLIP_LENGTH_IN_SECONDS * opts.fps
     );
 
-    console.log(
-      `✅ Filtered to ${filteredClips.length} clips (took ${(Date.now() - filterStart) / 1000}s)`
+    yield* Effect.log(
+      `[findSilenceInVideo] Filtered to ${filteredClips.length} clips`
     );
-
-    const totalTime = (Date.now() - processStartTime) / 1000;
-    console.log(`✅ Successfully processed video! (Total time: ${totalTime}s)`);
 
     return {
       speakingClips: filteredClips,

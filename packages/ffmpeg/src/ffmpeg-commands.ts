@@ -262,26 +262,37 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
 
         trimVideo: Effect.fn("trimVideo")(function* (
           inputVideo: AbsolutePath,
-          outputVideo: AbsolutePath,
           startTime: number,
           endTime: number
         ) {
+          const tempDir = yield* fs.makeTempDirectoryScoped();
+          const outputVideo = path.join(tempDir, "trimmed.mp4") as AbsolutePath;
+
           const formatFloat = yield* Effect.sync(
             () => (num: number) => num.toFixed(3)
           );
 
-          return yield* runCPULimitsAwareCommand(
-            `ffmpeg -y -hide_banner -ss ${formatFloat(startTime)} -to ${formatFloat(endTime)} -i "${inputVideo}" -c copy "${outputVideo.replaceAll("\\", "")}"`
+          yield* runCPULimitsAwareCommand(
+            `ffmpeg -y -hide_banner -ss ${formatFloat(startTime)} -to ${formatFloat(endTime)} -i "${inputVideo}" -c copy "${outputVideo}"`
           );
+
+          return outputVideo;
         }),
 
         normalizeAudio: Effect.fn("normalizeAudio")(function* (
-          input: AbsolutePath,
-          output: AbsolutePath
+          input: AbsolutePath
         ) {
-          return yield* runCPULimitsAwareCommand(
-            `ffmpeg -y -i "${input}" -af "loudnorm=I=-16:TP=-1.5:LRA=11" "${output}"`
+          const tempDir = yield* fs.makeTempDirectoryScoped();
+          const outputFile = path.join(
+            tempDir,
+            `normalized${path.extname(input)}`
+          ) as AbsolutePath;
+
+          yield* runCPULimitsAwareCommand(
+            `ffmpeg -y -i "${input}" -af "loudnorm=I=-16:TP=-1.5:LRA=11" "${outputFile}"`
           );
+
+          return outputFile;
         }),
 
         extractAudioFromVideo: Effect.fn("extractAudioFromVideo")(function* (
@@ -333,13 +344,18 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           );
         }),
 
-        createClip: Effect.fn("createClip")(function* (
+        createVideoClip: Effect.fn("createVideoClip")(function* (
           inputVideo: AbsolutePath,
-          outputFile: AbsolutePath,
           startTime: number,
           duration: number
         ) {
-          return yield* runGPULimitsAwareCommand(
+          const tempDir = yield* fs.makeTempDirectoryScoped();
+          const outputFile = path.join(
+            tempDir,
+            `clip.${path.extname(inputVideo)}`
+          ) as AbsolutePath;
+
+          yield* runGPULimitsAwareCommand(
             `nice -n 19 ffmpeg -y -hide_banner -ss ${startTime} -i "${inputVideo}" -t ${duration} -c:v h264_nvenc -preset slow -rc:v vbr -cq:v 19 -b:v 8000k -maxrate 12000k -bufsize 16000k -c:a aac -b:a 384k "${outputFile}"`
           ).pipe(
             Effect.mapError((e) => {
@@ -348,11 +364,12 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
               });
             })
           );
+
+          return outputFile;
         }),
 
         concatenateVideoClips: Effect.fn("concatenateVideoClips")(function* (
-          clipFiles: AbsolutePath[],
-          outputVideo: AbsolutePath
+          clipFiles: AbsolutePath[]
         ) {
           const tempDir = yield* fs.makeTempDirectoryScoped();
 
@@ -361,11 +378,18 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
             .map((file: string) => `file '${file}'`)
             .join("\n");
 
+          const outputVideo = path.join(
+            tempDir,
+            `concatenated-video.mp4`
+          ) as AbsolutePath;
+
           yield* fs.writeFileString(concatFile, concatContent);
 
-          return yield* runCPULimitsAwareCommand(
+          yield* runCPULimitsAwareCommand(
             `ffmpeg -y -hide_banner -f concat -safe 0 -i "${concatFile}" -c copy -avoid_negative_ts make_zero "${outputVideo}"`
           );
+
+          return outputVideo;
         }),
 
         concatenateAudioClips: Effect.fn("concatenateAudioClips")(function* (
@@ -392,12 +416,19 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
 
         overlaySubtitles: Effect.fn("overlaySubtitles")(function* (
           inputPath: AbsolutePath,
-          subtitlesOverlayPath: AbsolutePath,
-          outputPath: AbsolutePath
+          subtitlesOverlayPath: AbsolutePath
         ) {
-          return yield* runCPULimitsAwareCommand(
+          const tempDir = yield* fs.makeTempDirectoryScoped();
+          const outputPath = path.join(
+            tempDir,
+            `with-subtitles.mp4`
+          ) as AbsolutePath;
+
+          yield* runCPULimitsAwareCommand(
             `nice -n 19 ffmpeg -y -i "${inputPath}" -i "${subtitlesOverlayPath}" -filter_complex "[0:v][1:v]overlay" -c:a copy "${outputPath}"`
           );
+
+          return outputPath;
         }),
 
         detectSilence: Effect.fn("detectSilence")(function* (

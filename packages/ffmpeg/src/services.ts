@@ -237,6 +237,19 @@ export class TranscriptStorageService extends Effect.Service<TranscriptStorageSe
             )
             .sort((a, b) => b.localeCompare(a));
         }),
+        getTranscript: Effect.fn("getTranscript")(function* (opts: {
+          filename: string;
+        }) {
+          const transcriptPath = path.join(
+            TRANSCRIPTION_DIRECTORY,
+            opts.filename + ".txt"
+          ) as AbsolutePath;
+          const exists = yield* fs.exists(transcriptPath);
+          if (!exists) {
+            return null;
+          }
+          return yield* fs.readFileString(transcriptPath);
+        }),
         getOriginalVideoPathFromTranscript: Effect.fn(
           "getOriginalVideoPathFromTranscript"
         )(function* (opts: { transcriptPath: AbsolutePath }) {
