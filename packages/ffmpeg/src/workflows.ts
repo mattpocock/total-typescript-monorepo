@@ -28,8 +28,8 @@ import {
   AUTO_EDITED_END_PADDING,
   AUTO_EDITED_START_PADDING,
   AUTO_EDITED_VIDEO_FINAL_END_PADDING,
+  getSilenceThreshold,
   SILENCE_DURATION,
-  THRESHOLD,
 } from "./constants.js";
 import { findSilenceInVideo } from "./silence-detection.js";
 import {
@@ -341,6 +341,9 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         inputVideo: AbsolutePath;
       }) {
         const fpsFork = yield* Effect.fork(ffmpeg.getFPS(opts.inputVideo));
+        const maxVolumeFork = yield* Effect.fork(
+          ffmpeg.getMaxVolumeOfAudio(opts.inputVideo)
+        );
 
         const badTakeMarkersFork = yield* Effect.fork(
           extractBadTakeMarkersFromFile(opts.inputVideo, yield* fpsFork, ffmpeg)
@@ -348,9 +351,13 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
         const fps = yield* fpsFork;
 
+        const maxVolume = yield* maxVolumeFork;
+
+        yield* Effect.log(`[findClips] Max volume: ${maxVolume}`);
+
         const silenceResultFork = yield* Effect.fork(
           findSilenceInVideo(opts.inputVideo, {
-            threshold: THRESHOLD,
+            threshold: getSilenceThreshold(maxVolume),
             silenceDuration: SILENCE_DURATION,
             startPadding: AUTO_EDITED_START_PADDING,
             endPadding: AUTO_EDITED_END_PADDING,

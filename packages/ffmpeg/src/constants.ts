@@ -1,4 +1,11 @@
-export const THRESHOLD = -30;
+// Silence is anything 20db below the max volume of the clip
+const SILENCE_THRESHOLD = -20;
+
+export const getSilenceThreshold = (maxVolumeOfClip: number): number => {
+  // maxVolume of clip will ideally be -10dB
+  return SILENCE_THRESHOLD + maxVolumeOfClip;
+};
+
 export const SILENCE_DURATION = 0.8;
 export const TRIM_VIDEO_PADDING = 0.3;
 

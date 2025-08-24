@@ -15,7 +15,7 @@ import { z } from "zod";
 import { type RawVideoMetadata } from "./raw-video-metadata/raw-video-metadata-types.js";
 import { FFmpegCommandsService } from "./ffmpeg-commands.js";
 import { findSilenceInVideo } from "./silence-detection.js";
-import { SILENCE_DURATION, THRESHOLD } from "./constants.js";
+import { getSilenceThreshold, SILENCE_DURATION } from "./constants.js";
 
 export class OpenAIService extends Effect.Service<OpenAIService>()(
   "OpenAIService",
@@ -585,16 +585,18 @@ export class VideoMetadataService extends Effect.Service<VideoMetadataService>()
           )
         );
 
+        const maxVolumeFork = yield* Effect.fork(
+          ffmpeg.getMaxVolumeOfAudio(rawVideoPath)
+        );
+
         const { speakingClips } = yield* findSilenceInVideo(rawVideoPath, {
-          threshold: THRESHOLD,
+          threshold: getSilenceThreshold(yield* maxVolumeFork),
           silenceDuration: SILENCE_DURATION,
           startPadding: 0,
           endPadding: 0,
           fps: yield* fpsFork,
           ffmpeg,
         });
-
-        const tmpDir = yield* fs.makeTempDirectoryScoped();
 
         const transcriptSegments = yield* Effect.all(
           speakingClips.map((clipLength) => {

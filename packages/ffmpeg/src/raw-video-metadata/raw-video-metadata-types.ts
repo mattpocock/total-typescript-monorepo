@@ -1,7 +1,7 @@
 import { Effect } from "effect";
 import { FFmpegCommandsService } from "../ffmpeg-commands.js";
 import type { AbsolutePath } from "@total-typescript/shared";
-import { SILENCE_DURATION, THRESHOLD } from "../constants.js";
+import { getSilenceThreshold, SILENCE_DURATION } from "../constants.js";
 import { findSilenceInVideo } from "../silence-detection.js";
 import { FileSystem } from "@effect/platform";
 import path from "node:path";
@@ -67,6 +67,10 @@ export const createMetadataForRawVideo = Effect.fn("createMetadataForRawVideo")(
 
     const fpsFork = yield* Effect.fork(ffmpeg.getFPS(rawVideoPath));
 
+    const maxVolumeFork = yield* Effect.fork(
+      ffmpeg.getMaxVolumeOfAudio(rawVideoPath)
+    );
+
     const resolutionFork = yield* Effect.fork(
       ffmpeg.getResolution(rawVideoPath).pipe(
         Effect.map((resolution) => {
@@ -79,7 +83,7 @@ export const createMetadataForRawVideo = Effect.fn("createMetadataForRawVideo")(
     );
 
     const { speakingClips } = yield* findSilenceInVideo(rawVideoPath, {
-      threshold: THRESHOLD,
+      threshold: getSilenceThreshold(yield* maxVolumeFork),
       silenceDuration: SILENCE_DURATION,
       startPadding: 0,
       endPadding: 0,

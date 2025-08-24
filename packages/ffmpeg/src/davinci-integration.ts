@@ -11,8 +11,8 @@ import {
 import {
   AUTO_EDITED_END_PADDING,
   AUTO_EDITED_START_PADDING,
+  getSilenceThreshold,
   SILENCE_DURATION,
-  THRESHOLD,
 } from "./constants.js";
 import { FFmpegCommandsService } from "./ffmpeg-commands.js";
 import { OBSIntegrationService } from "./services.js";
@@ -65,9 +65,11 @@ export const appendVideoToTimeline = (
 
     const fps = yield* ffmpeg.getFPS(inputVideo);
 
+    const maxVolume = yield* ffmpeg.getMaxVolumeOfAudio(inputVideo);
+
     const [silenceResult, badTakeMarkers] = yield* Effect.all([
       findSilenceInVideo(inputVideo, {
-        threshold: THRESHOLD,
+        threshold: getSilenceThreshold(maxVolume),
         fps,
         startPadding: AUTO_EDITED_START_PADDING,
         endPadding: AUTO_EDITED_END_PADDING,

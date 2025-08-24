@@ -12,6 +12,14 @@ import { NodeFileSystem } from "@effect/platform-node";
 import path, { join } from "node:path";
 import { REMOTION_DIR } from "./subtitle-rendering.js";
 
+export class CouldNotGetMaxVolumeError extends Data.TaggedError(
+  "CouldNotGetMaxVolumeError"
+)<{
+  stdout: string;
+  stderr: string;
+  message: string;
+}> {}
+
 // Error classes
 export class CouldNotTranscribeAudioError extends Data.TaggedError(
   "CouldNotTranscribeAudioError"
@@ -390,6 +398,39 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           );
 
           return outputVideo;
+        }),
+
+        getMaxVolumeOfAudio: Effect.fn("getMaxVolume")(function* (
+          inputAudio: AbsolutePath
+        ) {
+          const result = yield* runCPULimitsAwareCommand(
+            `ffmpeg -hide_banner -i "${inputAudio}" -af "aresample=8000,pan=mono|c0=c0,volumedetect" -f null -threads 0 - 2>&1`
+          );
+
+          // [Parsed_volumedetect_0 @ 0x5f2ed8ed4dc0] max_volume: -10.0 dB
+          const maxVolume = result.stdout.match(
+            /max_volume: (-?\d+\.\d+)/
+          )?.[1];
+
+          if (!maxVolume) {
+            return yield* new CouldNotGetMaxVolumeError({
+              stdout: result.stdout,
+              stderr: result.stderr,
+              message: `Max volume was not found in the output`,
+            });
+          }
+
+          const num = Number(maxVolume);
+
+          if (Number.isNaN(num)) {
+            return yield* new CouldNotGetMaxVolumeError({
+              stdout: result.stdout,
+              stderr: result.stderr,
+              message: `Max volume was not a number: ${maxVolume}`,
+            });
+          }
+
+          return num;
         }),
 
         concatenateAudioClips: Effect.fn("concatenateAudioClips")(function* (
