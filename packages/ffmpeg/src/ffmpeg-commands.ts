@@ -385,8 +385,8 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
 
           yield* fs.writeFileString(concatFile, concatContent);
 
-          yield* runCPULimitsAwareCommand(
-            `ffmpeg -y -hide_banner -f concat -safe 0 -i "${concatFile}" -c copy -avoid_negative_ts make_zero "${outputVideo}"`
+          yield* runGPULimitsAwareCommand(
+            `ffmpeg -y -hide_banner -f concat -safe 0 -i "${concatFile}" -c:v h264_nvenc -preset slow -rc:v vbr -cq:v 19 -b:v 8000k -maxrate 12000k -bufsize 16000k -c:a aac -b:a 384k "${outputVideo}"`
           );
 
           return outputVideo;
