@@ -399,6 +399,20 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           };
         });
 
+        const totalDuration = clips.reduce(
+          (acc, clip) => acc + clip.duration,
+          0
+        );
+
+        const minutes = Math.floor(totalDuration / 60)
+          .toString()
+          .padStart(2, "0");
+        const seconds = Math.ceil(totalDuration % 60)
+          .toString()
+          .padStart(2, "0");
+
+        yield* Effect.log(`[findClips] Total duration: ${minutes}:${seconds}`);
+
         return clips;
       });
 
