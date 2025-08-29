@@ -42,7 +42,7 @@ import {
 import { OpenTelemetryLive } from "./tracing.js";
 import { runExerciseOrganizer } from "./exercise-organizer/cli-command.js";
 import { type ExerciseOrganizerOptions } from "./exercise-organizer/types.js";
-import { NodeFileSystem } from "@effect/platform-node";
+import { NodeFileSystem, NodeRuntime } from "@effect/platform-node";
 
 config({
   path: path.resolve(import.meta.dirname, "../../../.env"),
@@ -65,7 +65,7 @@ program
     await moveRawFootageToLongTermStorage().pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
-      Effect.runPromise
+      NodeRuntime.runMain
     );
   });
 
@@ -76,7 +76,7 @@ program
     await createTimeline().pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
-      Effect.runPromise
+      NodeRuntime.runMain
     );
   });
 
@@ -87,7 +87,7 @@ program
     await addCurrentTimelineToRenderQueue().pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
-      Effect.runPromise
+      NodeRuntime.runMain
     );
   });
 
@@ -98,7 +98,7 @@ program
     await exportSubtitles().pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
-      Effect.runPromise
+      NodeRuntime.runMain
     );
   });
 
@@ -112,7 +112,7 @@ program
     }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
-      Effect.runPromise
+      NodeRuntime.runMain
     );
   });
 
@@ -131,7 +131,7 @@ program
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
       Effect.scoped,
-      Effect.runPromise
+      NodeRuntime.runMain
     );
   });
 
@@ -152,7 +152,7 @@ program
     }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
-      Effect.runPromise
+      NodeRuntime.runMain
     );
   });
 
@@ -178,7 +178,7 @@ program
     }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
-      Effect.runPromise
+      NodeRuntime.runMain
     );
   });
 program
@@ -324,10 +324,22 @@ program
         }),
         Effect.withConfigProvider(ConfigProvider.fromEnv()),
         Effect.provide(MainLayerLive),
-        Effect.runPromise
+        NodeRuntime.runMain
       );
     }
   );
+
+program.command("log-latest-obs-video").action(async () => {
+  await Effect.gen(function* () {
+    const obs = yield* OBSIntegrationService;
+    const inputVideo = yield* obs.getLatestOBSVideo();
+    yield* Console.log(inputVideo);
+  }).pipe(
+    Effect.withConfigProvider(ConfigProvider.fromEnv()),
+    Effect.provide(MainLayerLive),
+    NodeRuntime.runMain
+  );
+});
 
 program
   .command("queue-auto-edited-video-for-course <id>")
@@ -354,7 +366,7 @@ program
     }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
-      Effect.runPromise
+      NodeRuntime.runMain
     );
   });
 
@@ -367,7 +379,7 @@ program
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
       Effect.scoped,
-      Effect.runPromise
+      NodeRuntime.runMain
     );
   });
 
@@ -380,7 +392,7 @@ program
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
       Effect.scoped,
-      Effect.runPromise
+      NodeRuntime.runMain
     );
   });
 
@@ -406,7 +418,7 @@ program
     }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
-      Effect.runPromise
+      NodeRuntime.runMain
     );
   });
 
@@ -470,7 +482,7 @@ program
     await program.pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
-      Effect.runPromise
+      NodeRuntime.runMain
     );
   });
 
@@ -679,7 +691,7 @@ program
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
       Effect.withSpan("queue-status"),
-      Effect.runPromise
+      NodeRuntime.runMain
     );
   });
 
@@ -744,7 +756,7 @@ program
       }),
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
-      Effect.runPromise
+      NodeRuntime.runMain
     );
   });
 
@@ -981,10 +993,8 @@ const parseDatabaseUrl = Effect.fn("parseDatabaseUrl")(function* (
 });
 
 const dumpDatabase = Effect.fn("dumpDatabase")(function* () {
-  const databaseUrl = yield* Config.string("WRITTEN_CONTENT_DATABASE_URL");
-  const backupFilePath = yield* Config.string(
-    "WRITTEN_CONTENT_DB_BACKUP_FILE_PATH"
-  );
+  const databaseUrl = yield* Config.string("CVM_DATABASE_URL");
+  const backupFilePath = yield* Config.string("CVM_DB_BACKUP_FILE_PATH");
 
   // Parse database URL
   const dbConfig = yield* parseDatabaseUrl(databaseUrl);
@@ -1040,7 +1050,7 @@ program
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(OpenTelemetryLive),
       Effect.withSpan("dump-database"),
-      Effect.runPromise
+      NodeRuntime.runMain
     );
   });
 
