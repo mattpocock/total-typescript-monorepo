@@ -12,6 +12,7 @@ import {
 } from "./services.js";
 import { WorkflowsService } from "./workflows.js";
 import { OBSWatcherService } from "./obs-watcher-service.js";
+import { QueueUpdaterService } from "./queue/queue-updater-service.js";
 
 export const AppLayerLive = Layer.mergeAll(
   FFmpegCommandsService.Default,
@@ -24,5 +25,6 @@ export const AppLayerLive = Layer.mergeAll(
   NodeFileSystem.layer,
   LinksStorageService.Default,
   WorkflowsService.Default,
-  OBSWatcherService.Default
+  OBSWatcherService.Default,
+  QueueUpdaterService.Default
 );

@@ -38,7 +38,6 @@ import {
   CouldNotGetFPSError,
   FFmpegCommandsService,
 } from "./ffmpeg-commands.js";
-import { getQueueState } from "./queue/queue.js";
 import type { ExecException } from "child_process";
 import type {
   BadArgument,
@@ -51,6 +50,7 @@ import {
 } from "./davinci-integration.js";
 import { options } from "@effect/platform/HttpClientRequest";
 import type { VideoClip } from "./video-clip-types.js";
+import { QueueUpdaterService } from "./queue/queue-updater-service.js";
 
 export interface CreateAutoEditedVideoWorkflowOptions {
   inputVideo: AbsolutePath;
@@ -98,7 +98,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         "SHORTS_EXPORT_DIRECTORY"
       );
       const transcriptStorage = yield* TranscriptStorageService;
-      const audioExtension = yield* Config.string("AUDIO_FILE_EXTENSION");
+      const queueUpdater = yield* QueueUpdaterService;
       const ffmpeg = yield* FFmpegCommandsService;
 
       /**
@@ -604,7 +604,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         options: ConcatenateVideosWorkflowOptions
       ) => {
         return Effect.gen(function* () {
-          const queueState = yield* getQueueState();
+          const queueState = yield* queueUpdater.getQueueState();
 
           // Find the videos from queue items
           const videoItems = options.videoIds.map((id) => {
@@ -749,6 +749,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       AskQuestionService.Default,
       ReadStreamService.Default,
       NodeFileSystem.layer,
+      QueueUpdaterService.Default,
     ],
   }
 ) {}
@@ -859,7 +860,8 @@ export const moveRawFootageToLongTermStorage = () => {
 
 export const multiSelectVideosFromQueue = () => {
   return Effect.gen(function* () {
-    const queueState = yield* getQueueState();
+    const queueUpdater = yield* QueueUpdaterService;
+    const queueState = yield* queueUpdater.getQueueState();
     const askQuestion = yield* AskQuestionService;
 
     // Find all completed video creation queue items

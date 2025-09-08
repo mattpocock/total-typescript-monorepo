@@ -2,7 +2,8 @@ import { FileSystem } from "@effect/platform";
 import { type AbsolutePath } from "@total-typescript/shared";
 import { Config, ConfigError, Console, Data, Effect } from "effect";
 import { generateArticleCore } from "./article-from-transcript.js";
-import type { QueueItem, QueueState } from "./queue/queue.js";
+import type { QueueItem } from "./queue/queue.js";
+import type { QueueState } from "./queue/queue-updater-service.js";
 import { LinksStorageService } from "./services.js";
 import type { PlatformError } from "@effect/platform/Error";
 import path from "node:path";
@@ -13,8 +14,6 @@ export class TranscriptReadError extends Data.TaggedError(
   transcriptPath: AbsolutePath;
   cause: unknown;
 }> {}
-
-
 
 export class LinksDependencyNotFoundError extends Data.TaggedError(
   "LinksDependencyNotFoundError"
@@ -172,11 +171,13 @@ export const generateArticleFromTranscriptQueue = Effect.fn(
   // If alongside flag is set and we have video info, save alongside the video
   if (alongside && videoName && dryRun !== undefined) {
     const exportDirectory = yield* Config.string("EXPORT_DIRECTORY");
-    const shortsExportDirectory = yield* Config.string("SHORTS_EXPORT_DIRECTORY");
-    
+    const shortsExportDirectory = yield* Config.string(
+      "SHORTS_EXPORT_DIRECTORY"
+    );
+
     // Determine where the video is located based on dryRun flag
     const videoDirectory = dryRun ? exportDirectory : shortsExportDirectory;
-    
+
     generateOptions = {
       ...generateOptions,
       storageMode: "alongside-video" as const,

@@ -7,7 +7,8 @@ import {
   DependentLinksRequestNotFoundError,
   processTranscriptAnalysisForQueue,
 } from "./queue-transcript-processing.js";
-import type { QueueItem, QueueState } from "./queue/queue.js";
+import type { QueueItem } from "./queue/queue.js";
+import type { QueueState } from "./queue/queue-updater-service.js";
 import { AIService } from "./services.js";
 
 it("Should update existing links-request item with generated link requests", async () => {
@@ -143,7 +144,7 @@ it("Should mark links-request item as completed when no links are required", asy
   );
 
   expect(result).toEqual([]);
-  
+
   // Should update the links-request item to mark it as completed
   expect(mockUpdateQueueItem).toHaveBeenCalledWith({
     ...linksRequestItem,
@@ -210,7 +211,9 @@ it("Should mark links-request item as requires-user-input when links are require
         fromPartial({
           askForLinks: vi
             .fn()
-            .mockReturnValue(Effect.succeed(["Documentation link", "TypeScript handbook"])),
+            .mockReturnValue(
+              Effect.succeed(["Documentation link", "TypeScript handbook"])
+            ),
         })
       )
     ),
@@ -218,7 +221,7 @@ it("Should mark links-request item as requires-user-input when links are require
   );
 
   expect(result).toEqual(["Documentation link", "TypeScript handbook"]);
-  
+
   // Should update the links-request item with links and mark as requires-user-input
   expect(mockUpdateQueueItem).toHaveBeenCalledWith({
     ...linksRequestItem,

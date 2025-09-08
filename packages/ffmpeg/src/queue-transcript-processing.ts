@@ -1,7 +1,8 @@
 import { type AbsolutePath } from "@total-typescript/shared";
 import { ConfigError, Console, Data, Effect } from "effect";
 import { analyzeTranscriptForLinks } from "./transcript-analysis.js";
-import type { QueueItem, QueueState } from "./queue/queue.js";
+import type { QueueItem } from "./queue/queue.js";
+import type { QueueState } from "./queue/queue-updater-service.js";
 import type { PlatformError } from "@effect/platform/Error";
 import type { FileSystem } from "@effect/platform";
 

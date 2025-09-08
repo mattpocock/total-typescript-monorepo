@@ -7,18 +7,15 @@ import {
   AppLayerLive,
   createTimeline,
   createAutoEditedVideoQueueItems,
-  doesQueueLockfileExist,
   exportSubtitles,
   generateArticleFromTranscript,
   getOutstandingInformationRequests,
-  getQueueState,
   moveRawFootageToLongTermStorage,
   multiSelectVideosFromQueue,
   processInformationRequests,
   processQueue,
   transcribeVideoWorkflow,
   validateWindowsFilename,
-  writeToQueue,
   type QueueItem,
   WorkflowsService,
 } from "@total-typescript/ffmpeg";
@@ -43,6 +40,7 @@ import { OpenTelemetryLive } from "./tracing.js";
 import { runExerciseOrganizer } from "./exercise-organizer/cli-command.js";
 import { type ExerciseOrganizerOptions } from "./exercise-organizer/types.js";
 import { NodeFileSystem, NodeRuntime } from "@effect/platform-node";
+import { QueueUpdaterService } from "../../../packages/ffmpeg/dist/queue/queue-updater-service.js";
 
 config({
   path: path.resolve(import.meta.dirname, "../../../.env"),
@@ -205,6 +203,7 @@ program
       alongside?: boolean;
     }) => {
       await Effect.gen(function* () {
+        const queueUpdater = yield* QueueUpdaterService;
         const obs = yield* OBSIntegrationService;
         const askQuestion = yield* AskQuestionService;
 
@@ -305,7 +304,7 @@ program
           }
         }
 
-        yield* writeToQueue(queueItems);
+        yield* queueUpdater.writeToQueue(queueItems);
 
         if (options.generateArticle) {
           yield* Console.log(
@@ -345,10 +344,11 @@ program
   .command("queue-auto-edited-video-for-course <id>")
   .action(async (id: string) => {
     await Effect.gen(function* () {
+      const queueUpdater = yield* QueueUpdaterService;
       const obs = yield* OBSIntegrationService;
       const inputVideo = yield* obs.getLatestOBSVideo();
 
-      yield* writeToQueue([
+      yield* queueUpdater.writeToQueue([
         {
           id: crypto.randomUUID(),
           action: {
@@ -492,7 +492,8 @@ program
   .description("Show the status of the render queue.")
   .action(async () => {
     await Effect.gen(function* () {
-      const queueState = yield* getQueueState();
+      const queueUpdater = yield* QueueUpdaterService;
+      const queueState = yield* queueUpdater.getQueueState();
 
       // Filter queue items based on requirements:
       // 1. All outstanding items (ready-to-run, requires-user-input)
@@ -679,13 +680,6 @@ program
             `❓ ${infoRequests.length} item(s) require user input. Run: ${styleText("bold", "pnpm cli pir")}`
           );
         }
-
-        const isProcessing = yield* doesQueueLockfileExist();
-        if (isProcessing) {
-          yield* Console.log("🔄 Queue processor is currently running.");
-        } else {
-          yield* Console.log("⏹️  Queue processor is NOT running.");
-        }
       }
     }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
@@ -702,6 +696,7 @@ program
   .option("-u, --upload", "Upload to shorts directory")
   .action(async (options: { upload?: boolean }) => {
     await Effect.gen(function* () {
+      const queueUpdater = yield* QueueUpdaterService;
       const askQuestion = yield* AskQuestionService;
 
       // Select videos using the multi-selection interface
@@ -728,7 +723,7 @@ program
 
       yield* Console.log("Adding concatenation job to queue...");
 
-      yield* writeToQueue([
+      yield* queueUpdater.writeToQueue([
         {
           id: crypto.randomUUID(),
           createdAt: Date.now(),

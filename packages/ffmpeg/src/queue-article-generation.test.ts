@@ -9,7 +9,8 @@ import {
   processArticleGenerationForQueue,
   validateLinksDependency,
 } from "./queue-article-generation.js";
-import type { QueueItem, QueueState } from "./queue/queue.js";
+import type { QueueItem } from "./queue/queue.js";
+import type { QueueState } from "./queue/queue-updater-service.js";
 import {
   AIService,
   ArticleStorageService,
