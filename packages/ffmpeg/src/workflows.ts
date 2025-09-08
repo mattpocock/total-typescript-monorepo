@@ -141,8 +141,11 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
           const videoFork = yield* Effect.fork(
             createAutoEditedVideo({
-              inputVideo: options.inputVideo,
-              clips,
+              clips: clips.map((clip) => ({
+                inputVideo: options.inputVideo,
+                startTime: clip.startTime,
+                duration: clip.duration,
+              })),
             })
           );
 
@@ -417,39 +420,18 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       });
 
       const createAutoEditedVideo = ({
-        inputVideo,
         clips,
       }: {
-        inputVideo: AbsolutePath;
         clips: {
+          inputVideo: AbsolutePath;
           startTime: number;
           duration: number;
         }[];
       }) => {
         return Effect.gen(function* () {
-          const clipFiles = yield* Effect.all(
-            clips.map((clip, i) =>
-              Effect.gen(function* () {
-                const outputFile = yield* ffmpeg.createVideoClip(
-                  inputVideo,
-                  clip.startTime,
-                  clip.duration
-                );
-
-                yield* Effect.log(
-                  `[createAutoEditedVideo] Created clip ${i + 1}/${clips.length}`
-                );
-                return outputFile;
-              })
-            ),
-            {
-              concurrency: "unbounded",
-            }
-          );
-
           yield* Effect.log("[createAutoEditedVideo] Concatenating clips");
           const concatenatedVideoPath =
-            yield* ffmpeg.concatenateVideoClips(clipFiles);
+            yield* ffmpeg.singlePassConcatenateVideoClips(clips);
 
           yield* Effect.log("[createAutoEditedVideo] Normalizing audio");
 
@@ -486,31 +468,17 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             guestClips: guestClips,
           });
 
-          const clipFiles = yield* Effect.all(
-            interviewSpeakingClips.map((clip, i) =>
-              Effect.gen(function* () {
-                // TODO: create clips to handle the case where the guest is speaking over the host
-                const outputFile = yield* ffmpeg.createVideoClip(
+          const concatenatedVideo =
+            yield* ffmpeg.singlePassConcatenateVideoClips(
+              interviewSpeakingClips.map((clip) => ({
+                inputVideo:
                   clip.state === "host-speaking"
                     ? opts.hostVideo
                     : opts.guestVideo,
-                  clip.startTime,
-                  clip.duration
-                );
-
-                yield* Effect.log(
-                  `[editInterviewWorkflow] Created clip ${i + 1}/${interviewSpeakingClips.length} of ${clip.state}`
-                );
-                return outputFile;
-              })
-            ),
-            {
-              concurrency: "unbounded",
-            }
-          );
-
-          const concatenatedVideo =
-            yield* ffmpeg.concatenateVideoClips(clipFiles);
+                startTime: clip.startTime,
+                duration: clip.duration,
+              }))
+            );
 
           const normalizedAudio =
             yield* ffmpeg.normalizeAudio(concatenatedVideo);
@@ -740,20 +708,11 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
                     AUTO_EDITED_END_PADDING;
                 }
 
-                // Trim the video to remove existing padding
-                const outputFile = yield* ffmpeg.trimVideo(
-                  videoInfo.path,
-                  0,
-                  trimmedDuration
-                );
-
-                const normalizedAudio =
-                  yield* ffmpeg.normalizeAudio(outputFile);
-
-                yield* Effect.log(
-                  `[concatenateVideosWorkflow] Processed video ${index + 1}/${videoPaths.length}`
-                );
-                return normalizedAudio;
+                return {
+                  inputVideo: videoInfo.path,
+                  startTime: 0,
+                  duration: trimmedDuration,
+                };
               })
             ),
             {
@@ -764,7 +723,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           // Concatenate all processed clips
           yield* Effect.log("[concatenateVideosWorkflow] Concatenating videos");
           const concatenatedVideo =
-            yield* ffmpeg.concatenateVideoClips(processedClips);
+            yield* ffmpeg.singlePassConcatenateVideoClips(processedClips);
 
           yield* fs.copyFile(concatenatedVideo, outputPath);
 

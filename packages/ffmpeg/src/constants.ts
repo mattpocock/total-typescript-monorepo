@@ -1,4 +1,4 @@
-export const THRESHOLD = -30;
+export const THRESHOLD = -32;
 export const SILENCE_DURATION = 0.8;
 export const TRIM_VIDEO_PADDING = 0.3;
 
