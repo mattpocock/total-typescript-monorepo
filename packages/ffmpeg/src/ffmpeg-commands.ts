@@ -344,68 +344,49 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           );
         }),
 
-        singlePassConcatenateVideoClips: Effect.fn(
-          "singlePassConcatenateVideoClips"
-        )(function* (
-          clips: {
-            inputVideo: AbsolutePath;
-            startTime: number;
-            duration: number;
-          }[]
+        createVideoClip: Effect.fn("createVideoClip")(function* (
+          inputVideo: AbsolutePath,
+          startTime: number,
+          duration: number
+        ) {
+          const tempDir = yield* fs.makeTempDirectoryScoped();
+          const outputFile = path.join(
+            tempDir,
+            `clip.${path.extname(inputVideo)}`
+          ) as AbsolutePath;
+
+          yield* runGPULimitsAwareCommand(
+            `nice -n 19 ffmpeg -y -hide_banner -ss ${startTime} -i "${inputVideo}" -t ${duration} -c:v h264_nvenc -preset slow -rc:v vbr -cq:v 19 -b:v 8000k -maxrate 12000k -bufsize 16000k -c:a aac -b:a 384k "${outputFile}"`
+          ).pipe(
+            Effect.mapError((e) => {
+              return new CouldNotCreateClipError({
+                cause: e,
+              });
+            })
+          );
+
+          return outputFile;
+        }),
+
+        concatenateVideoClips: Effect.fn("concatenateVideoClips")(function* (
+          clipFiles: AbsolutePath[]
         ) {
           const tempDir = yield* fs.makeTempDirectoryScoped();
 
+          const concatFile = join(tempDir, "concat.txt") as AbsolutePath;
+          const concatContent = clipFiles
+            .map((file: string) => `file '${file}'`)
+            .join("\n");
+
           const outputVideo = path.join(
             tempDir,
-            "concatenated-video.mp4"
+            `concatenated-video.mp4`
           ) as AbsolutePath;
 
-          const inputs = clips
-            .map((clip) => {
-              return `-ss ${clip.startTime} -t ${clip.duration} -i "${clip.inputVideo}"`;
-            })
-            .join(" ");
-
-          const filterInputs = clips
-            .map((clip, index) => {
-              return `[${index}:v][${index}:a]`;
-            })
-            .join("");
-
-          const filterComplex = `"${filterInputs}concat=n=${clips.length}:v=1:a=1[outv][outa]"`;
+          yield* fs.writeFileString(concatFile, concatContent);
 
           yield* runGPULimitsAwareCommand(
-            [
-              `ffmpeg`,
-              "-y",
-              "-hide_banner",
-              inputs,
-              "-filter_complex",
-              filterComplex,
-              "-map",
-              '"[outv]"',
-              "-map",
-              '"[outa]"',
-              "-c:v",
-              "h264_nvenc",
-              "-preset",
-              "slow",
-              "-rc:v",
-              "vbr",
-              "-cq:v",
-              "19",
-              "-b:v",
-              "8000k",
-              "-maxrate",
-              "12000k",
-              "-bufsize",
-              "16000k",
-              "-c:a",
-              "aac",
-              "-b:a",
-              "384k",
-              `"${outputVideo}"`,
-            ].join(" ")
+            `ffmpeg -y -hide_banner -f concat -safe 0 -i "${concatFile}" -c:v h264_nvenc -preset slow -rc:v vbr -cq:v 19 -b:v 8000k -maxrate 12000k -bufsize 16000k -c:a aac -b:a 384k "${outputVideo}"`
           );
 
           return outputVideo;
