@@ -31,6 +31,7 @@ import {
   Data,
   Logger,
   LogLevel,
+  Schema,
 } from "effect";
 import path from "node:path";
 import { styleText } from "node:util";
@@ -88,6 +89,46 @@ program.command("get-clips-from-latest-video").action(async () => {
     NodeRuntime.runMain
   );
 });
+
+const clipsSchema = Schema.Array(
+  Schema.Struct({
+    startTime: Schema.Number,
+    duration: Schema.Number,
+    inputVideo: Schema.String,
+  })
+);
+
+program
+  .command("create-video-from-clips <clips> <outputVideoName>")
+  .action(async (clips, outputVideoName) => {
+    await Effect.gen(function* () {
+      const queueUpdater = yield* QueueUpdaterService;
+
+      const clipsParsed = yield* Schema.decodeUnknown(clipsSchema)(
+        JSON.parse(clips)
+      );
+
+      yield* queueUpdater.writeToQueue([
+        {
+          id: crypto.randomUUID(),
+          action: {
+            type: "create-video-from-clips",
+            clips: clipsParsed,
+            outputVideoName,
+          },
+          createdAt: Date.now(),
+          status: "ready-to-run",
+        },
+      ]);
+
+      yield* Console.log("Added video creation job to queue.");
+    }).pipe(
+      Effect.withConfigProvider(ConfigProvider.fromEnv()),
+      Effect.scoped,
+      Effect.provide(MainLayerLive),
+      NodeRuntime.runMain
+    );
+  });
 
 // Simple commands
 program

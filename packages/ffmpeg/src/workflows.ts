@@ -88,6 +88,15 @@ export class FFMPegWithComplexFilterError extends Data.TaggedError(
   stderr: string | undefined;
 }> {}
 
+interface CreateVideoFromClipsWorkflowOptions {
+  clips: readonly {
+    startTime: number;
+    duration: number;
+    inputVideo: string;
+  }[];
+  outputVideoName: string;
+}
+
 export class WorkflowsService extends Effect.Service<WorkflowsService>()(
   "WorkflowsService",
   {
@@ -632,6 +641,52 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         yield* Console.log(output.stderr);
       });
 
+      const createVideoFromClipsWorkflow = (
+        options: CreateVideoFromClipsWorkflowOptions
+      ) => {
+        return Effect.gen(function* () {
+          const outputVideoName = options.outputVideoName;
+
+          const clips = yield* Effect.all(
+            options.clips.map((clip, i) =>
+              Effect.gen(function* () {
+                const outputFile = yield* ffmpeg.createVideoClip(
+                  clip.inputVideo as AbsolutePath,
+                  clip.startTime,
+                  clip.duration
+                );
+
+                yield* Effect.log(
+                  `[createVideoFromClipsWorkflow] Created clip ${i + 1}/${options.clips.length}`
+                );
+                return outputFile;
+              })
+            ),
+            {
+              concurrency: "unbounded",
+            }
+          );
+
+          const concatenatedVideo = yield* ffmpeg.concatenateVideoClips(clips);
+
+          const normalizedAudio =
+            yield* ffmpeg.normalizeAudio(concatenatedVideo);
+
+          const outputPath = path.join(
+            exportDirectory,
+            `${outputVideoName}.mp4`
+          ) as AbsolutePath;
+
+          yield* fs.copyFile(normalizedAudio, outputPath);
+
+          yield* Console.log(
+            `✅ Successfully created video from clips: ${outputPath}`
+          );
+
+          return outputPath;
+        });
+      };
+
       const concatenateVideosWorkflow = (
         options: ConcatenateVideosWorkflowOptions
       ) => {
@@ -778,6 +833,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
       return {
         createAutoEditedVideoWorkflow,
+        createVideoFromClipsWorkflow,
         concatenateVideosWorkflow,
         editInterviewWorkflow,
         moveInterviewToDavinciResolve,

@@ -38,6 +38,15 @@ export type QueueItemAction =
       dryRun: boolean;
     }
   | {
+      type: "create-video-from-clips";
+      clips: readonly {
+        startTime: number;
+        duration: number;
+        inputVideo: string;
+      }[];
+      outputVideoName: string;
+    }
+  | {
       /**
        * A request for the user to provide links
        * that the transcript editor uses to
@@ -515,6 +524,30 @@ export const processQueue = () => {
                 });
 
                 break;
+              case "create-video-from-clips": {
+                const createVideoFromClipsResult = yield* workflows
+                  .createVideoFromClipsWorkflow({
+                    clips: queueItem.action.clips,
+                    outputVideoName: queueItem.action.outputVideoName,
+                  })
+                  .pipe(Effect.either);
+
+                if (Either.isLeft(createVideoFromClipsResult)) {
+                  yield* Effect.logError(createVideoFromClipsResult.left);
+                  yield* queueUpdater.updateQueueItem({
+                    ...queueItem,
+                    status: "failed",
+                    error: createVideoFromClipsResult.left.message,
+                  });
+                  return;
+                }
+                yield* queueUpdater.updateQueueItem({
+                  ...queueItem,
+                  status: "completed",
+                  completedAt: Date.now(),
+                });
+                break;
+              }
               default:
                 queueItem.action satisfies never;
                 yield* Console.log("Unknown queue item type");
