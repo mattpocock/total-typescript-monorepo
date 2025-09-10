@@ -782,6 +782,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         editInterviewWorkflow,
         moveInterviewToDavinciResolve,
         exportInterviewWorkflow,
+        findClips,
       };
     }),
     dependencies: [

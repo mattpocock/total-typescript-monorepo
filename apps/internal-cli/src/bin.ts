@@ -22,7 +22,16 @@ import {
 import { type AbsolutePath, execAsync } from "@total-typescript/shared";
 import { Command } from "commander";
 import { config } from "dotenv";
-import { ConfigProvider, Console, Effect, Layer, Config, Data } from "effect";
+import {
+  ConfigProvider,
+  Console,
+  Effect,
+  Layer,
+  Config,
+  Data,
+  Logger,
+  LogLevel,
+} from "effect";
 import path from "node:path";
 import { styleText } from "node:util";
 import {
@@ -54,6 +63,31 @@ const MainLayerLive = Layer.merge(AppLayerLive, OpenTelemetryLive);
 const program = new Command();
 
 program.version(packageJson.version);
+
+program.command("get-clips-from-latest-video").action(async () => {
+  Effect.gen(function* () {
+    const workflows = yield* WorkflowsService;
+    const obs = yield* OBSIntegrationService;
+    const latestVideo = yield* obs.getLatestOBSVideo();
+    const clips = yield* workflows
+      .findClips({ inputVideo: latestVideo })
+      .pipe(Logger.withMinimumLogLevel(LogLevel.Fatal));
+
+    const modifiedClips = clips.map((clip) => {
+      return {
+        inputVideo: latestVideo,
+        startTime: Number(clip.startTime.toFixed(2)),
+        endTime: Number((clip.startTime + clip.duration).toFixed(2)),
+      };
+    });
+
+    yield* Console.log(JSON.stringify(modifiedClips, null, 2));
+  }).pipe(
+    Effect.withConfigProvider(ConfigProvider.fromEnv()),
+    Effect.provide(MainLayerLive),
+    NodeRuntime.runMain
+  );
+});
 
 // Simple commands
 program
