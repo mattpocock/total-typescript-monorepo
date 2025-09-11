@@ -65,57 +65,76 @@ const program = new Command();
 
 program.version(packageJson.version);
 
-program.command("get-clips-from-latest-video").action(async () => {
-  Effect.gen(function* () {
-    const workflows = yield* WorkflowsService;
-    const obs = yield* OBSIntegrationService;
-    const transcriptStorage = yield* TranscriptStorageService;
-    const latestVideo = yield* obs.getLatestOBSVideo();
-    const clips = yield* workflows.findClips({
-      inputVideo: latestVideo,
-      mode: "part-of-video",
-    });
+class FileDoesNotExistError extends Data.TaggedError("FileDoesNotExistError")<{
+  filePath: AbsolutePath;
+}> {}
 
-    const modifiedClips = clips.map((clip) => {
-      return {
+program
+  .command("get-clips-from-latest-video [filePath]")
+  .action(async (filePath) => {
+    Effect.gen(function* () {
+      const workflows = yield* WorkflowsService;
+      const obs = yield* OBSIntegrationService;
+      const transcriptStorage = yield* TranscriptStorageService;
+      const fs = yield* FileSystem.FileSystem;
+
+      let latestVideo: AbsolutePath;
+
+      if (filePath) {
+        const exists = yield* fs.exists(filePath);
+        if (!exists) {
+          yield* Effect.fail(new FileDoesNotExistError({ filePath }));
+        }
+        latestVideo = filePath;
+      } else {
+        latestVideo = yield* obs.getLatestOBSVideo();
+      }
+
+      const clips = yield* workflows.findClips({
         inputVideo: latestVideo,
-        startTime: Number(clip.startTime.toFixed(2)),
-        endTime: Number((clip.startTime + clip.duration).toFixed(2)),
-      };
-    });
-
-    let subtitles = yield* transcriptStorage.getSubtitleFile({
-      filename: path.parse(latestVideo).name,
-    });
-
-    if (!subtitles) {
-      subtitles = yield* workflows.getSubtitlesForClips({
-        clips,
-        inputVideo: latestVideo,
+        mode: "part-of-video",
       });
-    }
 
-    const output = {
-      clips: modifiedClips.map((clip, index) => {
+      const modifiedClips = clips.map((clip) => {
         return {
-          startTime: clip.startTime,
-          endTime: clip.endTime,
           inputVideo: latestVideo,
-          segments: subtitles.clips[index]!.segments,
-          words: subtitles.clips[index]!.words,
+          startTime: Number(clip.startTime.toFixed(2)),
+          endTime: Number((clip.startTime + clip.duration).toFixed(2)),
         };
-      }),
-    };
+      });
 
-    yield* Console.log(JSON.stringify(output));
-  }).pipe(
-    Logger.withMinimumLogLevel(LogLevel.Fatal),
-    Effect.withConfigProvider(ConfigProvider.fromEnv()),
-    Effect.provide(MainLayerLive),
-    Effect.scoped,
-    NodeRuntime.runMain
-  );
-});
+      let subtitles = yield* transcriptStorage.getSubtitleFile({
+        filename: path.parse(latestVideo).name,
+      });
+
+      if (!subtitles) {
+        subtitles = yield* workflows.getSubtitlesForClips({
+          clips,
+          inputVideo: latestVideo,
+        });
+      }
+
+      const output = {
+        clips: modifiedClips.map((clip, index) => {
+          return {
+            startTime: clip.startTime,
+            endTime: clip.endTime,
+            inputVideo: latestVideo,
+            segments: subtitles.clips[index]!.segments,
+            words: subtitles.clips[index]!.words,
+          };
+        }),
+      };
+
+      yield* Console.log(JSON.stringify(output));
+    }).pipe(
+      Logger.withMinimumLogLevel(LogLevel.Fatal),
+      Effect.withConfigProvider(ConfigProvider.fromEnv()),
+      Effect.provide(MainLayerLive),
+      Effect.scoped,
+      NodeRuntime.runMain
+    );
+  });
 
 const clipsSchema = Schema.Array(
   Schema.Struct({
