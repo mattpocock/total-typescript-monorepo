@@ -18,6 +18,7 @@ import {
   validateWindowsFilename,
   type QueueItem,
   WorkflowsService,
+  ffmpeg,
 } from "@total-typescript/ffmpeg";
 import { type AbsolutePath, execAsync } from "@total-typescript/shared";
 import { Command } from "commander";
@@ -51,6 +52,7 @@ import { runExerciseOrganizer } from "./exercise-organizer/cli-command.js";
 import { type ExerciseOrganizerOptions } from "./exercise-organizer/types.js";
 import { NodeFileSystem, NodeRuntime } from "@effect/platform-node";
 import { QueueUpdaterService } from "../../../packages/ffmpeg/dist/queue/queue-updater-service.js";
+import { FFmpegCommandsService } from "../../../packages/ffmpeg/dist/ffmpeg-commands.js";
 
 config({
   path: path.resolve(import.meta.dirname, "../../../.env"),
@@ -69,10 +71,10 @@ program.command("get-clips-from-latest-video").action(async () => {
   Effect.gen(function* () {
     const workflows = yield* WorkflowsService;
     const obs = yield* OBSIntegrationService;
+    const ffmpeg = yield* FFmpegCommandsService;
+    const transcriptStorage = yield* TranscriptStorageService;
     const latestVideo = yield* obs.getLatestOBSVideo();
-    const clips = yield* workflows
-      .findClips({ inputVideo: latestVideo })
-      .pipe(Logger.withMinimumLogLevel(LogLevel.Fatal));
+    const clips = yield* workflows.findClips({ inputVideo: latestVideo });
 
     const modifiedClips = clips.map((clip) => {
       return {
@@ -82,10 +84,34 @@ program.command("get-clips-from-latest-video").action(async () => {
       };
     });
 
-    yield* Console.log(JSON.stringify(modifiedClips, null, 2));
+    let subtitles = yield* transcriptStorage.getSubtitleFile({
+      filename: path.parse(latestVideo).name,
+    });
+
+    if (!subtitles) {
+      const audioPath = yield* workflows.createAutoEditedAudio({
+        inputVideo: latestVideo,
+        clips,
+      });
+      subtitles = yield* ffmpeg.createSubtitleFromAudio(audioPath);
+      yield* transcriptStorage.storeSubtitles({
+        segments: subtitles.segments,
+        words: subtitles.words,
+        filename: path.parse(latestVideo).name,
+      });
+    }
+
+    const output = {
+      clips: modifiedClips,
+      subtitles,
+    };
+
+    yield* Console.log(JSON.stringify(output));
   }).pipe(
+    Logger.withMinimumLogLevel(LogLevel.Fatal),
     Effect.withConfigProvider(ConfigProvider.fromEnv()),
     Effect.provide(MainLayerLive),
+    Effect.scoped,
     NodeRuntime.runMain
   );
 });
@@ -506,7 +532,7 @@ program
       const transcriptStorage = yield* TranscriptStorageService;
       const askQuestion = yield* AskQuestionService;
       const ai = yield* AIService;
-      const transcripts = yield* transcriptStorage.getTranscripts();
+      const transcripts = yield* transcriptStorage.getSubtitleFiles();
       const fs = yield* FileSystem.FileSystem;
 
       const transcriptPath = yield* askQuestion.select(

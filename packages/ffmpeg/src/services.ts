@@ -3,7 +3,7 @@ import { FileSystem } from "@effect/platform";
 import { NodeFileSystem } from "@effect/platform-node";
 import { type AbsolutePath } from "@total-typescript/shared";
 import { generateObject, generateText } from "ai";
-import { Config, Data, Effect, Redacted } from "effect";
+import { Config, Data, Effect, Redacted, Schema } from "effect";
 import fm from "front-matter";
 import type { ReadStream } from "node:fs";
 import { createReadStream } from "node:fs";
@@ -204,6 +204,41 @@ export class CouldNotParseArticleError extends Data.TaggedError(
   filePath: AbsolutePath;
 }> {}
 
+const getSubtitlePath = Effect.fn("getSubtitlePath")(function* (opts: {
+  filename: string;
+}) {
+  const TRANSCRIPTION_DIRECTORY = yield* Config.string(
+    "TRANSCRIPTION_DIRECTORY"
+  );
+
+  return path.join(
+    TRANSCRIPTION_DIRECTORY,
+    opts.filename + ".json"
+  ) as AbsolutePath;
+});
+
+const transcriptSchema = Schema.Struct({
+  segments: Schema.Array(
+    Schema.Struct({
+      start: Schema.Number,
+      end: Schema.Number,
+      text: Schema.String,
+    })
+  ),
+  words: Schema.Array(
+    Schema.Struct({
+      start: Schema.Number,
+      end: Schema.Number,
+      text: Schema.String,
+    })
+  ),
+});
+
+const transcriptToString = Schema.transform(transcriptSchema, Schema.String, {
+  encode: (value) => JSON.parse(value),
+  decode: (value) => JSON.stringify(value, null, 2),
+});
+
 export class TranscriptStorageService extends Effect.Service<TranscriptStorageService>()(
   "TranscriptStorageService",
   {
@@ -216,20 +251,41 @@ export class TranscriptStorageService extends Effect.Service<TranscriptStorageSe
 
       const OBS_OUTPUT_DIRECTORY = yield* Config.string("OBS_OUTPUT_DIRECTORY");
 
+      const getOriginalVideoPathFromTranscript = Effect.fn(
+        "getOriginalVideoPathFromTranscript"
+      )(function* (opts: { transcriptPath: AbsolutePath }) {
+        const parsed = path.parse(opts.transcriptPath);
+        return path.join(
+          OBS_OUTPUT_DIRECTORY,
+          parsed.name + ".mp4"
+        ) as AbsolutePath;
+      });
+
       return {
-        storeTranscript: Effect.fn("storeTranscript")(function* (opts: {
-          transcript: string;
+        storeSubtitles: Effect.fn("storeSubtitles")(function* (opts: {
+          segments: readonly {
+            start: number;
+            end: number;
+            text: string;
+          }[];
+          words: readonly {
+            start: number;
+            end: number;
+            text: string;
+          }[];
           // The name of the file, without the extension
           filename: string;
         }) {
-          const transcriptPath = path.join(
-            TRANSCRIPTION_DIRECTORY,
-            opts.filename + ".txt"
-          ) as AbsolutePath;
+          const transcriptPath = yield* getSubtitlePath({
+            filename: opts.filename,
+          });
 
-          yield* fs.writeFileString(transcriptPath, opts.transcript);
+          yield* fs.writeFileString(
+            transcriptPath,
+            yield* Schema.decode(transcriptToString)(opts)
+          );
         }),
-        getTranscripts: Effect.fn("getTranscripts")(function* () {
+        getSubtitleFiles: Effect.fn("getSubtitleFiles")(function* () {
           const files = yield* fs.readDirectory(TRANSCRIPTION_DIRECTORY);
           return files
             .map(
@@ -237,28 +293,20 @@ export class TranscriptStorageService extends Effect.Service<TranscriptStorageSe
             )
             .sort((a, b) => b.localeCompare(a));
         }),
-        getTranscript: Effect.fn("getTranscript")(function* (opts: {
+        getSubtitleFile: Effect.fn("getSubtitleFile")(function* (opts: {
           filename: string;
         }) {
-          const transcriptPath = path.join(
-            TRANSCRIPTION_DIRECTORY,
-            opts.filename + ".txt"
-          ) as AbsolutePath;
+          const transcriptPath = yield* getSubtitlePath({
+            filename: opts.filename,
+          });
           const exists = yield* fs.exists(transcriptPath);
           if (!exists) {
             return null;
           }
-          return yield* fs.readFileString(transcriptPath);
+          const transcript = yield* fs.readFileString(transcriptPath);
+          return yield* Schema.encode(transcriptToString)(transcript);
         }),
-        getOriginalVideoPathFromTranscript: Effect.fn(
-          "getOriginalVideoPathFromTranscript"
-        )(function* (opts: { transcriptPath: AbsolutePath }) {
-          const parsed = path.parse(opts.transcriptPath);
-          return path.join(
-            OBS_OUTPUT_DIRECTORY,
-            parsed.name + ".mp4"
-          ) as AbsolutePath;
-        }),
+        getOriginalVideoPathFromTranscript,
       };
     }),
     dependencies: [NodeFileSystem.layer],

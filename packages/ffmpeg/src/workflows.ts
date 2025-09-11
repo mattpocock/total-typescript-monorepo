@@ -18,8 +18,8 @@ import {
 } from "./subtitle-rendering.js";
 
 import { NodeFileSystem } from "@effect/platform-node";
-import { tmpdir } from "os";
-import { join } from "path";
+import type { PlatformError } from "@effect/platform/Error";
+import type { ExecException } from "child_process";
 import {
   extractBadTakeMarkersFromFile,
   isBadTake,
@@ -31,26 +31,18 @@ import {
   SILENCE_DURATION,
   THRESHOLD,
 } from "./constants.js";
-import { findSilenceInVideo } from "./silence-detection.js";
-import {
-  CouldNotCreateClipError,
-  CouldNotExtractAudioError,
-  CouldNotGetFPSError,
-  FFmpegCommandsService,
-} from "./ffmpeg-commands.js";
-import type { ExecException } from "child_process";
-import type {
-  BadArgument,
-  PlatformError,
-  SystemError,
-} from "@effect/platform/Error";
 import {
   serializeMultiTrackClipsForAppendScript,
   type MultiTrackClip,
 } from "./davinci-integration.js";
-import { options } from "@effect/platform/HttpClientRequest";
-import type { VideoClip } from "./video-clip-types.js";
+import {
+  CouldNotCreateClipError,
+  CouldNotGetFPSError,
+  FFmpegCommandsService,
+} from "./ffmpeg-commands.js";
 import { QueueUpdaterService } from "./queue/queue-updater-service.js";
+import { findSilenceInVideo } from "./silence-detection.js";
+import type { VideoClip } from "./video-clip-types.js";
 
 export interface CreateAutoEditedVideoWorkflowOptions {
   inputVideo: AbsolutePath;
@@ -165,7 +157,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
               0
             );
 
-            const inputAudioPath = yield* createdAutoEditedAudio({
+            const inputAudioPath = yield* createAutoEditedAudio({
               inputVideo: options.inputVideo,
               clips,
             });
@@ -184,18 +176,18 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           } else {
             const filename = path.parse(options.inputVideo).name;
 
-            const existingTranscript = yield* transcriptStorage.getTranscript({
+            const existingSubtitles = yield* transcriptStorage.getSubtitleFile({
               filename,
             });
-            if (existingTranscript) {
+            if (existingSubtitles) {
               yield* Effect.log(
-                `[createAutoEditedVideoWorkflow] Existing transcript found`
+                `[createAutoEditedVideoWorkflow] Existing subtitles found`
               );
             } else {
               yield* Effect.log(
-                `[createAutoEditedVideoWorkflow] Creating transcript...`
+                `[createAutoEditedVideoWorkflow] Creating subtitles...`
               );
-              const inputAudioPath = yield* createdAutoEditedAudio({
+              const inputAudioPath = yield* createAutoEditedAudio({
                 inputVideo: options.inputVideo,
                 clips,
               });
@@ -203,13 +195,11 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
                 yield* ffmpeg.createSubtitleFromAudio(inputAudioPath);
 
               yield* Effect.log(
-                `[createAutoEditedVideoWorkflow] Transcript created, storing...`
+                `[createAutoEditedVideoWorkflow] Subtitles created, storing...`
               );
-              yield* transcriptStorage.storeTranscript({
-                transcript: subtitles.segments
-                  .map((s) => s.text)
-                  .join("")
-                  .trim(),
+              yield* transcriptStorage.storeSubtitles({
+                segments: subtitles.segments,
+                words: subtitles.words,
                 filename: path.parse(options.inputVideo).name,
               });
             }
@@ -223,7 +213,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         });
       };
 
-      const createdAutoEditedAudio = (options: {
+      const createAutoEditedAudio = (options: {
         inputVideo: AbsolutePath;
         clips: {
           startTime: number;
@@ -245,7 +235,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
                 );
 
                 yield* Effect.log(
-                  `[createdAutoEditedAudio] Created audio clip for clip ${index + 1}/${options.clips.length}`
+                  `[createAutoEditedAudio] Created audio clip for clip ${index + 1}/${options.clips.length}`
                 );
 
                 return audioClipPath;
@@ -254,13 +244,13 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           );
 
           yield* Effect.log(
-            `[createdAutoEditedAudio] Concatenating audio clips`
+            `[createAutoEditedAudio] Concatenating audio clips`
           );
 
           const concatenatedAudioPath =
             yield* ffmpeg.concatenateAudioClips(audioClips);
 
-          yield* Effect.log(`[createdAutoEditedAudio] Normalizing audio`);
+          yield* Effect.log(`[createAutoEditedAudio] Normalizing audio`);
 
           const normalizedAudio = yield* ffmpeg.normalizeAudio(
             concatenatedAudioPath
@@ -288,18 +278,26 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         originalFileName: string;
       }) => {
         return Effect.gen(function* () {
-          const subtitles =
-            yield* ffmpeg.createSubtitleFromAudio(inputAudioPath);
+          let subtitles = yield* transcriptStorage.getSubtitleFile({
+            filename: originalFileName,
+          });
+          if (subtitles) {
+            yield* Effect.log(`[renderSubtitles] Existing subtitles found`);
+          } else {
+            yield* Effect.log(`[renderSubtitles] Creating subtitles...`);
+            subtitles = yield* ffmpeg.createSubtitleFromAudio(inputAudioPath);
+
+            yield* transcriptStorage.storeSubtitles({
+              segments: subtitles.segments,
+              words: subtitles.words,
+              filename: originalFileName,
+            });
+          }
 
           const fullTranscriptText = subtitles.segments
             .map((s) => s.text)
             .join("")
             .trim();
-
-          yield* transcriptStorage.storeTranscript({
-            transcript: fullTranscriptText,
-            filename: originalFileName,
-          });
 
           const processedSubtitles = subtitles.segments.flatMap(
             splitSubtitleSegments
@@ -839,6 +837,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         moveInterviewToDavinciResolve,
         exportInterviewWorkflow,
         findClips,
+        createAutoEditedAudio,
       };
     }),
     dependencies: [
