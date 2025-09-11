@@ -138,7 +138,10 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
           const fpsFork = yield* Effect.fork(ffmpeg.getFPS(options.inputVideo));
 
-          const clips = yield* findClips({ inputVideo: options.inputVideo });
+          const clips = yield* findClips({
+            inputVideo: options.inputVideo,
+            mode: "entire-video",
+          });
 
           const videoFork = yield* Effect.fork(
             createAutoEditedVideo({
@@ -326,6 +329,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
       const findClips = Effect.fn("findClips")(function* (opts: {
         inputVideo: AbsolutePath;
+        mode: "entire-video" | "part-of-video";
       }) {
         const fpsFork = yield* Effect.fork(ffmpeg.getFPS(opts.inputVideo));
 
@@ -374,12 +378,20 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             clip.durationInFrames / fps,
             2
           );
-          const duration =
-            i === clips.length - 1
-              ? resolvedDuration +
-                AUTO_EDITED_VIDEO_FINAL_END_PADDING -
-                AUTO_EDITED_END_PADDING
-              : resolvedDuration;
+
+          let duration: number;
+
+          if (opts.mode === "entire-video") {
+            duration =
+              i === clips.length - 1
+                ? resolvedDuration +
+                  AUTO_EDITED_VIDEO_FINAL_END_PADDING -
+                  AUTO_EDITED_END_PADDING
+                : resolvedDuration;
+          } else {
+            duration = resolvedDuration;
+          }
+
           return {
             startTime: clip.startTime,
             duration,
@@ -489,10 +501,10 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           outputPath: AbsolutePath;
         }) {
           const hostClipsFork = yield* Effect.fork(
-            findClips({ inputVideo: opts.hostVideo })
+            findClips({ inputVideo: opts.hostVideo, mode: "part-of-video" })
           );
           const guestClipsFork = yield* Effect.fork(
-            findClips({ inputVideo: opts.guestVideo })
+            findClips({ inputVideo: opts.guestVideo, mode: "part-of-video" })
           );
 
           const hostClips = yield* hostClipsFork;
@@ -543,10 +555,10 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           outputJsonPath: AbsolutePath;
         }) {
           const hostClipsFork = yield* Effect.fork(
-            findClips({ inputVideo: opts.hostVideo })
+            findClips({ inputVideo: opts.hostVideo, mode: "part-of-video" })
           );
           const guestClipsFork = yield* Effect.fork(
-            findClips({ inputVideo: opts.guestVideo })
+            findClips({ inputVideo: opts.guestVideo, mode: "part-of-video" })
           );
 
           const hostClips = yield* hostClipsFork;
@@ -583,10 +595,10 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       }) {
         const fpsFork = yield* Effect.fork(ffmpeg.getFPS(opts.hostVideo));
         const hostClipsFork = yield* Effect.fork(
-          findClips({ inputVideo: opts.hostVideo })
+          findClips({ inputVideo: opts.hostVideo, mode: "part-of-video" })
         );
         const guestClipsFork = yield* Effect.fork(
-          findClips({ inputVideo: opts.guestVideo })
+          findClips({ inputVideo: opts.guestVideo, mode: "part-of-video" })
         );
 
         const hostClips = yield* hostClipsFork;

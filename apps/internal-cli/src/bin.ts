@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 
 import { FileSystem } from "@effect/platform";
+import { NodeFileSystem, NodeRuntime } from "@effect/platform-node";
 import {
   addCurrentTimelineToRenderQueue,
   appendVideoToTimeline,
   AppLayerLive,
-  createTimeline,
   createAutoEditedVideoQueueItems,
+  createTimeline,
   exportSubtitles,
   generateArticleFromTranscript,
   getOutstandingInformationRequests,
@@ -14,28 +15,28 @@ import {
   multiSelectVideosFromQueue,
   processInformationRequests,
   processQueue,
+  type QueueItem,
   transcribeVideoWorkflow,
   validateWindowsFilename,
-  type QueueItem,
   WorkflowsService,
-  ffmpeg,
 } from "@total-typescript/ffmpeg";
 import { type AbsolutePath, execAsync } from "@total-typescript/shared";
 import { Command } from "commander";
 import { config } from "dotenv";
 import {
+  Config,
   ConfigProvider,
   Console,
+  Data,
   Effect,
   Layer,
-  Config,
-  Data,
   Logger,
   LogLevel,
   Schema,
 } from "effect";
 import path from "node:path";
 import { styleText } from "node:util";
+import { QueueUpdaterService } from "../../../packages/ffmpeg/dist/queue/queue-updater-service.js";
 import {
   AIService,
   AskQuestionService,
@@ -43,16 +44,13 @@ import {
   TranscriptStorageService,
 } from "../../../packages/ffmpeg/dist/services.js";
 import packageJson from "../package.json" with { type: "json" };
-import {
-  validateCreateVideoFlags,
-  FlagValidationError,
-} from "./validate-cli-flags.js";
-import { OpenTelemetryLive } from "./tracing.js";
 import { runExerciseOrganizer } from "./exercise-organizer/cli-command.js";
 import { type ExerciseOrganizerOptions } from "./exercise-organizer/types.js";
-import { NodeFileSystem, NodeRuntime } from "@effect/platform-node";
-import { QueueUpdaterService } from "../../../packages/ffmpeg/dist/queue/queue-updater-service.js";
-import { FFmpegCommandsService } from "../../../packages/ffmpeg/dist/ffmpeg-commands.js";
+import { OpenTelemetryLive } from "./tracing.js";
+import {
+  FlagValidationError,
+  validateCreateVideoFlags,
+} from "./validate-cli-flags.js";
 
 config({
   path: path.resolve(import.meta.dirname, "../../../.env"),
@@ -73,7 +71,10 @@ program.command("get-clips-from-latest-video").action(async () => {
     const obs = yield* OBSIntegrationService;
     const transcriptStorage = yield* TranscriptStorageService;
     const latestVideo = yield* obs.getLatestOBSVideo();
-    const clips = yield* workflows.findClips({ inputVideo: latestVideo });
+    const clips = yield* workflows.findClips({
+      inputVideo: latestVideo,
+      mode: "part-of-video",
+    });
 
     const modifiedClips = clips.map((clip) => {
       return {
