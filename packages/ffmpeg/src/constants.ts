@@ -31,4 +31,4 @@ export const FFMPEG_CONCURRENCY_LIMIT = 6;
 /**
  * The maximum number of transcription processes that can run at once.
  */
-export const TRANSCRIPTION_CONCURRENCY_LIMIT = 10;
+export const TRANSCRIPTION_CONCURRENCY_LIMIT = 20;

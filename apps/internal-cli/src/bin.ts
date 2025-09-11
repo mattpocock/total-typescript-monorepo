@@ -71,7 +71,6 @@ program.command("get-clips-from-latest-video").action(async () => {
   Effect.gen(function* () {
     const workflows = yield* WorkflowsService;
     const obs = yield* OBSIntegrationService;
-    const ffmpeg = yield* FFmpegCommandsService;
     const transcriptStorage = yield* TranscriptStorageService;
     const latestVideo = yield* obs.getLatestOBSVideo();
     const clips = yield* workflows.findClips({ inputVideo: latestVideo });
@@ -89,21 +88,22 @@ program.command("get-clips-from-latest-video").action(async () => {
     });
 
     if (!subtitles) {
-      const audioPath = yield* workflows.createAutoEditedAudio({
-        inputVideo: latestVideo,
+      subtitles = yield* workflows.getSubtitlesForClips({
         clips,
-      });
-      subtitles = yield* ffmpeg.createSubtitleFromAudio(audioPath);
-      yield* transcriptStorage.storeSubtitles({
-        segments: subtitles.segments,
-        words: subtitles.words,
-        filename: path.parse(latestVideo).name,
+        inputVideo: latestVideo,
       });
     }
 
     const output = {
-      clips: modifiedClips,
-      subtitles,
+      clips: modifiedClips.map((clip, index) => {
+        return {
+          startTime: clip.startTime,
+          endTime: clip.endTime,
+          inputVideo: latestVideo,
+          segments: subtitles.clips[index]!.segments,
+          words: subtitles.clips[index]!.words,
+        };
+      }),
     };
 
     yield* Console.log(JSON.stringify(output));

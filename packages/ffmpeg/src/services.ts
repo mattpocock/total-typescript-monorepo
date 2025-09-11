@@ -213,23 +213,29 @@ const getSubtitlePath = Effect.fn("getSubtitlePath")(function* (opts: {
 
   return path.join(
     TRANSCRIPTION_DIRECTORY,
-    opts.filename + ".json"
+    opts.filename + ".transcript.json"
   ) as AbsolutePath;
 });
 
 const transcriptSchema = Schema.Struct({
-  segments: Schema.Array(
+  clips: Schema.Array(
     Schema.Struct({
       start: Schema.Number,
       end: Schema.Number,
-      text: Schema.String,
-    })
-  ),
-  words: Schema.Array(
-    Schema.Struct({
-      start: Schema.Number,
-      end: Schema.Number,
-      text: Schema.String,
+      segments: Schema.Array(
+        Schema.Struct({
+          start: Schema.Number,
+          end: Schema.Number,
+          text: Schema.String,
+        })
+      ),
+      words: Schema.Array(
+        Schema.Struct({
+          start: Schema.Number,
+          end: Schema.Number,
+          text: Schema.String,
+        })
+      ),
     })
   ),
 });
@@ -263,16 +269,7 @@ export class TranscriptStorageService extends Effect.Service<TranscriptStorageSe
 
       return {
         storeSubtitles: Effect.fn("storeSubtitles")(function* (opts: {
-          segments: readonly {
-            start: number;
-            end: number;
-            text: string;
-          }[];
-          words: readonly {
-            start: number;
-            end: number;
-            text: string;
-          }[];
+          clips: typeof transcriptSchema.Encoded.clips;
           // The name of the file, without the extension
           filename: string;
         }) {
