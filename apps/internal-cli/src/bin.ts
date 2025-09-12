@@ -69,6 +69,10 @@ class FileDoesNotExistError extends Data.TaggedError("FileDoesNotExistError")<{
   filePath: AbsolutePath;
 }> {}
 
+const CLIPS_FALLBACK = {
+  clips: [],
+};
+
 program
   .command("get-clips-from-latest-video [filePath]")
   .action(async (filePath) => {
@@ -129,6 +133,12 @@ program
       yield* Console.log(JSON.stringify(output));
     }).pipe(
       Logger.withMinimumLogLevel(LogLevel.Fatal),
+      Effect.catchTags({
+        CouldNotFindStartTimeError: () =>
+          Console.log(JSON.stringify(CLIPS_FALLBACK)),
+        CouldNotFindEndTimeError: () =>
+          Console.log(JSON.stringify(CLIPS_FALLBACK)),
+      }),
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
       Effect.scoped,
