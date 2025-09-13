@@ -99,30 +99,17 @@ program
         mode: "part-of-video",
       });
 
-      const modifiedClips = clips.map((clip) => {
-        return {
-          inputVideo: latestVideo,
-          startTime: Number(clip.startTime.toFixed(2)),
-          endTime: Number((clip.startTime + clip.duration).toFixed(2)),
-        };
+      // TODO: Handle caching subtitles
+      const subtitles = yield* workflows.getSubtitlesForClips({
+        clips,
+        inputVideo: latestVideo,
       });
-
-      let subtitles = yield* transcriptStorage.getSubtitleFile({
-        filename: path.parse(latestVideo).name,
-      });
-
-      if (!subtitles) {
-        subtitles = yield* workflows.getSubtitlesForClips({
-          clips,
-          inputVideo: latestVideo,
-        });
-      }
 
       const output = {
-        clips: modifiedClips.map((clip, index) => {
+        clips: clips.map((clip, index) => {
           return {
-            startTime: clip.startTime,
-            endTime: clip.endTime,
+            startTime: Number(clip.startTime.toFixed(2)),
+            endTime: Number((clip.startTime + clip.duration).toFixed(2)),
             inputVideo: latestVideo,
             segments: subtitles.clips[index]!.segments,
             words: subtitles.clips[index]!.words,

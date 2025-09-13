@@ -247,11 +247,6 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             }
           );
 
-          yield* transcriptStorage.storeSubtitles({
-            clips: clips,
-            filename: path.parse(options.inputVideo).name,
-          });
-
           return { clips };
         });
 
