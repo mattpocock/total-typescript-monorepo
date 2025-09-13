@@ -1,6 +1,7 @@
 import { type AbsolutePath } from "@total-typescript/shared";
 import { ConfigProvider, Effect } from "effect";
 import { NodeFileSystem } from "@effect/platform-node";
+import { render } from "ink";
 import { parseExerciseDirectory, validateExerciseDirectory } from "./parser.js";
 import {
   generateConsoleReport,
@@ -8,7 +9,8 @@ import {
   generateMarkdownReport,
   reportValidationResult,
 } from "./reporter.js";
-import { type ExerciseOrganizerOptions } from "./types.js";
+import { type ExerciseOrganizerOptions, type ExerciseParseResult } from "./types.js";
+import { TUIEntry } from "./tui/App.js";
 
 // ============================================================================
 // Main CLI Command Handler
@@ -21,33 +23,56 @@ export const runExerciseOrganizer = (
   // Use current directory if none specified
   const targetDirectory = directory || process.cwd();
 
-  // Validation-only mode
-  if (options.validate) {
-    const result = yield* validateExerciseDirectory(targetDirectory);
-    yield* reportValidationResult(result);
-    return result;
-  }
-
-  // Full analysis mode
+  // Parse exercise directory
   const parseResult = yield* parseExerciseDirectory(targetDirectory);
 
-  // Generate and output report based on format
-  switch (options.format) {
-    case 'json':
-      const jsonReport = yield* generateJsonReport(parseResult);
-      yield* Effect.log(jsonReport);
-      break;
-    
-    case 'markdown':
-      const markdownReport = yield* generateMarkdownReport(parseResult);
-      yield* Effect.log(markdownReport);
-      break;
-    
-    case 'table':
-    default:
-      yield* generateConsoleReport(parseResult);
-      break;
+  // Validation-only mode
+  if (options.validate) {
+    yield* reportValidationResult({
+      hasErrors: parseResult.hasErrors,
+      errorCount: parseResult.validationErrors.length,
+      orphanedFileCount: parseResult.orphanedFiles.length,
+      totalExercises: parseResult.totalExercises,
+      sections: parseResult.sections.length,
+    });
+    return {
+      hasErrors: parseResult.hasErrors,
+      errorCount: parseResult.validationErrors.length,
+      orphanedFileCount: parseResult.orphanedFiles.length,
+      totalExercises: parseResult.totalExercises,
+      sections: parseResult.sections.length,
+    };
   }
+
+  // If format is specified, generate report instead of TUI
+  if (options.format && options.format !== 'tui') {
+    switch (options.format) {
+      case 'json':
+        const jsonReport = yield* generateJsonReport(parseResult);
+        yield* Effect.log(jsonReport);
+        break;
+      
+      case 'markdown':
+        const markdownReport = yield* generateMarkdownReport(parseResult);
+        yield* Effect.log(markdownReport);
+        break;
+      
+      case 'table':
+        yield* generateConsoleReport(parseResult);
+        break;
+    }
+
+    return {
+      hasErrors: parseResult.hasErrors,
+      errorCount: parseResult.validationErrors.length,
+      orphanedFileCount: parseResult.orphanedFiles.length,
+      totalExercises: parseResult.totalExercises,
+      sections: parseResult.sections.length,
+    };
+  }
+
+  // Launch TUI (default mode)
+  yield* launchTUI(parseResult);
 
   return {
     hasErrors: parseResult.hasErrors,
@@ -57,6 +82,23 @@ export const runExerciseOrganizer = (
     sections: parseResult.sections.length,
   };
 });
+
+// ============================================================================
+// TUI Launcher
+// ============================================================================
+
+const launchTUI = (parseResult: ExerciseParseResult) => 
+  Effect.gen(function* () {
+    yield* Effect.sync(() => {
+      const { unmount } = render(TUIEntry({ 
+        parseResult,
+        onExit: (exitCode) => {
+          unmount();
+          process.exit(exitCode);
+        }
+      }));
+    });
+  });
 
 // ============================================================================
 // Command Integration Helpers
