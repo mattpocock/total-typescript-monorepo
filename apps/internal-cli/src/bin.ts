@@ -51,6 +51,7 @@ import {
   FlagValidationError,
   validateCreateVideoFlags,
 } from "./validate-cli-flags.js";
+import { FFmpegCommandsService } from "../../../packages/ffmpeg/dist/ffmpeg-commands.js";
 
 config({
   path: path.resolve(import.meta.dirname, "../../../.env"),
@@ -79,7 +80,6 @@ program
     Effect.gen(function* () {
       const workflows = yield* WorkflowsService;
       const obs = yield* OBSIntegrationService;
-      const transcriptStorage = yield* TranscriptStorageService;
       const fs = yield* FileSystem.FileSystem;
 
       let latestVideo: AbsolutePath;
@@ -99,20 +99,12 @@ program
         mode: "part-of-video",
       });
 
-      // TODO: Handle caching subtitles
-      const subtitles = yield* workflows.getSubtitlesForClips({
-        clips,
-        inputVideo: latestVideo,
-      });
-
       const output = {
-        clips: clips.map((clip, index) => {
+        clips: clips.map((clip) => {
           return {
             startTime: Number(clip.startTime.toFixed(2)),
             endTime: Number((clip.startTime + clip.duration).toFixed(2)),
             inputVideo: latestVideo,
-            segments: subtitles.clips[index]!.segments,
-            words: subtitles.clips[index]!.words,
           };
         }),
       };
@@ -132,6 +124,50 @@ program
       NodeRuntime.runMain
     );
   });
+
+const transcribeClipSchema = Schema.Array(
+  Schema.Struct({
+    id: Schema.String,
+    startTime: Schema.Number,
+    duration: Schema.Number,
+    inputVideo: Schema.String,
+  })
+);
+
+program.command("transcribe-clips <json>").action(async (json) => {
+  await Effect.gen(function* () {
+    const workflows = yield* WorkflowsService;
+    const clips = yield* Schema.decodeUnknown(transcribeClipSchema)(
+      JSON.parse(json)
+    );
+
+    const result = yield* workflows.getSubtitlesForClips({
+      clips: clips.map((clip) => {
+        return {
+          inputVideo: clip.inputVideo as AbsolutePath,
+          startTime: clip.startTime,
+          duration: clip.duration,
+        };
+      }),
+    });
+
+    const toReturn = result.clips.map((clip, index) => {
+      return {
+        segments: clip.segments,
+        words: clip.words,
+        id: clips[index]!.id,
+      };
+    });
+
+    yield* Console.log(JSON.stringify(toReturn));
+  }).pipe(
+    Logger.withMinimumLogLevel(LogLevel.Fatal),
+    Effect.withConfigProvider(ConfigProvider.fromEnv()),
+    Effect.provide(MainLayerLive),
+    Effect.scoped,
+    NodeRuntime.runMain
+  );
+});
 
 const clipsSchema = Schema.Array(
   Schema.Struct({

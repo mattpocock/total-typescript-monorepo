@@ -192,8 +192,13 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
                 `[createAutoEditedVideoWorkflow] Creating subtitles...`
               );
               yield* getSubtitlesForClips({
-                inputVideo: options.inputVideo,
-                clips,
+                clips: clips.map((clip) => {
+                  return {
+                    inputVideo: options.inputVideo,
+                    startTime: clip.startTime,
+                    duration: clip.duration,
+                  };
+                }),
               });
             }
 
@@ -207,20 +212,44 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       };
 
       const getSubtitlesForClips = (options: {
-        inputVideo: AbsolutePath;
-        clips: {
+        clips: readonly {
+          inputVideo: AbsolutePath;
           startTime: number;
           duration: number;
         }[];
       }) =>
         Effect.gen(function* () {
-          const audioPath = yield* ffmpeg.extractAudioFromVideo(
-            options.inputVideo
+          const uniqueInputVideos = [
+            ...new Set(options.clips.map((clip) => clip.inputVideo)),
+          ];
+
+          const audioPaths = yield* Effect.all(
+            uniqueInputVideos.map((inputVideo) => {
+              return ffmpeg.extractAudioFromVideo(inputVideo).pipe(
+                Effect.map((audioPath) => {
+                  return {
+                    inputVideo,
+                    audioPath,
+                  };
+                })
+              );
+            }),
+            {
+              concurrency: "unbounded",
+            }
           );
 
           const clips = yield* Effect.all(
             options.clips.map((clip, index) => {
               return Effect.gen(function* () {
+                const audioPath = audioPaths.find(
+                  (audioPath) => audioPath.inputVideo === clip.inputVideo
+                )?.audioPath;
+
+                if (!audioPath) {
+                  return yield* Effect.die("An impossible error occurred");
+                }
+
                 const audioClipPath = yield* ffmpeg.createAudioClip(
                   audioPath,
                   clip.startTime,
