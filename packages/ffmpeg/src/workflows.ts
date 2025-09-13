@@ -241,7 +241,10 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
                   words: subtitles.words,
                 };
               });
-            })
+            }),
+            {
+              concurrency: "unbounded",
+            }
           );
 
           yield* transcriptStorage.storeSubtitles({
@@ -885,10 +888,15 @@ export const transcribeVideoWorkflow = () => {
     );
 
     // Get all files from both directories
-    const [exportFiles, shortsFiles] = yield* Effect.all([
-      fs.readDirectory(exportDirectory),
-      fs.readDirectory(shortsExportDirectory),
-    ]);
+    const [exportFiles, shortsFiles] = yield* Effect.all(
+      [
+        fs.readDirectory(exportDirectory),
+        fs.readDirectory(shortsExportDirectory),
+      ],
+      {
+        concurrency: "unbounded",
+      }
+    );
 
     // Get stats for all files in parallel
     const exportStats = yield* Effect.all(
@@ -905,7 +913,10 @@ export const transcribeVideoWorkflow = () => {
               mtime,
             };
           });
-        })
+        }),
+      {
+        concurrency: "unbounded",
+      }
     );
 
     const shortsStats = yield* Effect.all(
@@ -925,7 +936,10 @@ export const transcribeVideoWorkflow = () => {
               mtime,
             };
           });
-        })
+        }),
+      {
+        concurrency: "unbounded",
+      }
     );
 
     // Combine and sort by modification time (newest first)
