@@ -434,10 +434,11 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
         detectSilence: Effect.fn("detectSilence")(function* (
           inputVideo: AbsolutePath,
           threshold: number | string,
-          silenceDuration: number | string
+          silenceDuration: number | string,
+          startTime?: number
         ) {
           return yield* runCPULimitsAwareCommand(
-            `ffmpeg -hide_banner -vn -i "${inputVideo}" -af "silencedetect=n=${threshold}dB:d=${silenceDuration}" -f null - 2>&1`
+            `ffmpeg -hide_banner -vn ${startTime ? `-ss "${startTime}"` : ""} -i "${inputVideo}" -af "silencedetect=n=${threshold}dB:d=${silenceDuration}" -f null - 2>&1`
           ).pipe(
             Effect.mapError((e) => {
               return new CouldNotDetectSilenceError({

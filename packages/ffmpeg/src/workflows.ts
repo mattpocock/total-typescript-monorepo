@@ -357,50 +357,21 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       const findClips = Effect.fn("findClips")(function* (opts: {
         inputVideo: AbsolutePath;
         mode: "entire-video" | "part-of-video";
+        startTime?: number;
       }) {
-        const fpsFork = yield* Effect.fork(ffmpeg.getFPS(opts.inputVideo));
+        const fps = yield* ffmpeg.getFPS(opts.inputVideo);
 
-        const badTakeMarkersFork = yield* Effect.fork(
-          extractBadTakeMarkersFromFile(opts.inputVideo, yield* fpsFork, ffmpeg)
-        );
-
-        const fps = yield* fpsFork;
-
-        const silenceResultFork = yield* Effect.fork(
-          findSilenceInVideo(opts.inputVideo, {
-            threshold: THRESHOLD,
-            silenceDuration: SILENCE_DURATION,
-            startPadding: AUTO_EDITED_START_PADDING,
-            endPadding: AUTO_EDITED_END_PADDING,
-            fps,
-            ffmpeg,
-          })
-        );
-
-        const { speakingClips } = yield* silenceResultFork;
-        const badTakeMarkers = yield* badTakeMarkersFork;
-
-        const goodClips = speakingClips.filter((clip, index) => {
-          const quality = isBadTake(
-            clip,
-            badTakeMarkers,
-            index,
-            speakingClips,
-            fps
-          );
-          return quality === "good";
+        const { speakingClips } = yield* findSilenceInVideo(opts.inputVideo, {
+          threshold: THRESHOLD,
+          silenceDuration: SILENCE_DURATION,
+          startPadding: AUTO_EDITED_START_PADDING,
+          endPadding: AUTO_EDITED_END_PADDING,
+          fps,
+          ffmpeg,
+          startTime: opts.startTime,
         });
 
-        if (goodClips.length === 0) {
-          yield* Effect.log("[findClips] No good clips found");
-          return yield* Effect.fail(
-            new CouldNotCreateSpeakingOnlyVideoError({
-              cause: new Error("No good clips found"),
-            })
-          );
-        }
-
-        const clips = goodClips.map((clip, i, clips) => {
+        const clips = speakingClips.map((clip, i, clips) => {
           const resolvedDuration = roundToDecimalPlaces(
             clip.durationInFrames / fps,
             2

@@ -76,7 +76,8 @@ const CLIPS_FALLBACK = {
 
 program
   .command("get-clips-from-latest-video [filePath]")
-  .action(async (filePath) => {
+  .option("-s, --startTime <startTime>", "Start time of the video")
+  .action(async (filePath, { startTime }) => {
     Effect.gen(function* () {
       const workflows = yield* WorkflowsService;
       const obs = yield* OBSIntegrationService;
@@ -97,6 +98,7 @@ program
       const clips = yield* workflows.findClips({
         inputVideo: latestVideo,
         mode: "part-of-video",
+        startTime: startTime ? Number(startTime) : undefined,
       });
 
       const output = {
@@ -112,12 +114,6 @@ program
       yield* Console.log(JSON.stringify(output));
     }).pipe(
       Logger.withMinimumLogLevel(LogLevel.Fatal),
-      Effect.catchTags({
-        CouldNotFindStartTimeError: () =>
-          Console.log(JSON.stringify(CLIPS_FALLBACK)),
-        CouldNotFindEndTimeError: () =>
-          Console.log(JSON.stringify(CLIPS_FALLBACK)),
-      }),
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
       Effect.scoped,

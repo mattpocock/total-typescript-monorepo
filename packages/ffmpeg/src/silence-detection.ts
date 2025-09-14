@@ -110,6 +110,7 @@ export const findSilenceInVideo = (
     endPadding: number;
     fps: number;
     ffmpeg: FFmpegCommandsService;
+    startTime?: number;
   }
 ) => {
   return Effect.gen(function* () {
@@ -118,7 +119,8 @@ export const findSilenceInVideo = (
     const { stdout } = yield* opts.ffmpeg.detectSilence(
       inputVideo,
       opts.threshold,
-      opts.silenceDuration
+      opts.silenceDuration,
+      opts.startTime
     );
 
     const speakingClips = getClipsOfSpeakingFromFFmpeg(stdout, opts);
@@ -126,20 +128,17 @@ export const findSilenceInVideo = (
       `[findSilenceInVideo] Found ${speakingClips.length} speaking clips`
     );
 
-    if (!speakingClips[0]) {
-      return yield* Effect.fail(new CouldNotFindStartTimeError(void 0));
-    }
+    let startTimeAdjustment = opts.startTime ?? 0;
 
-    const endClip = speakingClips[speakingClips.length - 1];
+    const speakingClipsWithStartTimeAdjusted = speakingClips.map((clip) => {
+      return {
+        ...clip,
+        startTime: clip.startTime + startTimeAdjustment,
+        endTime: clip.endTime + startTimeAdjustment,
+      };
+    });
 
-    if (!endClip) {
-      return yield* Effect.fail(new CouldNotFindEndTimeError(void 0));
-    }
-
-    const clipStartTime = speakingClips[0].startTime;
-    const endTime = endClip.endTime;
-
-    const filteredClips = speakingClips.filter(
+    const filteredClips = speakingClipsWithStartTimeAdjusted.filter(
       (clip) =>
         clip.durationInFrames > MINIMUM_CLIP_LENGTH_IN_SECONDS * opts.fps
     );
@@ -150,8 +149,6 @@ export const findSilenceInVideo = (
 
     return {
       speakingClips: filteredClips,
-      startTime: clipStartTime,
-      endTime,
       rawStdout: stdout,
     };
   });
