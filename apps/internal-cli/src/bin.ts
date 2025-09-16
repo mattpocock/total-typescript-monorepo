@@ -174,8 +174,10 @@ const clipsSchema = Schema.Array(
 );
 
 program
-  .command("create-video-from-clips <clips> <outputVideoName>")
-  .action(async (clips, outputVideoName) => {
+  .command(
+    "create-video-from-clips <clips> <outputVideoName> [shortsDirectoryOutputName]"
+  )
+  .action(async (clips, outputVideoName, shortsDirectoryOutputName) => {
     await Effect.gen(function* () {
       const queueUpdater = yield* QueueUpdaterService;
 
@@ -188,8 +190,15 @@ program
           id: crypto.randomUUID(),
           action: {
             type: "create-video-from-clips",
-            clips: clipsParsed,
+            clips: clipsParsed.map((clip) => {
+              return {
+                inputVideo: clip.inputVideo as AbsolutePath,
+                startTime: clip.startTime,
+                duration: clip.duration,
+              };
+            }),
             outputVideoName,
+            shortsDirectoryOutputName: shortsDirectoryOutputName || undefined,
           },
           createdAt: Date.now(),
           status: "ready-to-run",

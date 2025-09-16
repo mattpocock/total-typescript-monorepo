@@ -495,27 +495,28 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           ).pipe(Effect.map(() => outputPath));
         }),
 
-        renderRemotion: Effect.fn("renderRemotion")(function* (
-          outputPath: AbsolutePath,
-          meta: {
-            subtitles: {
-              startFrame: number;
-              endFrame: number;
-              text: string;
-            }[];
-            cta: "ai" | "typescript";
-            ctaDurationInFrames: number;
-            durationInFrames: number;
-          }
-        ) {
+        renderRemotion: Effect.fn("renderRemotion")(function* (meta: {
+          subtitles: {
+            startFrame: number;
+            endFrame: number;
+            text: string;
+          }[];
+          cta: "ai" | "typescript";
+          ctaDurationInFrames: number;
+          durationInFrames: number;
+        }) {
           const META_FILE_PATH = path.join(REMOTION_DIR, "src", "meta.json");
           yield* fs.writeFileString(META_FILE_PATH, JSON.stringify(meta));
+          const tempDir = yield* fs.makeTempDirectoryScoped();
+          const outputPath = path.join(tempDir, "remotion.mp4") as AbsolutePath;
 
-          return yield* remotionMutex.withPermits(1)(
+          yield* remotionMutex.withPermits(1)(
             execAsync(`nice -n 19 npx remotion render MyComp "${outputPath}"`, {
               cwd: REMOTION_DIR,
             })
           );
+
+          return outputPath;
         }),
       };
     }),

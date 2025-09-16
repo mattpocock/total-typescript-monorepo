@@ -42,9 +42,10 @@ export type QueueItemAction =
       clips: readonly {
         startTime: number;
         duration: number;
-        inputVideo: string;
+        inputVideo: AbsolutePath;
       }[];
       outputVideoName: string;
+      shortsDirectoryOutputName: string | undefined;
     }
   | {
       /**
@@ -529,6 +530,8 @@ export const processQueue = () => {
                   .createVideoFromClipsWorkflow({
                     clips: queueItem.action.clips,
                     outputVideoName: queueItem.action.outputVideoName,
+                    shortsDirectoryOutputName:
+                      queueItem.action.shortsDirectoryOutputName,
                   })
                   .pipe(Effect.either);
 

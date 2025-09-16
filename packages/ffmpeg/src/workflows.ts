@@ -84,9 +84,10 @@ interface CreateVideoFromClipsWorkflowOptions {
   clips: readonly {
     startTime: number;
     duration: number;
-    inputVideo: string;
+    inputVideo: AbsolutePath;
   }[];
   outputVideoName: string;
+  shortsDirectoryOutputName: string | undefined;
 }
 
 export class WorkflowsService extends Effect.Service<WorkflowsService>()(
@@ -145,8 +146,13 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
           const videoFork = yield* Effect.fork(
             createAutoEditedVideo({
-              inputVideo: options.inputVideo,
-              clips,
+              clips: clips.map((clip) => {
+                return {
+                  inputVideo: options.inputVideo,
+                  startTime: clip.startTime,
+                  duration: clip.duration,
+                };
+              }),
             })
           );
 
@@ -155,24 +161,29 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
             const firstClipLength = clips[0]!.duration * fps;
 
-            const totalDurationInFrames = clips.reduce(
+            const totalDuration = clips.reduce(
               (acc, clip) => acc + clip.duration,
               0
             );
 
             const autoEditedAudioPathFork = yield* Effect.fork(
               createAutoEditedAudio({
-                inputVideo: options.inputVideo,
-                clips,
+                clips: clips.map((clip) => {
+                  return {
+                    inputVideo: options.inputVideo,
+                    startTime: clip.startTime,
+                    duration: clip.duration,
+                  };
+                }),
               })
             );
 
             const withSubtitlesPath = yield* renderSubtitles({
               autoEditedVideoPathFork: videoFork,
               autoEditedAudioPathFork,
-              fpsFork: fpsFork,
+              fps,
               ctaDurationInFrames: firstClipLength,
-              durationInFrames: totalDurationInFrames * fps,
+              durationInFrames: totalDuration * fps,
             });
 
             // Copy the video to the final path
@@ -284,7 +295,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         autoEditedAudioPathFork,
         ctaDurationInFrames,
         durationInFrames,
-        fpsFork,
+        fps,
       }: {
         autoEditedVideoPathFork: Effect.Effect<
           AbsolutePath,
@@ -294,7 +305,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           AbsolutePath,
           ExecException | CouldNotCreateClipError | PlatformError
         >;
-        fpsFork: Effect.Effect<number, CouldNotGetFPSError>;
+        fps: number;
         ctaDurationInFrames: number;
         durationInFrames: number;
       }) => {
@@ -313,8 +324,6 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             splitSubtitleSegments
           );
 
-          const fps = yield* fpsFork;
-
           const subtitlesAsFrames = processedSubtitles.map(
             (subtitle: Subtitle) => ({
               startFrame: Math.floor(subtitle.start * fps),
@@ -329,14 +338,8 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
           yield* Effect.log(`[renderSubtitles] Decided on CTA: ${cta}`);
 
-          const subtitlesOverlayPath = path.join(
-            REMOTION_DIR,
-            "out",
-            "MyComp.mov"
-          ) as AbsolutePath;
-
           yield* Effect.log("[renderSubtitles] Rendering subtitles");
-          yield* ffmpeg.renderRemotion(subtitlesOverlayPath, {
+          const subtitlesOverlayPath = yield* ffmpeg.renderRemotion({
             subtitles: subtitlesAsFrames,
             cta,
             ctaDurationInFrames,
@@ -414,8 +417,8 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       });
 
       const createAutoEditedAudio = (options: {
-        inputVideo: AbsolutePath;
-        clips: {
+        clips: readonly {
+          inputVideo: AbsolutePath;
           startTime: number;
           duration: number;
         }[];
@@ -424,7 +427,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           const clips = yield* Effect.all(
             options.clips.map((clip) =>
               ffmpeg.createAudioClip(
-                options.inputVideo,
+                clip.inputVideo,
                 clip.startTime,
                 clip.duration
               )
@@ -444,11 +447,10 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       };
 
       const createAutoEditedVideo = ({
-        inputVideo,
         clips,
       }: {
-        inputVideo: AbsolutePath;
-        clips: {
+        clips: readonly {
+          inputVideo: AbsolutePath;
           startTime: number;
           duration: number;
         }[];
@@ -458,7 +460,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             clips.map((clip, i) =>
               Effect.gen(function* () {
                 const outputFile = yield* ffmpeg.createVideoClip(
-                  inputVideo,
+                  clip.inputVideo,
                   clip.startTime,
                   clip.duration
                 );
@@ -665,37 +667,61 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         return Effect.gen(function* () {
           const outputVideoName = options.outputVideoName;
 
-          const clips = yield* Effect.all(
-            options.clips.map((clip, i) =>
-              Effect.gen(function* () {
-                const outputFile = yield* ffmpeg.createVideoClip(
-                  clip.inputVideo as AbsolutePath,
-                  clip.startTime,
-                  clip.duration
-                );
-
-                yield* Effect.log(
-                  `[createVideoFromClipsWorkflow] Created clip ${i + 1}/${options.clips.length}`
-                );
-                return outputFile;
-              })
-            ),
-            {
-              concurrency: "unbounded",
-            }
+          const videoFork = yield* Effect.fork(
+            createAutoEditedVideo({
+              clips: options.clips.map((clip) => {
+                return {
+                  inputVideo: clip.inputVideo,
+                  startTime: clip.startTime,
+                  duration: clip.duration,
+                };
+              }),
+            })
           );
 
-          const concatenatedVideo = yield* ffmpeg.concatenateVideoClips(clips);
+          let videoPath: AbsolutePath;
 
-          const normalizedAudio =
-            yield* ffmpeg.normalizeAudio(concatenatedVideo);
+          if (options.shortsDirectoryOutputName) {
+            const audioFork = yield* Effect.fork(
+              createAutoEditedAudio({
+                clips: options.clips,
+              })
+            );
+
+            const fps = yield* ffmpeg.getFPS(options.clips[0]!.inputVideo);
+
+            const totalDuration = options.clips.reduce(
+              (acc, clip) => acc + clip.duration,
+              0
+            );
+
+            const totalDurationInFrames = totalDuration * fps;
+
+            const videoWithSubtitles = yield* renderSubtitles({
+              autoEditedVideoPathFork: videoFork,
+              autoEditedAudioPathFork: audioFork,
+              fps,
+              ctaDurationInFrames: options.clips[0]!.duration,
+              durationInFrames: totalDurationInFrames * fps,
+            });
+
+            const shortsOutputPath = path.join(
+              shortsExportDirectory,
+              options.shortsDirectoryOutputName
+            ) as AbsolutePath;
+
+            videoPath = videoWithSubtitles;
+            yield* fs.copyFile(videoPath, shortsOutputPath);
+          } else {
+            videoPath = yield* videoFork;
+          }
 
           const outputPath = path.join(
             exportDirectory,
             `${outputVideoName}.mp4`
           ) as AbsolutePath;
 
-          yield* fs.copyFile(normalizedAudio, outputPath);
+          yield* fs.copyFile(videoPath, outputPath);
 
           yield* Console.log(
             `✅ Successfully created video from clips: ${outputPath}`
