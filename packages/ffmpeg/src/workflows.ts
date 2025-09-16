@@ -315,11 +315,6 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             yield* autoEditedAudioPathFork
           );
 
-          const fullTranscriptText = subtitles.segments
-            .map((s) => s.text)
-            .join("")
-            .trim();
-
           const processedSubtitles = subtitles.segments.flatMap(
             splitSubtitleSegments
           );

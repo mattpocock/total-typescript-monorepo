@@ -308,7 +308,7 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           ) as AbsolutePath;
 
           return yield* runCPULimitsAwareCommand(
-            `nice -n 19 ffmpeg -y -hide_banner -hwaccel cuda -i "${inputPath}" -vn -c:a copy "${outputPath}" ${opts?.startTime ? `-ss ${opts.startTime}` : ""} ${opts?.endTime ? `-t ${opts.endTime}` : ""}`
+            `nice -n 19 ffmpeg -y -hide_banner -hwaccel cuda -i "${inputPath}" -vn -c:a libmp3lame -b:a 384k "${outputPath}" ${opts?.startTime ? `-ss ${opts.startTime}` : ""} ${opts?.endTime ? `-t ${opts.endTime}` : ""}`
           ).pipe(
             Effect.mapError((e) => {
               return new CouldNotExtractAudioError({
