@@ -509,7 +509,7 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           const outputPath = path.join(tempDir, "remotion.mov") as AbsolutePath;
 
           yield* remotionMutex.withPermits(1)(
-            execAsync(`nice -n 19 npx remotion render MyComp "${outputPath}"`, {
+            execAsync(`npx remotion render MyComp "${outputPath}"`, {
               cwd: REMOTION_DIR,
             })
           );

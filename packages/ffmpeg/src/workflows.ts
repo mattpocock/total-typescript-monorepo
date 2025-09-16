@@ -334,7 +334,8 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
           yield* Effect.log("[renderSubtitles] Figuring out which CTA to show");
 
-          const cta = yield* ffmpeg.figureOutWhichCTAToShow(fullTranscriptText);
+          // const cta = yield* ffmpeg.figureOutWhichCTAToShow(fullTranscriptText);
+          const cta = "ai";
 
           yield* Effect.log(`[renderSubtitles] Decided on CTA: ${cta}`);
 
@@ -702,12 +703,12 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
               autoEditedAudioPathFork: audioFork,
               fps,
               ctaDurationInFrames: options.clips[0]!.duration * fps,
-              durationInFrames: totalDurationInFrames * fps,
+              durationInFrames: totalDurationInFrames,
             });
 
             const shortsOutputPath = path.join(
               shortsExportDirectory,
-              options.shortsDirectoryOutputName
+              options.shortsDirectoryOutputName + ".mp4"
             ) as AbsolutePath;
 
             videoPath = videoWithSubtitles;
