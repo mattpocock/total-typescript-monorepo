@@ -90,6 +90,8 @@ export interface ChaptersResponse {
   chapters: RawChapter[];
 }
 
+const AUDIO_EXTENSION = "mp3";
+
 export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>()(
   "FFmpegCommandsService",
   {
@@ -106,8 +108,6 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
         TRANSCRIPTION_CONCURRENCY_LIMIT
       );
       const remotionMutex = yield* Effect.makeSemaphore(1);
-
-      const audioExtension = yield* Config.string("AUDIO_FILE_EXTENSION");
 
       const runGPULimitsAwareCommand = (command: string) => {
         return gpuAcceleratedMutex.withPermits(1)(execAsync(command));
@@ -159,12 +159,10 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
         transcribeAudio: Effect.fn("transcribeAudio")(function* (
           audioPath: AbsolutePath
         ) {
-          const audioExtension = yield* Config.string("AUDIO_FILE_EXTENSION");
-
-          if (!audioPath.endsWith(audioExtension)) {
+          if (!audioPath.endsWith(AUDIO_EXTENSION)) {
             return yield* Effect.fail(
               new WrongAudioFileExtensionError({
-                message: `Audio file extension must be ${audioExtension}`,
+                message: `Audio file extension must be ${AUDIO_EXTENSION}`,
               })
             );
           }
@@ -306,7 +304,7 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
 
           const outputPath = path.join(
             tempDir,
-            `extracted-audio.${audioExtension}`
+            `extracted-audio.${AUDIO_EXTENSION}`
           ) as AbsolutePath;
 
           return yield* runCPULimitsAwareCommand(
@@ -330,10 +328,10 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
 
           const outputPath = path.join(
             tempDir,
-            `clip.${audioExtension}`
+            `clip.${AUDIO_EXTENSION}`
           ) as AbsolutePath;
           return yield* runCPULimitsAwareCommand(
-            `nice -n 19 ffmpeg -y -hide_banner -hwaccel cuda -ss ${startTime} -i "${inputAudio}" -t ${duration} -c:a copy "${outputPath}"`
+            `nice -n 19 ffmpeg -y -hide_banner -hwaccel cuda -ss ${startTime} -i "${inputAudio}" -t ${duration} -c:a libmp3lame -b:a 384k "${outputPath}"`
           ).pipe(
             Effect.mapError((e) => {
               return new CouldNotCreateAudioClipError({
@@ -406,11 +404,11 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
 
           const outputAudio = path.join(
             tempDir,
-            `concatenated-audio.${audioExtension}`
+            `concatenated-audio.${AUDIO_EXTENSION}`
           ) as AbsolutePath;
 
           return yield* runCPULimitsAwareCommand(
-            `nice -n 19 ffmpeg -y -hide_banner -f concat -safe 0 -i "${concatFile}" -c:a copy "${outputAudio}"`
+            `nice -n 19 ffmpeg -y -hide_banner -f concat -safe 0 -i "${concatFile}" -c:a libmp3lame -b:a 384k "${outputAudio}"`
           ).pipe(Effect.map(() => outputAudio));
         }),
 
@@ -508,7 +506,7 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           const META_FILE_PATH = path.join(REMOTION_DIR, "src", "meta.json");
           yield* fs.writeFileString(META_FILE_PATH, JSON.stringify(meta));
           const tempDir = yield* fs.makeTempDirectoryScoped();
-          const outputPath = path.join(tempDir, "remotion.mp4") as AbsolutePath;
+          const outputPath = path.join(tempDir, "remotion.mov") as AbsolutePath;
 
           yield* remotionMutex.withPermits(1)(
             execAsync(`nice -n 19 npx remotion render MyComp "${outputPath}"`, {

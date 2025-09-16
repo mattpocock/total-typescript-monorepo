@@ -1,6 +1,7 @@
 {
   "extends": "@total-typescript/tsconfig/tsc/no-dom/app",
   "compilerOptions": {
+    "lib": ["ESNext"],
     "outDir": "dist",
     "rootDir": "src",
     "composite": true,

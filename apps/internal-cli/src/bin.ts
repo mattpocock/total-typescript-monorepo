@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { FileSystem } from "@effect/platform";
-import { NodeFileSystem, NodeRuntime } from "@effect/platform-node";
+import { NodeRuntime } from "@effect/platform-node";
 import {
   addCurrentTimelineToRenderQueue,
   appendVideoToTimeline,
@@ -20,11 +20,10 @@ import {
   validateWindowsFilename,
   WorkflowsService,
 } from "@total-typescript/ffmpeg";
-import { type AbsolutePath, execAsync } from "@total-typescript/shared";
+import { type AbsolutePath } from "@total-typescript/shared";
 import { Command } from "commander";
 import { config } from "dotenv";
 import {
-  Config,
   ConfigProvider,
   Console,
   Data,
@@ -44,14 +43,11 @@ import {
   TranscriptStorageService,
 } from "../../../packages/ffmpeg/dist/services.js";
 import packageJson from "../package.json" with { type: "json" };
-import { runExerciseOrganizer } from "./exercise-organizer/cli-command.js";
-import { type ExerciseOrganizerOptions } from "./exercise-organizer/types.js";
 import { OpenTelemetryLive } from "./tracing.js";
 import {
   FlagValidationError,
   validateCreateVideoFlags,
 } from "./validate-cli-flags.js";
-import { FFmpegCommandsService } from "../../../packages/ffmpeg/dist/ffmpeg-commands.js";
 
 config({
   path: path.resolve(import.meta.dirname, "../../../.env"),
@@ -1076,134 +1072,32 @@ function generateProgressBar(
   return names.map((name, i) => `${icons[i]} ${name}`).join(" → ");
 }
 
-// Exercise Organizer Command
 program
-  .command("exercise-organizer [directory]")
-  .aliases(["eo", "exercises"])
-  .description("Analyze and organize TypeScript exercise files")
-  .option("-v, --validate", "Validate exercises and exit with status code")
-  .option("--format <type>", "Output format: table, json, markdown", "table")
-  .option("--verbose", "Enable verbose output")
-  .action(
-    async (
-      directory: string | undefined,
-      options: ExerciseOrganizerOptions
-    ) => {
-      const result = await runExerciseOrganizer(directory, options).pipe(
-        Effect.withConfigProvider(ConfigProvider.fromEnv()),
-        Effect.provide(NodeFileSystem.layer),
-        Effect.runPromise
+  .command("retry-queue-item")
+  .aliases(["rq"])
+  .action(async () => {
+    Effect.gen(function* () {
+      const queueUpdater = yield* QueueUpdaterService;
+      const { queue } = yield* queueUpdater.getQueueState();
+
+      const mostRecentlyFailedItem = queue.findLast(
+        (item) => item.status === "failed"
       );
 
-      // Exit with non-zero code if there are errors (useful for CI)
-      if (options.validate && result.hasErrors) {
-        process.exit(1);
+      if (!mostRecentlyFailedItem) {
+        yield* Console.log("No failed queue items found");
+        return;
       }
-    }
-  );
 
-// Add database dump error classes
-export class DatabaseUrlParseError extends Data.TaggedError(
-  "DatabaseUrlParseError"
-)<{
-  url: string;
-  cause: Error;
-}> {}
-
-export class DatabaseDumpError extends Data.TaggedError("DatabaseDumpError")<{
-  cause: Error;
-  command: string;
-}> {}
-
-// Database dump functionality
-const parseDatabaseUrl = Effect.fn("parseDatabaseUrl")(function* (
-  databaseUrl: string
-) {
-  const url = yield* Effect.try({
-    try: () => new URL(databaseUrl),
-    catch: (error) =>
-      new DatabaseUrlParseError({
-        url: databaseUrl,
-        cause: error as Error,
-      }),
-  });
-
-  if (url.protocol !== "postgresql:") {
-    return yield* Effect.fail(
-      new DatabaseUrlParseError({
-        url: databaseUrl,
-        cause: new Error("Only PostgreSQL URLs are supported"),
-      })
-    );
-  }
-
-  return {
-    host: url.hostname,
-    port: url.port || "5432",
-    username: url.username,
-    password: url.password,
-    database: url.pathname.slice(1), // Remove leading slash
-  };
-});
-
-const dumpDatabase = Effect.fn("dumpDatabase")(function* () {
-  const databaseUrl = yield* Config.string("CVM_DATABASE_URL");
-  const backupFilePath = yield* Config.string("CVM_DB_BACKUP_FILE_PATH");
-
-  // Parse database URL
-  const dbConfig = yield* parseDatabaseUrl(databaseUrl);
-
-  // Build pg_dump command
-  const pgDumpCommand = [
-    "pg_dump",
-    "-h",
-    dbConfig.host,
-    "-p",
-    dbConfig.port,
-    "-U",
-    dbConfig.username,
-    "-d",
-    dbConfig.database,
-    "-Fc", // Custom format (compressed)
-    ">",
-    backupFilePath,
-  ].join(" ");
-
-  yield* Effect.logInfo("Starting database dump", {
-    host: dbConfig.host,
-    database: dbConfig.database,
-    outputFile: backupFilePath,
-  });
-
-  // Set PGPASSWORD environment variable for pg_dump
-  const env = { ...process.env, PGPASSWORD: dbConfig.password };
-
-  // Execute pg_dump command
-  yield* execAsync(pgDumpCommand, { env }).pipe(
-    Effect.mapError(
-      (error) =>
-        new DatabaseDumpError({
-          cause: error,
-          command: pgDumpCommand,
-        })
-    )
-  );
-
-  yield* Effect.logInfo("Database dump completed successfully", {
-    outputFile: backupFilePath,
-  });
-
-  return backupFilePath;
-});
-
-program
-  .command("dump-database")
-  .description("Dump a remote PostgreSQL database to a file using pg_dump")
-  .action(async () => {
-    await dumpDatabase().pipe(
+      yield* queueUpdater.updateQueueItem({
+        ...mostRecentlyFailedItem,
+        status: "ready-to-run",
+        error: undefined,
+      });
+      yield* Console.log("Marked queue item as ready-to-run");
+    }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(OpenTelemetryLive),
-      Effect.withSpan("dump-database"),
+      Effect.provide(MainLayerLive),
       NodeRuntime.runMain
     );
   });

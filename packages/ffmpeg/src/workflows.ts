@@ -701,7 +701,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
               autoEditedVideoPathFork: videoFork,
               autoEditedAudioPathFork: audioFork,
               fps,
-              ctaDurationInFrames: options.clips[0]!.duration,
+              ctaDurationInFrames: options.clips[0]!.duration * fps,
               durationInFrames: totalDurationInFrames * fps,
             });
 
