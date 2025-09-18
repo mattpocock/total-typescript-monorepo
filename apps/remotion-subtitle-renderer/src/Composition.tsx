@@ -30,7 +30,7 @@ export const MyComposition = ({
               : subtitle.endFrame - subtitle.startFrame
           }
         >
-          <AbsoluteFill className="flex items-center justify-center">
+          <AbsoluteFill className="flex items-center justify-center border-red-500">
             <Subtitle text={subtitle.text} isFirst={index === 0} />
           </AbsoluteFill>
         </Sequence>
@@ -83,7 +83,7 @@ const CTAPill = ({
   return (
     <>
       <div className="flex-1"></div>
-      <div className="flex flex-1 items-center justify-center">
+      <div className="flex flex-1 items-center justify-center ">
         {cta === "ai" ? (
           <div className="w-full h-full flex items-center justify-center px-24">
             <Img
@@ -113,7 +113,7 @@ const CTAPill = ({
 };
 
 const ANIMATION_DURATION = 8;
-const BASE_Y_TRANSFORM = 64;
+const BASE_Y_TRANSFORM = 122;
 
 const Subtitle = ({ text, isFirst }: { text: string; isFirst: boolean }) => {
   const frame = useCurrentFrame();
