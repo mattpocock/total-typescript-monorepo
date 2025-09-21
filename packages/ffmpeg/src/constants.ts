@@ -8,6 +8,7 @@ export const AUTO_EDITED_END_PADDING = 0.08;
 // to ensure it's not cut off at the end
 export const AUTO_EDITED_VIDEO_FINAL_END_PADDING = 0.5;
 
+// The minimum length of a clip in seconds
 export const MINIMUM_CLIP_LENGTH_IN_SECONDS = 1;
 /**
  * When I press 'bad take' after I finish recording,
