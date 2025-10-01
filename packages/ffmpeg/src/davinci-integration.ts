@@ -26,6 +26,7 @@ export type MultiTrackClip = {
   startFrame: number;
   endFrame: number;
   videoIndex: number;
+  trackIndex: number;
   timelineStartFrame?: number;
 };
 
@@ -39,7 +40,7 @@ export const serializeMultiTrackClipsForAppendScript = (
 ) => {
   return clips
     .map((clip) => {
-      const base = `${clip.startFrame}___${clip.endFrame}___${clip.videoIndex}`;
+      const base = `${clip.startFrame}___${clip.endFrame}___${clip.videoIndex}___${clip.trackIndex}`;
       return clip.timelineStartFrame !== undefined
         ? `${base}___${clip.timelineStartFrame}`
         : base;
@@ -93,7 +94,8 @@ export const appendVideoToTimeline = (
         .map((clip) => ({
           startFrame: clip.startFrame,
           endFrame: clip.endFrame,
-          videoIndex: 0, // Single video goes on track 1
+          videoIndex: 0,
+          trackIndex: 1,
         }))
     );
 

@@ -354,7 +354,18 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           ) as AbsolutePath;
 
           yield* runGPULimitsAwareCommand(
-            `nice -n 19 ffmpeg -y -hide_banner -ss ${startTime} -i "${inputVideo}" -t ${duration} -c:v h264_nvenc -preset slow -rc:v vbr -cq:v 19 -b:v 8000k -maxrate 12000k -bufsize 16000k -c:a aac -b:a 384k "${outputFile}"`
+            `ffmpeg -y -hide_banner \
+            -fflags +genpts \
+            -i "${inputVideo}" -ss ${startTime} -t ${duration} \
+            -c:v h264_nvenc -preset slow -rc:v vbr -cq:v 19 \
+            -b:v 15387k -maxrate 20000k -bufsize 30000k \
+            -fps_mode cfr -r 60 \
+            -af "asetpts=PTS-STARTPTS" \
+            -vf "setpts=PTS-STARTPTS" \
+            -c:a aac -ar 48000 -b:a 320k \
+            -timecode 01:00:00:00 \
+            -muxdelay 0 -muxpreload 0 \
+            "${outputFile}"`
           ).pipe(
             Effect.mapError((e) => {
               return new CouldNotCreateClipError({
@@ -384,7 +395,20 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           yield* fs.writeFileString(concatFile, concatContent);
 
           yield* runGPULimitsAwareCommand(
-            `ffmpeg -y -hide_banner -f concat -safe 0 -i "${concatFile}" -c:v h264_nvenc -preset slow -rc:v vbr -cq:v 19 -b:v 8000k -maxrate 12000k -bufsize 16000k -c:a aac -b:a 384k "${outputVideo}"`
+            `ffmpeg -y -hide_banner \
+            -f concat -safe 0 -i "${concatFile}" \
+            -fflags +genpts \
+            -c:v h264_nvenc -preset slow -rc:v vbr -cq:v 19 \
+            -b:v 15387k -maxrate 20000k -bufsize 30000k \
+            -fps_mode cfr -r 60 \
+            -af "asetpts=PTS-STARTPTS" \
+            -vf "setpts=PTS-STARTPTS" \
+            -c:a aac -ar 48000 -b:a 320k \
+            -timecode 01:00:00:00 \
+            -muxdelay 0 -muxpreload 0 \
+            -max_interleave_delta 0 \
+            -movflags +faststart \
+            "${outputVideo}"`
           );
 
           return outputVideo;

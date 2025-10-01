@@ -262,6 +262,7 @@ program
                 (clip.startTime + clip.duration + endPadding) * fps
               ),
               videoIndex: inputVideosMap[clip.inputVideo]!,
+              trackIndex: 1,
             };
           })
         ),

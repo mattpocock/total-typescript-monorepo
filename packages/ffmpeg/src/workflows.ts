@@ -628,7 +628,8 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             multiTrackClips.push({
               startFrame: inputStartFrame,
               endFrame: inputEndFrame,
-              videoIndex: 0, // Host goes on track 1
+              videoIndex: 0, // Host video
+              trackIndex: 1, // Track 1
               timelineStartFrame,
             });
           }
@@ -640,7 +641,8 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             multiTrackClips.push({
               startFrame: inputStartFrame,
               endFrame: inputEndFrame,
-              videoIndex: 1, // Guest goes on track 2
+              videoIndex: 1, // Guest video
+              trackIndex: 2, // Track 2
               timelineStartFrame,
             });
           }
