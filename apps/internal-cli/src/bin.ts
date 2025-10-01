@@ -6,6 +6,7 @@ import {
   addCurrentTimelineToRenderQueue,
   appendVideoToTimeline,
   AppLayerLive,
+  AUTO_EDITED_VIDEO_FINAL_END_PADDING,
   createAutoEditedVideoQueueItems,
   createTimeline,
   exportSubtitles,
@@ -16,11 +17,15 @@ import {
   processInformationRequests,
   processQueue,
   type QueueItem,
+  serializeMultiTrackClipsForAppendScript,
   transcribeVideoWorkflow,
   validateWindowsFilename,
   WorkflowsService,
 } from "@total-typescript/ffmpeg";
-import { type AbsolutePath } from "@total-typescript/shared";
+import {
+  runDavinciResolveScript,
+  type AbsolutePath,
+} from "@total-typescript/shared";
 import { Command } from "commander";
 import { config } from "dotenv";
 import {
@@ -48,6 +53,7 @@ import {
   FlagValidationError,
   validateCreateVideoFlags,
 } from "./validate-cli-flags.js";
+import { FFmpegCommandsService } from "../../../packages/ffmpeg/dist/ffmpeg-commands.js";
 
 config({
   path: path.resolve(import.meta.dirname, "../../../.env"),
@@ -65,10 +71,6 @@ program.version(packageJson.version);
 class FileDoesNotExistError extends Data.TaggedError("FileDoesNotExistError")<{
   filePath: AbsolutePath;
 }> {}
-
-const CLIPS_FALLBACK = {
-  clips: [],
-};
 
 program
   .command("get-clips-from-latest-video [filePath]")
@@ -202,6 +204,72 @@ program
       ]);
 
       yield* Console.log("Added video creation job to queue.");
+    }).pipe(
+      Effect.withConfigProvider(ConfigProvider.fromEnv()),
+      Effect.scoped,
+      Effect.provide(MainLayerLive),
+      NodeRuntime.runMain
+    );
+  });
+
+class NoInputVideosError extends Data.TaggedError("NoInputVideosError")<{}> {}
+
+program
+  .command("send-clips-to-davinci-resolve <clips> <timeline-name>")
+  .action(async (clips, timelineName) => {
+    await Effect.gen(function* () {
+      const clipsParsed = yield* Schema.decodeUnknown(clipsSchema)(
+        JSON.parse(clips)
+      );
+
+      const ffmpeg = yield* FFmpegCommandsService;
+
+      const uniqueInputVideos = [
+        ...new Set(clipsParsed.map((clip) => clip.inputVideo)),
+      ];
+
+      const inputVideosMap = uniqueInputVideos.reduce(
+        (acc, video, index) => {
+          acc[video] = index;
+          return acc;
+        },
+        {} as Record<string, number>
+      );
+
+      const firstInputVideo = uniqueInputVideos[0];
+
+      if (!firstInputVideo) {
+        return yield* Effect.fail(new NoInputVideosError());
+      }
+
+      const fps = yield* ffmpeg.getFPS(firstInputVideo as AbsolutePath);
+
+      yield* Console.log(fps, timelineName);
+
+      const result = yield* runDavinciResolveScript("clip-and-append.lua", {
+        NEW_TIMELINE_NAME: timelineName,
+        INPUT_VIDEOS: uniqueInputVideos.join(":::"),
+        CLIPS_TO_APPEND: serializeMultiTrackClipsForAppendScript(
+          clipsParsed.map((clip, index, array) => {
+            const isLastClip = index === array.length - 1;
+
+            const endPadding = isLastClip
+              ? AUTO_EDITED_VIDEO_FINAL_END_PADDING
+              : 0;
+            return {
+              startFrame: Math.floor(clip.startTime * fps),
+              endFrame: Math.ceil(
+                (clip.startTime + clip.duration + endPadding) * fps
+              ),
+              videoIndex: inputVideosMap[clip.inputVideo]!,
+            };
+          })
+        ),
+        WSLENV: "INPUT_VIDEOS/p:CLIPS_TO_APPEND:NEW_TIMELINE_NAME",
+      });
+
+      yield* Console.log(result.stdout);
+      yield* Console.log(result.stderr);
     }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.scoped,

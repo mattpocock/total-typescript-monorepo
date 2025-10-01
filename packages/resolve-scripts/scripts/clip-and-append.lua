@@ -9,6 +9,7 @@ Environment Variables Required:
 - CLIPS_TO_APPEND: String containing clip information in the format 
   "startFrame___endFrame___videoIndex___[timelineStartFrame]:::startFrame___endFrame___videoIndex___[timelineStartFrame]"
   where timelineStartFrame is optional. If not provided, clips will be appended to the end of their respective tracks.
+- NEW_TIMELINE_NAME: String containing the desired name for the timeline. The timeline will be created with this name.
 
 Functionality:
 1. Takes multiple video files and specified clip information
@@ -91,12 +92,35 @@ for videoIndex, videoPath in ipairs(videoPaths) do
   videoIndexToClip[videoIndex - 1] = clip
 end
 
--- Get current timeline
+-- Get current timeline, create one if none exists
 local timeline = project:GetCurrentTimeline()
 
-local globalTimelineStartFrame = timeline:GetStartFrame()
+local newTimelineName = os.getenv('NEW_TIMELINE_NAME')
 
-print(globalTimelineStartFrame)
+if not newTimelineName then
+  error('No NEW_TIMELINE_NAME provided')
+end
+
+if not timeline then
+  print("No current timeline found. Creating a new timeline...")
+  timeline = mediaPool:CreateEmptyTimeline(newTimelineName)
+  if not timeline then
+    error("Failed to create new timeline")
+  end
+  print("Created new timeline: " .. timeline:GetName())
+else
+  print("Using existing timeline: " .. timeline:GetName())
+  -- Update existing timeline name to the required name
+  print("Updating timeline name to: " .. newTimelineName)
+  local success = timeline:SetName(newTimelineName)
+  if success then
+    print("Timeline name updated successfully to: " .. timeline:GetName())
+  else
+    print("Warning: Failed to update timeline name to: " .. newTimelineName)
+  end
+end
+
+local globalTimelineStartFrame = timeline:GetStartFrame()
 
 -- Parse clips to append
 local clipData = split(clipsToAppend, ':::')

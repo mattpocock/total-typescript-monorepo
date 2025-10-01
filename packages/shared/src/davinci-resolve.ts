@@ -7,11 +7,7 @@ type Scripts = {
     INPUT_VIDEOS: string;
     CLIPS_TO_APPEND: string;
     WSLENV: string;
-  };
-  "clip-and-append-multiple.lua": {
-    INPUT_VIDEO: string;
-    CLIPS_TO_APPEND: string;
-    WSLENV: string;
+    NEW_TIMELINE_NAME?: string;
   };
   "import-file-to-bin.lua": {
     INPUT: string;
