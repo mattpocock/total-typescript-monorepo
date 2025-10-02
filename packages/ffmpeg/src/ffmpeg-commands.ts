@@ -342,26 +342,33 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           );
         }),
 
-        createVideoClip: Effect.fn("createVideoClip")(function* (
-          inputVideo: AbsolutePath,
-          startTime: number,
-          duration: number
-        ) {
+        createVideoClip: Effect.fn("createVideoClip")(function* (opts: {
+          inputVideo: AbsolutePath;
+          startTime: number;
+          duration: number;
+          mode?: "default" | "portrait-zoom";
+        }) {
           const tempDir = yield* fs.makeTempDirectoryScoped();
           const outputFile = path.join(
             tempDir,
-            `clip.${path.extname(inputVideo)}`
+            `clip.${path.extname(opts.inputVideo)}`
           ) as AbsolutePath;
+
+          const mode = opts.mode ?? "default";
+          const videoFilter =
+            mode === "portrait-zoom"
+              ? "scale=iw*1.2:ih*1.2,crop=1920:1080:120:100,setpts=PTS-STARTPTS"
+              : "setpts=PTS-STARTPTS";
 
           yield* runGPULimitsAwareCommand(
             `ffmpeg -y -hide_banner \
             -fflags +genpts \
-            -i "${inputVideo}" -ss ${startTime} -t ${duration} \
+            -i "${opts.inputVideo}" -ss ${opts.startTime} -t ${opts.duration} \
             -c:v h264_nvenc -preset slow -rc:v vbr -cq:v 19 \
             -b:v 15387k -maxrate 20000k -bufsize 30000k \
             -fps_mode cfr -r 60 \
             -af "asetpts=PTS-STARTPTS" \
-            -vf "setpts=PTS-STARTPTS" \
+            -vf "${videoFilter}" \
             -c:a aac -ar 48000 -b:a 320k \
             -timecode 01:00:00:00 \
             -muxdelay 0 -muxpreload 0 \

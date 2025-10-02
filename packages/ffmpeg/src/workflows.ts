@@ -455,11 +455,11 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           const clipFiles = yield* Effect.all(
             clips.map((clip, i) =>
               Effect.gen(function* () {
-                const outputFile = yield* ffmpeg.createVideoClip(
-                  clip.inputVideo,
-                  clip.startTime,
-                  clip.duration
-                );
+                const outputFile = yield* ffmpeg.createVideoClip({
+                  inputVideo: clip.inputVideo,
+                  startTime: clip.startTime,
+                  duration: clip.duration,
+                });
 
                 yield* Effect.log(
                   `[createAutoEditedVideo] Created clip ${i + 1}/${clips.length}`
@@ -515,13 +515,14 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             interviewSpeakingClips.map((clip, i) =>
               Effect.gen(function* () {
                 // TODO: create clips to handle the case where the guest is speaking over the host
-                const outputFile = yield* ffmpeg.createVideoClip(
-                  clip.state === "host-speaking"
-                    ? opts.hostVideo
-                    : opts.guestVideo,
-                  clip.startTime,
-                  clip.duration
-                );
+                const outputFile = yield* ffmpeg.createVideoClip({
+                  inputVideo:
+                    clip.state === "host-speaking"
+                      ? opts.hostVideo
+                      : opts.guestVideo,
+                  startTime: clip.startTime,
+                  duration: clip.duration,
+                });
 
                 yield* Effect.log(
                   `[editInterviewWorkflow] Created clip ${i + 1}/${interviewSpeakingClips.length} of ${clip.state}`
