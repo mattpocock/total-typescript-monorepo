@@ -42,7 +42,7 @@ import {
 } from "./ffmpeg-commands.js";
 import { QueueUpdaterService } from "./queue/queue-updater-service.js";
 import { findSilenceInVideo } from "./silence-detection.js";
-import type { VideoClip } from "./video-clip-types.js";
+import type { ClipWithDuration, VideoClip } from "./video-clip-types.js";
 
 export interface CreateAutoEditedVideoWorkflowOptions {
   inputVideo: AbsolutePath;
@@ -81,11 +81,7 @@ export class FFMPegWithComplexFilterError extends Data.TaggedError(
 }> {}
 
 interface CreateVideoFromClipsWorkflowOptions {
-  clips: readonly {
-    startTime: number;
-    duration: number;
-    inputVideo: AbsolutePath;
-  }[];
+  clips: readonly ClipWithDuration[];
   outputVideoName: string;
   shortsDirectoryOutputName: string | undefined;
 }
@@ -223,11 +219,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       };
 
       const getSubtitlesForClips = (options: {
-        clips: readonly {
-          inputVideo: AbsolutePath;
-          startTime: number;
-          duration: number;
-        }[];
+        clips: readonly ClipWithDuration[];
       }) =>
         Effect.gen(function* () {
           const uniqueInputVideos = [
@@ -413,11 +405,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       });
 
       const createAutoEditedAudio = (options: {
-        clips: readonly {
-          inputVideo: AbsolutePath;
-          startTime: number;
-          duration: number;
-        }[];
+        clips: readonly ClipWithDuration[];
       }) => {
         return Effect.gen(function* () {
           const clips = yield* Effect.all(
@@ -445,11 +433,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       const createAutoEditedVideo = ({
         clips,
       }: {
-        clips: readonly {
-          inputVideo: AbsolutePath;
-          startTime: number;
-          duration: number;
-        }[];
+        clips: readonly ClipWithDuration[];
       }) => {
         return Effect.gen(function* () {
           const clipFiles = yield* Effect.all(

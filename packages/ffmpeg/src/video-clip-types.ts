@@ -5,3 +5,9 @@ export type VideoClip = {
   sourceVideoStartTime: number;
   sourceVideoEndTime: number;
 };
+
+export type ClipWithDuration = {
+  startTime: number;
+  duration: number;
+  inputVideo: AbsolutePath;
+};
