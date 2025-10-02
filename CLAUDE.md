@@ -9,6 +9,7 @@ This is Matt Pocock's Total TypeScript monorepo - a comprehensive workspace for 
 ## Quick Commands
 
 ### Development
+
 ```bash
 pnpm run dev              # Watch mode for all packages
 pnpm run build            # Build all packages and apps
@@ -16,6 +17,7 @@ pnpm run ci               # Full CI pipeline: build, test, lint
 ```
 
 ### Content Creation
+
 ```bash
 pnpm run write            # Start writing workflow (preview server + content tools)
 pnpm run write-new        # Create new content with fresh start
@@ -24,6 +26,7 @@ pnpm run manage           # Content management interface
 ```
 
 ### Video Production
+
 ```bash
 pnpm cli create-auto-edited-video                              # Standard auto-editing workflow
 pnpm cli create-auto-edited-video --generate-article           # With AI article generation
@@ -32,6 +35,7 @@ pnpm run append           # Append video to DaVinci Resolve timeline
 ```
 
 ### Testing
+
 ```bash
 pnpm run test                                    # Run all tests
 pnpm run test --filter=@total-typescript/shared  # Test specific package
@@ -39,6 +43,7 @@ vitest packages/ffmpeg/src/some-file.test.ts     # Run single test file
 ```
 
 ### Package-Specific Development
+
 ```bash
 # Build specific package
 cd packages/ffmpeg && pnpm run build
@@ -50,24 +55,29 @@ pnpm run build --filter=@total-typescript/ffmpeg...
 ## Architecture Overview
 
 ### Effect-TS Patterns
+
 This codebase extensively uses Effect-TS for functional programming with typed errors, dependency injection, and resource management. Key patterns:
 
 1. **Services** (`Effect.Service`): Encapsulate business logic with dependency injection
+
    - Defined with `Effect.Service<ServiceName>()("ServiceName", { effect, dependencies })`
    - Access dependencies with `yield*` syntax
    - Methods use `Effect.fn("methodName")` for tracing
 
 2. **Tagged Errors** (`Data.TaggedError`): Typed error handling
+
    - All error classes extend `Data.TaggedError`
    - Error names end with "Error"
    - Include context fields for debugging
 
 3. **Workflows**: Orchestrate multiple services using `Effect.gen`
+
    - Coordinate between services
    - Handle errors with `Effect.mapError`, `Effect.catchTag`
    - Log important steps with `Effect.logInfo`
 
 4. **Layers**: Compose application dependencies
+
    - Use `Layer.mergeAll()` to combine service layers
    - Prefer `Service.Default` layers
    - Provide to Effects with `Effect.provide(AppLayerLive)`
@@ -77,6 +87,7 @@ This codebase extensively uses Effect-TS for functional programming with typed e
    - Use `Config.redacted()` for secrets
 
 ### Typical Service Structure
+
 ```typescript
 export class MyService extends Effect.Service<MyService>()("MyService", {
   effect: Effect.gen(function* () {
@@ -96,12 +107,14 @@ export class MyService extends Effect.Service<MyService>()("MyService", {
 ### Package Architecture
 
 **Core Packages (`packages/`):**
+
 - `@total-typescript/ffmpeg` - Video processing, AI workflows, article generation
 - `@total-typescript/shared` - Common utilities and DaVinci Resolve integration
 - `@total-typescript/twoslash-shared` - TypeScript code transformation with Twoslash
 - `resolve-scripts` - DaVinci Resolve Lua automation scripts
 
 **Key Applications (`apps/`):**
+
 - `internal-cli` - Main CLI tool (`pnpm cli <command>`)
 - `written-content` - Content management system
 - `written-content-manager` - Web interface for content management
@@ -109,7 +122,9 @@ export class MyService extends Effect.Service<MyService>()("MyService", {
 - `remotion-subtitle-renderer` - Video subtitle rendering
 
 ### Video Processing Workflow
+
 The ffmpeg package handles auto-editing with these features:
+
 - **Silence removal**: Automatically detect and remove silent segments
 - **Bad take detection**: Identify and exclude marked bad takes (phrases like "that was bad" trigger removal)
 - **Subtitle generation**: AI-powered transcription with subtitle overlay
@@ -117,7 +132,9 @@ The ffmpeg package handles auto-editing with these features:
 - **Queue system**: Process videos through multi-step workflows
 
 ### Article Generation System
+
 When using `--generate-article`:
+
 1. Video is processed and transcribed
 2. AI analyzes transcript and generates link requests
 3. User optionally provides code file path
@@ -131,6 +148,7 @@ When using `--generate-article`:
 **ALL environment variables must be defined in the root `.env` file.** Do not create `.env` files in individual packages.
 
 ### Key Environment Variables
+
 ```bash
 # Video Processing
 OBS_OUTPUT_DIRECTORY=/path/to/obs/recordings
@@ -173,6 +191,7 @@ See `.env.example` for more details.
 ## Common Development Patterns
 
 ### Adding New Services
+
 1. Create service with `Effect.Service` pattern
 2. Define typed errors with `Data.TaggedError`
 3. Use `Effect.fn` for all methods
@@ -180,34 +199,47 @@ See `.env.example` for more details.
 5. Write tests with mocked layers
 
 ### Working with Files
+
 ```typescript
-const fs = yield* FileSystem.FileSystem;
-const content = yield* fs.readFileString(path).pipe(
-  Effect.mapError((e) => new FileReadError({ cause: e, path }))
-);
+const fs = yield * FileSystem.FileSystem;
+const content =
+  yield *
+  fs
+    .readFileString(path)
+    .pipe(Effect.mapError((e) => new FileReadError({ cause: e, path })));
 ```
 
 ### Handling Errors
+
 ```typescript
 // Transform errors at boundaries
-const result = yield* service.method(input).pipe(
-  Effect.mapError((e) => new WorkflowError({ cause: e, context: input }))
-);
+const result =
+  yield *
+  service
+    .method(input)
+    .pipe(
+      Effect.mapError((e) => new WorkflowError({ cause: e, context: input }))
+    );
 
 // Use catchTag for specific error handling
-const result = yield* service.method().pipe(
-  Effect.catchTag("FileNotFoundError", (e) =>
-    Effect.succeed(defaultValue)
-  )
-);
+const result =
+  yield *
+  service
+    .method()
+    .pipe(
+      Effect.catchTag("FileNotFoundError", (e) => Effect.succeed(defaultValue))
+    );
 ```
 
 ### Parallel Processing
+
 ```typescript
-const results = yield* Effect.all(
-  items.map((item) => processItem(item)),
-  { concurrency: 5 }
-);
+const results =
+  yield *
+  Effect.all(
+    items.map((item) => processItem(item)),
+    { concurrency: 5 }
+  );
 ```
 
 ## Monorepo Structure
@@ -227,6 +259,7 @@ Build outputs go to `dist/` directories within each package/app.
 ## DaVinci Resolve Integration
 
 Lua scripts in `packages/resolve-scripts/` automate video editing:
+
 - Timeline management and exports
 - Clip manipulation (append, zoom, blur)
 - Subtitle integration
@@ -234,3 +267,5 @@ Lua scripts in `packages/resolve-scripts/` automate video editing:
 - OBS video imports
 
 Scripts are accessed through the shared package's DaVinci Resolve utilities.
+
+- When checking types, always run pnpm run build on the entire monorepo. Running it on single packages won't give you a good enough insight as to what is happening.
