@@ -252,12 +252,6 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           );
         }),
 
-        formatFloatForFFmpeg: Effect.fn("formatFloatForFFmpeg")(function* (
-          num: number
-        ) {
-          return num.toFixed(3);
-        }),
-
         trimVideo: Effect.fn("trimVideo")(function* (
           inputVideo: AbsolutePath,
           startTime: number,
@@ -363,7 +357,7 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           yield* runGPULimitsAwareCommand(
             `ffmpeg -y -hide_banner \
             -fflags +genpts \
-            -i "${opts.inputVideo}" -ss ${opts.startTime} -t ${opts.duration} \
+            -ss ${opts.startTime} -i "${opts.inputVideo}" -t ${opts.duration} \
             -c:v h264_nvenc -preset slow -rc:v vbr -cq:v 19 \
             -b:v 15387k -maxrate 20000k -bufsize 30000k \
             -fps_mode cfr -r 60 \
