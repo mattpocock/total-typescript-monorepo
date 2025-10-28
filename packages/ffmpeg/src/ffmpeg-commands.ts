@@ -280,8 +280,26 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
             `normalized${path.extname(input)}`
           ) as AbsolutePath;
 
+          // Get video and audio durations to calculate stretch factor
+          const videoDurationResult = yield* runCPULimitsAwareCommand(
+            `ffprobe -v error -select_streams v:0 -show_entries stream=duration -of default=noprint_wrappers=1:nokey=1 "${input}"`
+          );
+          const audioDurationResult = yield* runCPULimitsAwareCommand(
+            `ffprobe -v error -select_streams a:0 -show_entries stream=duration -of default=noprint_wrappers=1:nokey=1 "${input}"`
+          );
+
+          const videoDuration = Number(videoDurationResult.stdout.trim());
+          const audioDuration = Number(audioDurationResult.stdout.trim());
+          const stretchFactor = videoDuration / audioDuration;
+
+          // Only apply atempo if drift > 10ms
+          const audioFilter =
+            Math.abs(videoDuration - audioDuration) > 0.01
+              ? `atempo=${stretchFactor},loudnorm=I=-16:TP=-1.5:LRA=11`
+              : `loudnorm=I=-16:TP=-1.5:LRA=11`;
+
           yield* runCPULimitsAwareCommand(
-            `ffmpeg -y -i "${input}" -af "loudnorm=I=-16:TP=-1.5:LRA=11" "${outputFile}"`
+            `ffmpeg -y -i "${input}" -c:v copy -af "${audioFilter}" -c:a aac -b:a 320k "${outputFile}"`
           );
 
           return outputFile;
@@ -336,46 +354,61 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
           );
         }),
 
-        createVideoClip: Effect.fn("createVideoClip")(function* (opts: {
-          inputVideo: AbsolutePath;
-          startTime: number;
-          duration: number;
-          mode?: "default" | "portrait-zoom";
-        }) {
+        createAndConcatenateVideoClipsSinglePass: Effect.fn(
+          "createAndConcatenateVideoClipsSinglePass"
+        )(function* (
+          clips: {
+            inputVideo: AbsolutePath;
+            startTime: number;
+            duration: number;
+            mode?: "default" | "portrait-zoom";
+          }[]
+        ) {
           const tempDir = yield* fs.makeTempDirectoryScoped();
-          const outputFile = path.join(
+          const outputVideo = path.join(
             tempDir,
-            `clip.${path.extname(opts.inputVideo)}`
+            `concatenated-video.mp4`
           ) as AbsolutePath;
 
-          const mode = opts.mode ?? "default";
+          // Build input arguments with seeking
+          const inputArgs = clips
+            .map(
+              (clip) =>
+                `-ss ${clip.startTime} -t ${clip.duration} -i "${clip.inputVideo}"`
+            )
+            .join(" ");
+
+          // Build filter complex for scaling and concatenating
           const videoFilter =
-            mode === "portrait-zoom"
-              ? "scale=iw*1.2:ih*1.2,crop=1920:1080:120:100,setpts=PTS-STARTPTS"
-              : "setpts=PTS-STARTPTS";
+            clips[0]?.mode === "portrait-zoom"
+              ? "scale=iw*1.2:ih*1.2,crop=1920:1080:120:100"
+              : "";
+
+          const filterParts = clips.map((clip, i) => {
+            const vfilter = videoFilter
+              ? `[${i}:v]setpts=PTS-STARTPTS,${videoFilter}[v${i}]`
+              : `[${i}:v]setpts=PTS-STARTPTS[v${i}]`;
+            const afilter = `[${i}:a]asetpts=PTS-STARTPTS[a${i}]`;
+            return `${vfilter};${afilter}`;
+          });
+
+          const concatInputs = clips.map((_, i) => `[v${i}][a${i}]`).join("");
+          const filterComplex = `${filterParts.join(";")}; ${concatInputs}concat=n=${clips.length}:v=1:a=1[outv][outa]`;
 
           yield* runGPULimitsAwareCommand(
-            `ffmpeg -y -hide_banner \
-            -fflags +genpts \
-            -ss ${opts.startTime} -i "${opts.inputVideo}" -t ${opts.duration} \
+            `ffmpeg -y -hide_banner ${inputArgs} \
+            -filter_complex "${filterComplex}" \
+            -map "[outv]" -map "[outa]" \
             -c:v h264_nvenc -preset slow -rc:v vbr -cq:v 19 \
             -b:v 15387k -maxrate 20000k -bufsize 30000k \
             -fps_mode cfr -r 60 \
-            -af "asetpts=PTS-STARTPTS" \
-            -vf "${videoFilter}" \
             -c:a aac -ar 48000 -b:a 320k \
-            -timecode 01:00:00:00 \
-            -muxdelay 0 -muxpreload 0 \
-            "${outputFile}"`
-          ).pipe(
-            Effect.mapError((e) => {
-              return new CouldNotCreateClipError({
-                cause: e,
-              });
-            })
+            -async 1 \
+            -movflags +faststart \
+            "${outputVideo}"`
           );
 
-          return outputFile;
+          return outputVideo;
         }),
 
         concatenateVideoClips: Effect.fn("concatenateVideoClips")(function* (

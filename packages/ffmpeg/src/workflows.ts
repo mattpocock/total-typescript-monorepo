@@ -436,29 +436,18 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         clips: readonly ClipWithDuration[];
       }) => {
         return Effect.gen(function* () {
-          const clipFiles = yield* Effect.all(
-            clips.map((clip, i) =>
-              Effect.gen(function* () {
-                const outputFile = yield* ffmpeg.createVideoClip({
-                  inputVideo: clip.inputVideo,
-                  startTime: clip.startTime,
-                  duration: clip.duration,
-                });
-
-                yield* Effect.log(
-                  `[createAutoEditedVideo] Created clip ${i + 1}/${clips.length}`
-                );
-                return outputFile;
-              })
-            ),
-            {
-              concurrency: "unbounded",
-            }
+          yield* Effect.log(
+            `[createAutoEditedVideo] Creating and concatenating ${clips.length} clips in single pass`
           );
 
-          yield* Effect.log("[createAutoEditedVideo] Concatenating clips");
           const concatenatedVideoPath =
-            yield* ffmpeg.concatenateVideoClips(clipFiles);
+            yield* ffmpeg.createAndConcatenateVideoClipsSinglePass(
+              clips.map((clip) => ({
+                inputVideo: clip.inputVideo,
+                startTime: clip.startTime,
+                duration: clip.duration,
+              }))
+            );
 
           yield* Effect.log("[createAutoEditedVideo] Normalizing audio");
 
@@ -495,32 +484,22 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             guestClips: guestClips,
           });
 
-          const clipFiles = yield* Effect.all(
-            interviewSpeakingClips.map((clip, i) =>
-              Effect.gen(function* () {
-                // TODO: create clips to handle the case where the guest is speaking over the host
-                const outputFile = yield* ffmpeg.createVideoClip({
-                  inputVideo:
-                    clip.state === "host-speaking"
-                      ? opts.hostVideo
-                      : opts.guestVideo,
-                  startTime: clip.startTime,
-                  duration: clip.duration,
-                });
-
-                yield* Effect.log(
-                  `[editInterviewWorkflow] Created clip ${i + 1}/${interviewSpeakingClips.length} of ${clip.state}`
-                );
-                return outputFile;
-              })
-            ),
-            {
-              concurrency: "unbounded",
-            }
+          yield* Effect.log(
+            `[editInterviewWorkflow] Creating and concatenating ${interviewSpeakingClips.length} clips in single pass`
           );
 
+          // TODO: create clips to handle the case where the guest is speaking over the host
           const concatenatedVideo =
-            yield* ffmpeg.concatenateVideoClips(clipFiles);
+            yield* ffmpeg.createAndConcatenateVideoClipsSinglePass(
+              interviewSpeakingClips.map((clip) => ({
+                inputVideo:
+                  clip.state === "host-speaking"
+                    ? opts.hostVideo
+                    : opts.guestVideo,
+                startTime: clip.startTime,
+                duration: clip.duration,
+              }))
+            );
 
           const normalizedAudio =
             yield* ffmpeg.normalizeAudio(concatenatedVideo);
