@@ -11,7 +11,7 @@ export const AUTO_EDITED_VIDEO_FINAL_END_PADDING = 0.5;
 // The duration of a long beat in seconds
 // This is used to append a long beat to the end of a clip
 // to make it longer.
-export const LONG_BEAT_DURATION = 0.4;
+export const LONG_BEAT_DURATION = 0.18;
 
 // The minimum length of a clip in seconds
 export const MINIMUM_CLIP_LENGTH_IN_SECONDS = 1;
