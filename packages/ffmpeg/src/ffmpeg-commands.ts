@@ -5,12 +5,14 @@ import { Config, Data, Effect } from "effect";
 import { OpenAIService, ReadStreamService } from "./services.js";
 import {
   FFMPEG_CONCURRENCY_LIMIT,
+  LONG_BEAT_DURATION,
   TRANSCRIPTION_CONCURRENCY_LIMIT,
 } from "./constants.js";
 import { FileSystem } from "@effect/platform";
 import { NodeFileSystem } from "@effect/platform-node";
 import path, { join } from "node:path";
 import { REMOTION_DIR } from "./subtitle-rendering.js";
+import type { BeatType } from "./video-clip-types.js";
 
 // Error classes
 export class CouldNotTranscribeAudioError extends Data.TaggedError(
@@ -357,10 +359,11 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
         createAndConcatenateVideoClipsSinglePass: Effect.fn(
           "createAndConcatenateVideoClipsSinglePass"
         )(function* (
-          clips: {
+          clips: readonly {
             inputVideo: AbsolutePath;
             startTime: number;
             duration: number;
+            beatType: BeatType;
             mode?: "default" | "portrait-zoom";
           }[]
         ) {
@@ -372,10 +375,13 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
 
           // Build input arguments with seeking
           const inputArgs = clips
-            .map(
-              (clip) =>
-                `-ss ${clip.startTime} -t ${clip.duration} -i "${clip.inputVideo}"`
-            )
+            .map((clip) => {
+              const duration =
+                clip.beatType === "long"
+                  ? clip.duration + LONG_BEAT_DURATION
+                  : clip.duration;
+              return `-ss ${clip.startTime} -t ${duration} -i "${clip.inputVideo}"`;
+            })
             .join(" ");
 
           // Build filter complex for scaling and concatenating

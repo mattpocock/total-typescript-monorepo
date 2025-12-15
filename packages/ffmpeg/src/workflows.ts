@@ -42,7 +42,7 @@ import {
 } from "./ffmpeg-commands.js";
 import { QueueUpdaterService } from "./queue/queue-updater-service.js";
 import { findSilenceInVideo } from "./silence-detection.js";
-import type { ClipWithDuration, VideoClip } from "./video-clip-types.js";
+import type { ClipWithMetadata, VideoClip } from "./video-clip-types.js";
 
 export interface CreateAutoEditedVideoWorkflowOptions {
   inputVideo: AbsolutePath;
@@ -81,7 +81,7 @@ export class FFMPegWithComplexFilterError extends Data.TaggedError(
 }> {}
 
 interface CreateVideoFromClipsWorkflowOptions {
-  clips: readonly ClipWithDuration[];
+  clips: readonly ClipWithMetadata[];
   outputVideoName: string;
   shortsDirectoryOutputName: string | undefined;
 }
@@ -147,6 +147,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
                   inputVideo: options.inputVideo,
                   startTime: clip.startTime,
                   duration: clip.duration,
+                  beatType: "none",
                 };
               }),
             })
@@ -169,6 +170,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
                     inputVideo: options.inputVideo,
                     startTime: clip.startTime,
                     duration: clip.duration,
+                    beatType: "none",
                   };
                 }),
               })
@@ -204,6 +206,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
                     inputVideo: options.inputVideo,
                     startTime: clip.startTime,
                     duration: clip.duration,
+                    beatType: "none",
                   };
                 }),
               });
@@ -219,7 +222,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       };
 
       const getSubtitlesForClips = (options: {
-        clips: readonly ClipWithDuration[];
+        clips: readonly ClipWithMetadata[];
       }) =>
         Effect.gen(function* () {
           const uniqueInputVideos = [
@@ -405,7 +408,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       });
 
       const createAutoEditedAudio = (options: {
-        clips: readonly ClipWithDuration[];
+        clips: readonly ClipWithMetadata[];
       }) => {
         return Effect.gen(function* () {
           const clips = yield* Effect.all(
@@ -433,7 +436,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       const createAutoEditedVideo = ({
         clips,
       }: {
-        clips: readonly ClipWithDuration[];
+        clips: readonly ClipWithMetadata[];
       }) => {
         return Effect.gen(function* () {
           yield* Effect.log(
@@ -441,13 +444,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           );
 
           const concatenatedVideoPath =
-            yield* ffmpeg.createAndConcatenateVideoClipsSinglePass(
-              clips.map((clip) => ({
-                inputVideo: clip.inputVideo,
-                startTime: clip.startTime,
-                duration: clip.duration,
-              }))
-            );
+            yield* ffmpeg.createAndConcatenateVideoClipsSinglePass(clips);
 
           yield* Effect.log("[createAutoEditedVideo] Normalizing audio");
 
@@ -498,6 +495,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
                     : opts.guestVideo,
                 startTime: clip.startTime,
                 duration: clip.duration,
+                beatType: "none",
               }))
             );
 
@@ -631,13 +629,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
           const videoFork = yield* Effect.fork(
             createAutoEditedVideo({
-              clips: options.clips.map((clip) => {
-                return {
-                  inputVideo: clip.inputVideo,
-                  startTime: clip.startTime,
-                  duration: clip.duration,
-                };
-              }),
+              clips: options.clips,
             })
           );
 

@@ -141,6 +141,7 @@ program.command("transcribe-clips <json>").action(async (json) => {
           inputVideo: clip.inputVideo as AbsolutePath,
           startTime: clip.startTime,
           duration: clip.duration,
+          beatType: "none",
         };
       }),
     });
@@ -168,6 +169,7 @@ const clipsSchema = Schema.Array(
     startTime: Schema.Number,
     duration: Schema.Number,
     inputVideo: Schema.String,
+    beatType: Schema.Union(Schema.Literal("none"), Schema.Literal("long")),
   })
 );
 
@@ -193,6 +195,7 @@ program
                 inputVideo: clip.inputVideo as AbsolutePath,
                 startTime: clip.startTime,
                 duration: clip.duration,
+                beatType: clip.beatType,
               };
             }),
             outputVideoName,

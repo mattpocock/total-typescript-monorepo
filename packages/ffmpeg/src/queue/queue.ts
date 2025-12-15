@@ -12,7 +12,7 @@ import {
   QueueUpdaterService,
   type QueueState,
 } from "./queue-updater-service.js";
-import type { ClipWithDuration } from "../video-clip-types.js";
+import type { ClipWithMetadata } from "../video-clip-types.js";
 
 export class InvalidQueueItemTypeError extends Error {
   constructor(expectedType: string, actualType: string) {
@@ -40,7 +40,7 @@ export type QueueItemAction =
     }
   | {
       type: "create-video-from-clips";
-      clips: readonly ClipWithDuration[];
+      clips: readonly ClipWithMetadata[];
       outputVideoName: string;
       shortsDirectoryOutputName: string | undefined;
     }
