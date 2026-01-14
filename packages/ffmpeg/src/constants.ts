@@ -1,8 +1,18 @@
-export const THRESHOLD = -33;
+/**
+ * The silence threshold used for silence detection.
+ *
+ * The lower the threshold, the MORE speaking will be detected.
+ * The higher the threshold, the LESS speaking will be detected.
+ */
+export const THRESHOLD = -38;
 export const SILENCE_DURATION = 0.8;
 export const TRIM_VIDEO_PADDING = 0.3;
 
 export const AUTO_EDITED_START_PADDING = 0;
+/**
+ * The padding applied to the end of a clip to ensure a natural
+ * transition between clips.
+ */
 export const AUTO_EDITED_END_PADDING = 0.08;
 // The final padding applied to the auto-edited video
 // to ensure it's not cut off at the end

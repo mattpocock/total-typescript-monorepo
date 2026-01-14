@@ -29,6 +29,7 @@ import {
 import { Command } from "commander";
 import { config } from "dotenv";
 import {
+  Config,
   ConfigProvider,
   Console,
   Data,
@@ -1143,6 +1144,30 @@ function generateProgressBar(
   const names = steps.map((s) => s.name);
   return names.map((name, i) => `${icons[i]} ${name}`).join(" → ");
 }
+
+program
+  .command("notify <text>")
+  .description("Send a notification to the Zapier webhook")
+  .action(async (text: string) => {
+    await Effect.gen(function* () {
+      const webhookUrl = yield* Config.string("ZAPIER_NOTIFICATION_WEBHOOK");
+
+      yield* Effect.tryPromise({
+        try: () =>
+          fetch(webhookUrl, {
+            method: "POST",
+            body: text,
+          }),
+        catch: (error) => new Error(`Failed to send notification: ${error}`),
+      });
+
+      yield* Console.log("Notification sent");
+    }).pipe(
+      Effect.withConfigProvider(ConfigProvider.fromEnv()),
+      Effect.provide(MainLayerLive),
+      NodeRuntime.runMain
+    );
+  });
 
 program
   .command("retry-queue-item")

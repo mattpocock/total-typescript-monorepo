@@ -4,6 +4,7 @@ import { generateObject } from "ai";
 import { Config, Data, Effect } from "effect";
 import { OpenAIService, ReadStreamService } from "./services.js";
 import {
+  AUTO_EDITED_END_PADDING,
   FFMPEG_CONCURRENCY_LIMIT,
   LONG_BEAT_DURATION,
   TRANSCRIPTION_CONCURRENCY_LIMIT,
