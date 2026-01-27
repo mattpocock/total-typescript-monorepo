@@ -8,7 +8,6 @@ import {
   getOutstandingInformationRequests,
   multiSelectVideosFromQueue,
   processInformationRequests,
-  processQueue,
   type QueueItem,
   validateWindowsFilename,
 } from "@total-typescript/ffmpeg";
@@ -41,6 +40,7 @@ import { register as registerCreateAutoEditedVideo } from "./commands/create-aut
 import { register as registerLogLatestObsVideo } from "./commands/log-latest-obs-video.js";
 import { register as registerQueueAutoEditedVideoForCourse } from "./commands/queue-auto-edited-video-for-course.js";
 import { register as registerTranscribeVideo } from "./commands/transcribe-video.js";
+import { register as registerProcessQueue } from "./commands/process-queue.js";
 import { OpenTelemetryLive } from "./tracing.js";
 
 config({
@@ -73,19 +73,7 @@ registerCreateAutoEditedVideo(program);
 registerLogLatestObsVideo(program);
 registerQueueAutoEditedVideoForCourse(program);
 registerTranscribeVideo(program);
-
-program
-  .command("process-queue")
-  .aliases(["p", "process"])
-  .description("Process the queue.")
-  .action(async () => {
-    await processQueue().pipe(
-      Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(MainLayerLive),
-      Effect.scoped,
-      NodeRuntime.runMain,
-    );
-  });
+registerProcessQueue(program);
 
 program
   .command("process-information-requests")
