@@ -218,7 +218,7 @@ const result =
   service
     .method(input)
     .pipe(
-      Effect.mapError((e) => new WorkflowError({ cause: e, context: input }))
+      Effect.mapError((e) => new WorkflowError({ cause: e, context: input })),
     );
 
 // Use catchTag for specific error handling
@@ -227,7 +227,7 @@ const result =
   service
     .method()
     .pipe(
-      Effect.catchTag("FileNotFoundError", (e) => Effect.succeed(defaultValue))
+      Effect.catchTag("FileNotFoundError", (e) => Effect.succeed(defaultValue)),
     );
 ```
 
@@ -238,7 +238,7 @@ const results =
   yield *
   Effect.all(
     items.map((item) => processItem(item)),
-    { concurrency: 5 }
+    { concurrency: 5 },
   );
 ```
 
