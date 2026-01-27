@@ -1,10 +1,8 @@
 #!/usr/bin/env node
 
-import { FileSystem } from "@effect/platform";
 import { NodeRuntime } from "@effect/platform-node";
 import {
   AppLayerLive,
-  generateArticleFromTranscript,
   multiSelectVideosFromQueue,
   type QueueItem,
   validateWindowsFilename,
@@ -15,12 +13,7 @@ import { Config, ConfigProvider, Console, Effect, Layer } from "effect";
 import path from "node:path";
 import { styleText } from "node:util";
 import { QueueUpdaterService } from "../../../packages/ffmpeg/dist/queue/queue-updater-service.js";
-import {
-  AIService,
-  AskQuestionService,
-  OBSIntegrationService,
-  TranscriptStorageService,
-} from "../../../packages/ffmpeg/dist/services.js";
+import { AskQuestionService } from "../../../packages/ffmpeg/dist/services.js";
 import packageJson from "../package.json" with { type: "json" };
 import { register as registerCreateVideoFromClips } from "./commands/create-video-from-clips.js";
 import { register as registerGetClipsFromLatestVideo } from "./commands/get-clips-from-latest-video.js";
@@ -40,6 +33,7 @@ import { register as registerQueueAutoEditedVideoForCourse } from "./commands/qu
 import { register as registerTranscribeVideo } from "./commands/transcribe-video.js";
 import { register as registerProcessQueue } from "./commands/process-queue.js";
 import { register as registerProcessInformationRequests } from "./commands/process-information-requests.js";
+import { register as registerArticleFromTranscript } from "./commands/article-from-transcript.js";
 import { OpenTelemetryLive } from "./tracing.js";
 
 config({
@@ -74,70 +68,7 @@ registerQueueAutoEditedVideoForCourse(program);
 registerTranscribeVideo(program);
 registerProcessQueue(program);
 registerProcessInformationRequests(program);
-
-program
-  .command("article-from-transcript")
-  .aliases(["aft", "article"])
-  .description("Generate an article from a transcript")
-  .action(async () => {
-    const program = Effect.gen(function* () {
-      const transcriptStorage = yield* TranscriptStorageService;
-      const askQuestion = yield* AskQuestionService;
-      const ai = yield* AIService;
-      const transcripts = yield* transcriptStorage.getSubtitleFiles();
-      const fs = yield* FileSystem.FileSystem;
-
-      const transcriptPath = yield* askQuestion.select(
-        "Select a transcript",
-        transcripts.map((p) => ({
-          title: path.basename(p),
-          value: p,
-        })),
-      );
-
-      let code: string | undefined;
-
-      const codePath = yield* askQuestion.askQuestion(
-        "Enter the file path containing any code for the article (optional)",
-      );
-
-      if (codePath) {
-        const codeContent = yield* fs.readFileString(codePath);
-        code = codeContent;
-      }
-
-      const transcriptContent = yield* fs.readFileString(transcriptPath);
-
-      const originalVideoPath =
-        yield* transcriptStorage.getOriginalVideoPathFromTranscript({
-          transcriptPath: transcriptPath,
-        });
-
-      const urls: { request: string; url: string }[] = [];
-
-      const urlRequests = yield* ai.askForLinks({
-        transcript: transcriptContent,
-      });
-
-      for (const urlRequest of urlRequests) {
-        const url = yield* askQuestion.askQuestion(urlRequest);
-        urls.push({ request: urlRequest, url });
-      }
-
-      yield* generateArticleFromTranscript({
-        originalVideoPath,
-        transcript: transcriptContent,
-        code,
-        urls,
-      });
-    });
-
-    await program.pipe(
-      Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(MainLayerLive),
-      NodeRuntime.runMain,
-    );
-  });
+registerArticleFromTranscript(program);
 
 program
   .command("queue-status")
