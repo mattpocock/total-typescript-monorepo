@@ -35,8 +35,6 @@ import {
   Data,
   Effect,
   Layer,
-  Logger,
-  LogLevel,
   Schema,
 } from "effect";
 import path from "node:path";
@@ -50,6 +48,7 @@ import {
 } from "../../../packages/ffmpeg/dist/services.js";
 import packageJson from "../package.json" with { type: "json" };
 import { register as registerGetClipsFromLatestVideo } from "./commands/get-clips-from-latest-video.js";
+import { register as registerTranscribeClips } from "./commands/transcribe-clips.js";
 import { clipsSchema } from "./shared/schemas.js";
 import { OpenTelemetryLive } from "./tracing.js";
 import {
@@ -73,51 +72,7 @@ program.version(packageJson.version);
 
 // Register extracted commands
 registerGetClipsFromLatestVideo(program);
-
-const transcribeClipSchema = Schema.Array(
-  Schema.Struct({
-    id: Schema.String,
-    startTime: Schema.Number,
-    duration: Schema.Number,
-    inputVideo: Schema.String,
-  }),
-);
-
-program.command("transcribe-clips <json>").action(async (json) => {
-  await Effect.gen(function* () {
-    const workflows = yield* WorkflowsService;
-    const clips = yield* Schema.decodeUnknown(transcribeClipSchema)(
-      JSON.parse(json),
-    );
-
-    const result = yield* workflows.getSubtitlesForClips({
-      clips: clips.map((clip) => {
-        return {
-          inputVideo: clip.inputVideo as AbsolutePath,
-          startTime: clip.startTime,
-          duration: clip.duration,
-          beatType: "none",
-        };
-      }),
-    });
-
-    const toReturn = result.clips.map((clip, index) => {
-      return {
-        segments: clip.segments,
-        words: clip.words,
-        id: clips[index]!.id,
-      };
-    });
-
-    yield* Console.log(JSON.stringify(toReturn));
-  }).pipe(
-    Logger.withMinimumLogLevel(LogLevel.Fatal),
-    Effect.withConfigProvider(ConfigProvider.fromEnv()),
-    Effect.provide(MainLayerLive),
-    Effect.scoped,
-    NodeRuntime.runMain,
-  );
-});
+registerTranscribeClips(program);
 
 program
   .command(
