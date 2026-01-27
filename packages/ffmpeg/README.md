@@ -23,45 +23,50 @@ pnpm add @total-typescript/ffmpeg
 ### Auto-Edited Video Creation
 
 ```typescript
-import { WorkflowsService } from '@total-typescript/ffmpeg';
+import { WorkflowsService } from "@total-typescript/ffmpeg";
 
-const workflow = yield* WorkflowsService;
+const workflow = yield * WorkflowsService;
 
-const result = yield* workflow.createAutoEditedVideoWorkflow({
-  inputVideo: '/path/to/raw-recording.mp4' as AbsolutePath,
-  outputFilename: 'edited-video',
-  subtitles: true,
-  dryRun: false
-});
+const result =
+  yield *
+  workflow.createAutoEditedVideoWorkflow({
+    inputVideo: "/path/to/raw-recording.mp4" as AbsolutePath,
+    outputFilename: "edited-video",
+    subtitles: true,
+    dryRun: false,
+  });
 ```
 
 ### Subtitle Rendering
 
 ```typescript
-import { renderSubtitles } from '@total-typescript/ffmpeg';
+import { renderSubtitles } from "@total-typescript/ffmpeg";
 
-yield* renderSubtitles({
-  inputPath: '/path/to/video.mp4' as AbsolutePath,
-  outputPath: '/path/to/output-with-subs.mp4' as AbsolutePath,
-  ctaDurationInFrames: 300,
-  durationInFrames: 18000,
-  originalFileName: 'my-video'
-});
+yield *
+  renderSubtitles({
+    inputPath: "/path/to/video.mp4" as AbsolutePath,
+    outputPath: "/path/to/output-with-subs.mp4" as AbsolutePath,
+    ctaDurationInFrames: 300,
+    durationInFrames: 18000,
+    originalFileName: "my-video",
+  });
 ```
 
 ### Silence Detection
 
 ```typescript
-import { findSilenceInVideo } from '@total-typescript/ffmpeg';
+import { findSilenceInVideo } from "@total-typescript/ffmpeg";
 
-const { speakingClips } = yield* findSilenceInVideo(inputVideo, {
-  threshold: -30,           // dB threshold for silence
-  silenceDuration: 0.5,     // minimum silence duration
-  startPadding: 0.3,        // padding before speech
-  endPadding: 0.3,          // padding after speech
-  fps: 30,
-  ffmpeg: ffmpegService
-});
+const { speakingClips } =
+  yield *
+  findSilenceInVideo(inputVideo, {
+    threshold: -30, // dB threshold for silence
+    silenceDuration: 0.5, // minimum silence duration
+    startPadding: 0.3, // padding before speech
+    endPadding: 0.3, // padding after speech
+    fps: 30,
+    ffmpeg: ffmpegService,
+  });
 ```
 
 ## Core Services
@@ -71,54 +76,46 @@ const { speakingClips } = yield* findSilenceInVideo(inputVideo, {
 Low-level FFmpeg operations:
 
 ```typescript
-import { FFmpegCommandsService } from '@total-typescript/ffmpeg';
+import { FFmpegCommandsService } from "@total-typescript/ffmpeg";
 
-const ffmpeg = yield* FFmpegCommandsService;
+const ffmpeg = yield * FFmpegCommandsService;
 
 // Extract audio from video
-yield* ffmpeg.extractAudioFromVideo(videoPath, audioPath);
+yield * ffmpeg.extractAudioFromVideo(videoPath, audioPath);
 
 // Get video FPS
-const fps = yield* ffmpeg.getFPS(videoPath);
+const fps = yield * ffmpeg.getFPS(videoPath);
 
 // Create video clips
-yield* ffmpeg.createClip(inputVideo, outputClip, startTime, duration);
+yield * ffmpeg.createClip(inputVideo, outputClip, startTime, duration);
 
 // Generate subtitles from audio
-const subtitles = yield* ffmpeg.createSubtitleFromAudio(audioPath);
+const subtitles = yield * ffmpeg.createSubtitleFromAudio(audioPath);
 ```
 
 ### Transcript Storage
 
 ```typescript
-import { TranscriptStorageService } from '@total-typescript/ffmpeg';
+import { TranscriptStorageService } from "@total-typescript/ffmpeg";
 
-const storage = yield* TranscriptStorageService;
+const storage = yield * TranscriptStorageService;
 
-yield* storage.storeTranscript({
-  transcript: "Video transcript content...",
-  filename: "my-video"
-});
+yield *
+  storage.storeTranscript({
+    transcript: "Video transcript content...",
+    filename: "my-video",
+  });
 ```
 
 ## AI Integration
 
-### Content Analysis
-
-```typescript
-import { figureOutWhichCTAToShow } from '@total-typescript/ffmpeg';
-
-// AI determines best call-to-action based on content
-const cta = yield* ffmpeg.figureOutWhichCTAToShow(transcriptText);
-```
-
 ### Article Generation
 
 ```typescript
-import { articleFromTranscript } from '@total-typescript/ffmpeg';
+import { articleFromTranscript } from "@total-typescript/ffmpeg";
 
 // Generate articles from video transcripts
-const article = yield* articleFromTranscript(transcript);
+const article = yield * articleFromTranscript(transcript);
 ```
 
 ## Configuration
@@ -127,7 +124,7 @@ Set up environment variables:
 
 ```bash
 export EXPORT_DIRECTORY="/path/to/exports"
-export SHORTS_EXPORT_DIRECTORY="/path/to/shorts" 
+export SHORTS_EXPORT_DIRECTORY="/path/to/shorts"
 export TRANSCRIPTION_DIRECTORY="/path/to/transcripts"
 export OPENAI_API_KEY="your-openai-key"
 export ANTHROPIC_API_KEY="your-anthropic-key"
@@ -158,7 +155,7 @@ export ANTHROPIC_API_KEY="your-anthropic-key"
 # Build the package
 pnpm run build
 
-# Run tests  
+# Run tests
 pnpm run test
 ```
 

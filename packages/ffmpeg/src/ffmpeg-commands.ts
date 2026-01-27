@@ -1,7 +1,5 @@
-import { openai } from "@ai-sdk/openai";
 import { execAsync, type AbsolutePath } from "@total-typescript/shared";
-import { generateObject } from "ai";
-import { Config, Data, Effect } from "effect";
+import { Data, Effect } from "effect";
 import { OpenAIService, ReadStreamService } from "./openai-service.js";
 import {
   AUTO_EDITED_END_PADDING,
@@ -26,12 +24,6 @@ export class WrongAudioFileExtensionError extends Data.TaggedError(
   "WrongAudioFileExtensionError",
 )<{
   message: string;
-}> {}
-
-export class CouldNotEncodeVideoError extends Data.TaggedError(
-  "CouldNotEncodeVideoError",
-)<{
-  cause: Error;
 }> {}
 
 export class CouldNotGetFPSError extends Data.TaggedError(
@@ -60,12 +52,6 @@ export class CouldNotCreateClipError extends Data.TaggedError(
 
 export class CouldNotDetectSilenceError extends Data.TaggedError(
   "CouldNotDetectSilenceError",
-)<{
-  cause: Error;
-}> {}
-
-export class CouldNotFigureOutWhichCTAToShowError extends Data.TaggedError(
-  "CouldNotFigureOutWhichCTAToShowError",
 )<{
   cause: Error;
 }> {}
@@ -509,53 +495,6 @@ export class FFmpegCommandsService extends Effect.Service<FFmpegCommandsService>
               });
             }),
           );
-        }),
-
-        figureOutWhichCTAToShow: Effect.fn("figureOutWhichCTAToShow")(
-          function* (transcript: string) {
-            return yield* Effect.tryPromise({
-              try: async (signal) => {
-                const { object } = await generateObject({
-                  model: openai("gpt-4o-mini"),
-                  output: "enum",
-                  enum: ["ai", "typescript"],
-                  system: `
-                You are deciding which call to action to use for a video.
-                The call to action will either point to totaltypescript.com, or aihero.dev.
-                Return "ai" if the video is best suited for aihero.dev, and "typescript" if the video is best suited for totaltypescript.com.
-                You will receive the full transcript of the video.
-          
-                If the video mentions AI, return "ai".
-                Or if the video mentions TypeScript, return "typescript".
-                If the video mentions Node, return "typescript".
-                If the video mentions React, return "typescript".
-                
-              `,
-                  prompt: transcript,
-                  abortSignal: signal,
-                });
-
-                return object;
-              },
-              catch: (e) => {
-                return new CouldNotFigureOutWhichCTAToShowError({
-                  cause: e as Error,
-                });
-              },
-            });
-          },
-        ),
-
-        combineAudioAndVideo: Effect.fn("combineAudioAndVideo")(function* (
-          audioPath: AbsolutePath,
-          videoPath: AbsolutePath,
-        ) {
-          const tempDir = yield* fs.makeTempDirectoryScoped();
-          const outputPath = path.join(tempDir, "combined.mp4") as AbsolutePath;
-
-          return yield* runCPULimitsAwareCommand(
-            `ffmpeg -i "${videoPath}" -i "${audioPath}" -c:v copy -c:a copy -map 0:v:0 -map 1:a:0 "${outputPath}"`,
-          ).pipe(Effect.map(() => outputPath));
         }),
 
         renderRemotion: Effect.fn("renderRemotion")(function* (meta: {

@@ -63,7 +63,6 @@ it.skip("createAutoEditedVideoWorkflow with subtitles and no dry run should work
             },
           ],
         }),
-        figureOutWhichCTAToShow: () => "ai",
         renderRemotion,
         overlaySubtitles,
       },
@@ -83,7 +82,7 @@ it.skip("createAutoEditedVideoWorkflow with subtitles and no dry run should work
    */
   expect(writeFile).toHaveBeenCalledWith(
     expect.stringContaining("latest-video-filename.txt"),
-    "TestTest"
+    "TestTest",
   );
 
   /**
@@ -92,11 +91,11 @@ it.skip("createAutoEditedVideoWorkflow with subtitles and no dry run should work
    */
   expect(writeFile).toHaveBeenCalledWith(
     expect.stringContaining("meta.json"),
-    expect.any(String)
+    expect.any(String),
   );
 
   const metaJson = writeFile.mock.calls.find(([path]) =>
-    path.endsWith("meta.json")
+    path.endsWith("meta.json"),
   )![1];
 
   const metaFile = JSON.parse(metaJson);
@@ -107,7 +106,7 @@ it.skip("createAutoEditedVideoWorkflow with subtitles and no dry run should work
    * for the end of the last clip.
    */
   expect(metaFile.durationInFrames).toEqual(
-    (8 + AUTO_EDITED_END_PADDING + AUTO_EDITED_VIDEO_FINAL_END_PADDING) * 60
+    (8 + AUTO_EDITED_END_PADDING + AUTO_EDITED_VIDEO_FINAL_END_PADDING) * 60,
   );
 
   /**
@@ -120,7 +119,7 @@ it.skip("createAutoEditedVideoWorkflow with subtitles and no dry run should work
    * plus padding.
    */
   expect(metaFile.ctaDurationInFrames).toEqual(
-    (3 + AUTO_EDITED_END_PADDING) * 60
+    (3 + AUTO_EDITED_END_PADDING) * 60,
   );
 
   /**
@@ -146,7 +145,7 @@ it.skip("createAutoEditedVideoWorkflow with subtitles and no dry run should work
     "/path/latest-video-filename.mp4",
     expect.stringContaining("clip-0.mp4"),
     3,
-    3 + AUTO_EDITED_END_PADDING
+    3 + AUTO_EDITED_END_PADDING,
   );
 
   /**
@@ -157,7 +156,7 @@ it.skip("createAutoEditedVideoWorkflow with subtitles and no dry run should work
     "/path/latest-video-filename.mp4",
     expect.stringContaining("clip-1.mp4"),
     10,
-    5 + AUTO_EDITED_VIDEO_FINAL_END_PADDING
+    5 + AUTO_EDITED_VIDEO_FINAL_END_PADDING,
   );
 
   /**
@@ -166,7 +165,7 @@ it.skip("createAutoEditedVideoWorkflow with subtitles and no dry run should work
    */
   expect(concatenateClips).toHaveBeenCalledWith(
     expect.stringContaining("concat.txt"),
-    expect.stringContaining("Test.mp4")
+    expect.stringContaining("Test.mp4"),
   );
 
   /**
@@ -174,7 +173,7 @@ it.skip("createAutoEditedVideoWorkflow with subtitles and no dry run should work
    */
   expect(extractAudioFromVideo).toHaveBeenCalledWith(
     expect.stringContaining("Test.mp4"),
-    expect.stringContaining("Test.mp4.mp3")
+    expect.stringContaining("Test.mp4.mp3"),
   );
 
   /**
@@ -188,7 +187,7 @@ it.skip("createAutoEditedVideoWorkflow with subtitles and no dry run should work
    */
   expect(renderRemotion).toHaveBeenCalledWith(
     expect.stringContaining("MyComp.mov"),
-    expect.any(String)
+    expect.any(String),
   );
 
   /**
@@ -199,7 +198,7 @@ it.skip("createAutoEditedVideoWorkflow with subtitles and no dry run should work
   expect(overlaySubtitles).toHaveBeenCalledWith(
     expect.stringContaining("Test.mp4"),
     expect.stringContaining("MyComp.mov"),
-    expect.stringContaining("Test-with-subtitles.mp4")
+    expect.stringContaining("Test-with-subtitles.mp4"),
   );
 
   /**
@@ -207,7 +206,7 @@ it.skip("createAutoEditedVideoWorkflow with subtitles and no dry run should work
    */
   expect(rename).toHaveBeenCalledWith(
     expect.stringContaining("Test-with-subtitles.mp4"),
-    expect.stringContaining("shorts/Test.mp4")
+    expect.stringContaining("shorts/Test.mp4"),
   );
 
   /**
@@ -275,7 +274,6 @@ it.skip("createAutoEditedVideoWorkflow with no subtitles", async () => {
             },
           ],
         }),
-        figureOutWhichCTAToShow: () => "ai",
         renderRemotion,
         overlaySubtitles,
       },
@@ -297,7 +295,7 @@ it.skip("createAutoEditedVideoWorkflow with no subtitles", async () => {
    */
   expect(writeFile).toHaveBeenCalledWith(
     expect.stringContaining("latest-video-filename.txt"),
-    "TestTest"
+    "TestTest",
   );
 
   /**
@@ -305,7 +303,7 @@ it.skip("createAutoEditedVideoWorkflow with no subtitles", async () => {
    */
   expect(extractAudioFromVideo).toHaveBeenCalledWith(
     expect.stringContaining("Test.mp4"),
-    expect.stringContaining("Test.mp4.mp3")
+    expect.stringContaining("Test.mp4.mp3"),
   );
 
   /**
@@ -372,7 +370,6 @@ it.skip("createAutoEditedVideoWorkflow with dry run", async () => {
             },
           ],
         }),
-        figureOutWhichCTAToShow: () => "ai",
         renderRemotion,
         overlaySubtitles,
       },
@@ -392,7 +389,7 @@ it.skip("createAutoEditedVideoWorkflow with dry run", async () => {
    */
   expect(rename).not.toHaveBeenCalledWith(
     expect.any(String),
-    expect.stringMatching("shorts")
+    expect.stringMatching("shorts"),
   );
 });
 
@@ -496,7 +493,7 @@ describe("Video Concatenation Padding Logic", () => {
     // Total duration should be sum of processed durations
     const totalDuration = processedDurations.reduce(
       (sum, duration) => sum + duration,
-      0
+      0,
     );
     expect(totalDuration).toBe(19.66); // 5.08 + 8.08 + 6.5
   });
@@ -541,12 +538,12 @@ describe("Video Concatenation Padding Logic", () => {
 
     // Final padding should be larger than regular padding
     expect(AUTO_EDITED_VIDEO_FINAL_END_PADDING).toBeGreaterThan(
-      AUTO_EDITED_END_PADDING
+      AUTO_EDITED_END_PADDING,
     );
 
     // The difference should be 0.42 seconds
     expect(AUTO_EDITED_VIDEO_FINAL_END_PADDING - AUTO_EDITED_END_PADDING).toBe(
-      0.42
+      0.42,
     );
   });
 });

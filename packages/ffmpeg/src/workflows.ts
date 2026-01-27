@@ -58,23 +58,23 @@ export interface ConcatenateVideosWorkflowOptions {
 }
 
 export class NoSpeakingClipsError extends Data.TaggedError(
-  "NoSpeakingClipsError"
+  "NoSpeakingClipsError",
 ) {}
 
 export class FileAlreadyExistsError extends Data.TaggedError(
-  "FileAlreadyExistsError"
+  "FileAlreadyExistsError",
 )<{
   message: string;
 }> {}
 
 export class CouldNotCreateSpeakingOnlyVideoError extends Data.TaggedError(
-  "CouldNotCreateSpeakingOnlyVideoError"
+  "CouldNotCreateSpeakingOnlyVideoError",
 )<{
   cause: Error;
 }> {}
 
 export class FFMPegWithComplexFilterError extends Data.TaggedError(
-  "FFMPegWithComplexFilterError"
+  "FFMPegWithComplexFilterError",
 )<{
   stdout: string | undefined;
   stderr: string | undefined;
@@ -93,7 +93,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       const fs = yield* FileSystem;
       const exportDirectory = yield* Config.string("EXPORT_DIRECTORY");
       const shortsExportDirectory = yield* Config.string(
-        "SHORTS_EXPORT_DIRECTORY"
+        "SHORTS_EXPORT_DIRECTORY",
       );
       const transcriptStorage = yield* TranscriptStorageService;
       const queueUpdater = yield* QueueUpdaterService;
@@ -103,18 +103,18 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
        * Create a speaking-only video from a raw video.
        */
       const createAutoEditedVideoWorkflow = (
-        options: CreateAutoEditedVideoWorkflowOptions
+        options: CreateAutoEditedVideoWorkflowOptions,
       ) => {
         return Effect.gen(function* () {
           const filename = `${options.outputFilename}.mp4`;
 
           const pathInExportDirectory = path.join(
             exportDirectory,
-            filename
+            filename,
           ) as AbsolutePath;
           const pathInShortsDirectory = path.join(
             shortsExportDirectory,
-            filename
+            filename,
           ) as AbsolutePath;
 
           if (yield* fs.exists(pathInExportDirectory)) {
@@ -150,7 +150,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
                   beatType: "none",
                 };
               }),
-            })
+            }),
           );
 
           if (options.subtitles) {
@@ -160,7 +160,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
             const totalDuration = clips.reduce(
               (acc, clip) => acc + clip.duration,
-              0
+              0,
             );
 
             const autoEditedAudioPathFork = yield* Effect.fork(
@@ -173,7 +173,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
                     beatType: "none",
                   };
                 }),
-              })
+              }),
             );
 
             const withSubtitlesPath = yield* renderSubtitles({
@@ -194,11 +194,11 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             });
             if (existingSubtitles) {
               yield* Effect.log(
-                `[createAutoEditedVideoWorkflow] Existing subtitles found`
+                `[createAutoEditedVideoWorkflow] Existing subtitles found`,
               );
             } else {
               yield* Effect.log(
-                `[createAutoEditedVideoWorkflow] Creating subtitles...`
+                `[createAutoEditedVideoWorkflow] Creating subtitles...`,
               );
               yield* getSubtitlesForClips({
                 clips: clips.map((clip) => {
@@ -215,7 +215,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             // Copy the video to the final path
             yield* fs.copyFile(yield* videoFork, finalVideoPath);
             yield* Effect.log(
-              `[createAutoEditedVideoWorkflow] Video created and copied to ${finalVideoPath}`
+              `[createAutoEditedVideoWorkflow] Video created and copied to ${finalVideoPath}`,
             );
           }
         });
@@ -237,19 +237,19 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
                     inputVideo,
                     audioPath,
                   };
-                })
+                }),
               );
             }),
             {
               concurrency: "unbounded",
-            }
+            },
           );
 
           const clips = yield* Effect.all(
             options.clips.map((clip, index) => {
               return Effect.gen(function* () {
                 const audioPath = audioPaths.find(
-                  (audioPath) => audioPath.inputVideo === clip.inputVideo
+                  (audioPath) => audioPath.inputVideo === clip.inputVideo,
                 )?.audioPath;
 
                 if (!audioPath) {
@@ -259,11 +259,11 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
                 const audioClipPath = yield* ffmpeg.createAudioClip(
                   audioPath,
                   clip.startTime,
-                  clip.duration
+                  clip.duration,
                 );
 
                 yield* Effect.log(
-                  `[createAutoEditedAudio] Created audio clip for clip ${index + 1}/${options.clips.length}`
+                  `[createAutoEditedAudio] Created audio clip for clip ${index + 1}/${options.clips.length}`,
                 );
 
                 const subtitles =
@@ -279,7 +279,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             }),
             {
               concurrency: "unbounded",
-            }
+            },
           );
 
           return { clips };
@@ -307,11 +307,11 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         return Effect.gen(function* () {
           // TODO: Somehow make the subtitle storage work for this
           const subtitles = yield* ffmpeg.createSubtitleFromAudio(
-            yield* autoEditedAudioPathFork
+            yield* autoEditedAudioPathFork,
           );
 
           const processedSubtitles = subtitles.segments.flatMap(
-            splitSubtitleSegments
+            splitSubtitleSegments,
           );
 
           const subtitlesAsFrames = processedSubtitles.map(
@@ -319,12 +319,11 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
               startFrame: Math.floor(subtitle.start * fps),
               endFrame: Math.floor(subtitle.end * fps),
               text: subtitle.text.trim(),
-            })
+            }),
           );
 
           yield* Effect.log("[renderSubtitles] Figuring out which CTA to show");
 
-          // const cta = yield* ffmpeg.figureOutWhichCTAToShow(fullTranscriptText);
           const cta = "ai";
 
           yield* Effect.log(`[renderSubtitles] Decided on CTA: ${cta}`);
@@ -341,7 +340,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
           const outputPath = yield* ffmpeg.overlaySubtitles(
             yield* autoEditedVideoPathFork,
-            subtitlesOverlayPath
+            subtitlesOverlayPath,
           );
 
           return outputPath;
@@ -368,7 +367,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         const clips = speakingClips.map((clip, i, clips) => {
           const resolvedDuration = roundToDecimalPlaces(
             clip.durationInFrames / fps,
-            2
+            2,
           );
 
           let duration: number;
@@ -392,7 +391,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
         const totalDuration = clips.reduce(
           (acc, clip) => acc + clip.duration,
-          0
+          0,
         );
 
         const minutes = Math.floor(totalDuration / 60)
@@ -416,12 +415,12 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
               ffmpeg.createAudioClip(
                 clip.inputVideo,
                 clip.startTime,
-                clip.duration
-              )
+                clip.duration,
+              ),
             ),
             {
               concurrency: "unbounded",
-            }
+            },
           );
 
           const concatenatedAudio = yield* ffmpeg.concatenateAudioClips(clips);
@@ -440,7 +439,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       }) => {
         return Effect.gen(function* () {
           yield* Effect.log(
-            `[createAutoEditedVideo] Creating and concatenating ${clips.length} clips in single pass`
+            `[createAutoEditedVideo] Creating and concatenating ${clips.length} clips in single pass`,
           );
 
           const concatenatedVideoPath =
@@ -449,7 +448,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           yield* Effect.log("[createAutoEditedVideo] Normalizing audio");
 
           const normalizedAudio = yield* ffmpeg.normalizeAudio(
-            concatenatedVideoPath
+            concatenatedVideoPath,
           );
 
           return normalizedAudio;
@@ -467,10 +466,10 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           outputPath: AbsolutePath;
         }) {
           const hostClipsFork = yield* Effect.fork(
-            findClips({ inputVideo: opts.hostVideo, mode: "part-of-video" })
+            findClips({ inputVideo: opts.hostVideo, mode: "part-of-video" }),
           );
           const guestClipsFork = yield* Effect.fork(
-            findClips({ inputVideo: opts.guestVideo, mode: "part-of-video" })
+            findClips({ inputVideo: opts.guestVideo, mode: "part-of-video" }),
           );
 
           const hostClips = yield* hostClipsFork;
@@ -482,7 +481,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           });
 
           yield* Effect.log(
-            `[editInterviewWorkflow] Creating and concatenating ${interviewSpeakingClips.length} clips in single pass`
+            `[editInterviewWorkflow] Creating and concatenating ${interviewSpeakingClips.length} clips in single pass`,
           );
 
           // TODO: create clips to handle the case where the guest is speaking over the host
@@ -496,14 +495,14 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
                 startTime: clip.startTime,
                 duration: clip.duration,
                 beatType: "none",
-              }))
+              })),
             );
 
           const normalizedAudio =
             yield* ffmpeg.normalizeAudio(concatenatedVideo);
 
           yield* fs.copyFile(normalizedAudio, opts.outputPath);
-        }
+        },
       );
 
       const exportInterviewWorkflow = Effect.fn("exportInterviewWorkflow")(
@@ -513,10 +512,10 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           outputJsonPath: AbsolutePath;
         }) {
           const hostClipsFork = yield* Effect.fork(
-            findClips({ inputVideo: opts.hostVideo, mode: "part-of-video" })
+            findClips({ inputVideo: opts.hostVideo, mode: "part-of-video" }),
           );
           const guestClipsFork = yield* Effect.fork(
-            findClips({ inputVideo: opts.guestVideo, mode: "part-of-video" })
+            findClips({ inputVideo: opts.guestVideo, mode: "part-of-video" }),
           );
 
           const hostClips = yield* hostClipsFork;
@@ -540,23 +539,23 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
           yield* fs.writeFileString(
             opts.outputJsonPath,
-            JSON.stringify(videoClips, null, 2)
+            JSON.stringify(videoClips, null, 2),
           );
-        }
+        },
       );
 
       const moveInterviewToDavinciResolve = Effect.fn(
-        "moveInterviewToDavinciResolve"
+        "moveInterviewToDavinciResolve",
       )(function* (opts: {
         hostVideo: AbsolutePath;
         guestVideo: AbsolutePath;
       }) {
         const fpsFork = yield* Effect.fork(ffmpeg.getFPS(opts.hostVideo));
         const hostClipsFork = yield* Effect.fork(
-          findClips({ inputVideo: opts.hostVideo, mode: "part-of-video" })
+          findClips({ inputVideo: opts.hostVideo, mode: "part-of-video" }),
         );
         const guestClipsFork = yield* Effect.fork(
-          findClips({ inputVideo: opts.guestVideo, mode: "part-of-video" })
+          findClips({ inputVideo: opts.guestVideo, mode: "part-of-video" }),
         );
 
         const hostClips = yield* hostClipsFork;
@@ -580,7 +579,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         for (const clip of interviewSpeakingClips) {
           const inputStartFrame = Math.floor(clip.startTime * inputFPS);
           const inputEndFrame = Math.ceil(
-            (clip.startTime + clip.duration) * inputFPS
+            (clip.startTime + clip.duration) * inputFPS,
           );
 
           const timelineStartFrame = currentTimelineFrame;
@@ -622,7 +621,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       });
 
       const createVideoFromClipsWorkflow = (
-        options: CreateVideoFromClipsWorkflowOptions
+        options: CreateVideoFromClipsWorkflowOptions,
       ) => {
         return Effect.gen(function* () {
           const outputVideoName = options.outputVideoName;
@@ -630,7 +629,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           const videoFork = yield* Effect.fork(
             createAutoEditedVideo({
               clips: options.clips,
-            })
+            }),
           );
 
           let videoPath: AbsolutePath;
@@ -639,14 +638,14 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             const audioFork = yield* Effect.fork(
               createAutoEditedAudio({
                 clips: options.clips,
-              })
+              }),
             );
 
             const fps = yield* ffmpeg.getFPS(options.clips[0]!.inputVideo);
 
             const totalDuration = options.clips.reduce(
               (acc, clip) => acc + clip.duration,
-              0
+              0,
             );
 
             const totalDurationInFrames = totalDuration * fps;
@@ -661,7 +660,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
             const shortsOutputPath = path.join(
               shortsExportDirectory,
-              options.shortsDirectoryOutputName + ".mp4"
+              options.shortsDirectoryOutputName + ".mp4",
             ) as AbsolutePath;
 
             videoPath = videoWithSubtitles;
@@ -672,13 +671,13 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
 
           const outputPath = path.join(
             exportDirectory,
-            `${outputVideoName}.mp4`
+            `${outputVideoName}.mp4`,
           ) as AbsolutePath;
 
           yield* fs.copyFile(videoPath, outputPath);
 
           yield* Console.log(
-            `✅ Successfully created video from clips: ${outputPath}`
+            `✅ Successfully created video from clips: ${outputPath}`,
           );
 
           return outputPath;
@@ -686,7 +685,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       };
 
       const concatenateVideosWorkflow = (
-        options: ConcatenateVideosWorkflowOptions
+        options: ConcatenateVideosWorkflowOptions,
       ) => {
         return Effect.gen(function* () {
           const queueState = yield* queueUpdater.getQueueState();
@@ -710,7 +709,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
               Effect.gen(function* () {
                 if (item.action.type !== "create-auto-edited-video") {
                   return yield* Effect.fail(
-                    new Error(`Invalid action type for video ${item.id}`)
+                    new Error(`Invalid action type for video ${item.id}`),
                   );
                 }
 
@@ -722,19 +721,19 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
                   if (item.action.subtitles) {
                     videoPath = path.join(
                       exportDirectory,
-                      `${videoName}-with-subtitles.mp4`
+                      `${videoName}-with-subtitles.mp4`,
                     ) as AbsolutePath;
                   } else {
                     videoPath = path.join(
                       exportDirectory,
-                      `${videoName}.mp4`
+                      `${videoName}.mp4`,
                     ) as AbsolutePath;
                   }
                 } else {
                   // Video is in shorts directory
                   videoPath = path.join(
                     shortsExportDirectory,
-                    `${videoName}.mp4`
+                    `${videoName}.mp4`,
                   ) as AbsolutePath;
                 }
 
@@ -742,13 +741,13 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
                 const exists = yield* fs.exists(videoPath);
                 if (!exists) {
                   return yield* Effect.fail(
-                    new Error(`Video file not found: ${videoPath}`)
+                    new Error(`Video file not found: ${videoPath}`),
                   );
                 }
 
                 return { path: videoPath, item };
-              })
-            )
+              }),
+            ),
           );
 
           // Check if output already exists
@@ -757,7 +756,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
             : shortsExportDirectory;
           const outputPath = path.join(
             finalOutputDir,
-            `${options.outputVideoName}.mp4`
+            `${options.outputVideoName}.mp4`,
           ) as AbsolutePath;
 
           const outputExists = yield* fs.exists(outputPath);
@@ -768,7 +767,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           }
 
           yield* Effect.log(
-            `[concatenateVideosWorkflow] Processing ${videoPaths.length} videos for concatenation`
+            `[concatenateVideosWorkflow] Processing ${videoPaths.length} videos for concatenation`,
           );
 
           // Process each video to remove existing padding and add proper transitions
@@ -797,21 +796,21 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
                 const outputFile = yield* ffmpeg.trimVideo(
                   videoInfo.path,
                   0,
-                  trimmedDuration
+                  trimmedDuration,
                 );
 
                 const normalizedAudio =
                   yield* ffmpeg.normalizeAudio(outputFile);
 
                 yield* Effect.log(
-                  `[concatenateVideosWorkflow] Processed video ${index + 1}/${videoPaths.length}`
+                  `[concatenateVideosWorkflow] Processed video ${index + 1}/${videoPaths.length}`,
                 );
                 return normalizedAudio;
-              })
+              }),
             ),
             {
               concurrency: "unbounded",
-            }
+            },
           );
 
           // Concatenate all processed clips
@@ -822,7 +821,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
           yield* fs.copyFile(concatenatedVideo, outputPath);
 
           yield* Console.log(
-            `✅ Successfully concatenated videos to: ${outputPath}`
+            `✅ Successfully concatenated videos to: ${outputPath}`,
           );
 
           return outputPath;
@@ -849,7 +848,7 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
       NodeFileSystem.layer,
       QueueUpdaterService.Default,
     ],
-  }
+  },
 ) {}
 
 export const transcribeVideoWorkflow = () => {
@@ -859,7 +858,7 @@ export const transcribeVideoWorkflow = () => {
 
     const exportDirectory = yield* Config.string("EXPORT_DIRECTORY");
     const shortsExportDirectory = yield* Config.string(
-      "SHORTS_EXPORT_DIRECTORY"
+      "SHORTS_EXPORT_DIRECTORY",
     );
 
     // Get all files from both directories
@@ -870,7 +869,7 @@ export const transcribeVideoWorkflow = () => {
       ],
       {
         concurrency: "unbounded",
-      }
+      },
     );
 
     // Get stats for all files in parallel
@@ -891,7 +890,7 @@ export const transcribeVideoWorkflow = () => {
         }),
       {
         concurrency: "unbounded",
-      }
+      },
     );
 
     const shortsStats = yield* Effect.all(
@@ -901,7 +900,7 @@ export const transcribeVideoWorkflow = () => {
           return Effect.gen(function* () {
             const fullPath = path.join(
               shortsExportDirectory,
-              file
+              file,
             ) as AbsolutePath;
             const stats = yield* fs.stat(fullPath);
             const mtime = yield* stats.mtime;
@@ -914,12 +913,12 @@ export const transcribeVideoWorkflow = () => {
         }),
       {
         concurrency: "unbounded",
-      }
+      },
     );
 
     // Combine and sort by modification time (newest first)
     const videoFiles = [...exportStats, ...shortsStats].sort(
-      (a, b) => b.mtime.getTime() - a.mtime.getTime()
+      (a, b) => b.mtime.getTime() - a.mtime.getTime(),
     );
 
     if (videoFiles.length === 0) {
@@ -934,7 +933,7 @@ export const transcribeVideoWorkflow = () => {
       videoFiles.map((file) => ({
         title: file.title,
         value: file.value,
-      }))
+      })),
     );
 
     if (!selectedVideo) {
@@ -956,13 +955,13 @@ export const transcribeVideoWorkflow = () => {
 export const moveRawFootageToLongTermStorage = () => {
   return Effect.gen(function* () {
     const longTermStorageDirectory = yield* Config.string(
-      "LONG_TERM_FOOTAGE_STORAGE_DIRECTORY"
+      "LONG_TERM_FOOTAGE_STORAGE_DIRECTORY",
     );
 
     const obsOutputDirectory = yield* Config.string("OBS_OUTPUT_DIRECTORY");
 
     yield* execAsync(
-      `(cd "${longTermStorageDirectory}" && mv "${obsOutputDirectory}"/* .)`
+      `(cd "${longTermStorageDirectory}" && mv "${obsOutputDirectory}"/* .)`,
     );
   });
 };
@@ -977,7 +976,7 @@ export const multiSelectVideosFromQueue = () => {
     const completedVideoItems = queueState.queue.filter(
       (item) =>
         item.status === "completed" &&
-        item.action.type === "create-auto-edited-video"
+        item.action.type === "create-auto-edited-video",
     );
 
     if (completedVideoItems.length === 0) {
@@ -987,7 +986,7 @@ export const multiSelectVideosFromQueue = () => {
 
     // Sort by creation date (most recent first)
     const sortedVideoItems = completedVideoItems.sort(
-      (a, b) => b.createdAt - a.createdAt
+      (a, b) => b.createdAt - a.createdAt,
     );
 
     const selectedVideoIds: string[] = [];
@@ -995,7 +994,7 @@ export const multiSelectVideosFromQueue = () => {
     while (true) {
       // Filter out already selected videos, maintaining the sorted order
       const availableVideos = sortedVideoItems.filter(
-        (item) => !selectedVideoIds.includes(item.id)
+        (item) => !selectedVideoIds.includes(item.id),
       );
 
       if (availableVideos.length === 0) {
@@ -1014,7 +1013,7 @@ export const multiSelectVideosFromQueue = () => {
               {
                 hour: "2-digit",
                 minute: "2-digit",
-              }
+              },
             );
             return {
               title: `${item.action.videoName} (${createdDate} ${createdTime})`,
@@ -1032,7 +1031,7 @@ export const multiSelectVideosFromQueue = () => {
 
       const selection = yield* askQuestion.select(
         `Select a video to add to concatenation${selectedMessage}:`,
-        choices
+        choices,
       );
 
       if (selection === "END") {
@@ -1041,14 +1040,14 @@ export const multiSelectVideosFromQueue = () => {
 
       selectedVideoIds.push(selection as string);
       const selectedItem = sortedVideoItems.find(
-        (item) => item.id === selection
+        (item) => item.id === selection,
       );
       if (
         selectedItem &&
         selectedItem.action.type === "create-auto-edited-video"
       ) {
         yield* Console.log(
-          `✅ Added "${selectedItem.action.videoName}" to selection`
+          `✅ Added "${selectedItem.action.videoName}" to selection`,
         );
       }
     }
@@ -1059,7 +1058,7 @@ export const multiSelectVideosFromQueue = () => {
     }
 
     yield* Console.log(
-      `📝 Selected ${selectedVideoIds.length} videos for concatenation.`
+      `📝 Selected ${selectedVideoIds.length} videos for concatenation.`,
     );
     return selectedVideoIds;
   });
