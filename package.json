@@ -19,23 +19,28 @@
     "scratch": "(cd apps/written-content && pnpm run scratch)",
     "ai": "(cd apps/ai-playground && pnpm run go)",
     "manage": "turbo watch lint dev --filter written-content-manager --filter=@total-typescript/twoslash-preview-server",
-    "append": "apps/internal-cli/dist/bin.js append-video-to-timeline"
+    "append": "apps/internal-cli/dist/bin.js append-video-to-timeline",
+    "prepare": "husky"
   },
   "keywords": [],
   "author": "Matt Pocock",
   "license": "ISC",
   "dependencies": {
     "@changesets/cli": "^2.27.7",
+    "@effect/language-service": "0.23.3",
     "@total-typescript/tsconfig": "^1.0.4",
     "@types/node": "^22.7.7",
     "prettier": "^3.3.3",
     "tsx": "^4.19.0",
     "turbo": "2.3.3",
     "typescript": "5.8.0-dev.20250124",
-    "vitest": "^3.2.1",
-    "@effect/language-service": "0.23.3"
+    "vitest": "^3.2.1"
   },
   "resolutions": {
     "typescript": "5.8.0-dev.20250124"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7"
   }
 }
