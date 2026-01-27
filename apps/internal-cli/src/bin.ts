@@ -11,7 +11,6 @@ import {
   exportSubtitles,
   generateArticleFromTranscript,
   getOutstandingInformationRequests,
-  moveRawFootageToLongTermStorage,
   multiSelectVideosFromQueue,
   processInformationRequests,
   processQueue,
@@ -37,6 +36,7 @@ import packageJson from "../package.json" with { type: "json" };
 import { register as registerCreateVideoFromClips } from "./commands/create-video-from-clips.js";
 import { register as registerGetClipsFromLatestVideo } from "./commands/get-clips-from-latest-video.js";
 import { register as registerSendClipsToDavinciResolve } from "./commands/send-clips-to-davinci-resolve.js";
+import { register as registerMoveRawFootageToLongTermStorage } from "./commands/move-raw-footage-to-long-term-storage.js";
 import { register as registerTranscribeClips } from "./commands/transcribe-clips.js";
 import { OpenTelemetryLive } from "./tracing.js";
 import {
@@ -60,20 +60,9 @@ program.version(packageJson.version);
 // Register extracted commands
 registerCreateVideoFromClips(program);
 registerGetClipsFromLatestVideo(program);
+registerMoveRawFootageToLongTermStorage(program);
 registerSendClipsToDavinciResolve(program);
 registerTranscribeClips(program);
-
-// Simple commands
-program
-  .command("move-raw-footage-to-long-term-storage")
-  .description("Move raw footage to long term storage.")
-  .action(async () => {
-    await moveRawFootageToLongTermStorage().pipe(
-      Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(MainLayerLive),
-      NodeRuntime.runMain,
-    );
-  });
 
 program
   .command("create-timeline")
