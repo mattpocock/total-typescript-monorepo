@@ -1,17 +1,12 @@
 #!/usr/bin/env node
 
 import { NodeRuntime } from "@effect/platform-node";
-import {
-  AppLayerLive,
-  multiSelectVideosFromQueue,
-  validateWindowsFilename,
-} from "@total-typescript/ffmpeg";
+import { AppLayerLive } from "@total-typescript/ffmpeg";
 import { Command } from "commander";
 import { config } from "dotenv";
 import { Config, ConfigProvider, Console, Effect, Layer } from "effect";
 import path from "node:path";
 import { QueueUpdaterService } from "../../../packages/ffmpeg/dist/queue/queue-updater-service.js";
-import { AskQuestionService } from "../../../packages/ffmpeg/dist/services.js";
 import packageJson from "../package.json" with { type: "json" };
 import { register as registerCreateVideoFromClips } from "./commands/create-video-from-clips.js";
 import { register as registerGetClipsFromLatestVideo } from "./commands/get-clips-from-latest-video.js";
@@ -33,6 +28,7 @@ import { register as registerProcessQueue } from "./commands/process-queue.js";
 import { register as registerProcessInformationRequests } from "./commands/process-information-requests.js";
 import { register as registerArticleFromTranscript } from "./commands/article-from-transcript.js";
 import { register as registerQueueStatus } from "./commands/queue-status.js";
+import { register as registerConcatenateVideos } from "./commands/concatenate-videos.js";
 import { OpenTelemetryLive } from "./tracing.js";
 
 config({
@@ -69,72 +65,7 @@ registerProcessQueue(program);
 registerProcessInformationRequests(program);
 registerArticleFromTranscript(program);
 registerQueueStatus(program);
-
-program
-  .command("concatenate-videos")
-  .aliases(["concat", "c"])
-  .description("Concatenate multiple completed videos from the queue")
-  .option("-u, --upload", "Upload to shorts directory")
-  .action(async (options: { upload?: boolean }) => {
-    await Effect.gen(function* () {
-      const queueUpdater = yield* QueueUpdaterService;
-      const askQuestion = yield* AskQuestionService;
-
-      // Select videos using the multi-selection interface
-      const selectedVideoIds = yield* multiSelectVideosFromQueue();
-
-      if (selectedVideoIds.length === 0) {
-        yield* Console.log("No videos selected. Cancelling concatenation.");
-        return;
-      }
-
-      if (selectedVideoIds.length === 1) {
-        yield* Console.log(
-          "Only one video selected. At least 2 videos are required for concatenation.",
-        );
-        return;
-      }
-
-      // Ask for output video name
-      const outputVideoName = yield* askQuestion.askQuestion(
-        "What is the name for the concatenated video?",
-      );
-
-      yield* validateWindowsFilename(outputVideoName);
-
-      yield* Console.log("Adding concatenation job to queue...");
-
-      yield* queueUpdater.writeToQueue([
-        {
-          id: crypto.randomUUID(),
-          createdAt: Date.now(),
-          action: {
-            type: "concatenate-videos",
-            videoIds: selectedVideoIds,
-            outputVideoName,
-            dryRun: !Boolean(options.upload),
-          },
-          dependencies: selectedVideoIds, // Depend on all selected videos being completed
-          status: "ready-to-run",
-        },
-      ]);
-
-      yield* Console.log(
-        `✅ Concatenation job added to queue with ${selectedVideoIds.length} videos.`,
-      );
-    }).pipe(
-      Effect.catchAll((e) => {
-        return Effect.gen(function* () {
-          yield* Effect.logError(e);
-          yield* Effect.sleep(5000);
-          return yield* Effect.die(e);
-        });
-      }),
-      Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(MainLayerLive),
-      NodeRuntime.runMain,
-    );
-  });
+registerConcatenateVideos(program);
 
 program
   .command("notify <text>")
