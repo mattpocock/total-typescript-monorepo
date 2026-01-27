@@ -7,7 +7,6 @@ import {
   appendVideoToTimeline,
   AppLayerLive,
   createAutoEditedVideoQueueItems,
-  createTimeline,
   exportSubtitles,
   generateArticleFromTranscript,
   getOutstandingInformationRequests,
@@ -36,6 +35,7 @@ import packageJson from "../package.json" with { type: "json" };
 import { register as registerCreateVideoFromClips } from "./commands/create-video-from-clips.js";
 import { register as registerGetClipsFromLatestVideo } from "./commands/get-clips-from-latest-video.js";
 import { register as registerSendClipsToDavinciResolve } from "./commands/send-clips-to-davinci-resolve.js";
+import { register as registerCreateTimeline } from "./commands/create-timeline.js";
 import { register as registerMoveRawFootageToLongTermStorage } from "./commands/move-raw-footage-to-long-term-storage.js";
 import { register as registerTranscribeClips } from "./commands/transcribe-clips.js";
 import { OpenTelemetryLive } from "./tracing.js";
@@ -58,22 +58,12 @@ const program = new Command();
 program.version(packageJson.version);
 
 // Register extracted commands
+registerCreateTimeline(program);
 registerCreateVideoFromClips(program);
 registerGetClipsFromLatestVideo(program);
 registerMoveRawFootageToLongTermStorage(program);
 registerSendClipsToDavinciResolve(program);
 registerTranscribeClips(program);
-
-program
-  .command("create-timeline")
-  .description("Create a new empty timeline in the current project.")
-  .action(async () => {
-    await createTimeline().pipe(
-      Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(MainLayerLive),
-      NodeRuntime.runMain,
-    );
-  });
 
 program
   .command("add-current-timeline-to-render-queue")
