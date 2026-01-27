@@ -6,7 +6,6 @@ import {
   addCurrentTimelineToRenderQueue,
   appendVideoToTimeline,
   AppLayerLive,
-  AUTO_EDITED_VIDEO_FINAL_END_PADDING,
   createAutoEditedVideoQueueItems,
   createTimeline,
   exportSubtitles,
@@ -17,26 +16,14 @@ import {
   processInformationRequests,
   processQueue,
   type QueueItem,
-  serializeMultiTrackClipsForAppendScript,
   transcribeVideoWorkflow,
   validateWindowsFilename,
   WorkflowsService,
 } from "@total-typescript/ffmpeg";
-import {
-  runDavinciResolveScript,
-  type AbsolutePath,
-} from "@total-typescript/shared";
+import { type AbsolutePath } from "@total-typescript/shared";
 import { Command } from "commander";
 import { config } from "dotenv";
-import {
-  Config,
-  ConfigProvider,
-  Console,
-  Data,
-  Effect,
-  Layer,
-  Schema,
-} from "effect";
+import { Config, ConfigProvider, Console, Effect, Layer } from "effect";
 import path from "node:path";
 import { styleText } from "node:util";
 import { QueueUpdaterService } from "../../../packages/ffmpeg/dist/queue/queue-updater-service.js";
@@ -49,14 +36,13 @@ import {
 import packageJson from "../package.json" with { type: "json" };
 import { register as registerCreateVideoFromClips } from "./commands/create-video-from-clips.js";
 import { register as registerGetClipsFromLatestVideo } from "./commands/get-clips-from-latest-video.js";
+import { register as registerSendClipsToDavinciResolve } from "./commands/send-clips-to-davinci-resolve.js";
 import { register as registerTranscribeClips } from "./commands/transcribe-clips.js";
-import { clipsSchema } from "./shared/schemas.js";
 import { OpenTelemetryLive } from "./tracing.js";
 import {
   FlagValidationError,
   validateCreateVideoFlags,
 } from "./validate-cli-flags.js";
-import { FFmpegCommandsService } from "../../../packages/ffmpeg/dist/ffmpeg-commands.js";
 
 config({
   path: path.resolve(import.meta.dirname, "../../../.env"),
@@ -74,74 +60,8 @@ program.version(packageJson.version);
 // Register extracted commands
 registerCreateVideoFromClips(program);
 registerGetClipsFromLatestVideo(program);
+registerSendClipsToDavinciResolve(program);
 registerTranscribeClips(program);
-
-class NoInputVideosError extends Data.TaggedError("NoInputVideosError")<{}> {}
-
-program
-  .command("send-clips-to-davinci-resolve <clips> <timeline-name>")
-  .action(async (clips, timelineName) => {
-    await Effect.gen(function* () {
-      const clipsParsed = yield* Schema.decodeUnknown(clipsSchema)(
-        JSON.parse(clips),
-      );
-
-      const ffmpeg = yield* FFmpegCommandsService;
-
-      const uniqueInputVideos = [
-        ...new Set(clipsParsed.map((clip) => clip.inputVideo)),
-      ];
-
-      const inputVideosMap = uniqueInputVideos.reduce(
-        (acc, video, index) => {
-          acc[video] = index;
-          return acc;
-        },
-        {} as Record<string, number>,
-      );
-
-      const firstInputVideo = uniqueInputVideos[0];
-
-      if (!firstInputVideo) {
-        return yield* Effect.fail(new NoInputVideosError());
-      }
-
-      const fps = yield* ffmpeg.getFPS(firstInputVideo as AbsolutePath);
-
-      yield* Console.log(fps, timelineName);
-
-      const result = yield* runDavinciResolveScript("clip-and-append.lua", {
-        NEW_TIMELINE_NAME: timelineName,
-        INPUT_VIDEOS: uniqueInputVideos.join(":::"),
-        CLIPS_TO_APPEND: serializeMultiTrackClipsForAppendScript(
-          clipsParsed.map((clip, index, array) => {
-            const isLastClip = index === array.length - 1;
-
-            const endPadding = isLastClip
-              ? AUTO_EDITED_VIDEO_FINAL_END_PADDING
-              : 0;
-            return {
-              startFrame: Math.floor(clip.startTime * fps),
-              endFrame: Math.ceil(
-                (clip.startTime + clip.duration + endPadding) * fps,
-              ),
-              videoIndex: inputVideosMap[clip.inputVideo]!,
-              trackIndex: 1,
-            };
-          }),
-        ),
-        WSLENV: "INPUT_VIDEOS/p:CLIPS_TO_APPEND:NEW_TIMELINE_NAME",
-      });
-
-      yield* Console.log(result.stdout);
-      yield* Console.log(result.stderr);
-    }).pipe(
-      Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.scoped,
-      Effect.provide(MainLayerLive),
-      NodeRuntime.runMain,
-    );
-  });
 
 // Simple commands
 program
