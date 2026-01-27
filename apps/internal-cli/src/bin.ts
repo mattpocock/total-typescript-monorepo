@@ -40,6 +40,7 @@ import { register as registerExportInterview } from "./commands/export-interview
 import { register as registerMoveInterviewToDavinciResolve } from "./commands/move-interview-to-davinci-resolve.js";
 import { register as registerCreateAutoEditedVideo } from "./commands/create-auto-edited-video.js";
 import { register as registerLogLatestObsVideo } from "./commands/log-latest-obs-video.js";
+import { register as registerQueueAutoEditedVideoForCourse } from "./commands/queue-auto-edited-video-for-course.js";
 import { OpenTelemetryLive } from "./tracing.js";
 
 config({
@@ -70,36 +71,7 @@ registerExportInterview(program);
 registerMoveInterviewToDavinciResolve(program);
 registerCreateAutoEditedVideo(program);
 registerLogLatestObsVideo(program);
-
-program
-  .command("queue-auto-edited-video-for-course <id>")
-  .action(async (id: string) => {
-    await Effect.gen(function* () {
-      const queueUpdater = yield* QueueUpdaterService;
-      const obs = yield* OBSIntegrationService;
-      const inputVideo = yield* obs.getLatestOBSVideo();
-
-      yield* queueUpdater.writeToQueue([
-        {
-          id: crypto.randomUUID(),
-          action: {
-            type: "create-auto-edited-video",
-            inputVideo,
-            videoName: id,
-            dryRun: true,
-            subtitles: false,
-          },
-          createdAt: Date.now(),
-          status: "ready-to-run",
-        },
-      ]);
-      console.log(inputVideo);
-    }).pipe(
-      Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(MainLayerLive),
-      NodeRuntime.runMain,
-    );
-  });
+registerQueueAutoEditedVideoForCourse(program);
 
 program
   .command("transcribe-video")
