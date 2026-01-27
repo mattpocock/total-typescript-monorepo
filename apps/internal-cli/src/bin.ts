@@ -49,6 +49,7 @@ import {
   TranscriptStorageService,
 } from "../../../packages/ffmpeg/dist/services.js";
 import packageJson from "../package.json" with { type: "json" };
+import { register as registerGetClipsFromLatestVideo } from "./commands/get-clips-from-latest-video.js";
 import { clipsSchema } from "./shared/schemas.js";
 import { OpenTelemetryLive } from "./tracing.js";
 import {
@@ -70,56 +71,8 @@ const program = new Command();
 
 program.version(packageJson.version);
 
-class FileDoesNotExistError extends Data.TaggedError("FileDoesNotExistError")<{
-  filePath: AbsolutePath;
-}> {}
-
-program
-  .command("get-clips-from-latest-video [filePath]")
-  .option("-s, --startTime <startTime>", "Start time of the video")
-  .action(async (filePath, { startTime }) => {
-    Effect.gen(function* () {
-      const workflows = yield* WorkflowsService;
-      const obs = yield* OBSIntegrationService;
-      const fs = yield* FileSystem.FileSystem;
-
-      let latestVideo: AbsolutePath;
-
-      if (filePath) {
-        const exists = yield* fs.exists(filePath);
-        if (!exists) {
-          yield* Effect.fail(new FileDoesNotExistError({ filePath }));
-        }
-        latestVideo = filePath;
-      } else {
-        latestVideo = yield* obs.getLatestOBSVideo();
-      }
-
-      const clips = yield* workflows.findClips({
-        inputVideo: latestVideo,
-        mode: "part-of-video",
-        startTime: startTime ? Number(startTime) : undefined,
-      });
-
-      const output = {
-        clips: clips.map((clip) => {
-          return {
-            startTime: Number(clip.startTime.toFixed(2)),
-            endTime: Number((clip.startTime + clip.duration).toFixed(2)),
-            inputVideo: latestVideo,
-          };
-        }),
-      };
-
-      yield* Console.log(JSON.stringify(output));
-    }).pipe(
-      Logger.withMinimumLogLevel(LogLevel.Fatal),
-      Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(MainLayerLive),
-      Effect.scoped,
-      NodeRuntime.runMain,
-    );
-  });
+// Register extracted commands
+registerGetClipsFromLatestVideo(program);
 
 const transcribeClipSchema = Schema.Array(
   Schema.Struct({
