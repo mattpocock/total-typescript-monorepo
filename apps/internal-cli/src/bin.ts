@@ -47,6 +47,7 @@ import {
   TranscriptStorageService,
 } from "../../../packages/ffmpeg/dist/services.js";
 import packageJson from "../package.json" with { type: "json" };
+import { register as registerCreateVideoFromClips } from "./commands/create-video-from-clips.js";
 import { register as registerGetClipsFromLatestVideo } from "./commands/get-clips-from-latest-video.js";
 import { register as registerTranscribeClips } from "./commands/transcribe-clips.js";
 import { clipsSchema } from "./shared/schemas.js";
@@ -71,50 +72,9 @@ const program = new Command();
 program.version(packageJson.version);
 
 // Register extracted commands
+registerCreateVideoFromClips(program);
 registerGetClipsFromLatestVideo(program);
 registerTranscribeClips(program);
-
-program
-  .command(
-    "create-video-from-clips <clips> <outputVideoName> [shortsDirectoryOutputName]",
-  )
-  .action(async (clips, outputVideoName, shortsDirectoryOutputName) => {
-    await Effect.gen(function* () {
-      const queueUpdater = yield* QueueUpdaterService;
-
-      const clipsParsed = yield* Schema.decodeUnknown(clipsSchema)(
-        JSON.parse(clips),
-      );
-
-      yield* queueUpdater.writeToQueue([
-        {
-          id: crypto.randomUUID(),
-          action: {
-            type: "create-video-from-clips",
-            clips: clipsParsed.map((clip) => {
-              return {
-                inputVideo: clip.inputVideo as AbsolutePath,
-                startTime: clip.startTime,
-                duration: clip.duration,
-                beatType: clip.beatType,
-              };
-            }),
-            outputVideoName,
-            shortsDirectoryOutputName: shortsDirectoryOutputName || undefined,
-          },
-          createdAt: Date.now(),
-          status: "ready-to-run",
-        },
-      ]);
-
-      yield* Console.log("Added video creation job to queue.");
-    }).pipe(
-      Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.scoped,
-      Effect.provide(MainLayerLive),
-      NodeRuntime.runMain,
-    );
-  });
 
 class NoInputVideosError extends Data.TaggedError("NoInputVideosError")<{}> {}
 
