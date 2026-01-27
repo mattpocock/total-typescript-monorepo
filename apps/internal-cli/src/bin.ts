@@ -13,9 +13,7 @@ import {
   type QueueItem,
   transcribeVideoWorkflow,
   validateWindowsFilename,
-  WorkflowsService,
 } from "@total-typescript/ffmpeg";
-import { type AbsolutePath } from "@total-typescript/shared";
 import { Command } from "commander";
 import { config } from "dotenv";
 import { Config, ConfigProvider, Console, Effect, Layer } from "effect";
@@ -40,6 +38,7 @@ import { register as registerExportSubtitles } from "./commands/export-subtitles
 import { register as registerAppendVideoToTimeline } from "./commands/append-video-to-timeline.js";
 import { register as registerEditInterview } from "./commands/edit-interview.js";
 import { register as registerExportInterview } from "./commands/export-interview.js";
+import { register as registerMoveInterviewToDavinciResolve } from "./commands/move-interview-to-davinci-resolve.js";
 import { OpenTelemetryLive } from "./tracing.js";
 import {
   FlagValidationError,
@@ -71,32 +70,8 @@ registerExportSubtitles(program);
 registerAppendVideoToTimeline(program);
 registerEditInterview(program);
 registerExportInterview(program);
+registerMoveInterviewToDavinciResolve(program);
 
-program
-  .command("move-interview-to-davinci-resolve <hostVideo> <guestVideo>")
-  .action(async (hostVideo, guestVideo) => {
-    await Effect.gen(function* () {
-      const workflows = yield* WorkflowsService;
-
-      const fullHostPath = path.resolve(
-        process.cwd(),
-        hostVideo,
-      ) as AbsolutePath;
-      const fullGuestPath = path.resolve(
-        process.cwd(),
-        guestVideo,
-      ) as AbsolutePath;
-
-      yield* workflows.moveInterviewToDavinciResolve({
-        hostVideo: fullHostPath,
-        guestVideo: fullGuestPath,
-      });
-    }).pipe(
-      Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(MainLayerLive),
-      NodeRuntime.runMain,
-    );
-  });
 program
   .command("create-auto-edited-video")
   .aliases(["v", "video"])
