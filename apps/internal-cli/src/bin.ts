@@ -39,6 +39,7 @@ import { register as registerTranscribeClips } from "./commands/transcribe-clips
 import { register as registerExportSubtitles } from "./commands/export-subtitles.js";
 import { register as registerAppendVideoToTimeline } from "./commands/append-video-to-timeline.js";
 import { register as registerEditInterview } from "./commands/edit-interview.js";
+import { register as registerExportInterview } from "./commands/export-interview.js";
 import { OpenTelemetryLive } from "./tracing.js";
 import {
   FlagValidationError,
@@ -69,27 +70,7 @@ registerTranscribeClips(program);
 registerExportSubtitles(program);
 registerAppendVideoToTimeline(program);
 registerEditInterview(program);
-
-program
-  .command("export-interview <hostVideo> <guestVideo> <outputJsonPath>")
-  .action(async (hostVideo, guestVideo, outputJsonPath) => {
-    await Effect.gen(function* () {
-      const workflows = yield* WorkflowsService;
-
-      yield* workflows.exportInterviewWorkflow({
-        hostVideo: path.join(process.cwd(), hostVideo) as AbsolutePath,
-        guestVideo: path.join(process.cwd(), guestVideo) as AbsolutePath,
-        outputJsonPath: path.join(
-          process.cwd(),
-          outputJsonPath,
-        ) as AbsolutePath,
-      });
-    }).pipe(
-      Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(MainLayerLive),
-      NodeRuntime.runMain,
-    );
-  });
+registerExportInterview(program);
 
 program
   .command("move-interview-to-davinci-resolve <hostVideo> <guestVideo>")
