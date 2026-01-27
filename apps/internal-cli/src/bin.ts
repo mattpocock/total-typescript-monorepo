@@ -3,7 +3,6 @@
 import { FileSystem } from "@effect/platform";
 import { NodeRuntime } from "@effect/platform-node";
 import {
-  addCurrentTimelineToRenderQueue,
   appendVideoToTimeline,
   AppLayerLive,
   createAutoEditedVideoQueueItems,
@@ -35,6 +34,7 @@ import packageJson from "../package.json" with { type: "json" };
 import { register as registerCreateVideoFromClips } from "./commands/create-video-from-clips.js";
 import { register as registerGetClipsFromLatestVideo } from "./commands/get-clips-from-latest-video.js";
 import { register as registerSendClipsToDavinciResolve } from "./commands/send-clips-to-davinci-resolve.js";
+import { register as registerAddCurrentTimelineToRenderQueue } from "./commands/add-current-timeline-to-render-queue.js";
 import { register as registerCreateTimeline } from "./commands/create-timeline.js";
 import { register as registerMoveRawFootageToLongTermStorage } from "./commands/move-raw-footage-to-long-term-storage.js";
 import { register as registerTranscribeClips } from "./commands/transcribe-clips.js";
@@ -58,23 +58,13 @@ const program = new Command();
 program.version(packageJson.version);
 
 // Register extracted commands
+registerAddCurrentTimelineToRenderQueue(program);
 registerCreateTimeline(program);
 registerCreateVideoFromClips(program);
 registerGetClipsFromLatestVideo(program);
 registerMoveRawFootageToLongTermStorage(program);
 registerSendClipsToDavinciResolve(program);
 registerTranscribeClips(program);
-
-program
-  .command("add-current-timeline-to-render-queue")
-  .description("Add the current timeline to the render queue.")
-  .action(async () => {
-    await addCurrentTimelineToRenderQueue().pipe(
-      Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(MainLayerLive),
-      NodeRuntime.runMain,
-    );
-  });
 
 program
   .command("export-subtitles")
