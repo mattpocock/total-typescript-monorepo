@@ -6,7 +6,6 @@ import {
   appendVideoToTimeline,
   AppLayerLive,
   createAutoEditedVideoQueueItems,
-  exportSubtitles,
   generateArticleFromTranscript,
   getOutstandingInformationRequests,
   multiSelectVideosFromQueue,
@@ -38,6 +37,7 @@ import { register as registerAddCurrentTimelineToRenderQueue } from "./commands/
 import { register as registerCreateTimeline } from "./commands/create-timeline.js";
 import { register as registerMoveRawFootageToLongTermStorage } from "./commands/move-raw-footage-to-long-term-storage.js";
 import { register as registerTranscribeClips } from "./commands/transcribe-clips.js";
+import { register as registerExportSubtitles } from "./commands/export-subtitles.js";
 import { OpenTelemetryLive } from "./tracing.js";
 import {
   FlagValidationError,
@@ -65,17 +65,7 @@ registerGetClipsFromLatestVideo(program);
 registerMoveRawFootageToLongTermStorage(program);
 registerSendClipsToDavinciResolve(program);
 registerTranscribeClips(program);
-
-program
-  .command("export-subtitles")
-  .description("Export subtitles from the current timeline as SRT.")
-  .action(async () => {
-    await exportSubtitles().pipe(
-      Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(MainLayerLive),
-      NodeRuntime.runMain,
-    );
-  });
+registerExportSubtitles(program);
 
 program
   .command("append-video-to-timeline [video]")
