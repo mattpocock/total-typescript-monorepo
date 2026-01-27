@@ -3,7 +3,6 @@
 import { FileSystem } from "@effect/platform";
 import { NodeRuntime } from "@effect/platform-node";
 import {
-  appendVideoToTimeline,
   AppLayerLive,
   createAutoEditedVideoQueueItems,
   generateArticleFromTranscript,
@@ -38,6 +37,7 @@ import { register as registerCreateTimeline } from "./commands/create-timeline.j
 import { register as registerMoveRawFootageToLongTermStorage } from "./commands/move-raw-footage-to-long-term-storage.js";
 import { register as registerTranscribeClips } from "./commands/transcribe-clips.js";
 import { register as registerExportSubtitles } from "./commands/export-subtitles.js";
+import { register as registerAppendVideoToTimeline } from "./commands/append-video-to-timeline.js";
 import { OpenTelemetryLive } from "./tracing.js";
 import {
   FlagValidationError,
@@ -66,20 +66,7 @@ registerMoveRawFootageToLongTermStorage(program);
 registerSendClipsToDavinciResolve(program);
 registerTranscribeClips(program);
 registerExportSubtitles(program);
-
-program
-  .command("append-video-to-timeline [video]")
-  .aliases(["a", "append"])
-  .description("Append video to the current Davinci Resolve timeline")
-  .action(async (video: string | undefined) => {
-    await appendVideoToTimeline({
-      inputVideo: video as AbsolutePath,
-    }).pipe(
-      Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(MainLayerLive),
-      NodeRuntime.runMain,
-    );
-  });
+registerAppendVideoToTimeline(program);
 
 program
   .command("edit-interview <hostVideo> <guestVideo> <outputPath>")
