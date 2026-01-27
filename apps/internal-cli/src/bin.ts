@@ -38,6 +38,7 @@ import { register as registerMoveRawFootageToLongTermStorage } from "./commands/
 import { register as registerTranscribeClips } from "./commands/transcribe-clips.js";
 import { register as registerExportSubtitles } from "./commands/export-subtitles.js";
 import { register as registerAppendVideoToTimeline } from "./commands/append-video-to-timeline.js";
+import { register as registerEditInterview } from "./commands/edit-interview.js";
 import { OpenTelemetryLive } from "./tracing.js";
 import {
   FlagValidationError,
@@ -67,25 +68,7 @@ registerSendClipsToDavinciResolve(program);
 registerTranscribeClips(program);
 registerExportSubtitles(program);
 registerAppendVideoToTimeline(program);
-
-program
-  .command("edit-interview <hostVideo> <guestVideo> <outputPath>")
-  .action(async (hostVideo, guestVideo, outputPath) => {
-    await Effect.gen(function* () {
-      const workflows = yield* WorkflowsService;
-
-      yield* workflows.editInterviewWorkflow({
-        hostVideo,
-        guestVideo,
-        outputPath,
-      });
-    }).pipe(
-      Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(MainLayerLive),
-      Effect.scoped,
-      NodeRuntime.runMain,
-    );
-  });
+registerEditInterview(program);
 
 program
   .command("export-interview <hostVideo> <guestVideo> <outputJsonPath>")
