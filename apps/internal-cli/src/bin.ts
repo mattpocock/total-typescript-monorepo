@@ -10,7 +10,6 @@ import {
   processInformationRequests,
   processQueue,
   type QueueItem,
-  transcribeVideoWorkflow,
   validateWindowsFilename,
 } from "@total-typescript/ffmpeg";
 import { Command } from "commander";
@@ -41,6 +40,7 @@ import { register as registerMoveInterviewToDavinciResolve } from "./commands/mo
 import { register as registerCreateAutoEditedVideo } from "./commands/create-auto-edited-video.js";
 import { register as registerLogLatestObsVideo } from "./commands/log-latest-obs-video.js";
 import { register as registerQueueAutoEditedVideoForCourse } from "./commands/queue-auto-edited-video-for-course.js";
+import { register as registerTranscribeVideo } from "./commands/transcribe-video.js";
 import { OpenTelemetryLive } from "./tracing.js";
 
 config({
@@ -72,19 +72,7 @@ registerMoveInterviewToDavinciResolve(program);
 registerCreateAutoEditedVideo(program);
 registerLogLatestObsVideo(program);
 registerQueueAutoEditedVideoForCourse(program);
-
-program
-  .command("transcribe-video")
-  .aliases(["t", "transcribe"])
-  .description("Transcribe audio from a selected video file")
-  .action(async () => {
-    await transcribeVideoWorkflow().pipe(
-      Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(MainLayerLive),
-      Effect.scoped,
-      NodeRuntime.runMain,
-    );
-  });
+registerTranscribeVideo(program);
 
 program
   .command("process-queue")
