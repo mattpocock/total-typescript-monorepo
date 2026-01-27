@@ -39,6 +39,7 @@ import { register as registerEditInterview } from "./commands/edit-interview.js"
 import { register as registerExportInterview } from "./commands/export-interview.js";
 import { register as registerMoveInterviewToDavinciResolve } from "./commands/move-interview-to-davinci-resolve.js";
 import { register as registerCreateAutoEditedVideo } from "./commands/create-auto-edited-video.js";
+import { register as registerLogLatestObsVideo } from "./commands/log-latest-obs-video.js";
 import { OpenTelemetryLive } from "./tracing.js";
 
 config({
@@ -68,18 +69,7 @@ registerEditInterview(program);
 registerExportInterview(program);
 registerMoveInterviewToDavinciResolve(program);
 registerCreateAutoEditedVideo(program);
-
-program.command("log-latest-obs-video").action(async () => {
-  await Effect.gen(function* () {
-    const obs = yield* OBSIntegrationService;
-    const inputVideo = yield* obs.getLatestOBSVideo();
-    yield* Console.log(inputVideo);
-  }).pipe(
-    Effect.withConfigProvider(ConfigProvider.fromEnv()),
-    Effect.provide(MainLayerLive),
-    NodeRuntime.runMain,
-  );
-});
+registerLogLatestObsVideo(program);
 
 program
   .command("queue-auto-edited-video-for-course <id>")
