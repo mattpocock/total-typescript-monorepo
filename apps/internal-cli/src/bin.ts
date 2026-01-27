@@ -49,6 +49,7 @@ import {
   TranscriptStorageService,
 } from "../../../packages/ffmpeg/dist/services.js";
 import packageJson from "../package.json" with { type: "json" };
+import { clipsSchema } from "./shared/schemas.js";
 import { OpenTelemetryLive } from "./tracing.js";
 import {
   FlagValidationError,
@@ -116,7 +117,7 @@ program
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
       Effect.scoped,
-      NodeRuntime.runMain
+      NodeRuntime.runMain,
     );
   });
 
@@ -126,14 +127,14 @@ const transcribeClipSchema = Schema.Array(
     startTime: Schema.Number,
     duration: Schema.Number,
     inputVideo: Schema.String,
-  })
+  }),
 );
 
 program.command("transcribe-clips <json>").action(async (json) => {
   await Effect.gen(function* () {
     const workflows = yield* WorkflowsService;
     const clips = yield* Schema.decodeUnknown(transcribeClipSchema)(
-      JSON.parse(json)
+      JSON.parse(json),
     );
 
     const result = yield* workflows.getSubtitlesForClips({
@@ -161,29 +162,20 @@ program.command("transcribe-clips <json>").action(async (json) => {
     Effect.withConfigProvider(ConfigProvider.fromEnv()),
     Effect.provide(MainLayerLive),
     Effect.scoped,
-    NodeRuntime.runMain
+    NodeRuntime.runMain,
   );
 });
 
-const clipsSchema = Schema.Array(
-  Schema.Struct({
-    startTime: Schema.Number,
-    duration: Schema.Number,
-    inputVideo: Schema.String,
-    beatType: Schema.Union(Schema.Literal("none"), Schema.Literal("long")),
-  })
-);
-
 program
   .command(
-    "create-video-from-clips <clips> <outputVideoName> [shortsDirectoryOutputName]"
+    "create-video-from-clips <clips> <outputVideoName> [shortsDirectoryOutputName]",
   )
   .action(async (clips, outputVideoName, shortsDirectoryOutputName) => {
     await Effect.gen(function* () {
       const queueUpdater = yield* QueueUpdaterService;
 
       const clipsParsed = yield* Schema.decodeUnknown(clipsSchema)(
-        JSON.parse(clips)
+        JSON.parse(clips),
       );
 
       yield* queueUpdater.writeToQueue([
@@ -212,7 +204,7 @@ program
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.scoped,
       Effect.provide(MainLayerLive),
-      NodeRuntime.runMain
+      NodeRuntime.runMain,
     );
   });
 
@@ -223,7 +215,7 @@ program
   .action(async (clips, timelineName) => {
     await Effect.gen(function* () {
       const clipsParsed = yield* Schema.decodeUnknown(clipsSchema)(
-        JSON.parse(clips)
+        JSON.parse(clips),
       );
 
       const ffmpeg = yield* FFmpegCommandsService;
@@ -237,7 +229,7 @@ program
           acc[video] = index;
           return acc;
         },
-        {} as Record<string, number>
+        {} as Record<string, number>,
       );
 
       const firstInputVideo = uniqueInputVideos[0];
@@ -263,12 +255,12 @@ program
             return {
               startFrame: Math.floor(clip.startTime * fps),
               endFrame: Math.ceil(
-                (clip.startTime + clip.duration + endPadding) * fps
+                (clip.startTime + clip.duration + endPadding) * fps,
               ),
               videoIndex: inputVideosMap[clip.inputVideo]!,
               trackIndex: 1,
             };
-          })
+          }),
         ),
         WSLENV: "INPUT_VIDEOS/p:CLIPS_TO_APPEND:NEW_TIMELINE_NAME",
       });
@@ -279,7 +271,7 @@ program
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.scoped,
       Effect.provide(MainLayerLive),
-      NodeRuntime.runMain
+      NodeRuntime.runMain,
     );
   });
 
@@ -291,7 +283,7 @@ program
     await moveRawFootageToLongTermStorage().pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
-      NodeRuntime.runMain
+      NodeRuntime.runMain,
     );
   });
 
@@ -302,7 +294,7 @@ program
     await createTimeline().pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
-      NodeRuntime.runMain
+      NodeRuntime.runMain,
     );
   });
 
@@ -313,7 +305,7 @@ program
     await addCurrentTimelineToRenderQueue().pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
-      NodeRuntime.runMain
+      NodeRuntime.runMain,
     );
   });
 
@@ -324,7 +316,7 @@ program
     await exportSubtitles().pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
-      NodeRuntime.runMain
+      NodeRuntime.runMain,
     );
   });
 
@@ -338,7 +330,7 @@ program
     }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
-      NodeRuntime.runMain
+      NodeRuntime.runMain,
     );
   });
 
@@ -357,7 +349,7 @@ program
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
       Effect.scoped,
-      NodeRuntime.runMain
+      NodeRuntime.runMain,
     );
   });
 
@@ -372,13 +364,13 @@ program
         guestVideo: path.join(process.cwd(), guestVideo) as AbsolutePath,
         outputJsonPath: path.join(
           process.cwd(),
-          outputJsonPath
+          outputJsonPath,
         ) as AbsolutePath,
       });
     }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
-      NodeRuntime.runMain
+      NodeRuntime.runMain,
     );
   });
 
@@ -390,11 +382,11 @@ program
 
       const fullHostPath = path.resolve(
         process.cwd(),
-        hostVideo
+        hostVideo,
       ) as AbsolutePath;
       const fullGuestPath = path.resolve(
         process.cwd(),
-        guestVideo
+        guestVideo,
       ) as AbsolutePath;
 
       yield* workflows.moveInterviewToDavinciResolve({
@@ -404,24 +396,24 @@ program
     }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
-      NodeRuntime.runMain
+      NodeRuntime.runMain,
     );
   });
 program
   .command("create-auto-edited-video")
   .aliases(["v", "video"])
   .description(
-    `Create a new auto-edited video from the latest OBS recording and save it to the export directory`
+    `Create a new auto-edited video from the latest OBS recording and save it to the export directory`,
   )
   .option("-u, --upload", "Upload to shorts directory")
   .option("-ns, --no-subtitles", "Disable subtitle rendering")
   .option(
     "-ga, --generate-article",
-    "Automatically generate an article from the video transcript"
+    "Automatically generate an article from the video transcript",
   )
   .option(
     "-a, --alongside",
-    "Save generated article alongside the video (with video's name) instead of in article storage directory"
+    "Save generated article alongside the video (with video's name) instead of in article storage directory",
   )
   .action(
     async (options: {
@@ -448,12 +440,12 @@ program
                 yield* Console.log(helpMessage);
               }
               process.exit(1);
-            })
-          )
+            }),
+          ),
         );
 
         const videoName = yield* askQuestion.askQuestion(
-          "What is the name of the video?"
+          "What is the name of the video?",
         );
 
         yield* validateWindowsFilename(videoName);
@@ -468,7 +460,7 @@ program
           const fs = yield* FileSystem.FileSystem;
           const providedCodePath = yield* askQuestion.askQuestion(
             "📂 Code file path (optional, press Enter to skip): ",
-            { optional: true }
+            { optional: true },
           );
 
           if (providedCodePath.trim()) {
@@ -482,30 +474,30 @@ program
                 Effect.catchAll((error) => {
                   return Effect.gen(function* () {
                     yield* Console.log(
-                      `⚠️  Warning: Could not read code file ${codePath}: ${error}`
+                      `⚠️  Warning: Could not read code file ${codePath}: ${error}`,
                     );
                     yield* Console.log(
-                      `💡 Tip: Check file permissions and ensure the path is correct`
+                      `💡 Tip: Check file permissions and ensure the path is correct`,
                     );
                     return "";
                   });
-                })
+                }),
               );
               yield* Console.log(
-                `✅ Code file loaded: ${codePath} (${codeContent.length} characters)`
+                `✅ Code file loaded: ${codePath} (${codeContent.length} characters)`,
               );
             } else {
               yield* Console.log(
-                `⚠️  Warning: Code file ${codePath} does not exist`
+                `⚠️  Warning: Code file ${codePath} does not exist`,
               );
               yield* Console.log(
-                `💡 Continuing without code - you can manually add code examples to the article later`
+                `💡 Continuing without code - you can manually add code examples to the article later`,
               );
               codePath = ""; // Reset path if file doesn't exist
             }
           } else {
             yield* Console.log(
-              `ℹ️  No code file provided - continuing without code examples`
+              `ℹ️  No code file provided - continuing without code examples`,
             );
           }
         }
@@ -523,11 +515,11 @@ program
 
         if (options.generateArticle) {
           yield* Console.log(
-            "Article generation enabled - adding workflow queue items..."
+            "Article generation enabled - adding workflow queue items...",
           );
           if (options.alongside) {
             yield* Console.log(
-              "Article will be saved alongside the video instead of in article storage directory."
+              "Article will be saved alongside the video instead of in article storage directory.",
             );
           }
         }
@@ -536,7 +528,7 @@ program
 
         if (options.generateArticle) {
           yield* Console.log(
-            `Added ${queueItems.length} items to queue for video processing with article generation.`
+            `Added ${queueItems.length} items to queue for video processing with article generation.`,
           );
         } else {
           yield* Console.log("Added video processing item to queue.");
@@ -551,9 +543,9 @@ program
         }),
         Effect.withConfigProvider(ConfigProvider.fromEnv()),
         Effect.provide(MainLayerLive),
-        NodeRuntime.runMain
+        NodeRuntime.runMain,
       );
-    }
+    },
   );
 
 program.command("log-latest-obs-video").action(async () => {
@@ -564,7 +556,7 @@ program.command("log-latest-obs-video").action(async () => {
   }).pipe(
     Effect.withConfigProvider(ConfigProvider.fromEnv()),
     Effect.provide(MainLayerLive),
-    NodeRuntime.runMain
+    NodeRuntime.runMain,
   );
 });
 
@@ -594,7 +586,7 @@ program
     }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
-      NodeRuntime.runMain
+      NodeRuntime.runMain,
     );
   });
 
@@ -607,7 +599,7 @@ program
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
       Effect.scoped,
-      NodeRuntime.runMain
+      NodeRuntime.runMain,
     );
   });
 
@@ -620,7 +612,7 @@ program
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
       Effect.scoped,
-      NodeRuntime.runMain
+      NodeRuntime.runMain,
     );
   });
 
@@ -628,7 +620,7 @@ program
   .command("process-information-requests")
   .aliases(["pir", "info-requests"])
   .description(
-    "Check for and process outstanding information requests in the queue."
+    "Check for and process outstanding information requests in the queue.",
   )
   .action(async () => {
     await Effect.gen(function* () {
@@ -640,13 +632,13 @@ program
       }
 
       yield* Console.log(
-        `Found ${informationRequests.length} outstanding information request(s).`
+        `Found ${informationRequests.length} outstanding information request(s).`,
       );
       yield* processInformationRequests();
     }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
-      NodeRuntime.runMain
+      NodeRuntime.runMain,
     );
   });
 
@@ -667,13 +659,13 @@ program
         transcripts.map((p) => ({
           title: path.basename(p),
           value: p,
-        }))
+        })),
       );
 
       let code: string | undefined;
 
       const codePath = yield* askQuestion.askQuestion(
-        "Enter the file path containing any code for the article (optional)"
+        "Enter the file path containing any code for the article (optional)",
       );
 
       if (codePath) {
@@ -710,7 +702,7 @@ program
     await program.pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
-      NodeRuntime.runMain
+      NodeRuntime.runMain,
     );
   });
 
@@ -752,7 +744,7 @@ program
           const completedDay = new Date(
             completedDate.getFullYear(),
             completedDate.getMonth(),
-            completedDate.getDate()
+            completedDate.getDate(),
           );
 
           return (
@@ -770,7 +762,7 @@ program
       }
 
       const uncompleted = filteredQueue.filter(
-        (q: QueueItem) => q.status !== "completed"
+        (q: QueueItem) => q.status !== "completed",
       );
 
       yield* Effect.forEach(filteredQueue, (item: QueueItem, idx: number) => {
@@ -836,7 +828,7 @@ program
 
             // Find dependency queue items to show context
             const linksDep = queueState.queue.find(
-              (q: QueueItem) => q.id === articleAction.linksDependencyId
+              (q: QueueItem) => q.id === articleAction.linksDependencyId,
             );
 
             const codeStatus = articleAction.codeContent
@@ -859,7 +851,7 @@ program
               (item.error
                 ? `\n  ${styleText("dim", "Error")}      ${item.error}`
                 : "") +
-              "\n"
+              "\n",
           );
         });
       });
@@ -868,7 +860,7 @@ program
       const articleWorkflows = yield* analyzeArticleWorkflows(queueState);
       if (articleWorkflows.length > 0) {
         yield* Console.log(
-          styleText("bold", "\n📚 Article Generation Workflows:")
+          styleText("bold", "\n📚 Article Generation Workflows:"),
         );
         yield* Effect.forEach(articleWorkflows, (workflow, idx) => {
           return Effect.gen(function* () {
@@ -885,7 +877,7 @@ program
             yield* Console.log(
               `${styleText("bold", `Workflow ${idx + 1}`)} ${statusIcon} ${workflow.videoName}\n` +
                 `  ${styleText("dim", "Progress")}   ${progressBar}\n` +
-                `  ${styleText("dim", "Status")}     ${workflow.statusDescription}\n`
+                `  ${styleText("dim", "Status")}     ${workflow.statusDescription}\n`,
             );
           });
         });
@@ -896,16 +888,16 @@ program
         yield* Console.log("✅ All outstanding queue items are completed!");
       } else {
         yield* Console.log(
-          `⏳ There are ${uncompleted.length} outstanding item(s) in the queue.`
+          `⏳ There are ${uncompleted.length} outstanding item(s) in the queue.`,
         );
 
         // Show information request summary
         const infoRequests = uncompleted.filter(
-          (item: QueueItem) => item.status === "requires-user-input"
+          (item: QueueItem) => item.status === "requires-user-input",
         );
         if (infoRequests.length > 0) {
           yield* Console.log(
-            `❓ ${infoRequests.length} item(s) require user input. Run: ${styleText("bold", "pnpm cli pir")}`
+            `❓ ${infoRequests.length} item(s) require user input. Run: ${styleText("bold", "pnpm cli pir")}`,
           );
         }
       }
@@ -913,7 +905,7 @@ program
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
       Effect.withSpan("queue-status"),
-      NodeRuntime.runMain
+      NodeRuntime.runMain,
     );
   });
 
@@ -937,14 +929,14 @@ program
 
       if (selectedVideoIds.length === 1) {
         yield* Console.log(
-          "Only one video selected. At least 2 videos are required for concatenation."
+          "Only one video selected. At least 2 videos are required for concatenation.",
         );
         return;
       }
 
       // Ask for output video name
       const outputVideoName = yield* askQuestion.askQuestion(
-        "What is the name for the concatenated video?"
+        "What is the name for the concatenated video?",
       );
 
       yield* validateWindowsFilename(outputVideoName);
@@ -967,7 +959,7 @@ program
       ]);
 
       yield* Console.log(
-        `✅ Concatenation job added to queue with ${selectedVideoIds.length} videos.`
+        `✅ Concatenation job added to queue with ${selectedVideoIds.length} videos.`,
       );
     }).pipe(
       Effect.catchAll((e) => {
@@ -979,7 +971,7 @@ program
       }),
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
-      NodeRuntime.runMain
+      NodeRuntime.runMain,
     );
   });
 
@@ -1052,7 +1044,7 @@ const analyzeArticleWorkflows = Effect.fn("analyzeArticleWorkflows")(
       // Check if this is an article generation workflow (has article generation step)
       const hasArticleGeneration = items.some(
         (item: QueueItem) =>
-          item.action.type === "generate-article-from-transcript"
+          item.action.type === "generate-article-from-transcript",
       );
 
       if (!hasArticleGeneration) continue;
@@ -1121,12 +1113,12 @@ const analyzeArticleWorkflows = Effect.fn("analyzeArticleWorkflows")(
     }
 
     return workflows;
-  }
+  },
 );
 
 // Generate a visual progress bar for workflow steps
 function generateProgressBar(
-  steps: Array<{ name: string; status: string }>
+  steps: Array<{ name: string; status: string }>,
 ): string {
   const icons = steps.map((step) => {
     switch (step.status) {
@@ -1165,7 +1157,7 @@ program
     }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
-      NodeRuntime.runMain
+      NodeRuntime.runMain,
     );
   });
 
@@ -1178,7 +1170,7 @@ program
       const { queue } = yield* queueUpdater.getQueueState();
 
       const mostRecentlyFailedItem = queue.findLast(
-        (item) => item.status === "failed"
+        (item) => item.status === "failed",
       );
 
       if (!mostRecentlyFailedItem) {
@@ -1195,7 +1187,7 @@ program
     }).pipe(
       Effect.withConfigProvider(ConfigProvider.fromEnv()),
       Effect.provide(MainLayerLive),
-      NodeRuntime.runMain
+      NodeRuntime.runMain,
     );
   });
 
