@@ -3,13 +3,10 @@ import { FileSystem } from "@effect/platform";
 import { NodeFileSystem } from "@effect/platform-node";
 import { type AbsolutePath } from "@total-typescript/shared";
 import { generateObject, generateText } from "ai";
-import { Config, Data, Effect, Redacted, Schema } from "effect";
+import { Config, Data, Effect, Schema } from "effect";
 import fm from "front-matter";
-import type { ReadStream } from "node:fs";
-import { createReadStream } from "node:fs";
 import * as realFs from "node:fs/promises";
 import path from "node:path";
-import { OpenAI } from "openai";
 import prompts from "prompts";
 import { z } from "zod";
 import { type RawVideoMetadata } from "./raw-video-metadata/raw-video-metadata-types.js";
@@ -17,35 +14,11 @@ import { FFmpegCommandsService } from "./ffmpeg-commands.js";
 import { findSilenceInVideo } from "./silence-detection.js";
 import { SILENCE_DURATION, THRESHOLD } from "./constants.js";
 
-export class OpenAIService extends Effect.Service<OpenAIService>()(
-  "OpenAIService",
-  {
-    effect: Effect.gen(function* () {
-      const openaiKey = yield* Config.redacted(Config.string("OPENAI_API_KEY"));
-      const openaiClient = new OpenAI({
-        apiKey: Redacted.value(openaiKey),
-      });
-
-      return openaiClient;
-    }),
-  }
-) {}
-
-export class ReadStreamService extends Effect.Service<ReadStreamService>()(
-  "ReadStreamService",
-  {
-    effect: Effect.gen(function* () {
-      return {
-        createReadStream: (path: AbsolutePath): Effect.Effect<ReadStream> => {
-          return Effect.succeed(createReadStream(path));
-        },
-      };
-    }),
-  }
-) {}
+// Re-export for backward compatibility
+export { OpenAIService, ReadStreamService } from "./openai-service.js";
 
 export class QuestionNotAnsweredError extends Data.TaggedError(
-  "QuestionNotAnsweredError"
+  "QuestionNotAnsweredError",
 )<{
   question: string;
 }> {}
@@ -59,7 +32,7 @@ export class AskQuestionService extends Effect.Service<AskQuestionService>()(
           question: string,
           opts?: {
             optional?: boolean;
-          }
+          },
         ): Effect.Effect<string, QuestionNotAnsweredError> => {
           return Effect.promise(async () => {
             const response = await prompts({
@@ -74,13 +47,13 @@ export class AskQuestionService extends Effect.Service<AskQuestionService>()(
                 return Effect.fail(new QuestionNotAnsweredError({ question }));
               }
               return Effect.succeed(val);
-            })
+            }),
           );
         },
 
         select: <T>(
           question: string,
-          choices: Array<{ title: string; value: T }>
+          choices: Array<{ title: string; value: T }>,
         ): Effect.Effect<T> => {
           return Effect.promise(async () => {
             const response = await prompts({
@@ -94,11 +67,11 @@ export class AskQuestionService extends Effect.Service<AskQuestionService>()(
         },
       };
     }),
-  }
+  },
 ) {}
 
 export class NoOBSFilesFoundError extends Data.TaggedError(
-  "NoOBSFilesFoundError"
+  "NoOBSFilesFoundError",
 )<{
   dir: string;
 }> {}
@@ -127,7 +100,7 @@ export class GetLatestFilesInDirectoryService extends Effect.Service<GetLatestFi
       const files = yield* Effect.tryPromise(() =>
         realFs.readdir(opts.dir, {
           recursive: opts.recursive,
-        })
+        }),
       ).pipe(Effect.mapError((e) => new ReadDirectoryError({ cause: e })));
 
       const filesWithStats = yield* Effect.all(
@@ -139,8 +112,8 @@ export class GetLatestFilesInDirectoryService extends Effect.Service<GetLatestFi
 
             const mtime = yield* stats.mtime.pipe(
               Effect.mapError(
-                (e) => new CouldNotGetMTimeError({ cause: e, filePath })
-              )
+                (e) => new CouldNotGetMTimeError({ cause: e, filePath }),
+              ),
             );
 
             return {
@@ -148,7 +121,7 @@ export class GetLatestFilesInDirectoryService extends Effect.Service<GetLatestFi
               mtime,
             };
           });
-        })
+        }),
       );
 
       return (
@@ -158,7 +131,7 @@ export class GetLatestFilesInDirectoryService extends Effect.Service<GetLatestFi
           .map((file) => file.filePath)
       );
     }),
-  }
+  },
 ) {}
 
 export class OBSIntegrationService extends Effect.Service<OBSIntegrationService>()(
@@ -170,7 +143,7 @@ export class OBSIntegrationService extends Effect.Service<OBSIntegrationService>
       return {
         getLatestOBSVideo: Effect.fn("getLatestOBSVideo")(function* () {
           const obsOutputDirectory = yield* Config.string(
-            "OBS_OUTPUT_DIRECTORY"
+            "OBS_OUTPUT_DIRECTORY",
           );
           const files = yield* getLatestFilesInDirectory({
             dir: obsOutputDirectory as AbsolutePath,
@@ -187,18 +160,18 @@ export class OBSIntegrationService extends Effect.Service<OBSIntegrationService>
       };
     }),
     dependencies: [GetLatestFilesInDirectoryService.Default],
-  }
+  },
 ) {}
 
 export class CouldNotGetMTimeError extends Data.TaggedError(
-  "CouldNotGetMTimeError"
+  "CouldNotGetMTimeError",
 )<{
   cause: Error;
   filePath: AbsolutePath;
 }> {}
 
 export class CouldNotParseArticleError extends Data.TaggedError(
-  "CouldNotParseArticleError"
+  "CouldNotParseArticleError",
 )<{
   cause: Error;
   filePath: AbsolutePath;
@@ -208,12 +181,12 @@ const getSubtitlePath = Effect.fn("getSubtitlePath")(function* (opts: {
   filename: string;
 }) {
   const TRANSCRIPTION_DIRECTORY = yield* Config.string(
-    "TRANSCRIPTION_DIRECTORY"
+    "TRANSCRIPTION_DIRECTORY",
   );
 
   return path.join(
     TRANSCRIPTION_DIRECTORY,
-    opts.filename + ".transcript.json"
+    opts.filename + ".transcript.json",
   ) as AbsolutePath;
 });
 
@@ -227,16 +200,16 @@ const transcriptSchema = Schema.Struct({
           start: Schema.Number,
           end: Schema.Number,
           text: Schema.String,
-        })
+        }),
       ),
       words: Schema.Array(
         Schema.Struct({
           start: Schema.Number,
           end: Schema.Number,
           text: Schema.String,
-        })
+        }),
       ),
-    })
+    }),
   ),
 });
 
@@ -252,18 +225,18 @@ export class TranscriptStorageService extends Effect.Service<TranscriptStorageSe
       const fs = yield* FileSystem.FileSystem;
 
       const TRANSCRIPTION_DIRECTORY = yield* Config.string(
-        "TRANSCRIPTION_DIRECTORY"
+        "TRANSCRIPTION_DIRECTORY",
       );
 
       const OBS_OUTPUT_DIRECTORY = yield* Config.string("OBS_OUTPUT_DIRECTORY");
 
       const getOriginalVideoPathFromTranscript = Effect.fn(
-        "getOriginalVideoPathFromTranscript"
+        "getOriginalVideoPathFromTranscript",
       )(function* (opts: { transcriptPath: AbsolutePath }) {
         const parsed = path.parse(opts.transcriptPath);
         return path.join(
           OBS_OUTPUT_DIRECTORY,
-          parsed.name + ".mp4"
+          parsed.name + ".mp4",
         ) as AbsolutePath;
       });
 
@@ -279,14 +252,15 @@ export class TranscriptStorageService extends Effect.Service<TranscriptStorageSe
 
           yield* fs.writeFileString(
             transcriptPath,
-            yield* Schema.decode(transcriptToString)(opts)
+            yield* Schema.decode(transcriptToString)(opts),
           );
         }),
         getSubtitleFiles: Effect.fn("getSubtitleFiles")(function* () {
           const files = yield* fs.readDirectory(TRANSCRIPTION_DIRECTORY);
           return files
             .map(
-              (file) => path.join(TRANSCRIPTION_DIRECTORY, file) as AbsolutePath
+              (file) =>
+                path.join(TRANSCRIPTION_DIRECTORY, file) as AbsolutePath,
             )
             .sort((a, b) => b.localeCompare(a));
         }),
@@ -307,7 +281,7 @@ export class TranscriptStorageService extends Effect.Service<TranscriptStorageSe
       };
     }),
     dependencies: [NodeFileSystem.layer],
-  }
+  },
 ) {}
 
 export class ArticleStorageService extends Effect.Service<ArticleStorageService>()(
@@ -332,7 +306,7 @@ export class ArticleStorageService extends Effect.Service<ArticleStorageService>
               "---",
               "",
               article.content,
-            ].join("\n")
+            ].join("\n"),
           );
         }),
         countArticles: Effect.fn("countArticles")(function* () {
@@ -362,7 +336,7 @@ export class ArticleStorageService extends Effect.Service<ArticleStorageService>
                         title: string;
                       };
                       body: string;
-                    } => (fm as any)(content)
+                    } => (fm as any)(content),
                   ).pipe(
                     Effect.mapError((e) => {
                       return new CouldNotParseArticleError({
@@ -380,11 +354,11 @@ export class ArticleStorageService extends Effect.Service<ArticleStorageService>
                           new CouldNotParseArticleError({
                             cause: new Error("Invalid article format"),
                             filePath: file,
-                          })
+                          }),
                         );
                       }
                       return Effect.succeed({ attributes, body });
-                    })
+                    }),
                   );
                   return {
                     content: body,
@@ -395,7 +369,7 @@ export class ArticleStorageService extends Effect.Service<ArticleStorageService>
                     filename: path.basename(file),
                   };
                 });
-              })
+              }),
           );
           return articles;
         }),
@@ -405,7 +379,7 @@ export class ArticleStorageService extends Effect.Service<ArticleStorageService>
       NodeFileSystem.layer,
       GetLatestFilesInDirectoryService.Default,
     ],
-  }
+  },
 ) {}
 
 export class LinksStorageService extends Effect.Service<LinksStorageService>()(
@@ -438,7 +412,7 @@ export class LinksStorageService extends Effect.Service<LinksStorageService>()(
           // If JSON parsing fails, return empty array
           yield* Effect.logWarning(
             "Failed to parse links JSON, returning empty array",
-            { error }
+            { error },
           );
           return [];
         }
@@ -448,13 +422,13 @@ export class LinksStorageService extends Effect.Service<LinksStorageService>()(
         links: {
           description: string;
           url: string;
-        }[]
+        }[],
       ) {
         const existingLinks = yield* getLinks();
         const updatedLinks = [...existingLinks, ...links];
         yield* fs.writeFileString(
           LINKS_STORAGE_PATH,
-          JSON.stringify(updatedLinks, null, 2)
+          JSON.stringify(updatedLinks, null, 2),
         );
       });
 
@@ -464,7 +438,7 @@ export class LinksStorageService extends Effect.Service<LinksStorageService>()(
       };
     }),
     dependencies: [NodeFileSystem.layer],
-  }
+  },
 ) {}
 
 export class AIService extends Effect.Service<AIService>()("AIService", {
@@ -478,7 +452,7 @@ export class AIService extends Effect.Service<AIService>()("AIService", {
         transcript: string;
       }) {
         const systemRaw = yield* fs.readFileString(
-          path.resolve(import.meta.dirname, "../prompts", "ask-for-links.md")
+          path.resolve(import.meta.dirname, "../prompts", "ask-for-links.md"),
         );
 
         // Get existing stored links to include in the prompt
@@ -497,7 +471,7 @@ export class AIService extends Effect.Service<AIService>()("AIService", {
 
         const system = systemRaw.replace(
           "{{existing_links_section}}",
-          existingLinksSection
+          existingLinksSection,
         );
 
         const links = yield* Effect.tryPromise(() => {
@@ -528,8 +502,8 @@ export class AIService extends Effect.Service<AIService>()("AIService", {
             path.resolve(
               import.meta.dirname,
               "../prompts",
-              "generate-article.md"
-            )
+              "generate-article.md",
+            ),
           );
 
           // Get stored links and combine with newly requested ones
@@ -557,12 +531,12 @@ export class AIService extends Effect.Service<AIService>()("AIService", {
               "{{articles}}",
               opts.mostRecentArticles
                 .map((a) => `# ${a.title}\n\n${a.content}`)
-                .join("\n\n")
+                .join("\n\n"),
             )
             .replace("{{links_section}}", linksSection)
             .replace(
               "{{code}}",
-              opts.code ? `\`\`\`ts\n${opts.code}\n\`\`\`` : "No code provided"
+              opts.code ? `\`\`\`ts\n${opts.code}\n\`\`\`` : "No code provided",
             );
 
           yield* Effect.logDebug("System", system);
@@ -576,7 +550,7 @@ export class AIService extends Effect.Service<AIService>()("AIService", {
           });
 
           return article.text;
-        }
+        },
       ),
       titleFromTranscript: Effect.fn("titleFromTranscript")(function* (opts: {
         transcript: string;
@@ -585,12 +559,12 @@ export class AIService extends Effect.Service<AIService>()("AIService", {
         yield* Effect.logDebug("Generating title from transcript", opts);
 
         const systemRaw = yield* fs.readFileString(
-          path.resolve(import.meta.dirname, "../prompts", "generate-title.md")
+          path.resolve(import.meta.dirname, "../prompts", "generate-title.md"),
         );
 
         const system = systemRaw.replace(
           "{{code}}",
-          opts.code ? `\`\`\`ts\n${opts.code}\n\`\`\`` : "No code provided"
+          opts.code ? `\`\`\`ts\n${opts.code}\n\`\`\`` : "No code provided",
         );
 
         const title = yield* Effect.tryPromise(() => {
@@ -615,7 +589,7 @@ export class VideoMetadataService extends Effect.Service<VideoMetadataService>()
       const ffmpeg = yield* FFmpegCommandsService;
       const fs = yield* FileSystem.FileSystem;
       const createVideoMetadata = Effect.fn("createVideoMetadata")(function* (
-        rawVideoPath: AbsolutePath
+        rawVideoPath: AbsolutePath,
       ) {
         const fpsFork = yield* Effect.fork(ffmpeg.getFPS(rawVideoPath));
 
@@ -626,8 +600,8 @@ export class VideoMetadataService extends Effect.Service<VideoMetadataService>()
                 widthInPixels: resolution.width,
                 heightInPixels: resolution.height,
               };
-            })
-          )
+            }),
+          ),
         );
 
         const { speakingClips } = yield* findSilenceInVideo(rawVideoPath, {
@@ -649,7 +623,7 @@ export class VideoMetadataService extends Effect.Service<VideoMetadataService>()
                 {
                   startTime: clipLength.startTime,
                   endTime: clipLength.endTime,
-                }
+                },
               );
 
               const transcript = yield* ffmpeg.transcribeAudio(audioPath);
@@ -664,7 +638,7 @@ export class VideoMetadataService extends Effect.Service<VideoMetadataService>()
           }),
           {
             concurrency: "unbounded",
-          }
+          },
         );
 
         const metadata: RawVideoMetadata = {
@@ -691,7 +665,7 @@ export class VideoMetadataService extends Effect.Service<VideoMetadataService>()
         const parsed = path.parse(videoPath);
         return path.join(
           parsed.dir,
-          parsed.name + ".metadata.json"
+          parsed.name + ".metadata.json",
         ) as AbsolutePath;
       };
 
@@ -705,13 +679,13 @@ export class VideoMetadataService extends Effect.Service<VideoMetadataService>()
           const metadata = yield* createVideoMetadata(opts.videoPath);
           yield* fs.writeFileString(
             metadataPath,
-            JSON.stringify(metadata, null, 2)
+            JSON.stringify(metadata, null, 2),
           );
           return metadata;
         }
 
         return JSON.parse(
-          yield* fs.readFileString(metadataPath)
+          yield* fs.readFileString(metadataPath),
         ) as RawVideoMetadata;
       });
 
@@ -720,5 +694,5 @@ export class VideoMetadataService extends Effect.Service<VideoMetadataService>()
         getVideoMetadata,
       };
     }),
-  }
+  },
 ) {}
