@@ -5,9 +5,7 @@ import { NodeRuntime } from "@effect/platform-node";
 import {
   AppLayerLive,
   generateArticleFromTranscript,
-  getOutstandingInformationRequests,
   multiSelectVideosFromQueue,
-  processInformationRequests,
   type QueueItem,
   validateWindowsFilename,
 } from "@total-typescript/ffmpeg";
@@ -41,6 +39,7 @@ import { register as registerLogLatestObsVideo } from "./commands/log-latest-obs
 import { register as registerQueueAutoEditedVideoForCourse } from "./commands/queue-auto-edited-video-for-course.js";
 import { register as registerTranscribeVideo } from "./commands/transcribe-video.js";
 import { register as registerProcessQueue } from "./commands/process-queue.js";
+import { register as registerProcessInformationRequests } from "./commands/process-information-requests.js";
 import { OpenTelemetryLive } from "./tracing.js";
 
 config({
@@ -74,32 +73,7 @@ registerLogLatestObsVideo(program);
 registerQueueAutoEditedVideoForCourse(program);
 registerTranscribeVideo(program);
 registerProcessQueue(program);
-
-program
-  .command("process-information-requests")
-  .aliases(["pir", "info-requests"])
-  .description(
-    "Check for and process outstanding information requests in the queue.",
-  )
-  .action(async () => {
-    await Effect.gen(function* () {
-      const informationRequests = yield* getOutstandingInformationRequests();
-
-      if (informationRequests.length === 0) {
-        yield* Console.log("No outstanding information requests found.");
-        return;
-      }
-
-      yield* Console.log(
-        `Found ${informationRequests.length} outstanding information request(s).`,
-      );
-      yield* processInformationRequests();
-    }).pipe(
-      Effect.withConfigProvider(ConfigProvider.fromEnv()),
-      Effect.provide(MainLayerLive),
-      NodeRuntime.runMain,
-    );
-  });
+registerProcessInformationRequests(program);
 
 program
   .command("article-from-transcript")
