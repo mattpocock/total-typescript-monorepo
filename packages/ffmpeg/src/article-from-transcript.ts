@@ -19,32 +19,44 @@ export const generateArticleCore = Effect.fn("generateArticleCore")(
     transcriptPath?: AbsolutePath;
     codePath?: string;
   }) {
-    const { originalVideoPath, transcript, code, urls, storageMode = "article-storage", videoDirectory, videoName, transcriptPath, codePath } = opts;
+    const {
+      originalVideoPath,
+      transcript,
+      code,
+      urls,
+      storageMode = "article-storage",
+      videoDirectory,
+      videoName,
+      transcriptPath,
+      codePath,
+    } = opts;
 
     const ai = yield* AIService;
     const articleStorage = yield* ArticleStorageService;
 
     const ARTICLES_TO_TAKE = yield* Config.number("ARTICLES_TO_TAKE").pipe(
-      Config.withDefault(5)
+      Config.withDefault(5),
     );
 
     const PADDED_NUMBER_LENGTH = yield* Config.number(
-      "PADDED_NUMBER_LENGTH"
+      "PADDED_NUMBER_LENGTH",
     ).pipe(Config.withDefault(3));
 
     const mostRecentArticlesFiber = yield* Effect.fork(
       articleStorage.getLatestArticles({
         take: ARTICLES_TO_TAKE,
-      })
+      }),
     );
 
-    const countArticlesFiber = yield* Effect.fork(articleStorage.countArticles());
+    const countArticlesFiber = yield* Effect.fork(
+      articleStorage.countArticles(),
+    );
 
     const titleFiber = yield* Effect.fork(
       ai.titleFromTranscript({
         transcript,
         code,
-      })
+      }),
     );
 
     const articleFiber = yield* Effect.fork(
@@ -57,7 +69,7 @@ export const generateArticleCore = Effect.fn("generateArticleCore")(
           urls,
         });
         return article;
-      })
+      }),
     );
 
     const [article, title, articlesCount] = yield* Effect.all([
@@ -69,12 +81,15 @@ export const generateArticleCore = Effect.fn("generateArticleCore")(
     if (storageMode === "alongside-video" && videoDirectory && videoName) {
       // Save files directly alongside the video with new naming pattern
       const fs = yield* FileSystem.FileSystem;
-      
+
       // Ensure the video directory exists
       yield* fs.makeDirectory(videoDirectory, { recursive: true });
-      
+
       // Save the article alongside the video
-      const articlePath = path.join(videoDirectory, `${videoName}.article.md`) as AbsolutePath;
+      const articlePath = path.join(
+        videoDirectory,
+        `${videoName}.article.md`,
+      ) as AbsolutePath;
       yield* fs.writeFileString(
         articlePath,
         [
@@ -85,12 +100,15 @@ export const generateArticleCore = Effect.fn("generateArticleCore")(
           "---",
           "",
           article,
-        ].join("\n")
+        ].join("\n"),
       );
 
       // Copy the transcript alongside the video if available
       if (transcriptPath) {
-        const transcriptAlongsidePath = path.join(videoDirectory, `${videoName}.transcript.txt`);
+        const transcriptAlongsidePath = path.join(
+          videoDirectory,
+          `${videoName}.transcript.txt`,
+        );
         yield* fs.copyFile(transcriptPath, transcriptAlongsidePath);
       }
 
@@ -98,7 +116,10 @@ export const generateArticleCore = Effect.fn("generateArticleCore")(
       if (codePath && code) {
         // Extract the extension from the original code path
         const codeExtension = path.extname(codePath);
-        const codeAlongsidePath = path.join(videoDirectory, `${videoName}.code${codeExtension}`);
+        const codeAlongsidePath = path.join(
+          videoDirectory,
+          `${videoName}.code${codeExtension}`,
+        );
         yield* fs.writeFileString(codeAlongsidePath, code);
       }
 
@@ -126,46 +147,5 @@ export const generateArticleCore = Effect.fn("generateArticleCore")(
         content: article,
       };
     }
-  }
+  },
 );
-
-/**
- * Interactive article generation for CLI usage
- */
-export const generateArticleFromTranscript = Effect.fn(
-  "generateArticleFromTranscript"
-)(function* (opts: {
-  originalVideoPath: AbsolutePath;
-  transcript: string;
-  urls: { request: string; url: string }[];
-  code?: string;
-}) {
-  yield* generateArticleCore(opts);
-});
-
-/**
- * Generate article alongside the video in the same directory
- */
-export const generateArticleAlongsideVideo = Effect.fn(
-  "generateArticleAlongsideVideo"
-)(function* (opts: {
-  originalVideoPath: AbsolutePath;
-  transcript: string;
-  urls: { request: string; url: string }[];
-  code?: string;
-  videoDirectory: string;
-  videoName: string;
-  transcriptPath?: AbsolutePath;
-  codePath?: string;
-}) {
-  const { videoDirectory, videoName, transcriptPath, codePath, ...coreOpts } = opts;
-  
-  yield* generateArticleCore({
-    ...coreOpts,
-    storageMode: "alongside-video",
-    videoDirectory,
-    videoName,
-    transcriptPath,
-    codePath,
-  });
-});

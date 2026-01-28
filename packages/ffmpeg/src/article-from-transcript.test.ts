@@ -1,50 +1,11 @@
 // @ts-nocheck
 
 import type { AbsolutePath } from "@total-typescript/shared";
-import { Clock, Effect } from "effect";
+import { Effect } from "effect";
 import { expect, it, vi } from "vitest";
-import { generateArticleFromTranscript, generateArticleCore } from "./article-from-transcript.js";
+import { generateArticleCore } from "./article-from-transcript.js";
 import { AIService, ArticleStorageService } from "./services.js";
 import { FileSystem } from "@effect/platform";
-
-it("Should generate an article given a transcript", async () => {
-  const articleFromTranscript = vi.fn().mockReturnValue(Effect.succeed("test"));
-
-  const articleStorageService = {
-    storeArticle: vi.fn().mockReturnValue(Effect.succeed(void 0)),
-    getLatestArticles: vi.fn().mockReturnValue(Effect.succeed([])),
-    countArticles: vi.fn().mockReturnValue(Effect.succeed(0)),
-  };
-
-  await generateArticleFromTranscript({
-    originalVideoPath: "test/fixtures/video.mp4" as AbsolutePath,
-    transcript: "Awesome video",
-    urls: [],
-  }).pipe(
-    Effect.provideService(AIService, {
-      articleFromTranscript,
-      titleFromTranscript: vi
-        .fn()
-        .mockReturnValue(Effect.succeed("My Wonderful Article")),
-    }),
-    Effect.provideService(ArticleStorageService, articleStorageService),
-    Effect.runPromise
-  );
-
-  expect(articleFromTranscript).toHaveBeenCalledWith({
-    transcript: "Awesome video",
-    mostRecentArticles: [],
-    urls: [],
-  });
-
-  expect(articleStorageService.storeArticle).toHaveBeenCalledWith({
-    content: "test",
-    originalVideoPath: "test/fixtures/video.mp4",
-    date: expect.any(Date),
-    title: "My Wonderful Article",
-    filename: "001-my-wonderful-article.md",
-  });
-});
 
 it("Should save article alongside video when storageMode is alongside-video", async () => {
   let capturedPaths: string[] = [];
@@ -53,7 +14,7 @@ it("Should save article alongside video when storageMode is alongside-video", as
   const mockFS = FileSystem.makeNoop({
     writeFileString: (path: string, content: string) => {
       capturedPaths.push(path);
-      if (path.endsWith('.md')) {
+      if (path.endsWith(".md")) {
         capturedContent = content;
       }
       return Effect.succeed(undefined);
@@ -68,7 +29,9 @@ it("Should save article alongside video when storageMode is alongside-video", as
     },
   });
 
-  const articleFromTranscript = vi.fn().mockReturnValue(Effect.succeed("test article content"));
+  const articleFromTranscript = vi
+    .fn()
+    .mockReturnValue(Effect.succeed("test article content"));
 
   const articleStorageService = {
     storeArticle: vi.fn().mockReturnValue(Effect.succeed(void 0)),
@@ -95,7 +58,7 @@ it("Should save article alongside video when storageMode is alongside-video", as
     }),
     Effect.provideService(ArticleStorageService, articleStorageService),
     Effect.provideService(FileSystem.FileSystem, mockFS),
-    Effect.runPromise
+    Effect.runPromise,
   );
 
   expect(result).toEqual({
@@ -106,17 +69,25 @@ it("Should save article alongside video when storageMode is alongside-video", as
   });
 
   // Verify the article was written alongside the video
-  expect(capturedPaths).toContain("/path/to/videos/awesome-typescript-video.article.md");
+  expect(capturedPaths).toContain(
+    "/path/to/videos/awesome-typescript-video.article.md",
+  );
   expect(capturedContent).toContain("test article content");
   expect(capturedContent).toContain('title: "TypeScript Magic"');
-  expect(capturedContent).toContain('originalVideoPath: "test/fixtures/video.mp4"');
-  
+  expect(capturedContent).toContain(
+    'originalVideoPath: "test/fixtures/video.mp4"',
+  );
+
   // Verify the transcript was copied alongside the video
-  expect(capturedPaths).toContain("copy:/path/to/transcript.txt->/path/to/videos/awesome-typescript-video.transcript.txt");
-  
+  expect(capturedPaths).toContain(
+    "copy:/path/to/transcript.txt->/path/to/videos/awesome-typescript-video.transcript.txt",
+  );
+
   // Verify the code file was written alongside the video
-  expect(capturedPaths).toContain("/path/to/videos/awesome-typescript-video.code.ts");
-  
+  expect(capturedPaths).toContain(
+    "/path/to/videos/awesome-typescript-video.code.ts",
+  );
+
   // Verify that the regular article storage was NOT called
   expect(articleStorageService.storeArticle).not.toHaveBeenCalled();
 });

@@ -5,7 +5,6 @@ import { config } from "dotenv";
 import path from "node:path";
 import packageJson from "../package.json" with { type: "json" };
 import { register as registerAppendVideoToTimeline } from "./commands/append-video-to-timeline.js";
-import { register as registerArticleFromTranscript } from "./commands/article-from-transcript.js";
 import { register as registerConcatenateVideos } from "./commands/concatenate-videos.js";
 import { register as registerCreateTimeline } from "./commands/create-timeline.js";
 import { register as registerCreateVideoFromClips } from "./commands/create-video-from-clips.js";
@@ -34,7 +33,6 @@ program.version(packageJson.version);
 
 // Register commands
 registerAppendVideoToTimeline(program);
-registerArticleFromTranscript(program);
 registerConcatenateVideos(program);
 registerCreateTimeline(program);
 registerCreateVideoFromClips(program);
