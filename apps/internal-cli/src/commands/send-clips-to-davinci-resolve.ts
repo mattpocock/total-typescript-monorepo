@@ -2,6 +2,7 @@ import { NodeRuntime } from "@effect/platform-node";
 import {
   AppLayerLive,
   AUTO_EDITED_VIDEO_FINAL_END_PADDING,
+  FFmpegCommandsService,
   serializeMultiTrackClipsForAppendScript,
 } from "@total-typescript/ffmpeg";
 import {
@@ -10,7 +11,6 @@ import {
 } from "@total-typescript/shared";
 import type { Command } from "commander";
 import { ConfigProvider, Console, Data, Effect, Layer, Schema } from "effect";
-import { FFmpegCommandsService } from "../../../../packages/ffmpeg/dist/ffmpeg-commands.js";
 import { clipsSchema } from "../shared/schemas.js";
 import { OpenTelemetryLive } from "../tracing.js";
 

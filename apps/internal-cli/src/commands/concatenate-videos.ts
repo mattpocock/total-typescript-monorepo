@@ -1,13 +1,13 @@
 import { NodeRuntime } from "@effect/platform-node";
 import {
   AppLayerLive,
+  AskQuestionService,
   multiSelectVideosFromQueue,
+  QueueUpdaterService,
   validateWindowsFilename,
 } from "@total-typescript/ffmpeg";
 import type { Command } from "commander";
 import { ConfigProvider, Console, Effect, Layer } from "effect";
-import { QueueUpdaterService } from "../../../../packages/ffmpeg/dist/queue/queue-updater-service.js";
-import { AskQuestionService } from "../../../../packages/ffmpeg/dist/services.js";
 import { OpenTelemetryLive } from "../tracing.js";
 
 /**

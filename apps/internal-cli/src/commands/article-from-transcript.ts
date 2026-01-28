@@ -1,17 +1,15 @@
 import { FileSystem } from "@effect/platform";
 import { NodeRuntime } from "@effect/platform-node";
 import {
+  AIService,
   AppLayerLive,
+  AskQuestionService,
   generateArticleFromTranscript,
+  TranscriptStorageService,
 } from "@total-typescript/ffmpeg";
 import type { Command } from "commander";
 import { ConfigProvider, Effect, Layer } from "effect";
 import path from "node:path";
-import {
-  AIService,
-  AskQuestionService,
-  TranscriptStorageService,
-} from "../../../../packages/ffmpeg/dist/services.js";
 import { OpenTelemetryLive } from "../tracing.js";
 
 /**

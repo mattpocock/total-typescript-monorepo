@@ -1,6 +1,10 @@
 import { FileSystem } from "@effect/platform";
 import { NodeRuntime } from "@effect/platform-node";
-import { AppLayerLive, WorkflowsService } from "@total-typescript/ffmpeg";
+import {
+  AppLayerLive,
+  OBSIntegrationService,
+  WorkflowsService,
+} from "@total-typescript/ffmpeg";
 import { type AbsolutePath } from "@total-typescript/shared";
 import type { Command } from "commander";
 import {
@@ -12,7 +16,6 @@ import {
   Logger,
   LogLevel,
 } from "effect";
-import { OBSIntegrationService } from "../../../../packages/ffmpeg/dist/services.js";
 import { OpenTelemetryLive } from "../tracing.js";
 
 /**

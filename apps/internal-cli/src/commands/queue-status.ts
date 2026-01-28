@@ -1,9 +1,12 @@
 import { NodeRuntime } from "@effect/platform-node";
-import { AppLayerLive, type QueueItem } from "@total-typescript/ffmpeg";
+import {
+  AppLayerLive,
+  QueueUpdaterService,
+  type QueueItem,
+} from "@total-typescript/ffmpeg";
 import type { Command } from "commander";
 import { ConfigProvider, Console, Effect, Layer } from "effect";
 import { styleText } from "node:util";
-import { QueueUpdaterService } from "../../../../packages/ffmpeg/dist/queue/queue-updater-service.js";
 import { OpenTelemetryLive } from "../tracing.js";
 
 /**
