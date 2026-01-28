@@ -9,7 +9,6 @@ import { register as registerConcatenateVideos } from "./commands/concatenate-vi
 import { register as registerCreateTimeline } from "./commands/create-timeline.js";
 import { register as registerCreateVideoFromClips } from "./commands/create-video-from-clips.js";
 import { register as registerGetClipsFromLatestVideo } from "./commands/get-clips-from-latest-video.js";
-import { register as registerLogLatestObsVideo } from "./commands/log-latest-obs-video.js";
 import { register as registerMoveRawFootageToLongTermStorage } from "./commands/move-raw-footage-to-long-term-storage.js";
 import { register as registerNotify } from "./commands/notify.js";
 import { register as registerProcessQueue } from "./commands/process-queue.js";
@@ -33,7 +32,6 @@ registerConcatenateVideos(program);
 registerCreateTimeline(program);
 registerCreateVideoFromClips(program);
 registerGetClipsFromLatestVideo(program);
-registerLogLatestObsVideo(program);
 registerMoveRawFootageToLongTermStorage(program);
 registerNotify(program);
 registerProcessQueue(program);
