@@ -7,7 +7,7 @@ import {
 import type { Command } from "commander";
 import { ConfigProvider, Console, Effect, Layer } from "effect";
 import { styleText } from "node:util";
-import { OpenTelemetryLive } from "../tracing.js";
+import { OpenTelemetryLive } from "../../tracing.js";
 
 /**
  * Main Layer that combines the application layer with OpenTelemetry tracing
@@ -176,11 +176,10 @@ function generateProgressBar(
   return names.map((name, i) => `${icons[i]} ${name}`).join(" → ");
 }
 
-export function register(program: Command): void {
-  program
-    .command("queue-status")
-    .aliases(["qs", "status"])
-    .description("Show the status of the render queue.")
+export function register(parent: Command): void {
+  parent
+    .command("status")
+    .description("Show queue status and workflow progress")
     .action(async () => {
       await Effect.gen(function* () {
         const queueUpdater = yield* QueueUpdaterService;

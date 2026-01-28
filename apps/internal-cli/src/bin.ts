@@ -4,17 +4,10 @@ import { Command } from "commander";
 import { config } from "dotenv";
 import path from "node:path";
 import packageJson from "../package.json" with { type: "json" };
-import { register as registerAppendVideoToTimeline } from "./commands/append-video-to-timeline.js";
-import { register as registerConcatenateVideos } from "./commands/concatenate-videos.js";
-import { register as registerCreateTimeline } from "./commands/create-timeline.js";
-import { register as registerCreateVideoFromClips } from "./commands/create-video-from-clips.js";
-import { register as registerGetClipsFromLatestVideo } from "./commands/get-clips-from-latest-video.js";
+import { register as registerClips } from "./commands/clips/index.js";
 import { register as registerNotify } from "./commands/notify.js";
-import { register as registerProcessQueue } from "./commands/process-queue.js";
-import { register as registerQueueStatus } from "./commands/queue-status.js";
-import { register as registerRetryQueueItem } from "./commands/retry-queue-item.js";
-import { register as registerSendClipsToDavinciResolve } from "./commands/send-clips-to-davinci-resolve.js";
-import { register as registerTranscribeClips } from "./commands/transcribe-clips.js";
+import { register as registerQueue } from "./commands/queue/index.js";
+import { register as registerResolve } from "./commands/resolve/index.js";
 
 config({
   path: path.resolve(import.meta.dirname, "../../../.env"),
@@ -25,16 +18,9 @@ const program = new Command();
 program.version(packageJson.version);
 
 // Register commands
-registerAppendVideoToTimeline(program);
-registerConcatenateVideos(program);
-registerCreateTimeline(program);
-registerCreateVideoFromClips(program);
-registerGetClipsFromLatestVideo(program);
+registerClips(program);
 registerNotify(program);
-registerProcessQueue(program);
-registerQueueStatus(program);
-registerRetryQueueItem(program);
-registerSendClipsToDavinciResolve(program);
-registerTranscribeClips(program);
+registerQueue(program);
+registerResolve(program);
 
 program.parse(process.argv);

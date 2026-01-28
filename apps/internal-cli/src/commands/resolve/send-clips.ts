@@ -11,8 +11,8 @@ import {
 } from "@total-typescript/shared";
 import type { Command } from "commander";
 import { ConfigProvider, Console, Data, Effect, Layer, Schema } from "effect";
-import { clipsSchema } from "../shared/schemas.js";
-import { OpenTelemetryLive } from "../tracing.js";
+import { clipsSchema } from "../../shared/schemas.js";
+import { OpenTelemetryLive } from "../../tracing.js";
 
 /**
  * Main Layer that combines the application layer with OpenTelemetry tracing
@@ -21,9 +21,10 @@ const MainLayerLive = Layer.merge(AppLayerLive, OpenTelemetryLive);
 
 class NoInputVideosError extends Data.TaggedError("NoInputVideosError")<{}> {}
 
-export function register(program: Command): void {
-  program
-    .command("send-clips-to-davinci-resolve <clips> <timeline-name>")
+export function register(parent: Command): void {
+  parent
+    .command("send-clips <clips> <timeline-name>")
+    .description("Send clips to timeline with frame-based positioning")
     .action(async (clips, timelineName) => {
       await Effect.gen(function* () {
         const clipsParsed = yield* Schema.decodeUnknown(clipsSchema)(

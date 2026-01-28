@@ -8,18 +8,17 @@ import {
 } from "@total-typescript/ffmpeg";
 import type { Command } from "commander";
 import { ConfigProvider, Console, Effect, Layer } from "effect";
-import { OpenTelemetryLive } from "../tracing.js";
+import { OpenTelemetryLive } from "../../tracing.js";
 
 /**
  * Main Layer that combines the application layer with OpenTelemetry tracing
  */
 const MainLayerLive = Layer.merge(AppLayerLive, OpenTelemetryLive);
 
-export function register(program: Command): void {
-  program
-    .command("concatenate-videos")
-    .aliases(["concat", "c"])
-    .description("Concatenate multiple completed videos from the queue")
+export function register(parent: Command): void {
+  parent
+    .command("concat")
+    .description("Queue concatenation of multiple completed videos")
     .option("-u, --upload", "Upload to shorts directory")
     .action(async (options: { upload?: boolean }) => {
       await Effect.gen(function* () {

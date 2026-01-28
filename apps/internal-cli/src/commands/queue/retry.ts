@@ -2,17 +2,17 @@ import { NodeRuntime } from "@effect/platform-node";
 import { AppLayerLive, QueueUpdaterService } from "@total-typescript/ffmpeg";
 import type { Command } from "commander";
 import { ConfigProvider, Console, Effect, Layer } from "effect";
-import { OpenTelemetryLive } from "../tracing.js";
+import { OpenTelemetryLive } from "../../tracing.js";
 
 /**
  * Main Layer that combines the application layer with OpenTelemetry tracing
  */
 const MainLayerLive = Layer.merge(AppLayerLive, OpenTelemetryLive);
 
-export function register(program: Command): void {
-  program
-    .command("retry-queue-item")
-    .aliases(["rq"])
+export function register(parent: Command): void {
+  parent
+    .command("retry")
+    .description("Retry most recent failed item")
     .action(async () => {
       Effect.gen(function* () {
         const queueUpdater = yield* QueueUpdaterService;

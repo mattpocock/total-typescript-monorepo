@@ -16,7 +16,7 @@ import {
   Logger,
   LogLevel,
 } from "effect";
-import { OpenTelemetryLive } from "../tracing.js";
+import { OpenTelemetryLive } from "../../tracing.js";
 
 /**
  * Main Layer that combines the application layer with OpenTelemetry tracing
@@ -27,9 +27,10 @@ class FileDoesNotExistError extends Data.TaggedError("FileDoesNotExistError")<{
   filePath: AbsolutePath;
 }> {}
 
-export function register(program: Command): void {
-  program
-    .command("get-clips-from-latest-video [filePath]")
+export function register(parent: Command): void {
+  parent
+    .command("detect [filePath]")
+    .description("Detect clip boundaries in a video")
     .option("-s, --startTime <startTime>", "Start time of the video")
     .action(async (filePath, { startTime }) => {
       Effect.gen(function* () {

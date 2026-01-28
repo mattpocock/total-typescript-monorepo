@@ -3,19 +3,18 @@ import { AppLayerLive, QueueUpdaterService } from "@total-typescript/ffmpeg";
 import { type AbsolutePath } from "@total-typescript/shared";
 import type { Command } from "commander";
 import { ConfigProvider, Console, Effect, Layer, Schema } from "effect";
-import { clipsSchema } from "../shared/schemas.js";
-import { OpenTelemetryLive } from "../tracing.js";
+import { clipsSchema } from "../../shared/schemas.js";
+import { OpenTelemetryLive } from "../../tracing.js";
 
 /**
  * Main Layer that combines the application layer with OpenTelemetry tracing
  */
 const MainLayerLive = Layer.merge(AppLayerLive, OpenTelemetryLive);
 
-export function register(program: Command): void {
-  program
-    .command(
-      "create-video-from-clips <clips> <outputVideoName> [shortsDirectoryOutputName]",
-    )
+export function register(parent: Command): void {
+  parent
+    .command("from-clips <clips> <outputVideoName> [shortsDirectoryOutputName]")
+    .description("Queue video creation from JSON clip definitions")
     .action(async (clips, outputVideoName, shortsDirectoryOutputName) => {
       await Effect.gen(function* () {
         const queueUpdater = yield* QueueUpdaterService;
