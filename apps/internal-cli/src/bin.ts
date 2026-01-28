@@ -11,7 +11,6 @@ import { register as registerCreateVideoFromClips } from "./commands/create-vide
 import { register as registerGetClipsFromLatestVideo } from "./commands/get-clips-from-latest-video.js";
 import { register as registerNotify } from "./commands/notify.js";
 import { register as registerProcessQueue } from "./commands/process-queue.js";
-import { register as registerQueueAutoEditedVideoForCourse } from "./commands/queue-auto-edited-video-for-course.js";
 import { register as registerQueueStatus } from "./commands/queue-status.js";
 import { register as registerRetryQueueItem } from "./commands/retry-queue-item.js";
 import { register as registerSendClipsToDavinciResolve } from "./commands/send-clips-to-davinci-resolve.js";
@@ -33,7 +32,6 @@ registerCreateVideoFromClips(program);
 registerGetClipsFromLatestVideo(program);
 registerNotify(program);
 registerProcessQueue(program);
-registerQueueAutoEditedVideoForCourse(program);
 registerQueueStatus(program);
 registerRetryQueueItem(program);
 registerSendClipsToDavinciResolve(program);
