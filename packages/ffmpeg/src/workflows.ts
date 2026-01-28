@@ -1,9 +1,5 @@
 import { FileSystem } from "@effect/platform/FileSystem";
-import {
-  execAsync,
-  runDavinciResolveScript,
-  type AbsolutePath,
-} from "@total-typescript/shared";
+import { execAsync, type AbsolutePath } from "@total-typescript/shared";
 import { Config, Console, Data, Effect } from "effect";
 import path from "path";
 import {
@@ -11,19 +7,11 @@ import {
   ReadStreamService,
   TranscriptStorageService,
 } from "./services.js";
-import {
-  REMOTION_DIR,
-  splitSubtitleSegments,
-  type Subtitle,
-} from "./subtitle-rendering.js";
+import { splitSubtitleSegments, type Subtitle } from "./subtitle-rendering.js";
 
 import { NodeFileSystem } from "@effect/platform-node";
 import type { PlatformError } from "@effect/platform/Error";
 import type { ExecException } from "child_process";
-import {
-  extractBadTakeMarkersFromFile,
-  isBadTake,
-} from "./chapter-extraction.js";
 import {
   AUTO_EDITED_END_PADDING,
   AUTO_EDITED_START_PADDING,
@@ -32,17 +20,12 @@ import {
   THRESHOLD,
 } from "./constants.js";
 import {
-  serializeMultiTrackClipsForAppendScript,
-  type MultiTrackClip,
-} from "./davinci-integration.js";
-import {
   CouldNotCreateClipError,
-  CouldNotGetFPSError,
   FFmpegCommandsService,
 } from "./ffmpeg-commands.js";
 import { QueueUpdaterService } from "./queue/queue-updater-service.js";
 import { findSilenceInVideo } from "./silence-detection.js";
-import type { ClipWithMetadata, VideoClip } from "./video-clip-types.js";
+import type { ClipWithMetadata } from "./video-clip-types.js";
 
 export interface CreateAutoEditedVideoWorkflowOptions {
   inputVideo: AbsolutePath;
@@ -459,82 +442,6 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         return Math.round(num * 10 ** places) / 10 ** places;
       };
 
-      const moveInterviewToDavinciResolve = Effect.fn(
-        "moveInterviewToDavinciResolve",
-      )(function* (opts: {
-        hostVideo: AbsolutePath;
-        guestVideo: AbsolutePath;
-      }) {
-        const fpsFork = yield* Effect.fork(ffmpeg.getFPS(opts.hostVideo));
-        const hostClipsFork = yield* Effect.fork(
-          findClips({ inputVideo: opts.hostVideo, mode: "part-of-video" }),
-        );
-        const guestClipsFork = yield* Effect.fork(
-          findClips({ inputVideo: opts.guestVideo, mode: "part-of-video" }),
-        );
-
-        const hostClips = yield* hostClipsFork;
-        const guestClips = yield* guestClipsFork;
-
-        const interviewSpeakingClips = rawClipsToInterviewSpeakingClips({
-          hostClips: hostClips,
-          guestClips: guestClips,
-        });
-
-        // Hard coded to 60fps for now, since that's what
-        // we use in Davinci Resolve
-        const OUTPUT_FPS = 60;
-
-        const inputFPS = yield* fpsFork;
-
-        const multiTrackClips: MultiTrackClip[] = [];
-
-        let currentTimelineFrame = 0;
-
-        for (const clip of interviewSpeakingClips) {
-          const inputStartFrame = Math.floor(clip.startTime * inputFPS);
-          const inputEndFrame = Math.ceil(
-            (clip.startTime + clip.duration) * inputFPS,
-          );
-
-          const timelineStartFrame = currentTimelineFrame;
-          currentTimelineFrame += Math.ceil(clip.duration * OUTPUT_FPS);
-
-          if (clip.state === "host-speaking") {
-            multiTrackClips.push({
-              startFrame: inputStartFrame,
-              endFrame: inputEndFrame,
-              videoIndex: 0, // Host video
-              trackIndex: 1, // Track 1
-              timelineStartFrame,
-            });
-          }
-
-          if (
-            clip.state === "guest-speaking" ||
-            clip.state === "guest-speaking-over-host"
-          ) {
-            multiTrackClips.push({
-              startFrame: inputStartFrame,
-              endFrame: inputEndFrame,
-              videoIndex: 1, // Guest video
-              trackIndex: 2, // Track 2
-              timelineStartFrame,
-            });
-          }
-        }
-
-        const output = yield* runDavinciResolveScript("clip-and-append.lua", {
-          INPUT_VIDEOS: [opts.hostVideo, opts.guestVideo].join(":::"),
-          CLIPS_TO_APPEND:
-            serializeMultiTrackClipsForAppendScript(multiTrackClips),
-          WSLENV: "INPUT_VIDEOS/p:CLIPS_TO_APPEND",
-        });
-
-        yield* Console.log(output.stdout);
-        yield* Console.log(output.stderr);
-      });
-
       const createVideoFromClipsWorkflow = (
         options: CreateVideoFromClipsWorkflowOptions,
       ) => {
@@ -747,7 +654,6 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         createAutoEditedVideoWorkflow,
         createVideoFromClipsWorkflow,
         concatenateVideosWorkflow,
-        moveInterviewToDavinciResolve,
         findClips,
         createAutoEditedAudio,
         getSubtitlesForClips,
@@ -875,118 +781,3 @@ export const multiSelectVideosFromQueue = () => {
     return selectedVideoIds;
   });
 };
-
-const rawClipsToInterviewSpeakingClips = (opts: {
-  hostClips: { startTime: number; duration: number }[];
-  guestClips: { startTime: number; duration: number }[];
-}): InterviewSpeakingClip[] => {
-  const rawEvents: RawClipEvent[] = [];
-
-  for (const clip of opts.hostClips) {
-    rawEvents.push({
-      type: "clip-start",
-      time: clip.startTime,
-      speaker: "host",
-    });
-
-    rawEvents.push({
-      type: "clip-end",
-      time: clip.startTime + clip.duration,
-      speaker: "host",
-    });
-  }
-
-  for (const clip of opts.guestClips) {
-    rawEvents.push({
-      type: "clip-start",
-      time: clip.startTime,
-      speaker: "guest",
-    });
-
-    rawEvents.push({
-      type: "clip-end",
-      time: clip.startTime + clip.duration,
-      speaker: "guest",
-    });
-  }
-
-  const events = rawEvents.sort((a, b) => a.time - b.time);
-
-  let state: InterviewState = "silence";
-
-  const interviewSpeakingClips: InterviewSpeakingClip[] = [];
-
-  for (let i = 0; i < events.length; i++) {
-    const event = events[i]!;
-    const nextEvent = events[i + 1];
-
-    if (!nextEvent) {
-      break;
-    }
-
-    const newState: InterviewState =
-      stateMachine[state][`${event.speaker}-${event.type}`];
-
-    if (newState !== "silence") {
-      interviewSpeakingClips.push({
-        state: newState,
-        startTime: event.time,
-        duration: nextEvent.time - event.time,
-      });
-    }
-
-    state = newState;
-  }
-
-  return interviewSpeakingClips;
-};
-
-type RawClipEvent = {
-  type: "clip-start" | "clip-end";
-  time: number;
-  speaker: "host" | "guest";
-};
-
-type InterviewSpeakingClip = {
-  state: "host-speaking" | "guest-speaking" | "guest-speaking-over-host";
-  startTime: number;
-  duration: number;
-};
-
-type InterviewState =
-  | "silence"
-  | "host-speaking"
-  | "guest-speaking"
-  | "guest-speaking-over-host";
-type InterviewEvent =
-  | "host-clip-start"
-  | "guest-clip-start"
-  | "host-clip-end"
-  | "guest-clip-end";
-
-const stateMachine = {
-  silence: {
-    "host-clip-start": "host-speaking",
-    "guest-clip-start": "guest-speaking",
-    "host-clip-end": "silence",
-    "guest-clip-end": "silence",
-  },
-  "host-speaking": {
-    "host-clip-start": "host-speaking",
-    "guest-clip-start": "guest-speaking",
-    "host-clip-end": "silence",
-    "guest-clip-end": "host-speaking",
-  },
-  "guest-speaking": {
-    "guest-clip-start": "guest-speaking",
-    "guest-clip-end": "silence",
-    "host-clip-start": "guest-speaking-over-host",
-    "host-clip-end": "guest-speaking",
-  },
-  "guest-speaking-over-host": {
-    "guest-clip-start": "guest-speaking-over-host",
-    "guest-clip-end": "host-speaking",
-    "host-clip-start": "guest-speaking-over-host",
-    "host-clip-end": "guest-speaking",
-  },
-} satisfies Record<InterviewState, Record<InterviewEvent, InterviewState>>;
