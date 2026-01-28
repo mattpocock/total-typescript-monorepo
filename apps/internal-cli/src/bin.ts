@@ -4,7 +4,6 @@ import { Command } from "commander";
 import { config } from "dotenv";
 import path from "node:path";
 import packageJson from "../package.json" with { type: "json" };
-import { register as registerAddCurrentTimelineToRenderQueue } from "./commands/add-current-timeline-to-render-queue.js";
 import { register as registerAppendVideoToTimeline } from "./commands/append-video-to-timeline.js";
 import { register as registerArticleFromTranscript } from "./commands/article-from-transcript.js";
 import { register as registerConcatenateVideos } from "./commands/concatenate-videos.js";
@@ -37,7 +36,6 @@ const program = new Command();
 program.version(packageJson.version);
 
 // Register commands
-registerAddCurrentTimelineToRenderQueue(program);
 registerAppendVideoToTimeline(program);
 registerArticleFromTranscript(program);
 registerConcatenateVideos(program);
