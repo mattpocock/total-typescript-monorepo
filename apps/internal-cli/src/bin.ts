@@ -8,7 +8,6 @@ import { register as registerAppendVideoToTimeline } from "./commands/append-vid
 import { register as registerConcatenateVideos } from "./commands/concatenate-videos.js";
 import { register as registerCreateTimeline } from "./commands/create-timeline.js";
 import { register as registerCreateVideoFromClips } from "./commands/create-video-from-clips.js";
-import { register as registerExportInterview } from "./commands/export-interview.js";
 import { register as registerGetClipsFromLatestVideo } from "./commands/get-clips-from-latest-video.js";
 import { register as registerLogLatestObsVideo } from "./commands/log-latest-obs-video.js";
 import { register as registerMoveInterviewToDavinciResolve } from "./commands/move-interview-to-davinci-resolve.js";
@@ -35,7 +34,6 @@ registerAppendVideoToTimeline(program);
 registerConcatenateVideos(program);
 registerCreateTimeline(program);
 registerCreateVideoFromClips(program);
-registerExportInterview(program);
 registerGetClipsFromLatestVideo(program);
 registerLogLatestObsVideo(program);
 registerMoveInterviewToDavinciResolve(program);

@@ -459,45 +459,6 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         return Math.round(num * 10 ** places) / 10 ** places;
       };
 
-      const exportInterviewWorkflow = Effect.fn("exportInterviewWorkflow")(
-        function* (opts: {
-          hostVideo: AbsolutePath;
-          guestVideo: AbsolutePath;
-          outputJsonPath: AbsolutePath;
-        }) {
-          const hostClipsFork = yield* Effect.fork(
-            findClips({ inputVideo: opts.hostVideo, mode: "part-of-video" }),
-          );
-          const guestClipsFork = yield* Effect.fork(
-            findClips({ inputVideo: opts.guestVideo, mode: "part-of-video" }),
-          );
-
-          const hostClips = yield* hostClipsFork;
-          const guestClips = yield* guestClipsFork;
-
-          const interviewSpeakingClips = rawClipsToInterviewSpeakingClips({
-            hostClips: hostClips,
-            guestClips: guestClips,
-          });
-
-          const videoClips: VideoClip[] = interviewSpeakingClips.map((clip) => {
-            return {
-              sourceVideoPath:
-                clip.state === "host-speaking"
-                  ? opts.hostVideo
-                  : opts.guestVideo,
-              sourceVideoStartTime: clip.startTime,
-              sourceVideoEndTime: clip.startTime + clip.duration,
-            };
-          });
-
-          yield* fs.writeFileString(
-            opts.outputJsonPath,
-            JSON.stringify(videoClips, null, 2),
-          );
-        },
-      );
-
       const moveInterviewToDavinciResolve = Effect.fn(
         "moveInterviewToDavinciResolve",
       )(function* (opts: {
@@ -787,7 +748,6 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         createVideoFromClipsWorkflow,
         concatenateVideosWorkflow,
         moveInterviewToDavinciResolve,
-        exportInterviewWorkflow,
         findClips,
         createAutoEditedAudio,
         getSubtitlesForClips,
