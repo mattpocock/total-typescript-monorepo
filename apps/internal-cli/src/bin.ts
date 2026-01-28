@@ -12,7 +12,6 @@ import { register as registerGetClipsFromLatestVideo } from "./commands/get-clip
 import { register as registerLogLatestObsVideo } from "./commands/log-latest-obs-video.js";
 import { register as registerMoveRawFootageToLongTermStorage } from "./commands/move-raw-footage-to-long-term-storage.js";
 import { register as registerNotify } from "./commands/notify.js";
-import { register as registerProcessInformationRequests } from "./commands/process-information-requests.js";
 import { register as registerProcessQueue } from "./commands/process-queue.js";
 import { register as registerQueueAutoEditedVideoForCourse } from "./commands/queue-auto-edited-video-for-course.js";
 import { register as registerQueueStatus } from "./commands/queue-status.js";
@@ -37,7 +36,6 @@ registerGetClipsFromLatestVideo(program);
 registerLogLatestObsVideo(program);
 registerMoveRawFootageToLongTermStorage(program);
 registerNotify(program);
-registerProcessInformationRequests(program);
 registerProcessQueue(program);
 registerQueueAutoEditedVideoForCourse(program);
 registerQueueStatus(program);
