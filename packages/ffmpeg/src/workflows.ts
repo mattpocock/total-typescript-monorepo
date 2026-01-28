@@ -459,52 +459,6 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         return Math.round(num * 10 ** places) / 10 ** places;
       };
 
-      const editInterviewWorkflow = Effect.fn("editInterviewWorkflow")(
-        function* (opts: {
-          hostVideo: AbsolutePath;
-          guestVideo: AbsolutePath;
-          outputPath: AbsolutePath;
-        }) {
-          const hostClipsFork = yield* Effect.fork(
-            findClips({ inputVideo: opts.hostVideo, mode: "part-of-video" }),
-          );
-          const guestClipsFork = yield* Effect.fork(
-            findClips({ inputVideo: opts.guestVideo, mode: "part-of-video" }),
-          );
-
-          const hostClips = yield* hostClipsFork;
-          const guestClips = yield* guestClipsFork;
-
-          const interviewSpeakingClips = rawClipsToInterviewSpeakingClips({
-            hostClips: hostClips,
-            guestClips: guestClips,
-          });
-
-          yield* Effect.log(
-            `[editInterviewWorkflow] Creating and concatenating ${interviewSpeakingClips.length} clips in single pass`,
-          );
-
-          // TODO: create clips to handle the case where the guest is speaking over the host
-          const concatenatedVideo =
-            yield* ffmpeg.createAndConcatenateVideoClipsSinglePass(
-              interviewSpeakingClips.map((clip) => ({
-                inputVideo:
-                  clip.state === "host-speaking"
-                    ? opts.hostVideo
-                    : opts.guestVideo,
-                startTime: clip.startTime,
-                duration: clip.duration,
-                beatType: "none",
-              })),
-            );
-
-          const normalizedAudio =
-            yield* ffmpeg.normalizeAudio(concatenatedVideo);
-
-          yield* fs.copyFile(normalizedAudio, opts.outputPath);
-        },
-      );
-
       const exportInterviewWorkflow = Effect.fn("exportInterviewWorkflow")(
         function* (opts: {
           hostVideo: AbsolutePath;
@@ -832,7 +786,6 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
         createAutoEditedVideoWorkflow,
         createVideoFromClipsWorkflow,
         concatenateVideosWorkflow,
-        editInterviewWorkflow,
         moveInterviewToDavinciResolve,
         exportInterviewWorkflow,
         findClips,
