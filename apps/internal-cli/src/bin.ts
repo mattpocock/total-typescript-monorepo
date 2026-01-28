@@ -23,7 +23,6 @@ import { register as registerQueueStatus } from "./commands/queue-status.js";
 import { register as registerRetryQueueItem } from "./commands/retry-queue-item.js";
 import { register as registerSendClipsToDavinciResolve } from "./commands/send-clips-to-davinci-resolve.js";
 import { register as registerTranscribeClips } from "./commands/transcribe-clips.js";
-import { register as registerTranscribeVideo } from "./commands/transcribe-video.js";
 
 config({
   path: path.resolve(import.meta.dirname, "../../../.env"),
@@ -53,6 +52,5 @@ registerQueueStatus(program);
 registerRetryQueueItem(program);
 registerSendClipsToDavinciResolve(program);
 registerTranscribeClips(program);
-registerTranscribeVideo(program);
 
 program.parse(process.argv);
