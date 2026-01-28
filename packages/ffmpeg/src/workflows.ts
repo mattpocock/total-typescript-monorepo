@@ -1,5 +1,5 @@
 import { FileSystem } from "@effect/platform/FileSystem";
-import { execAsync, type AbsolutePath } from "@total-typescript/shared";
+import { type AbsolutePath } from "@total-typescript/shared";
 import { Config, Console, Data, Effect } from "effect";
 import path from "path";
 import {
@@ -669,20 +669,6 @@ export class WorkflowsService extends Effect.Service<WorkflowsService>()(
     ],
   },
 ) {}
-
-export const moveRawFootageToLongTermStorage = () => {
-  return Effect.gen(function* () {
-    const longTermStorageDirectory = yield* Config.string(
-      "LONG_TERM_FOOTAGE_STORAGE_DIRECTORY",
-    );
-
-    const obsOutputDirectory = yield* Config.string("OBS_OUTPUT_DIRECTORY");
-
-    yield* execAsync(
-      `(cd "${longTermStorageDirectory}" && mv "${obsOutputDirectory}"/* .)`,
-    );
-  });
-};
 
 export const multiSelectVideosFromQueue = () => {
   return Effect.gen(function* () {
